@@ -1,0 +1,7 @@
+black
+dash
+isort
+pandas
+pre-commit
+pre-commit-hooks
+pylint
