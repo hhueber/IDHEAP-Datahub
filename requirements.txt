@@ -1,7 +1,8 @@
-black
-dash
-isort
-pandas
-pre-commit
-pre-commit-hooks
-pylint
+black==24.8.0
+dash==2.18.1
+dash-bootstrap-components==1.6.0
+isort==5.13.2
+pandas==2.2.3
+pre-commit==3.8.0
+pre-commit-hooks==4.6.0
+pylint==3.3.1
