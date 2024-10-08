@@ -2,14 +2,17 @@ from logging import FileHandler, Formatter
 import logging
 
 
-from flask import Flask, render_template, request
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, render_template
+from flask_sqlalchemy import SQLAlchemy
 
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object("config")
-    db = SQLAlchemy(app)
+    db = SQLAlchemy(app, model_class=Base)
+
+    with app.app_context():
+        db.reflect()
 
     # Error handlers
     @app.errorhandler(403)
@@ -41,7 +44,7 @@ def create_app():
 
 # Default port:
 if __name__ == "__main__":
-    from webapp.config import SERVER_HOST, SERVER_PORT
+    from config import SERVER_HOST, SERVER_PORT
 
     app = create_app()
     app.run(host=SERVER_HOST, port=SERVER_PORT)
