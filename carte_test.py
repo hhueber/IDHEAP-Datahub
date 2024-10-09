@@ -32,18 +32,33 @@ options = [{'label': label, 'value': value} for label, value in zip(question_lab
 # Function to create the figure with the updated color scale
 def create_figure(variable_values, communes):
     
-    custom_colorscale = [
-        [-99, "darkgray"], # Voluntary no response
-        [np.nan, "lightgray"], # Exited survey
-        #[0, "blue"],
-        #[1, "green"],
-        #[2, "magenta"],
-        #[3, "peach"],
-        #[4, "orange"],
-        #[5, "red"],
-        #[6, "purple"],
-        #[7, "darkviolet"]
-    ]
+    # if more than 9 possible value for each question, use a continuous color scale
+    # if not, use a discrete color scale 
+
+    unique_values = [v for v in variable_values if v != -99 and not np.isnan(v)]
+    num_unique_values = len(set(unique_values))
+
+    if num_unique_values <= 1: # replace with 9 if you want to use the discrete color scale
+        # "homemade" color scale with 9 colors 
+        custom_colorscale = {
+            -99: "darkgray",  # Voluntary no response
+            np.nan: "lightgray",  # Exited survey
+            0: "rgb(255,247,251)",
+            1: "rgb(236,231,242)",
+            2: "rgb(208,209,230)",
+            3: "rgb(166,189,219)",
+            4: "rgb(116,169,207)",
+            5: "rgb(54,144,192)",
+            6: "rgb(5,112,176)",
+            7: "rgb(4,90,141)",
+            8: "rgb(2,56,88)"
+        }
+        
+    else: # Use the continuous color scale 'Viridis'
+        custom_colorscale = 'Viridis' # Use the continuous color scale 'Viridis'
+          
+    # .PuBu .q0-9{fill:rgb(255,247,251)} .PuBu .q1-9{fill:rgb(236,231,242)} .PuBu .q2-9{fill:rgb(208,209,230)} .PuBu .q3-9{fill:rgb(166,189,219)} .PuBu .q4-9{fill:rgb(116,169,207)} .PuBu .q5-9{fill:rgb(54,144,192)} .PuBu .q6-9{fill:rgb(5,112,176)} .PuBu .q7-9{fill:rgb(4,90,141)} .PuBu .q8-9{fill:rgb(2,56,88)}
+    # css palette from colorbrew
 
     fig = go.Figure()
 
@@ -63,13 +78,16 @@ def create_figure(variable_values, communes):
         #locations=[feature["properties"]["id"] for feature in municipalities_data["features"]],
         locations=communes,
         z=variable_values,  # variable values (dynamically updated)
-        #colorscale = custom_colorscale,  # color scale (can be dynamic)
-        colorscale='viridis', 
+        colorscale = custom_colorscale,  # color scale (can be dynamic)
+        #colorscale='viridis', 
         featureidkey="properties.id",  # key to link the data and geojson
         name="Municipalities", 
         hoverinfo="text",  # display hover information
-        text=[f"{feature['properties']['name']}: {value if value != -99 else 'No response'}"
-              for value, feature in zip(variable_values, municipalities_data["features"])],
+        text = [
+            f"{feature['properties']['name']}: "
+            f"{'Exited Survey' if np.isnan(value) else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
+            for value, feature in zip(variable_values, municipalities_data["features"])
+            ],
         colorbar=dict(
             title='Values',  # Title of the color scale
             thickness=25,  # Width of the color scale
@@ -96,7 +114,7 @@ def create_figure(variable_values, communes):
 
     # Layout settings for the map
     fig.update_layout(
-        mapbox_style="open-street-map",
+        #mapbox_style="open-street-map",
         mapbox_zoom=7,
         mapbox_center={"lat": 46.4, "lon": 8.8},
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
@@ -111,7 +129,7 @@ def create_figure(variable_values, communes):
             center={"lat": 46.4, "lon": 8.8},
             style="open-street-map"
         ),
-        showlegend=False  # If you don't want legends to show
+        showlegend=False  # If you don't want legends to show --> enlever le cadre de la légende aussi
     )
     return fig
 
@@ -179,7 +197,7 @@ def update_map(selected_variable):
 
     # Print unique responses for the selected variable
     unique_responses = filtered_responses[selected_variable].unique()
-    print(f"Unique responses for {selected_variable}: {unique_responses}")
+    #print(f"Unique responses for {selected_variable}: {unique_responses}")
 
     # Extract the commune IDs and their corresponding responses
     communes = filtered_responses['GSB23_Q100'].astype(int).tolist()  # List of commune IDs
@@ -213,7 +231,7 @@ def update_slider(selected_survey):
             )
         ], style={'padding-top': '10px'})
     
-    return html.Div()  # Empty div if 'survey' is selected
+    return html.Div()  # Empty div if 'survey' is selected --> ne fonctionne pas pour le moment 
 
 #print("questions values",question_values)
 #print("communes  respons col",df_commune_responses.columns.tolist())
