@@ -41,7 +41,7 @@ def create_app():
     # Survey
     @app.route("/survey/new", methods=("GET", "POST"))
     def survey_new():
-        pass
+        pass  # TODO
 
     @app.route("/survey/list")
     def survey_list():
