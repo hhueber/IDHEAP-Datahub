@@ -1,5 +1,5 @@
 config.py
-*.db
+*.db*
 data/*.*
 !data/.gitkeep
 webapp/initial_data/*.*
