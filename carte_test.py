@@ -126,8 +126,9 @@ def create_figure(variable_values, communes):
             layers=[],
             accesstoken="your-access-token",  # Remove if you are using open-street-map
             zoom=7,
-            center={"lat": 46.4, "lon": 8.8},
-            style="open-street-map"
+            center={"lat": 46.4, "lon": 8.1},
+            # style="open-street-map"
+            style = 'white-bg' # Change the map style
         ),
         showlegend=False  # If you don't want legends to show --> enlever le cadre de la légende aussi
     )
