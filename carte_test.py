@@ -29,9 +29,16 @@ question_labels = df_combined['label'].tolist()  # List of question labels
 question_globale_NLP_list = question_globale_NLP['label'].tolist()
 question_values_globales = question_globale_NLP['code_first_question'].tolist()  # List of question labels
 
-options = [{'label': label, 'value': value} for label, value in zip(question_labels, question_values)]
+existing_variables = df_commune_responses.columns.tolist()
 
+filtered_question_globale_NLP = question_globale_NLP[
+    question_globale_NLP['code_first_question'].isin(existing_variables)
+]
 
+question_globale_NLP_list = filtered_question_globale_NLP['label'].tolist()
+question_values_globales = filtered_question_globale_NLP['code_first_question'].tolist()
+
+options = [{'label': label, 'value': value} for label, value in zip(question_globale_NLP_list, question_values_globales)]
 
 # Function to create the figure with the updated color scale
 def create_figure(variable_values, communes):
@@ -163,8 +170,8 @@ app.layout = html.Div([
             html.Label("Variable Selection"),
             dcc.Dropdown(
                 id='variable-dropdown',
-                options=[{'label': label, 'value': value} for label, value in zip(question_globale_NLP_list, question_values_globales)],
-                value=question_globale_NLP_list[0],  # Default value
+                options=options,
+                value=options[0]['value'] if options else None,  # Default value
                 clearable=False
             )
         ], style={'width': '48%', 'display': 'inline-block'})
