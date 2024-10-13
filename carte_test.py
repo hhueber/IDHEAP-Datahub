@@ -20,10 +20,14 @@ with open('country.json', encoding="utf-8") as f:
 
 df_commune_responses = pd.read_csv('data/commune_responses.csv')
 df_combined = pd.read_csv('data/combined_df.csv')
+question_globale_NLP = pd.read_csv('data/QuestionGlobales_NLP.csv')
+print(question_globale_NLP.head())
 #print(df_commune_responses.head())
 
 question_values = df_commune_responses.columns[df_commune_responses.columns.str.contains('GSB23_Q')]
 question_labels = df_combined['label'].tolist()  # List of question labels
+question_globale_NLP_list = question_globale_NLP['label'].tolist()
+question_values_globales = question_globale_NLP['code_first_question'].tolist()  # List of question labels
 
 options = [{'label': label, 'value': value} for label, value in zip(question_labels, question_values)]
 
@@ -159,8 +163,8 @@ app.layout = html.Div([
             html.Label("Variable Selection"),
             dcc.Dropdown(
                 id='variable-dropdown',
-                options=[{'label': label, 'value': value} for label, value in zip(question_labels, question_values)],
-                value=question_values[0],  # Default value
+                options=[{'label': label, 'value': value} for label, value in zip(question_globale_NLP_list, question_values_globales)],
+                value=question_globale_NLP_list[0],  # Default value
                 clearable=False
             )
         ], style={'width': '48%', 'display': 'inline-block'})
