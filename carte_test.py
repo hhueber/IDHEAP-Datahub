@@ -25,17 +25,99 @@ df_combined = pd.read_csv("data/combined_df.csv")
 question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
 
 
-app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])  # Utiliser Bootstrap
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])  
+app.config.suppress_callback_exceptions = True
+
+translation = {
+    "fr": {
+        "title": "Carte avec échelle de couleur dynamique",
+        "survey_selection": "Sélection de l'enquête",
+        "variable_selection": "Sélection de la variable",
+        "slider_label": "Ajuster le curseur",
+        "global_question": "Question globale",
+        "survey": "Enquête",
+        "voluntary_no_response": "Réponse volontaire non fournie",
+        "exited_survey": "Enquête abandonnée",
+        "no_opinion": "Pas d'opinion",
+        "values": "Valeurs"
+    },
+    "de": {
+        "title": "Karte mit dynamischer Farbskala",
+        "survey_selection": "Umfrageauswahl",
+        "variable_selection": "Variablenauswahl",
+        "slider_label": "Schieberegler anpassen",
+        "global_question": "Globale Frage",
+        "survey": "Umfrage",
+        "voluntary_no_response": "Freiwillige keine Antwort",
+        "exited_survey": "Umfrage verlassen",
+        "no_opinion": "Keine Meinung",
+        "values": "Werte"
+    },
+    "it": {
+        "title": "Mappa con scala cromatica dinamica",
+        "survey_selection": "Selezione del sondaggio",
+        "variable_selection": "Selezione della variabile",
+        "slider_label": "Regola il cursore",
+        "global_question": "Domanda globale",
+        "survey": "Sondaggio",
+        "voluntary_no_response": "Nessuna risposta volontaria",
+        "exited_survey": "Sondaggio abbandonato",
+        "no_opinion": "Nessuna opinione",
+        "values": "Valori"
+    },
+    "ro": {  # Romanche
+        "title": "Carta cun scala da colur dinamica",
+        "survey_selection": "Tscherna da l'enquista",
+        "variable_selection": "Tscherna da la variabla",
+        "slider_label": "Midar il slider",
+        "global_question": "Dumonda globala",
+        "survey": "Enquista",
+        "voluntary_no_response": "Risposta betg dada voluntarmain",
+        "exited_survey": "Enquista terminada",
+        "no_opinion": "Nagina opiniun",
+        "values": "Valurs"
+    }
+}
 
 app.layout = html.Div(
     [
-        html.H1("Map with Dynamic Color Scale", style={"text-align": "left", "margin-bottom": "40px"}),
-        # Dropdowns for survey and variable selection
+        # Title
+        html.H1(id="page-title", style={"text-align": "left", "margin-bottom": "40px"}),
+
+        # dropdown for language selection
+        html.Div(
+            [
+                html.Label("Language"),
+                dcc.Dropdown(
+                    id="language-dropdown",
+                    options=[
+                        {"label": "Français", "value": "fr"},
+                        {"label": "Deutsch", "value": "de"},
+                        {"label": "Italiano", "value": "it"},
+                        {"label": "Rumantsch", "value": "ro"}, 
+                    ],
+                    value="fr",  # defaut language
+                    clearable=False,
+                ),
+            ],
+            style={
+                "position": "fixed",
+                "bottom": "10px",
+                "left": "10px",
+                "width": "200px",  
+                "background-color": "white",  
+                "padding": "10px",  
+                "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.1)",  
+                "z-index": "1000",  
+            }
+        ),
+
+        # Dropdown for survey selection and variable selection
         html.Div(
             [
                 html.Div(
                     [
-                        html.Label("Survey Selection"),
+                        html.Label(id="survey-selection-label"),  
                         dcc.Dropdown(
                             id="survey-dropdown",
                             options=[
@@ -50,7 +132,7 @@ app.layout = html.Div(
                 ),
                 html.Div(
                     [
-                        html.Label("Variable Selection"),
+                        html.Label(id="variable-selection-label"),  
                         dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
                     ],
                     style={"width": "48%", "display": "inline-block"},
@@ -58,22 +140,32 @@ app.layout = html.Div(
             ],
             style={"display": "flex", "justify-content": "space-between"},
         ),
-        # Graph for the map with dynamic color scale
+
         dcc.Graph(id="map-graph", style={"position": "relative", "z-index": "0"}),
-        # Div for the slider --> do not display for the moment idk why
+
+        # slider 
         html.Div(
             id="slider-container",
             style={"display": "none"},
             children=[
-                html.Label("Adjust Slider"),
-                dcc.Slider(id="slider", min=0, max=100, value=50, marks={i: str(i) for i in range(0, 101, 10)}, step=1),
-            ],
+                html.Label(id="slider-label"),  
+                html.Div(  # Wrap the Slider in a Div for styling
+                    dcc.Slider(
+                        id="slider",
+                        min=1988,
+                        max=2023,
+                        value=2023,  # default value
+                        marks={1988: "1988", 1994: "1994", 1998: "1998", 2005: "2005", 2009: "2009", 2017: "2017", 2023: "2023"},
+                        step=None,  # to disable intermediate values 
+                    ),
+                    style={'width': '600px', 'margin': 'auto'}  # style for the container
+                ),
+            ],      
         ),
     ],
     style={
-        "height": "100vh",
-        "width": "100vw",
-        "overflow": "hidden",
+        "min-height": "100vh",  
+        "min-width": "100vw",  
         "padding": "20px",
         "margin": "0",
         "font-family": "Arial, sans-serif",
@@ -81,6 +173,21 @@ app.layout = html.Div(
     },
 )
 
+@app.callback(
+    Output("page-title", "children"),
+    Output("survey-selection-label", "children"),
+    Output("variable-selection-label", "children"),
+    Output("slider-label", "children"),
+    Input("language-dropdown", "value")
+)
+
+def update_language(language):
+    return (
+        translation[language]["title"],
+        translation[language]["survey_selection"],
+        translation[language]["variable_selection"],
+        translation[language]["slider_label"],
+    )
 
 @app.callback(
     Output("variable-dropdown", "options"),
@@ -89,6 +196,7 @@ app.layout = html.Div(
     Input("survey-dropdown", "value"),
     Input("variable-dropdown", "value"),
 )
+
 def update_dropdown_and_map(selected_survey, selected_variable):
     # Update variable options based on selected survey
     if selected_survey == "global_question":
