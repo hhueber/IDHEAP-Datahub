@@ -21,7 +21,7 @@ with open("country.json", encoding="utf-8") as f:
 df_commune_responses = pd.read_csv("data/commune_responses.csv")
 df_combined = pd.read_csv("data/combined_df.csv")
 question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
-top_10_question_globales = pd.read_csv("data/top_10_question_globales.csv")
+top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])  
 app.config.suppress_callback_exceptions = True
@@ -198,7 +198,7 @@ def update_language(language):
 def update_dropdown_and_map(selected_survey, selected_variable):
     # Update variable options based on selected survey
     if selected_survey == "global_question":
-        codes = question_globale_NLP[question_globale_NLP["code_first_question"].isin(df_commune_responses.columns)]
+        codes = top_10_question_globales[top_10_question_globales["code_first_question"].isin(df_commune_responses.columns)]
         options = [
             {"label": df_combined[df_combined["code"] == code].label.values[0], "value": code}
             for code in codes["code_first_question"]
