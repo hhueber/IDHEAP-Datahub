@@ -21,7 +21,7 @@ with open("country.json", encoding="utf-8") as f:
 df_commune_responses = pd.read_csv("data/commune_responses.csv")
 df_combined = pd.read_csv("data/combined_df.csv")
 question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
-
+top_10_question_globales = pd.read_csv("data/top_10_question_globales.csv")
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])  
 app.config.suppress_callback_exceptions = True
