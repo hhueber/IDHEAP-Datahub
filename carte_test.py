@@ -1,6 +1,4 @@
 import json
-
-
 from dash import callback_context, Dash, dcc, html, Input, Output
 import dash_bootstrap_components as dbc
 import numpy as np
@@ -247,6 +245,34 @@ def create_empty_map_figure():
             colorscale=[[0, "white"], [1, "white"]],
             featureidkey="properties.id",
             name="Country",
+        )
+    )
+
+    fig.add_trace(
+        go.Choroplethmapbox(
+            geojson=municipalities_data,
+            locations=[feature["properties"]["id"] for feature in municipalities_data["features"]],
+            z=[1] * len(municipalities_data["features"]),
+            colorscale=[[0, "white"], [1, "white"]],
+            featureidkey="properties.id",
+            name="Municipalities",
+            hoverinfo="text",
+            text=[feature["properties"]["name"] for feature in municipalities_data["features"]],
+            showscale=False,
+        )
+    )
+
+    fig.add_trace(
+        go.Choroplethmapbox(
+            geojson=lakes_data,
+            locations=[feature["properties"]["id"] for feature in lakes_data["features"]],
+            z=[1] * len(lakes_data["features"]),
+            colorscale="Blues",
+            featureidkey="properties.id",
+            name="Lakes",
+            hoverinfo="text",
+            text=[feature["properties"]["name"] for feature in lakes_data["features"]],
+            showscale=False,
         )
     )
 
