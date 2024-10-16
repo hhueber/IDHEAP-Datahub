@@ -6,6 +6,9 @@ from flask import abort, Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
 
+from map import map_bp
+
+
 if __name__ == "__main__":
     from database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey
 else:
@@ -16,6 +19,9 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object("config")
     db = SQLAlchemy(app, model_class=Base)
+
+    # Register the blueprints
+    app.register_blueprint(map_bp)
 
     with app.app_context():
         db.reflect()
