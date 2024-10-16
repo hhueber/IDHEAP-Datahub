@@ -9,13 +9,13 @@ import topojson
 
 
 # Load the GeoJSON files with utf-8 encoding
-with open("lakes.json", encoding="utf-8") as f:
+with open("data/lakes.json", encoding="utf-8") as f:
     lakes_data = json.load(f)
 
-with open("municipalities.json", encoding="utf-8") as f:
+with open("data/municipalities.json", encoding="utf-8") as f:
     municipalities_data = json.load(f)
 
-with open("country.json", encoding="utf-8") as f:
+with open("data/country.json", encoding="utf-8") as f:
     country_data = json.load(f)
 
 df_commune_responses = pd.read_csv("data/commune_responses.csv")
