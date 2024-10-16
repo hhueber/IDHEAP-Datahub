@@ -19,6 +19,10 @@ with open("country.json", encoding="utf-8") as f:
     country_data = json.load(f)
 
 df_commune_responses = pd.read_csv("data/commune_responses.csv")
+df_commune_response_old_year = pd.read_csv("data/GSB_1988_2017_V1.csv", low_memory=False)
+df_commune_responses_combined = pd.concat([df_commune_responses, df_commune_response_old_year], axis=0)
+print(df_commune_responses_combined.head())
+
 df_combined = pd.read_csv("data/combined_df.csv")
 question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
 top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
@@ -240,21 +244,25 @@ def update_language(selected_language):
     Input("survey-dropdown", "value"),
     Input("variable-dropdown", "value"),
     Input("language-dropdown", "value"),
+    Input("slider", "value"),
 )
 
-def update_dropdown_and_map(selected_survey, selected_variable, selected_language):
+def update_dropdown_and_map(selected_survey, selected_variable, selected_language, selected_year):
     # Update variable options based on selected survey
+
     if selected_survey == "global_question":
         codes = top_10_question_globales[top_10_question_globales["code_first_question"].isin(df_commune_responses.columns)]
         options = [
-            {"label": df_combined[df_combined["code"] == code][f"text_{selected_language}"].values[0], "value": code}
-            for code in codes["code_first_question"]
+            {"label": row[f"text_{selected_language}"], "value": row["code_first_question"]}
+            for _, row in codes.iterrows()
         ]
     else:
         options = [
             {"label": row[f"text_{selected_language}"], "value": row["code"]}
             for _, row in df_combined.iterrows()
         ]
+
+    
 
     # Determine if the slider should be shown
     slider_style = {"display": "block"} if selected_survey == "global_question" else {"display": "none"}
