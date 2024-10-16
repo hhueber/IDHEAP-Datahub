@@ -38,6 +38,15 @@ def create_app():
     def home():
         return render_template("home.html")
 
+    # Links to other parts of the website
+    @app.route("/about")
+    def about():
+        return render_template("placeholder.html")
+
+    @app.route("/dashboard")
+    def dashboard():
+        return render_template("placeholder.html")
+
     # Survey
     @app.route("/survey/new", methods=("GET", "POST"))
     def survey_new():
