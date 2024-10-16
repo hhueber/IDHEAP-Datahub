@@ -77,6 +77,29 @@ translation = {
     }
 }
 
+response_translations = {
+    "fr": {
+        -99: "Réponse volontaire non fournie",
+        99: "Pas d'opinion",
+        "default": "Enquête abandonnée"  # Valeur par défaut pour les NaN
+    },
+    "de": {
+        -99: "Freiwillige keine Antwort",
+        99: "Keine Meinung",
+        "default": "Umfrage verlassen"
+    },
+    "it": {
+        -99: "Nessuna risposta volontaria",
+        99: "Nessuna opinione",
+        "default": "Sondaggio abbandonato"
+    },
+    "ro": {
+        -99: "Risposta betg dada voluntarmain",
+        99: "Nagina opiniun",
+        "default": "Enquista terminada"
+    }
+}
+
 app.layout = html.Div(
     [
         # Title
@@ -93,6 +116,7 @@ app.layout = html.Div(
                         {"label": "Deutsch", "value": "de"},
                         {"label": "Italiano", "value": "it"},
                         {"label": "Rumantsch", "value": "ro"}, 
+                        {"label": "English", "value": "en"},
                     ],
                     value="fr",  # defaut language
                     clearable=False,
@@ -107,6 +131,8 @@ app.layout = html.Div(
                 "padding": "10px",  
                 "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.1)",  
                 "z-index": "1000",  
+                "max-height": "150px",  
+                "overflow-y": "auto",
             }
         ),
 
@@ -119,8 +145,7 @@ app.layout = html.Div(
                         dcc.Dropdown(
                             id="survey-dropdown",
                             options=[
-                                {"label": "Global Question", "value": "global_question"},
-                                {"label": "Survey", "value": "survey"},
+                                
                             ],
                             value="survey",
                             clearable=False,
@@ -172,19 +197,28 @@ app.layout = html.Div(
 )
 
 @app.callback(
-    Output("page-title", "children"),
-    Output("survey-selection-label", "children"),
-    Output("variable-selection-label", "children"),
-    Output("slider-label", "children"),
-    Input("language-dropdown", "value")
+    Output('page-title', 'children'),
+    Output('survey-selection-label', 'children'),
+    Output('variable-selection-label', 'children'),
+    Output('survey-dropdown', 'options'),
+    Output('slider-label', 'children'),
+    Input('language-dropdown', 'value'),
 )
 
-def update_language(language):
+def update_language(selected_language):
+    # Créer les options pour le dropdown d'enquête
+    options = [
+        {"label": translation[selected_language]['global_question'], "value": "global_question"},
+        {"label": translation[selected_language]['survey'], "value": "survey"},
+    ]
+    
+    # Renvoyer les valeurs nécessaires
     return (
-        translation[language]["title"],
-        translation[language]["survey_selection"],
-        translation[language]["variable_selection"],
-        translation[language]["slider_label"],
+        translation[selected_language]['title'],  # Utiliser "title" pour le titre de la page
+        translation[selected_language]['survey_selection'],
+        translation[selected_language]['variable_selection'],
+        options,
+        translation[selected_language]['slider_label'],
     )
 
 @app.callback(
@@ -193,18 +227,22 @@ def update_language(language):
     Output("map-graph", "figure"),
     Input("survey-dropdown", "value"),
     Input("variable-dropdown", "value"),
+    Input("language-dropdown", "value"),
 )
 
-def update_dropdown_and_map(selected_survey, selected_variable):
+def update_dropdown_and_map(selected_survey, selected_variable, selected_language):
     # Update variable options based on selected survey
     if selected_survey == "global_question":
         codes = top_10_question_globales[top_10_question_globales["code_first_question"].isin(df_commune_responses.columns)]
         options = [
-            {"label": df_combined[df_combined["code"] == code].label.values[0], "value": code}
+            {"label": df_combined[df_combined["code"] == code][f"text_{selected_language}"].values[0], "value": code}
             for code in codes["code_first_question"]
         ]
     else:
-        options = [{"label": row["label"], "value": row["code"]} for _, row in df_combined.iterrows()]
+        options = [
+            {"label": row[f"text_{selected_language}"], "value": row["code"]}
+            for _, row in df_combined.iterrows()
+        ]
 
     # Determine if the slider should be shown
     slider_style = {"display": "block"} if selected_survey == "global_question" else {"display": "none"}
@@ -233,7 +271,7 @@ def update_dropdown_and_map(selected_survey, selected_variable):
     )
 
 
-def create_empty_map_figure():
+def create_empty_map_figure():    
     fig = go.Figure()
 
     # Add the country layer (Switzerland)
