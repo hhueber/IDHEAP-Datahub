@@ -11,27 +11,29 @@ from flask import Blueprint
 map_bp = Blueprint('map', __name__)
 
 # Load the GeoJSON files with utf-8 encoding
-with open("lakes.json", encoding="utf-8") as f:
+with open("C:/Users/Admin/OneDrive/Documents/GitHub/SecCom/data/lakes.json", encoding="utf-8") as f:
     lakes_data = json.load(f)
 
-with open("municipalities.json", encoding="utf-8") as f:
+with open("C:/Users/Admin/OneDrive/Documents/GitHub/SecCom/data/municipalities.json", encoding="utf-8") as f:
     municipalities_data = json.load(f)
 
-with open("country.json", encoding="utf-8") as f:
+with open("C:/Users/Admin/OneDrive/Documents/GitHub/SecCom/data/country.json", encoding="utf-8") as f:
     country_data = json.load(f)
 
+# Load the data files
 df_commune_responses = pd.read_csv("data/commune_responses.csv")
 df_commune_response_old_year = pd.read_csv("data/GSB_1988_2017_V1.csv", low_memory=False)
 df_commune_responses_combined = pd.concat([df_commune_responses, df_commune_response_old_year], axis=0)
 print(df_commune_responses_combined.head())
-
 df_combined = pd.read_csv("data/combined_df.csv")
 question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
 top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
 
+# Create a Dash app
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])  
 app.config.suppress_callback_exceptions = True
 
+# Translation dictionaries for the app
 translation = {
     "fr": {
         "title": "Carte avec échelle de couleur dynamique",
@@ -95,11 +97,12 @@ translation = {
     }
 }
 
+# Translation for the dropdown options
 response_translations = {
     "fr": {
         -99: "Réponse volontaire non fournie",
         99: "Pas d'opinion",
-        "default": "Enquête abandonnée"  # Valeur par défaut pour les NaN
+        "default": "Enquête abandonnée"  
     },
     "de": {
         -99: "Freiwillige keine Antwort",
@@ -118,6 +121,7 @@ response_translations = {
     }
 }
 
+# Define the layout of the app
 app.layout = html.Div(
     [
         # Title
@@ -223,14 +227,13 @@ app.layout = html.Div(
     Input('language-dropdown', 'value'),
 )
 
+# Update the language of the app
 def update_language(selected_language):
-    # Créer les options pour le dropdown d'enquête
     options = [
         {"label": translation[selected_language]['global_question'], "value": "global_question"},
         {"label": translation[selected_language]['survey'], "value": "survey"},
     ]
     
-    # Renvoyer les valeurs nécessaires
     return (
         translation[selected_language]['title'],  # Utiliser "title" pour le titre de la page
         translation[selected_language]['survey_selection'],
@@ -292,7 +295,7 @@ def update_dropdown_and_map(selected_survey, selected_variable, selected_languag
         ),
     )
 
-
+# Define the function to create an empty map figure when logging in
 def create_empty_map_figure():    
     fig = go.Figure()
 
@@ -353,6 +356,7 @@ def create_empty_map_figure():
     return fig
 
 
+# Function to create the map figure
 def create_figure(variable_values, communes):
     unique_values = [v for v in variable_values if v != -99 and not np.isnan(v)]
     num_unique_values = len(set(unique_values))

@@ -2,7 +2,7 @@ from logging import FileHandler, Formatter
 import logging
 
 
-from flask import abort, Flask, render_template
+from flask import abort, Flask, render_template, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 
 
