@@ -39,6 +39,18 @@ translation = {
         "no_opinion": "Pas d'opinion",
         "values": "Valeurs"
     },
+    "en": {
+        "title": "Map with dynamic color scale",
+        "survey_selection": "Survey selection",
+        "variable_selection": "Variable selection",
+        "slider_label": "Adjust the slider",
+        "global_question": "Global question",
+        "survey": "Survey",
+        "voluntary_no_response": "Voluntary no response",
+        "exited_survey": "Exited survey",
+        "no_opinion": "No opinion",
+        "values": "Values"
+    },
     "de": {
         "title": "Karte mit dynamischer Farbskala",
         "survey_selection": "Umfrageauswahl",
