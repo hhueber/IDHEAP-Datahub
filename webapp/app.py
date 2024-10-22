@@ -36,12 +36,12 @@ def create_app():
     # Homepage, with default visualisation
     @app.route("/")
     def home():
-        return render_template("home.html")
+        return render_template("public/home.html")
 
     # Links to other parts of the website
     @app.route("/about")
     def about():
-        return render_template("placeholder.html")
+        return render_template("public/about.html")
 
     @app.route("/dashboard")
     def dashboard():
