@@ -4,7 +4,7 @@ import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, Flask
 
 
 # Create a Blueprint for the map module
@@ -12,17 +12,15 @@ map_bp = Blueprint('map', __name__)
 
 
 
-
-
-def create_dash_app():
+def create_dash_app(flask_server):
     # Load the GeoJSON files with utf-8 encoding
-    with open("C:/Users/Admin/OneDrive/Documents/GitHub/SecCom/data/lakes.json", encoding="utf-8") as f:
+    with open("./data/lakes.json", encoding="utf-8") as f:
         lakes_data = json.load(f)
 
-    with open("C:/Users/Admin/OneDrive/Documents/GitHub/SecCom/data/municipalities.json", encoding="utf-8") as f:
+    with open("./data/municipalities.json", encoding="utf-8") as f:
         municipalities_data = json.load(f)
 
-    with open("C:/Users/Admin/OneDrive/Documents/GitHub/SecCom/data/country.json", encoding="utf-8") as f:
+    with open("./data/country.json", encoding="utf-8") as f:
         country_data = json.load(f)
 
     # Load response data files
@@ -36,7 +34,7 @@ def create_dash_app():
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
 
     # Create a Dash app
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=map_bp)
+    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_server, url_base_pathname="/")
     app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
     # Translation dictionaries for different languages
@@ -458,11 +456,9 @@ def create_dash_app():
 
     return app
 
+
 @map_bp.route('/')
-def dash_view():
-    return render_template("home.html") # not sure for this one
-
-
-if __name__ == "__main__":
-    create_dash_app().run_server(debug=True)
-
+def render_map():
+    from flask import current_app
+    create_dash_app(current_app)
+    return 
