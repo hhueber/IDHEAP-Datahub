@@ -123,7 +123,7 @@ def create_app():
 
 # Default port:
 if __name__ == "__main__":
-    from config import SERVER_HOST, SERVER_PORT
+    from config.py.dist import SERVER_HOST, SERVER_PORT
 
     app = create_app()
     app.run(host=SERVER_HOST, port=SERVER_PORT)
