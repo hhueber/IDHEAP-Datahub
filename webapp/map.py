@@ -1,18 +1,15 @@
 import json
+
+
 from dash import callback_context, Dash, dcc, html, Input, Output
+from flask import Blueprint, Flask, render_template
 import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from flask import Blueprint, render_template, Flask
 
 
-# Create a Blueprint for the map module
-map_bp = Blueprint('map', __name__)
-
-
-
-def create_dash_app(flask_server):
+def create_dash_app(flask_server: Flask):
     # Load the GeoJSON files with utf-8 encoding
     with open("./data/lakes.json", encoding="utf-8") as f:
         lakes_data = json.load(f)
@@ -34,8 +31,10 @@ def create_dash_app(flask_server):
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
 
     # Create a Dash app
-    app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_server, url_base_pathname="/")
-    app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
+    dash_app = Dash(
+        __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_server, url_base_pathname="/map/"
+    )
+    dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
     # Translation dictionaries for different languages
     translation = {
@@ -49,7 +48,7 @@ def create_dash_app(flask_server):
             "voluntary_no_response": "Réponse volontaire non fournie",
             "exited_survey": "Enquête abandonnée",
             "no_opinion": "Pas d'opinion",
-            "values": "Valeurs"
+            "values": "Valeurs",
         },
         "en": {
             "title": "Map with dynamic color scale",
@@ -61,7 +60,7 @@ def create_dash_app(flask_server):
             "voluntary_no_response": "Voluntary no response",
             "exited_survey": "Exited survey",
             "no_opinion": "No opinion",
-            "values": "Values"
+            "values": "Values",
         },
         "de": {
             "title": "Karte mit dynamischer Farbskala",
@@ -73,7 +72,7 @@ def create_dash_app(flask_server):
             "voluntary_no_response": "Freiwillige keine Antwort",
             "exited_survey": "Umfrage verlassen",
             "no_opinion": "Keine Meinung",
-            "values": "Werte"
+            "values": "Werte",
         },
         "it": {
             "title": "Mappa con scala cromatica dinamica",
@@ -85,7 +84,7 @@ def create_dash_app(flask_server):
             "voluntary_no_response": "Nessuna risposta volontaria",
             "exited_survey": "Sondaggio abbandonato",
             "no_opinion": "Nessuna opinione",
-            "values": "Valori"
+            "values": "Valori",
         },
         "ro": {  # Romanche
             "title": "Carta cun scala da colur dinamica",
@@ -97,38 +96,21 @@ def create_dash_app(flask_server):
             "voluntary_no_response": "Risposta betg dada voluntarmain",
             "exited_survey": "Enquista terminada",
             "no_opinion": "Nagina opiniun",
-            "values": "Valurs"
-        }
+            "values": "Valurs",
+        },
     }
     response_translations = {
-        "fr": {
-            -99: "Réponse volontaire non fournie",
-            99: "Pas d'opinion",
-            "default": "Enquête abandonnée"  
-        },
-        "de": {
-            -99: "Freiwillige keine Antwort",
-            99: "Keine Meinung",
-            "default": "Umfrage verlassen"
-        },
-        "it": {
-            -99: "Nessuna risposta volontaria",
-            99: "Nessuna opinione",
-            "default": "Sondaggio abbandonato"
-        },
-        "ro": {
-            -99: "Risposta betg dada voluntarmain",
-            99: "Nagina opiniun",
-            "default": "Enquista terminada"
-        }
+        "fr": {-99: "Réponse volontaire non fournie", 99: "Pas d'opinion", "default": "Enquête abandonnée"},
+        "de": {-99: "Freiwillige keine Antwort", 99: "Keine Meinung", "default": "Umfrage verlassen"},
+        "it": {-99: "Nessuna risposta volontaria", 99: "Nessuna opinione", "default": "Sondaggio abbandonato"},
+        "ro": {-99: "Risposta betg dada voluntarmain", 99: "Nagina opiniun", "default": "Enquista terminada"},
     }
 
     # Define the layout of the app
-    app.layout = html.Div(
+    dash_app.layout = html.Div(
         [
-            # Title of the application 
+            # Title of the application
             html.H1(id="page-title", style={"text-align": "left", "margin-bottom": "40px"}),
-
             # dropdown for language selection
             html.Div(
                 [
@@ -139,7 +121,7 @@ def create_dash_app(flask_server):
                             {"label": "Français", "value": "fr"},
                             {"label": "Deutsch", "value": "de"},
                             {"label": "Italiano", "value": "it"},
-                            {"label": "Rumantsch", "value": "ro"}, 
+                            {"label": "Rumantsch", "value": "ro"},
                             {"label": "English", "value": "en"},
                         ],
                         value="fr",  # defaut language
@@ -150,27 +132,24 @@ def create_dash_app(flask_server):
                     "position": "fixed",
                     "bottom": "10px",
                     "left": "10px",
-                    "width": "200px",  
-                    "background-color": "white",  
-                    "padding": "10px",  
-                    "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.1)",  
-                    "z-index": "1000",  
-                    "max-height": "150px",  
+                    "width": "200px",
+                    "background-color": "white",
+                    "padding": "10px",
+                    "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.1)",
+                    "z-index": "1000",
+                    "max-height": "150px",
                     "overflow-y": "auto",
-                }
+                },
             ),
-
             # Dropdown for survey selection and variable selection
             html.Div(
                 [
                     html.Div(
                         [
-                            html.Label(id="survey-selection-label"),  
+                            html.Label(id="survey-selection-label"),
                             dcc.Dropdown(
                                 id="survey-dropdown",
-                                options=[
-                                    
-                                ],
+                                options=[],
                                 value="survey",
                                 clearable=False,
                             ),
@@ -179,7 +158,7 @@ def create_dash_app(flask_server):
                     ),
                     html.Div(
                         [
-                            html.Label(id="variable-selection-label"),  
+                            html.Label(id="variable-selection-label"),
                             dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
                         ],
                         style={"width": "48%", "display": "inline-block"},
@@ -187,32 +166,38 @@ def create_dash_app(flask_server):
                 ],
                 style={"display": "flex", "justify-content": "space-between"},
             ),
-
             dcc.Graph(id="map-graph", style={"position": "relative", "z-index": "0"}),
-
-            # slider for year selection 
+            # slider for year selection
             html.Div(
                 id="slider-container",
                 style={"display": "none"},
                 children=[
-                    html.Label(id="slider-label"),  
+                    html.Label(id="slider-label"),
                     html.Div(  # Wrap the Slider in a Div for styling
                         dcc.Slider(
                             id="slider",
                             min=1988,
                             max=2023,
                             value=2023,  # default value
-                            marks={1988: "1988", 1994: "1994", 1998: "1998", 2005: "2005", 2009: "2009", 2017: "2017", 2023: "2023"},
-                            step=None,  # to disable intermediate values 
+                            marks={
+                                1988: "1988",
+                                1994: "1994",
+                                1998: "1998",
+                                2005: "2005",
+                                2009: "2009",
+                                2017: "2017",
+                                2023: "2023",
+                            },
+                            step=None,  # to disable intermediate values
                         ),
-                        style={'width': '600px', 'margin': 'auto'}  # style for the container
+                        style={"width": "600px", "margin": "auto"},  # style for the container
                     ),
-                ],      
+                ],
             ),
         ],
         style={
-            "min-height": "100vh",  
-            "min-width": "100vw",  
+            "min-height": "100vh",
+            "min-width": "100vw",
             "padding": "20px",
             "margin": "0",
             "font-family": "Arial, sans-serif",
@@ -220,33 +205,31 @@ def create_dash_app(flask_server):
         },
     )
 
-
     # Callbacks
-    @app.callback(
-        Output('page-title', 'children'),
-        Output('survey-selection-label', 'children'),
-        Output('variable-selection-label', 'children'),
-        Output('survey-dropdown', 'options'),
-        Output('slider-label', 'children'),
-        Input('language-dropdown', 'value'),
+    @dash_app.callback(
+        Output("page-title", "children"),
+        Output("survey-selection-label", "children"),
+        Output("variable-selection-label", "children"),
+        Output("survey-dropdown", "options"),
+        Output("slider-label", "children"),
+        Input("language-dropdown", "value"),
     )
-
     # Update the language of the app
     def update_language(selected_language):
         options = [
-            {"label": translation[selected_language]['global_question'], "value": "global_question"},
-            {"label": translation[selected_language]['survey'], "value": "survey"},
+            {"label": translation[selected_language]["global_question"], "value": "global_question"},
+            {"label": translation[selected_language]["survey"], "value": "survey"},
         ]
-        
+
         return (
-            translation[selected_language]['title'], 
-            translation[selected_language]['survey_selection'],
-            translation[selected_language]['variable_selection'],
+            translation[selected_language]["title"],
+            translation[selected_language]["survey_selection"],
+            translation[selected_language]["variable_selection"],
             options,
-            translation[selected_language]['slider_label'],
+            translation[selected_language]["slider_label"],
         )
 
-    @app.callback(
+    @dash_app.callback(
         Output("variable-dropdown", "options"),
         Output("slider-container", "style"),
         Output("map-graph", "figure"),
@@ -255,23 +238,21 @@ def create_dash_app(flask_server):
         Input("language-dropdown", "value"),
         Input("slider", "value"),
     )
-
-    
     def update_dropdown_and_map(selected_survey, selected_variable, selected_language, selected_year):
         # Update variable options based on selected survey
 
         if selected_survey == "global_question":
-            codes = top_10_question_globales[top_10_question_globales["code_first_question"].isin(df_commune_responses.columns)]
+            codes = top_10_question_globales[
+                top_10_question_globales["code_first_question"].isin(df_commune_responses.columns)
+            ]
             options = [
                 {"label": row[f"text_{selected_language}"], "value": row["code_first_question"]}
                 for _, row in codes.iterrows()
             ]
         else:
             options = [
-                {"label": row[f"text_{selected_language}"], "value": row["code"]}
-                for _, row in df_combined.iterrows()
+                {"label": row[f"text_{selected_language}"], "value": row["code"]} for _, row in df_combined.iterrows()
             ]
-
 
         # Determine if the slider should be shown
         slider_style = {"display": "block"} if selected_survey == "global_question" else {"display": "none"}
@@ -300,7 +281,7 @@ def create_dash_app(flask_server):
         )
 
     # Define the function to create an empty map figure when logging in
-    def create_empty_map_figure():    
+    def create_empty_map_figure():
         fig = go.Figure()
 
         # Add the country layer (Switzerland)
@@ -358,7 +339,6 @@ def create_dash_app(flask_server):
             showlegend=False,
         )
         return fig
-
 
     # Function to create the map figure
     def create_figure(variable_values, communes):
@@ -454,11 +434,4 @@ def create_dash_app(flask_server):
         )
         return fig
 
-    return app
-
-
-@map_bp.route('/')
-def render_map():
-    from flask import current_app
-    create_dash_app(current_app)
-    return 
+    return dash_app.server

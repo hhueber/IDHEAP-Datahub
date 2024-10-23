@@ -2,20 +2,14 @@ from logging import FileHandler, Formatter
 import logging
 
 
-from flask import abort, Flask, render_template, Blueprint
+from flask import abort, Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 
-from dash.dependencies import Input, Output
-import plotly.express as px
-import pandas as pd
-from dash import callback_context, Dash, dcc, html, Input, Output
-import dash_bootstrap_components as dbc
-from map import map_bp
 
 if __name__ == "__main__":
     from database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey
 else:
-    from webapp.database import Base
+    from webapp.database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey
 
 
 def create_app():
@@ -106,10 +100,10 @@ def create_app():
     @app.route("/config")
     def config():  # TODO
         return render_template("placeholder.html")
-    
-    # register the blueprints for dash
-    # je comprends pas trop, ça ne s'affiche pas sur http://localhost:8888/map
-    app.register_blueprint(map_bp, url_prefix="/map")
+
+    from map import create_dash_app
+
+    app = create_dash_app(app)
 
     if not app.debug:
         file_handler = FileHandler("error.log")
@@ -121,9 +115,10 @@ def create_app():
 
     return app
 
+
 # Default port:
 if __name__ == "__main__":
-    from config.py.dist import SERVER_HOST, SERVER_PORT
+    from config import SERVER_HOST, SERVER_PORT
 
     app = create_app()
     app.run(host=SERVER_HOST, port=SERVER_PORT)
