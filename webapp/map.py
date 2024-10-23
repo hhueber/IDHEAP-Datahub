@@ -342,7 +342,7 @@ def create_dash_app(flask_server: Flask):
 
     # Function to create the map figure
     def create_figure(variable_values, communes):
-        unique_values = [v for v in variable_values if v != -99 and not np.isnan(v)]
+        unique_values = [v for v in variable_values if isinstance(v, (int, float)) and v != -99 and not np.isnan(v)]
         num_unique_values = len(set(unique_values))
 
         if num_unique_values == 99:  # to modify when fixed the issue with the discrete color scale
