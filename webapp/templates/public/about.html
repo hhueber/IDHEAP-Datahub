@@ -1,0 +1,43 @@
+{% extends "includes/base_public.html" %}
+{% block title %}About - {% endblock %}
+{% set active_page = 'about' %}
+
+{% block content %}
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container">
+    <h1 class="display-3">IDHEAP DataHub</h1>
+    <p class="lead"> Projet de visualisation de données géographiques longitudinales. </p>
+  </div>
+</div>
+
+<div class="container">
+  <!-- Example row of columns -->
+  <div class="row">
+    <div class="col-md-4">
+      <h2>Contexte du projet</h2>
+      <p>
+        Le projet vise à réaliser des visualisations de données cartographiques pour présenter les résultats d'une
+        enquête menée auprès des secrétaires communaux des communes suisses. Cette enquête a pour objectif de comprendre
+        les défis, les compétences et les besoins spécifiques des secrétaires dans l'administration locale.
+      </p>
+    </div>
+    <div class="col-md-4">
+      <h2>Méthodologie de collecte de données</h2>
+      <p>
+        Les données ont été collectées via des questionnaires adressés à tous les secrétaires communaux des
+        2'300+ communes suisses. Ces questionnaires couvrent des thèmes variés allant de la charge de travail et des
+        compétences nécessaires à la satisfaction professionnelle.
+      </p>
+    </div>
+    <div class="col-md-4">
+      <h2>Visualisations</h2>
+      <p>
+        Les visualisations permettent d'observer l'évolution des réponses aux questions sélectionnées au fil des années
+        et des enquêtes.
+      </p>
+    </div>
+  </div>
+
+</div> <!-- /container -->
+{% endblock %}
