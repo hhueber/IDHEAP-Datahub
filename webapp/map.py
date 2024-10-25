@@ -22,13 +22,41 @@ def create_dash_app(flask_server: Flask):
 
     # Load response data files
     df_commune_responses = pd.read_csv("data/commune_responses.csv")
+    df_commune_responses['GSB23_UserLanguage'] = df_commune_responses['GSB23_UserLanguage'].map({'DE': 1,'FR': 2,'RO': 3,'IT': 4})
     df_commune_response_old_year = pd.read_csv("data/GSB_1988_2017_V1.csv", low_memory=False)
-
+    #print('response old years',df_commune_response_old_year.head())
     # Combine the current and old year responses
-    df_commune_responses_combined = pd.concat([df_commune_responses, df_commune_response_old_year], axis=0)
+    df_commune_responses_combined = pd.concat([df_commune_responses, df_commune_response_old_year], axis=1, ignore_index = False)
+    df_commune_responses_combined.to_csv("data/commune_responses_combined.csv", index=False)
+    #df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv")
+    #print('response full years',df_commune_responses_combined.head())
+
+    # add the line with the language question
+    sprache_row = {
+        'label': 'spr', 
+        'code_first_question': 'GSB23_UserLanguage', 
+        'code_other_question': 'spr88; spr94; spr98; spr05; spr09; spr17',
+        'text_de': 'Benutzersprache', 
+        'text_fr': 'Langue de l\'utilisateur', 
+        'text_it': 'Lingua dell\'utente', 
+        'text_ro': 'lingua da l\'utilisader', 
+        'text_en': 'User language', 
+        'category_label': 'discrete', 
+        'category_text_de': 'character-200', 
+        'category_text_fr': 'character-200', 
+        'category_text_it': 'character-200', 
+        'category_text_ro': 'character-200', 
+        'category_text_en': 'character-200', 
+        'options_value': None, 
+        'options_label': None
+    }
+
     df_combined = pd.read_csv("data/combined_df.csv")
     question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
+    question_globale_NLP = pd.concat([question_globale_NLP, pd.DataFrame([sprache_row])], ignore_index=True)
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
+    #top_10_question_globales = pd.concat([top_10_question_globales, pd.DataFrame([sprache_row])], ignore_index=True)
+    #top_10_question_globales.to_csv("data/top_10_QuestionGlobales_NLP.csv", index=False)
 
     # Create a Dash app
     dash_app = Dash(
@@ -243,7 +271,7 @@ def create_dash_app(flask_server: Flask):
 
         if selected_survey == "global_question":
             codes = top_10_question_globales[
-                top_10_question_globales["code_first_question"].isin(df_commune_responses.columns)
+                top_10_question_globales["code_first_question"].isin(df_commune_responses_combined.columns)
             ]
             options = [
                 {"label": row[f"text_{selected_language}"], "value": row["code_first_question"]}
