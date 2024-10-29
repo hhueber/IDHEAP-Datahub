@@ -11,6 +11,7 @@ from initial_data.cantons import CANTONS
 from sqlalchemy import create_engine, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
+from werkzeug.security import check_password_hash, generate_password_hash
 import pandas as pd
 
 
@@ -35,8 +36,19 @@ class User(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(unique=True)
     email: Mapped[str] = mapped_column(unique=True)
-    password: Mapped[str]
+    _password: Mapped[str]
     authenticated: Mapped[bool] = mapped_column(default=False)
+
+    @property
+    def password(self):
+        raise AttributeError("You cannot read the password")
+
+    @password.setter
+    def password(self, value):
+        self._password = generate_password_hash(password=value)
+
+    def check_password(self, value):
+        return check_password_hash(self._password, value)
 
     def is_active(self):
         return True
@@ -487,7 +499,7 @@ if __name__ == "__main__":
             alphabet = string.ascii_letters + string.digits
             password = "".join(secrets.choice(alphabet) for i in range(8))
 
-            print(f">>> CREATING admin, PASSWORD: {password}")
+            print(f">>> CREATING admin")
             admin = User(
                 username="admin",
                 email="noreply@unil.ch",
@@ -497,5 +509,7 @@ if __name__ == "__main__":
             session.flush()
 
             session.commit()
+
+            print(f"Password for admin (please change it): {password}")
     else:
         raise NotImplementedError

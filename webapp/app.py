@@ -58,13 +58,15 @@ def create_app():
             username = request.form.get("username")
             password = request.form.get("password")
             user = db.session.execute(db.select(User).where(User.username == username)).one_or_none()
-            if not user or not user[0].password == password:  # check_password_hash(user[0].password, password):
-                flash("Problem while loging in.", "warning")
-            else:
+
+            if user and user[0].check_password(password):
                 login_user(user[0])
                 flash("Logged in successfully.", "success")
                 next_url = flask.request.args.get("next")
                 return redirect(next_url or url_for("home"))
+            else:
+                flash("Problem while loging in.", "warning")
+
         return render_template("login.html")
 
     @app.route("/logout")
