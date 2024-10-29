@@ -22,7 +22,7 @@
   <header class="mb-auto">
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container-fluid">
-        <a class="navbar-brand" href="{{url_for('home')}}">
+        <a class="navbar-brand" href="{{url_for('map')}}">
           <img src="{{url_for('static', filename='img/idheap-dh.png')}}" height="28"
                class="d-inline-block align-text-top">
           IDHEAP Data Hub
@@ -34,7 +34,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link{{' active' if active_page == 'home' }}" href="{{url_for('home')}}">Home</a>
+              <a class="nav-link{{' active' if active_page == 'map' }}" href="{{url_for('map')}}">Home</a>
             </li>
             <li class="nav-item">
               <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">About</a>

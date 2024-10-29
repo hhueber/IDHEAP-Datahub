@@ -77,7 +77,7 @@ def create_app():
 
     # Homepage, with default visualisation
     @app.route("/")
-    def home():
+    def map():
         return render_template("public/home.html")
 
     # Links to other parts of the website

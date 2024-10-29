@@ -12,7 +12,15 @@
   <script src="{{url_for('static', filename='js/fontawesome.all.js')}}"></script>
 </head>
 <body>
-{% include "includes/navbar.html" %}
+<nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark">
+  <!-- Sidebar Toggle-->
+  <button class="btn btn-link btn-sm order-0 order-lg-0 me-4 me-lg-0 ms-2" id="sidebarToggle" href="#!">
+    <i class="fas fa-bars"></i>
+  </button>
+  <!-- Navbar Brand-->
+  <a class="navbar-brand ps-3" href="{{url_for('dashboard')}}">SecCom</a>
+</nav>
+
 <div id="layoutSidenav">
   {% include "includes/sidebar.html" %}
   <div id="layoutSidenav_content">
