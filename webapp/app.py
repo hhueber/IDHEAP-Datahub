@@ -33,6 +33,10 @@ def create_app():
             return user[0]
         return None
 
+    @login_manager.unauthorized_handler
+    def handle_needs_login():
+        return redirect(url_for("login", next=request.endpoint))
+
     # Error handlers
     @app.errorhandler(403)
     def error_forbidden(error):
