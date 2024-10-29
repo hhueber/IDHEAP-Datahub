@@ -3,9 +3,10 @@ import logging
 
 
 from flask import abort, flash, Flask, redirect, render_template, request, url_for
-from flask_login import login_required, LoginManager, logout_user
+from flask_login import login_required, login_user, LoginManager, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
+import flask
 
 
 if __name__ == "__main__":
@@ -21,14 +22,6 @@ def create_app():
 
     with app.app_context():
         db.reflect()
-
-        admin = User(
-            username="admin",
-            email="noreply@unil.ch",
-            password="blablablablabla",
-        )
-        db.session.add(admin)
-        db.session.commit()
 
     # Login
     login_manager = LoginManager()
@@ -65,8 +58,13 @@ def create_app():
             username = request.form.get("username")
             password = request.form.get("password")
             user = db.session.execute(db.select(User).where(User.username == username)).one_or_none()
-            if not user or not check_password_hash(user[0].password, password):
-                flash("Problem while loging in.")
+            if not user or not user[0].password == password:  # check_password_hash(user[0].password, password):
+                flash("Problem while loging in.", "warning")
+            else:
+                login_user(user[0])
+                flash("Logged in successfully.", "success")
+                next_url = flask.request.args.get("next")
+                return redirect(next_url or url_for("home"))
         return render_template("login.html")
 
     @app.route("/logout")
