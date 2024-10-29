@@ -32,7 +32,7 @@ class User(Base):
     authenticated: Mapped[bool] = mapped_column(default=False)
 
     def is_active(self):
-        return self.active
+        return True
 
     def get_id(self):
         return self.uid
