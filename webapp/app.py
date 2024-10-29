@@ -22,6 +22,14 @@ def create_app():
     with app.app_context():
         db.reflect()
 
+        admin = User(
+            username="admin",
+            email="noreply@unil.ch",
+            password="blablablablabla",
+        )
+        db.session.add(admin)
+        db.session.commit()
+
     # Login
     login_manager = LoginManager()
     login_manager.init_app(app)
