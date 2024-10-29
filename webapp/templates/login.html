@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="">
   <meta name="author" content="">
-  <title>IDHEAP Data Hub - Login</title>
+  <title>IDHEAP Data Hub - {{_("Login")}}</title>
 
   <link rel="icon" type="image/png" href="{{url_for('static', filename='img/idheap-dh.png')}}"/>
 
@@ -74,18 +74,19 @@
         </div>
   <form method="POST">
     <img class="mb-4" src="{{url_for('static', filename='img/idheap-dh.png')}}" height="57">
-    <h1 class="h3 mb-3 fw-normal">Please sign in</h1>
+    <h1 class="h3 mb-3 fw-normal">{{_("Please sign in")}}</h1>
+    <p class="lead">{{_("If you need an account, please contact XXX.")}}</p>
 
     <div class="form-floating">
       <input type="username" class="form-control" id="username" name="username" placeholder="lambda">
-      <label for="username">Username</label>
+      <label for="username">{{_("Username")}}</label>
     </div>
     <div class="form-floating">
       <input type="password" class="form-control" id="password" name="password" placeholder="Password">
-      <label for="password">Password</label>
+      <label for="password">{{_("Password")}}</label>
     </div>
 
-    <button class="w-100 btn btn-lg btn-primary" type="submit">Sign in</button>
+    <button class="w-100 btn btn-lg btn-primary" type="submit">{{_("Sign in")}}</button>
   </form>
 </main>
 
