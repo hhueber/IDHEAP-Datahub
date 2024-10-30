@@ -80,5 +80,22 @@
 <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" crossorigin="anonymous"></script>
 <script src="{{url_for('static', filename='js/scripts.js')}}"></script>
+
+{% if config["DEMO"] %}
+<!--meta http-equiv="refresh" content="30; URL={{url_for('about')}}"-->
+<script>
+    /* The redirect to autoplay page function */
+    function redirect() {
+        window.location.href = "{{url_for('about')}}";
+    }
+
+    var initial = setTimeout(redirect, 30000);
+
+    $(document).click(function (event) {
+        clearTimeout(initial);
+        initial = setTimeout(redirect, 30000);
+    });
+</script>
+{% endif %}
 </body>
 </html>
