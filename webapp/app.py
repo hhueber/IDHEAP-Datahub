@@ -1,8 +1,9 @@
 from logging import FileHandler, Formatter
 import logging
+import os.path
 
 
-from flask import abort, flash, Flask, redirect, render_template, request, url_for
+from flask import abort, flash, Flask, redirect, render_template, request, send_file, send_from_directory, url_for
 from flask_login import login_required, login_user, LoginManager, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
@@ -10,8 +11,10 @@ import flask
 
 
 if __name__ == "__main__":
+    from config import BASEDIR
     from database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey, User
 else:
+    from webapp.config import BASEDIR
     from webapp.database import Base
 
 
@@ -79,6 +82,19 @@ def create_app():
     @app.route("/")
     def map():
         return render_template("public/home.html")
+
+    # Data download
+    @app.route("/data")
+    def data():
+        if request.args.get("dl"):
+            dl = request.args.get("dl")
+            print(dl)  # TODO
+            path = os.path.join(BASEDIR, "public_data", "empty.csv")
+            print(path)
+            return send_file(path, as_attachment=True)
+
+        years = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
+        return render_template("public/data.html", years=years)
 
     # Links to other parts of the website
     @app.route("/about")

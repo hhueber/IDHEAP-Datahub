@@ -40,6 +40,9 @@
               <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">About</a>
             </li>
             <li class="nav-item">
+              <a class="nav-link{{' active' if active_page == 'data' }}" href="{{url_for('data')}}">Data</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i> Dashboard</a>
             </li>
           </ul>

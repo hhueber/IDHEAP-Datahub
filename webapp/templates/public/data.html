@@ -1,0 +1,56 @@
+{% extends "includes/base_public.html" %}
+{% block title %}Data - {% endblock %}
+{% set active_page = 'data' %}
+
+{% block content %}
+<h1>Data</h1>
+<div class="container text-start">
+  <div class="row">
+    <div class="col-3"></div>
+    <div class="col-6">
+      <dl class="row">
+        <dt class="col-sm-4">Toutes les questions</dt>
+        <dd class="col-sm-8">
+          <a class="btn btn-outline-primary" href="?dl=questions_all"
+             target="_blank">
+            <i class="fa-solid fa-file-csv"></i>
+            Download all questions
+          </a>
+        </dd>
+
+        <dt class="col-sm-4">Toutes les réponses</dt>
+        <dd class="col-sm-8">
+          <a class="btn btn-outline-primary" href="?dl=answers_all"
+             target="_blank">
+            <i class="fa-solid fa-file-csv"></i>
+            Download all answers
+          </a>
+        </dd>
+
+        <dt class="col-sm-4">Questions globales</dt>
+        <dd class="col-sm-8">
+          <a class="btn btn-outline-primary" href="?dl=questions_global"
+             target="_blank">
+            <i class="fa-solid fa-file-csv"></i>
+            Download global questions
+          </a>
+        </dd>
+      </dl>
+      <hr/>
+      <dl class="row">
+        {% for year in years %}
+        <dt class="col-sm-4">GSB {{year}}</dt>
+        <dd class="col-sm-8">
+          <a class="btn btn-outline-primary" href="?dl=gsb{{year}}"
+             target="_blank">
+            <i class="fa-solid fa-file-csv"></i>
+            Download GSB {{year}}
+          </a>
+        </dd>
+        {% endfor %}
+      </dl>
+    </div>
+    <div class="col-3"></div>
+  </div>
+</div>
+{% endblock %}
