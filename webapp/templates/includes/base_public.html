@@ -34,14 +34,27 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link{{' active' if active_page == 'map' }}" href="{{url_for('map')}}">Home</a>
+              <a class="nav-link{{' active' if active_page == 'map' }}" href="{{url_for('map')}}">{{_("Home")}}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">About</a>
+              <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">{{_("About")}}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i> Dashboard</a>
+              <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i> {{_("Dashboard")}}</a>
             </li>
+          </ul>
+        </div>
+        <div class="me-auto">
+          {% set langdict = {"en": ("🇬🇧", "English", ""), "fr": ("🇫🇷", "Français", ""), "de": ("🇩🇪", "Deutsch", " disabled"), "it": ("🇮🇹", "Italiano", " disabled"), "rm": ("🇷🇲", "Rumantsch", " disabled")} %}
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{langdict[get_locale()][0]}}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            {% for code, cont in langdict.items() %}
+            {% if cont[2] == "" and code != get_locale() %}
+            <li><a class="dropdown-item{{cont[2]}}" href="?lang={{code}}">{{cont[0]}} {{cont[1]}}</a></li>
+            {% endif %}
+            {% endfor %}
           </ul>
         </div>
       </div>
@@ -53,10 +66,12 @@
   </main>
 
   <footer class="mt-auto">
-    <p>Code available on <a href="https://github.com/Amustache/SecCom" target="_blank">GitHub</a>.
+    <p>{{_("Code available on ")}}<a href="https://github.com/Amustache/SecCom" target="_blank">GitHub</a>.
     </p>
   </footer>
 </div>
-
+<script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='js/scripts.js')}}"></script>
 </body>
 </html>

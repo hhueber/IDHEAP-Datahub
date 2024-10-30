@@ -2,7 +2,8 @@ from logging import FileHandler, Formatter
 import logging
 
 
-from flask import abort, flash, Flask, redirect, render_template, request, url_for
+from flask import abort, flash, Flask, redirect, render_template, request, session, url_for
+from flask_babel import _, Babel
 from flask_login import login_required, login_user, LoginManager, logout_user
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import check_password_hash
@@ -18,14 +19,29 @@ else:
 def create_app():
     app = Flask(__name__)
     app.config.from_object("config")
-    db = SQLAlchemy(app, model_class=Base)
 
+    # Database
+    db = SQLAlchemy(app, model_class=Base)
     with app.app_context():
         db.reflect()
 
     # Login
     login_manager = LoginManager()
     login_manager.init_app(app)
+
+    # i18n
+    app.config["LANGUAGES"] = ["fr", "en", "de", "it", "rm"]
+    app.config["BABEL_DEFAULT_LOCALE"] = "fr"
+
+    def get_locale():
+        if "lang" not in session:
+            session["lang"] = request.accept_languages.best_match(["fr", "de", "en"])
+        if request.args.get("lang"):
+            session["lang"] = request.args.get("lang")
+        return session.get("lang", "en")
+
+    babel = Babel(app, locale_selector=get_locale)
+    app.jinja_env.globals["get_locale"] = get_locale
 
     @login_manager.user_loader
     def user_loader(user_id):
@@ -61,11 +77,11 @@ def create_app():
 
             if user and user[0].check_password(password):
                 login_user(user[0])
-                flash("Logged in successfully.", "success")
+                flash(_("Logged in successfully."), "success")
                 next_url = flask.request.args.get("next")
                 return redirect(next_url or url_for("home"))
             else:
-                flash("Problem while loging in.", "warning")
+                flash(_("Problem while loging in."), "warning")
 
         return render_template("login.html")
 
@@ -83,7 +99,7 @@ def create_app():
     # Links to other parts of the website
     @app.route("/about")
     def about():
-        return render_template("public/about.html")
+        return render_template(f"public/about-{get_locale()}.html")
 
     @app.route("/dashboard")
     @login_required
