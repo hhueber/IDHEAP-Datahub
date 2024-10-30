@@ -27,7 +27,7 @@ if __name__ == "__main__":
     from database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey, User
 else:
     from .config import BASEDIR
-    from .database import Base
+    from .database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey, User
 
 
 def create_app():
