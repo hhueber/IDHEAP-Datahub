@@ -1,50 +1,51 @@
 {% extends "includes/base_public.html" %}
-{% block title %}Data - {% endblock %}
+{% block title %}{{_("Data - ")}}{% endblock %}
 {% set active_page = 'data' %}
 
 {% block content %}
-<h1>Data</h1>
+<h1>{{_("Publicly available data")}}</h1>
+<p class="lead">{{_("This data is available for further researches.")}}</p>
 <div class="container text-start">
   <div class="row">
     <div class="col-3"></div>
     <div class="col-6">
       <dl class="row">
-        <dt class="col-sm-4">Toutes les questions</dt>
+        <dt class="col-sm-4">{{_("All questions")}}</dt>
         <dd class="col-sm-8">
           <a class="btn btn-outline-primary" href="?dl=questions_all"
              target="_blank">
             <i class="fa-solid fa-file-csv"></i>
-            Download all questions
+            {{_("Download all questions")}}
           </a>
         </dd>
 
-        <dt class="col-sm-4">Toutes les réponses</dt>
+        <dt class="col-sm-4">{{_("All answers")}}</dt>
         <dd class="col-sm-8">
           <a class="btn btn-outline-primary" href="?dl=answers_all"
              target="_blank">
             <i class="fa-solid fa-file-csv"></i>
-            Download all answers
+            {{_("Download all answers")}}
           </a>
         </dd>
 
-        <dt class="col-sm-4">Questions globales</dt>
+        <dt class="col-sm-4">{{_("Global questions")}}</dt>
         <dd class="col-sm-8">
           <a class="btn btn-outline-primary" href="?dl=questions_global"
              target="_blank">
             <i class="fa-solid fa-file-csv"></i>
-            Download global questions
+            {{_("Download global questions")}}
           </a>
         </dd>
       </dl>
       <hr/>
       <dl class="row">
         {% for year in years %}
-        <dt class="col-sm-4">GSB {{year}}</dt>
+        <dt class="col-sm-4">{{_("GSB ")}}{{year}}</dt>
         <dd class="col-sm-8">
           <a class="btn btn-outline-primary" href="?dl=gsb{{year}}"
              target="_blank">
             <i class="fa-solid fa-file-csv"></i>
-            Download GSB {{year}}
+            {{_("Download GSB ")}}{{year}}
           </a>
         </dd>
         {% endfor %}
