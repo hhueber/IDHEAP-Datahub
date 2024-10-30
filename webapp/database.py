@@ -6,8 +6,13 @@ import secrets
 import string
 
 
-from config import BASEDIR, DB_URI
-from initial_data.cantons import CANTONS
+if __name__ == "__main__":
+    from config import BASEDIR, DB_URI
+    from initial_data.cantons import CANTONS
+else:
+    from .config import BASEDIR, DB_URI
+    from .initial_data.cantons import CANTONS
+
 from sqlalchemy import create_engine, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session

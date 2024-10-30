@@ -26,13 +26,16 @@ if __name__ == "__main__":
     from config import BASEDIR
     from database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey, User
 else:
-    from webapp.config import BASEDIR
-    from webapp.database import Base
+    from .config import BASEDIR
+    from .database import Base
 
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_object("config")
+    if __name__ == "__main__":
+        app.config.from_object("config")
+    else:
+        app.config.from_object("webapp.config")
 
     # Database
     db = SQLAlchemy(app, model_class=Base)
