@@ -6,7 +6,6 @@ from dash import Dash, dcc, html, Input, Output
 from flask import Flask, render_template_string, request, session
 from flask_babel import _
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -29,34 +28,12 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
         {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
     )
-    df_commune_response_old_year = pd.read_csv("data/GSB_1988_2017_V1.csv", low_memory=False)
 
     # Load combined responses from both current and old years
     df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv")
 
-    # Define a row for the user language question, with labels and options in multiple languages
-    sprache_row = {
-        "label": "spr",
-        "code_first_question": "GSB23_UserLanguage",
-        "code_other_question": "spr88; spr94; spr98; spr05; spr09; spr17",
-        "text_de": "Benutzersprache",
-        "text_fr": "Langue de l'utilisateur",
-        "text_it": "Lingua dell'utente",
-        "text_ro": "lingua da l'utilisader",
-        "text_en": "User language",
-        "category_label": "discrete",
-        "category_text_de": "character-200",
-        "category_text_fr": "character-200",
-        "category_text_it": "character-200",
-        "category_text_ro": "character-200",
-        "category_text_en": "character-200",
-        "options_value": None,
-        "options_label": None,
-    }
-
     # Load additional data files for the app
     df_combined = pd.read_csv("data/combined_df.csv")
-    question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
 
     # Create a Dash app instance with Bootstrap styling
@@ -150,7 +127,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Output("slider", "value"),
         Input("survey-dropdown", "value"),
         Input("variable-dropdown", "value"),
-        # Input("language-dropdown", "value"),
         Input("slider", "value"),
     )
     def update_dropdown_and_map(selected_survey, selected_variable, selected_year):
