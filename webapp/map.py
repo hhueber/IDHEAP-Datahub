@@ -455,9 +455,9 @@ def create_dash_app(flask_server: Flask):
             color_scale = "Viridis"
 
         # Prepare display values, assigning -1 to NaN values to appear as gray if using discrete scale
-        display_values = [
-            -1 if pd.isna(value) else value for value in variable_values
-        ]
+        #display_values = [
+        #    -1 if pd.isna(value) else value for value in variable_values
+        #]
 
         fig = go.Figure()
 
@@ -478,7 +478,7 @@ def create_dash_app(flask_server: Flask):
             go.Choroplethmapbox(
                 geojson=municipalities_data,
                 locations=communes,
-                z=display_values,
+                z=variable_values,
                 colorscale=color_scale,
                 featureidkey="properties.id",
                 name="Municipalities",
@@ -486,18 +486,18 @@ def create_dash_app(flask_server: Flask):
                 text=[
                     f"{feature['properties']['name']}: "
                     f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
-                    for value, feature in zip(display_values, municipalities_data["features"])
+                    for value, feature in zip(variable_values, municipalities_data["features"])
                 ],
                 colorbar=dict(
                     title="Values",
                     thickness=25,
                     x=1.05,
                     y=0.5,
-                    tickvals=[-99, -1] + list(range(0, 11)),
+                    tickvals=[-99] + list(range(0, 11)),
                     ticktext=["Voluntary No Response", "No Data"] + [str(i) for i in range(0, 11)],
                 ),
                 showscale=True,
-                zmin=-1 if num_unique_values <= 10 else None,
+                zmin=0 if num_unique_values <= 10 else None,
                 zmax=10 if num_unique_values <= 10 else None,
             )
         )
