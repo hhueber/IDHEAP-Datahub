@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-30 11:30+0100\n"
-"PO-Revision-Date: 2024-10-30 11:30+0100\n"
+"POT-Creation-Date: 2024-10-30 17:58+0100\n"
+"PO-Revision-Date: 2024-10-30 17:58+0100\n"
 "Last-Translator: \n"
 "Language-Team: en <LL@li.org>\n"
 "Language: en\n"
@@ -81,13 +81,29 @@ msgstr "Top Menu"
 msgid "dashboard"
 msgstr "dashboard"
 
-#: webapp/app.py:92
+#: webapp/app.py:99
 msgid "Logged in successfully."
 msgstr "Logged in successfully."
 
-#: webapp/app.py:96
+#: webapp/app.py:103
 msgid "Problem while loging in."
 msgstr "Problem while loging in."
+
+#: webapp/map.py:80
+msgid "Survey selection"
+msgstr "Survey selection"
+
+#: webapp/map.py:87
+msgid "All surveys"
+msgstr "All surveys"
+
+#: webapp/map.py:98
+msgid "Question"
+msgstr "Question"
+
+#: webapp/map.py:121
+msgid "Select a year"
+msgstr "Select a year"
 
 #: webapp/templates/login.html:8
 msgid "Login"

@@ -4,6 +4,7 @@ import os
 
 from dash import Dash, dcc, html, Input, Output
 from flask import Flask, render_template_string, request, session
+from flask_babel import _
 import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
@@ -67,122 +68,24 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     )
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
-    # Translation dictionaries for different languages used in the interface
-    translation = {
-        "fr": {
-            "title": "Carte avec échelle de couleur dynamique",
-            "survey_selection": "Sélection de l'enquête",
-            "variable_selection": "Sélection de la variable",
-            "slider_label": "Ajuster le curseur",
-            "global_question": "Question globale",
-            "survey": "Enquête",
-            "voluntary_no_response": "Réponse volontaire non fournie",
-            "exited_survey": "Enquête abandonnée",
-            "no_opinion": "Pas d'opinion",
-            "values": "Valeurs",
-        },
-        "en": {
-            "title": "Map with dynamic color scale",
-            "survey_selection": "Survey selection",
-            "variable_selection": "Variable selection",
-            "slider_label": "Adjust the slider",
-            "global_question": "Global question",
-            "survey": "Survey",
-            "voluntary_no_response": "Voluntary no response",
-            "exited_survey": "Exited survey",
-            "no_opinion": "No opinion",
-            "values": "Values",
-        },
-        "de": {
-            "title": "Karte mit dynamischer Farbskala",
-            "survey_selection": "Umfrageauswahl",
-            "variable_selection": "Variablenauswahl",
-            "slider_label": "Schieberegler anpassen",
-            "global_question": "Globale Frage",
-            "survey": "Umfrage",
-            "voluntary_no_response": "Freiwillige keine Antwort",
-            "exited_survey": "Umfrage verlassen",
-            "no_opinion": "Keine Meinung",
-            "values": "Werte",
-        },
-        "it": {
-            "title": "Mappa con scala cromatica dinamica",
-            "survey_selection": "Selezione del sondaggio",
-            "variable_selection": "Selezione della variabile",
-            "slider_label": "Regola il cursore",
-            "global_question": "Domanda globale",
-            "survey": "Sondaggio",
-            "voluntary_no_response": "Nessuna risposta volontaria",
-            "exited_survey": "Sondaggio abbandonato",
-            "no_opinion": "Nessuna opinione",
-            "values": "Valori",
-        },
-        "ro": {  # Romansh
-            "title": "Carta cun scala da colur dinamica",
-            "survey_selection": "Tscherna da l'enquista",
-            "variable_selection": "Tscherna da la variabla",
-            "slider_label": "Midar il slider",
-            "global_question": "Dumonda globala",
-            "survey": "Enquista",
-            "voluntary_no_response": "Risposta betg dada voluntarmain",
-            "exited_survey": "Enquista terminada",
-            "no_opinion": "Nagina opiniun",
-            "values": "Valurs",
-        },
-    }
-
-    # Translations for survey responses based on language, with unique mappings for special responses
-    response_translations = {
-        "fr": {-99: "Réponse volontaire non fournie", 99: "Pas d'opinion", "default": "Enquête abandonnée"},
-        "de": {-99: "Freiwillige keine Antwort", 99: "Keine Meinung", "default": "Umfrage verlassen"},
-        "it": {-99: "Nessuna risposta volontaria", 99: "Nessuna opinione", "default": "Sondaggio abbandonato"},
-        "ro": {-99: "Risposta betg dada voluntarmain", 99: "Nagina opiniun", "default": "Enquista terminada"},
-    }
-
     # Define the layout of the app, including dropdowns, map, and slider
     dash_app.layout = html.Div(
         [
-            # Application title displayed at the top
-            html.H1(id="page-title", style={"text-align": "left", "margin-bottom": "40px"}),
-            # Dropdown menu for language selection
-            html.Div(
-                [
-                    html.Label("Language"),
-                    dcc.Dropdown(
-                        id="language-dropdown",
-                        options=[
-                            {"label": "Français", "value": "fr"},
-                            {"label": "Deutsch", "value": "de"},
-                            {"label": "Italiano", "value": "it"},
-                            {"label": "Rumantsch", "value": "ro"},
-                            {"label": "English", "value": "en"},
-                        ],
-                        value="fr",  # Default language set to French
-                        clearable=False,
-                    ),
-                ],
-                style={
-                    "position": "fixed",
-                    "bottom": "10px",
-                    "left": "10px",
-                    "width": "200px",
-                    "background-color": "white",
-                    "padding": "10px",
-                    "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.1)",
-                    "z-index": "1000",
-                    "max-height": "150px",
-                    "overflow-y": "auto",
-                },
-            ),
             # Dropdowns for selecting the survey and variable (question)
             html.Div(
                 [
                     html.Div(
                         [
-                            html.Label(id="survey-selection-label"),
+                            html.Label(
+                                _("Survey selection"),
+                                id="survey-selection-label",
+                            ),
                             dcc.Dropdown(
                                 id="survey-dropdown",
-                                options=[],
+                                options=[
+                                    {"value": "survey", "label": "2023"},
+                                    {"value": "global_question", "label": _("All surveys")},
+                                ],
                                 value="survey",
                                 clearable=False,
                             ),
@@ -191,7 +94,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     ),
                     html.Div(
                         [
-                            html.Label(id="variable-selection-label"),
+                            html.Label(
+                                _("Question"),
+                                id="variable-selection-label",
+                            ),
                             dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
                         ],
                         style={"width": "48%", "display": "inline-block"},
@@ -206,7 +112,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 id="slider-container",
                 style={"display": "none"},
                 children=[
-                    html.Label(id="slider-label"),
+                    html.Label(
+                        _("Select a year"),
+                        id="slider-label",
+                    ),
                     html.Div(
                         dcc.Slider(
                             id="slider",
@@ -231,31 +140,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         },
     )
 
-    # Callback for updating the language of the app based on the selected language
-    @dash_app.callback(
-        Output("page-title", "children"),
-        Output("survey-selection-label", "children"),
-        Output("variable-selection-label", "children"),
-        Output("survey-dropdown", "options"),
-        Output("slider-label", "children"),
-        Input("language-dropdown", "value"),
-    )
-    def update_language(selected_language):
-        # Define options based on translation dictionary
-        options = [
-            {"label": translation[selected_language]["global_question"], "value": "global_question"},
-            {"label": translation[selected_language]["survey"], "value": "survey"},
-        ]
-
-        # Return translated text for page title, labels, dropdown options, and slider label
-        return (
-            translation[selected_language]["title"],
-            translation[selected_language]["survey_selection"],
-            translation[selected_language]["variable_selection"],
-            options,
-            translation[selected_language]["slider_label"],
-        )
-
     # Callback to update options, map figure, and slider properties based on survey selection and year
 
     @dash_app.callback(
@@ -266,10 +150,11 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Output("slider", "value"),
         Input("survey-dropdown", "value"),
         Input("variable-dropdown", "value"),
-        Input("language-dropdown", "value"),
+        # Input("language-dropdown", "value"),
         Input("slider", "value"),
     )
-    def update_dropdown_and_map(selected_survey, selected_variable, selected_language, selected_year):
+    def update_dropdown_and_map(selected_survey, selected_variable, selected_year):
+        selected_language = get_locale()
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
