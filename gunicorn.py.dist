@@ -1,0 +1,21 @@
+"""Gunicorn config file"""
+
+from webapp.config import DEBUG, SERVER_HOST, SERVER_PORT
+
+
+# From https://realpython.com/django-nginx-gunicorn/#replacing-wsgiserver-with-gunicorn
+
+wsgi_app = "wsgi:application"
+bind = f"{SERVER_HOST}:{SERVER_PORT}"
+loglevel = "debug" if DEBUG else "warning"
+accesslog = "/var/log/gunicorn/access.log"
+errorlog = "/var/log/gunicorn/error.log"
+capture_output = True
+workers = 6
+timeout = 600
+
+chdir = "/home/seccom/SecCom/"
+pidfile = "/var/run/gunicorn/gunicorn_prod.pid"
+reload = DEBUG
+
+preload = True
