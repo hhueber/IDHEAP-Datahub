@@ -1,0 +1,333 @@
+# English translations for PROJECT.
+# Copyright (C) 2024 ORGANIZATION
+# This file is distributed under the same license as the PROJECT project.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PROJECT VERSION\n"
+"Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
+"POT-Creation-Date: 2024-10-30 11:30+0100\n"
+"PO-Revision-Date: 2024-10-30 11:30+0100\n"
+"Last-Translator: \n"
+"Language-Team: en <LL@li.org>\n"
+"Language: en\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Generated-By: Babel 2.16.0\n"
+"X-Generator: Poedit 3.5\n"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/404.html:3
+msgid "You are requesting a page that does not exist!"
+msgstr "You are requesting a page that does not exist!"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/error.html:21
+msgid "The error was:"
+msgstr "The error was:"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/login.html:20
+msgid "Password or token:"
+msgstr "Password or token:"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/login.html:23
+msgid "Password:"
+msgstr "Password:"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/login.html:26
+msgid "Log in"
+msgstr "Log in"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/login.html:35
+msgid "No login available, you shouldn't be seeing this page."
+msgstr "No login available, you shouldn't be seeing this page."
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/login.html:84
+msgid "Setup a Password"
+msgstr "Setup a Password"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/login.html:102
+msgid ""
+"Log in and set new\n"
+"                    password"
+msgstr ""
+"Log in and set new\n"
+"                    password"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/logout.html:26
+#, python-format
+msgid "Proceed to the <a href=\"%(base_url)s\">dashboard"
+msgstr "Proceed to the <a href=\"%(base_url)s\">dashboard"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/logout.html:28
+#, python-format
+msgid "Proceed to the <a href=\"%(base_url)slogin\">login page"
+msgstr "Proceed to the <a href=\"%(base_url)slogin\">login page"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/page.html:30
+msgid "Jupyter Server requires JavaScript."
+msgstr "Jupyter Server requires JavaScript."
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/page.html:31
+msgid "Please enable it to proceed. "
+msgstr "Please enable it to proceed. "
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/page.html:35
+msgid "Top Menu"
+msgstr "Top Menu"
+
+#: env/lib/python3.12/site-packages/jupyter_server/templates/page.html:37
+msgid "dashboard"
+msgstr "dashboard"
+
+#: webapp/app.py:92
+msgid "Logged in successfully."
+msgstr "Logged in successfully."
+
+#: webapp/app.py:96
+msgid "Problem while loging in."
+msgstr "Problem while loging in."
+
+#: webapp/templates/login.html:8
+msgid "Login"
+msgstr "Login"
+
+#: webapp/templates/login.html:77
+msgid "Please sign in"
+msgstr "Please sign in"
+
+#: webapp/templates/login.html:78
+msgid "If you need an account, please contact XXX."
+msgstr "If you need an account, please contact XXX."
+
+#: webapp/templates/login.html:82
+msgid "Username"
+msgstr "Username"
+
+#: webapp/templates/login.html:86
+msgid "Password"
+msgstr "Password"
+
+#: webapp/templates/login.html:89
+msgid "Sign in"
+msgstr "Sign in"
+
+#: webapp/templates/placeholder.html:2 webapp/templates/placeholder.html:5
+#: webapp/templates/placeholder.html:8
+msgid "Placeholder"
+msgstr "Placeholder"
+
+#: webapp/templates/includes/base_public.html:47
+#: webapp/templates/includes/sidebar.html:7 webapp/templates/placeholder.html:7
+#: webapp/templates/places/canton_list.html:11
+#: webapp/templates/places/commune_list.html:11
+#: webapp/templates/places/district_list.html:11
+#: webapp/templates/questions/qg_list.html:11
+msgid "Dashboard"
+msgstr "Dashboard"
+
+#: webapp/templates/includes/base_public.html:37
+msgid "Home"
+msgstr "Home"
+
+#: webapp/templates/includes/base_public.html:40
+msgid "About"
+msgstr "About"
+
+#: webapp/templates/includes/base_public.html:43
+msgid "Data"
+msgstr "Data"
+
+#: webapp/templates/includes/base_public.html:74
+msgid "Code available on "
+msgstr "Code available on "
+
+#: webapp/templates/includes/sidebar.html:10
+msgid "Visualizations"
+msgstr "Visualizations"
+
+#: webapp/templates/includes/sidebar.html:13
+msgid "Map"
+msgstr "Map"
+
+#: webapp/templates/includes/sidebar.html:13
+#: webapp/templates/includes/sidebar.html:17
+msgid " (public)"
+msgstr " (public)"
+
+#: webapp/templates/includes/sidebar.html:17
+msgid "Statistics"
+msgstr "Statistics"
+
+#: webapp/templates/includes/sidebar.html:24
+msgid "New survey"
+msgstr "New survey"
+
+#: webapp/templates/includes/sidebar.html:28
+msgid "Previous surveys"
+msgstr "Previous surveys"
+
+#: webapp/templates/includes/sidebar.html:31
+msgid "Questions and answers"
+msgstr "Questions and answers"
+
+#: webapp/templates/includes/sidebar.html:35
+#: webapp/templates/questions/qg_list.html:12
+msgid "Questions"
+msgstr "Questions"
+
+#: webapp/templates/includes/sidebar.html:42
+msgid "Categories"
+msgstr "Categories"
+
+#: webapp/templates/includes/sidebar.html:46
+#: webapp/templates/public/data.html:31
+#: webapp/templates/questions/qg_list.html:2
+#: webapp/templates/questions/qg_list.html:9
+#: webapp/templates/questions/qg_list.html:13
+msgid "Global questions"
+msgstr "Global questions"
+
+#: webapp/templates/includes/sidebar.html:50
+msgid "Survey questions"
+msgstr "Survey questions"
+
+#: webapp/templates/includes/sidebar.html:56
+msgid "Answers"
+msgstr "Answers"
+
+#: webapp/templates/includes/sidebar.html:59
+msgid "Parameters"
+msgstr "Parameters"
+
+#: webapp/templates/includes/sidebar.html:63
+#: webapp/templates/places/canton_list.html:12
+#: webapp/templates/places/commune_list.html:12
+#: webapp/templates/places/district_list.html:12
+msgid "Places"
+msgstr "Places"
+
+#: webapp/templates/includes/sidebar.html:70
+#: webapp/templates/places/canton_list.html:2
+#: webapp/templates/places/canton_list.html:9
+#: webapp/templates/places/canton_list.html:13
+msgid "Cantons"
+msgstr "Cantons"
+
+#: webapp/templates/includes/sidebar.html:74
+#: webapp/templates/places/district_list.html:2
+#: webapp/templates/places/district_list.html:9
+#: webapp/templates/places/district_list.html:13
+msgid "Districts"
+msgstr "Districts"
+
+#: webapp/templates/includes/sidebar.html:78
+#: webapp/templates/places/commune_list.html:2
+#: webapp/templates/places/commune_list.html:9
+#: webapp/templates/places/commune_list.html:13
+msgid "Municipalities"
+msgstr "Municipalities"
+
+#: webapp/templates/includes/sidebar.html:84
+msgid "Configuration"
+msgstr "Configuration"
+
+#: webapp/templates/places/canton_list.html:24
+#: webapp/templates/places/commune_list.html:24
+msgid "Code"
+msgstr "Code"
+
+#: webapp/templates/places/canton_list.html:25
+#: webapp/templates/places/commune_list.html:25
+#: webapp/templates/places/district_list.html:25
+msgid "Name"
+msgstr "Name"
+
+#: webapp/templates/places/canton_list.html:26
+msgid "#&nbsp;Districts"
+msgstr "#&nbsp;Districts"
+
+#: webapp/templates/places/canton_list.html:27
+#: webapp/templates/places/district_list.html:27
+msgid "#&nbsp;Municipalities"
+msgstr "#&nbsp;Municipalities"
+
+#: webapp/templates/places/canton_list.html:28
+#: webapp/templates/places/commune_list.html:28
+#: webapp/templates/places/district_list.html:28
+msgid "#&nbsp;Surveys"
+msgstr "#&nbsp;Surveys"
+
+#: webapp/templates/places/commune_list.html:26
+msgid "District"
+msgstr "District"
+
+#: webapp/templates/places/commune_list.html:27
+#: webapp/templates/places/district_list.html:26
+msgid "Canton"
+msgstr "Canton"
+
+#: webapp/templates/public/about-en.html:2
+#: webapp/templates/public/about-fr.html:2
+msgid "About - "
+msgstr "About - "
+
+#: webapp/templates/public/data.html:2
+msgid "Data - "
+msgstr "Data - "
+
+#: webapp/templates/public/data.html:6
+msgid "Publicly available data"
+msgstr "Publicly available data"
+
+#: webapp/templates/public/data.html:7
+msgid "This data is available for further researches."
+msgstr "This data is available for further researches."
+
+#: webapp/templates/public/data.html:13
+msgid "All questions"
+msgstr "All questions"
+
+#: webapp/templates/public/data.html:18
+msgid "Download all questions"
+msgstr "Download all questions"
+
+#: webapp/templates/public/data.html:22
+msgid "All answers"
+msgstr "All answers"
+
+#: webapp/templates/public/data.html:27
+msgid "Download all answers"
+msgstr "Download all answers"
+
+#: webapp/templates/public/data.html:36
+msgid "Download global questions"
+msgstr "Download global questions"
+
+#: webapp/templates/public/data.html:43
+msgid "GSB "
+msgstr "GSB "
+
+#: webapp/templates/public/data.html:48
+msgid "Download GSB "
+msgstr "Download GSB "
+
+#: webapp/templates/questions/qg_list.html:24
+msgid "UID"
+msgstr "UID"
+
+#: webapp/templates/questions/qg_list.html:25
+msgid "Label"
+msgstr "Label"
+
+#: webapp/templates/questions/qg_list.html:26
+msgid "Related surveys"
+msgstr "Related surveys"
+
+#: webapp/templates/questions/qg_list.html:27
+msgid "Related questions"
+msgstr "Related questions"
+
+#~ msgid "Nom"
+#~ msgstr "Nom"

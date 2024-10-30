@@ -1,0 +1,8 @@
+{% extends "includes/base_public.html" %}
+{% block title %}{% endblock %}
+{% set active_page = 'map' %}
+
+{% block content %}
+<p>Placheolder map</p>
+<img src="{{url_for('static', filename='img/placeholder_carte.png')}}" class="img-fluid w-75"/>
+{% endblock %}

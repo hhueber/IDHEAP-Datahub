@@ -1,10 +1,23 @@
+from datetime import datetime
 from typing import List, Optional
+import os
 import re
+import secrets
+import string
 
 
-from sqlalchemy import ForeignKey
+if __name__ == "__main__":
+    from config import BASEDIR, DB_URI
+    from initial_data.cantons import CANTONS
+else:
+    from .config import BASEDIR, DB_URI
+    from .initial_data.cantons import CANTONS
+
+from sqlalchemy import create_engine, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship, Session
+from werkzeug.security import check_password_hash, generate_password_hash
+import pandas as pd
 
 
 convention = {
@@ -20,6 +33,40 @@ class Base(DeclarativeBase):
     @classmethod
     def get_attributes(cls):
         return [attr for attr in vars(cls) if not attr.startswith("_") and not attr[0].isupper()]
+
+
+class User(Base):
+    __tablename__ = "user"
+
+    uid: Mapped[int] = mapped_column(primary_key=True)
+    username: Mapped[str] = mapped_column(unique=True)
+    email: Mapped[str] = mapped_column(unique=True)
+    _password: Mapped[str]
+    authenticated: Mapped[bool] = mapped_column(default=False)
+
+    @property
+    def password(self):
+        raise AttributeError("You cannot read the password")
+
+    @password.setter
+    def password(self, value):
+        self._password = generate_password_hash(password=value)
+
+    def check_password(self, value):
+        return check_password_hash(self._password, value)
+
+    def is_active(self):
+        return True
+
+    def get_id(self):
+        return self.uid
+
+    def is_authenticated(self):
+        return self.authenticated
+
+    def is_anonymous(self):
+        # False, as anonymous users aren't supported.
+        return False
 
 
 class Survey(Base):
@@ -307,3 +354,167 @@ class Answer(Base):
 
     def __repr__(self):
         return f"Answer from commune #{self.commune.code} to question #{self.question.code}"
+
+
+if __name__ == "__main__":
+    if "sqlite" in DB_URI:
+        db_name = DB_URI.replace("sqlite:///", "")
+        if os.path.isfile(db_name):
+            os.rename(db_name, f"{db_name}-{datetime.now().isoformat().replace(':', '-')}.old")
+        engine = create_engine(DB_URI, echo=True)
+        Base.metadata.create_all(engine)
+
+        # Populate
+        with Session(engine) as session:
+            communes = pd.read_excel(
+                os.path.join(BASEDIR, "initial_data/EtatCommunes.xlsx"),
+                index_col=4,
+                header=0,
+            )
+            communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
+            communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
+
+            # Cantons
+            with session.begin():
+                for code, lang in CANTONS.items():
+                    db_canton = Canton(
+                        code=code,
+                        name=lang["en"],
+                        name_de=lang["de"],
+                        name_fr=lang["fr"],
+                        name_it=lang["it"],
+                        name_ro=lang["ro"],
+                        name_en=lang["en"],
+                    )
+                    print(f">>> CREATING: {db_canton.name}")
+                    session.add(db_canton)
+                    session.flush()
+
+            with session.begin():
+                for index, row in communes.iterrows():
+                    db_canton = session.execute(select(Canton).filter_by(code=row["Canton"])).one_or_none()
+                    if db_canton:
+                        canton_id = db_canton[0].uid
+                    else:
+                        raise RuntimeError("bleh")
+
+                    # Districts
+                    db_district = session.execute(select(District).filter_by(name=row["Nom du district"])).one_or_none()
+                    if db_district:
+                        db_district = db_district[0]
+                        print(f">>> ALREADY EXISTING: {db_district.name}")
+                    else:
+                        db_district = District(
+                            code=row["Numéro du district"],
+                            name=row["Nom du district"],
+                            name_de=row["Nom du district"],
+                            name_fr=row["Nom du district"],
+                            name_it=row["Nom du district"],
+                            name_ro=row["Nom du district"],
+                            name_en=row["Nom du district"],
+                            canton_uid=canton_id,
+                        )
+                        print(f">>> CREATING: {db_district.name}")
+                        session.add(db_district)
+                        session.flush()
+
+                    # Communes
+                    db_commune = Commune(
+                        code=index,
+                        name=row["Nom de la commune"],
+                        name_de=row["Nom de la commune"],
+                        name_fr=row["Nom de la commune"],
+                        name_it=row["Nom de la commune"],
+                        name_ro=row["Nom de la commune"],
+                        name_en=row["Nom de la commune"],
+                        district_uid=db_district.uid,
+                    )
+                    print(f">>> CREATING: {db_commune.name}")
+                    session.add(db_commune)
+                    session.flush()
+
+            for year in [1988, 1994, 1998, 2005, 2009, 2017]:
+                db_survey = Survey(
+                    name=f"GSB{str(year)[2:]}",
+                    year=year,
+                )
+                session.add(db_survey)
+                session.flush()
+
+                gsb = pd.read_excel(
+                    os.path.join(BASEDIR, "initial_data/Extraction CodeBook - 3. Cleaned.xlsx"),
+                    sheet_name=str(year),
+                    index_col=1,
+                    header=0,
+                )
+                for index, row in gsb.iterrows():
+                    db_question = QuestionPerSurvey(
+                        code=index,
+                        label=row["label"],
+                        survey_uid=db_survey.uid,
+                    )
+                    session.add(db_question)
+                    session.flush()
+
+            gq = pd.read_excel(
+                os.path.join(BASEDIR, "initial_data/QuestionGlobales.xlsx"),
+                index_col=None,
+                header=0,
+            )
+            for index, row in gq.iterrows():
+                if not pd.isnull(row["category_label"]):
+                    db_question_category = QuestionCategory(
+                        label=row["category_label"],
+                        text_de=row["category_text_de"],
+                        text_fr=row["category_text_fr"],
+                        text_it=row["category_text_it"],
+                        text_ro=row["category_text_ro"],
+                        text_en=row["category_text_en"],
+                    )
+
+                    session.add(db_question_category)
+                    session.flush()
+
+                    for option_value, option_label in zip(
+                        row["options_value"].split(";"), row["options_label"].split(";")
+                    ):
+                        db_option = Option(
+                            value=option_value,
+                            label=option_label,
+                            question_category=db_question_category,
+                        )
+                        session.add(db_option)
+                        session.flush()
+                else:
+                    db_question_category = None
+
+                db_global_question = QuestionGlobal(
+                    label=row["label"],
+                    question_category=db_question_category,
+                    text_de=row["text_de"],
+                    text_fr=row["text_fr"],
+                    text_it=row["text_it"],
+                    text_ro=row["text_ro"],
+                    text_en=row["text_en"],
+                )
+                session.add(db_global_question)
+                session.flush()
+
+            # Admin
+            alphabet = string.ascii_letters + string.digits
+            password = "".join(secrets.choice(alphabet) for i in range(8))
+
+            print(f">>> CREATING admin")
+            admin = User(
+                username="admin",
+                email="noreply@unil.ch",
+                password=password,
+            )
+            session.add(admin)
+            session.flush()
+
+            session.commit()
+
+            print(f"Password for admin (please change it): {password}")
+    else:
+        raise NotImplementedError

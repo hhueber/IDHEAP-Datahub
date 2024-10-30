@@ -1,0 +1,41 @@
+{% extends "includes/base_public.html" %}
+{% block title %}{{_("About - ")}}{% endblock %}
+{% set active_page = 'about' %}
+
+{% block content %}
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron">
+  <div class="container">
+    <h1 class="display-3">IDHEAP DataHub</h1>
+    <p class="lead">Projet de visualisation de données géographiques longitudinales.</p>
+  </div>
+</div>
+
+<div class="container">
+  <h2>Contexte du projet</h2>
+  <p class="text-start">
+    Lancée en 1988 par le Prof. Andreas Ladner, l'enquête Swiss Municipal Monitoring observe l’évolution et le
+    développement des communes suisses en se focalisant sur des thématiques clés telles que la performance des communes,
+    les finances locales, les réformes institutionnelles, la collaboration intercommunale et les enjeux politiques.
+    Cette initiative, en collaboration avec la ZHAW, constitue une ressource précieuse et exhaustive pour les
+    associations, les institutions publiques, le milieu académique et le grand public, fournissant des données
+    essentielles pour éclairer la prise de décision et orienter les politiques locales.
+  </p>
+
+  <p class="text-start">
+    En 2023, le Prof. Markus Hinterleitner et le Prof. Olivier Schöni ont pris la relève, assurant ainsi la continuité
+    de cette enquête fondamentale. L’IDHEAP Data Hub vise à préserver et valoriser l'héritage du défunt Prof. Ladner
+    grâce aux technologies de l'information, afin de capitaliser sur des décennies de recherche et de données portant
+    sur le développement des communes suisses.
+  </p>
+  <h2>Développement</h2>
+  <p class="text-start">
+    Le développement du code pour l'application web est réalisé par l'ingénieur de recherche DCSR dédié à la FDCA, en
+    collaboration avec un assistant-étudiant de l'EPFL.
+  </p>
+
+  <p class="text-start">
+    Le code est distribué sous la licence MIT. Vous pouvez le découvrir et le télécharger sur notre dépôt GitHub.
+  </p>
+</div> <!-- /container -->
+{% endblock %}

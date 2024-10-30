@@ -1,17 +1,16 @@
 {% extends "includes/base.html" %}
-{% block title %}Liste - Questions par étude{% endblock %}
+{% block title %}{{_("Questions per survey")}}{% endblock %}
 
 {% block css %}
 <link href="{{url_for('static', filename='css/datatables.min.css')}}" rel="stylesheet"/>
 {% endblock %}
 
 {% block content %}
-<h1 class="mt-4">Liste - Questions par enquête</h1>
+<h1 class="mt-4">{{_("Questions per survey")}}</h1>
 <ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item"><a href="{{url_for('home')}}">Accueil</a></li>
-  <li class="breadcrumb-item">Questions</li>
-  <li class="breadcrumb-item">Questions par enquête</li>
-  <li class="breadcrumb-item active">Liste</li>
+  <li class="breadcrumb-item">{{_("Dashboard")}}</li>
+  <li class="breadcrumb-item">{{_("Questions")}}</li>
+  <li class="breadcrumb-item active">{{_("Questions per survey")}}</li>
 </ol>
 
 <div class="card mb-4">
@@ -22,11 +21,11 @@
     <table id="datatable" class="table table-sm table-striped table-hover">
       <thead>
       <tr>
-        <th>Code</th>
-        <th>Label</th>
-        <th>Enquête</th>
-        <th>#&nbsp;Réponses</th>
-        <th>Question globale associée</th>
+        <th>{{_("Code")}}</th>
+        <th>{{_("Label")}}</th>
+        <th>{{_("Survey")}}</th>
+        <th>{{_("#&nbsp;Answers")}}</th>
+        <th>{{_("Related global question")}}</th>
       </tr>
       </thead>
       <tbody>
@@ -35,8 +34,8 @@
         <td><span style="display:none;">{{item.code_for_ordering}}</span>{{item.code}}</td>
         <td>{{item.label}}</td>
         <td>{{item.survey}}</td>
-        <td>{{item.num_answers or "Aucune"}}</td>
-        <td>{{item.question_global or "Aucune"}}</td>
+        <td>{{item.num_answers or "{{_("Aucune")}}"}}</td>
+        <td>{{item.question_global or "{{_("Aucune")}}"}}</td>
       </tr>
       {% endfor %}
       </tbody>

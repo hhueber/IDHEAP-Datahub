@@ -1,17 +1,16 @@
 {% extends "includes/base.html" %}
-{% block title %}Liste - Questions globales{% endblock %}
+{% block title %}{{_("Global questions")}}{% endblock %}
 
 {% block css %}
 <link href="{{url_for('static', filename='css/datatables.min.css')}}" rel="stylesheet"/>
 {% endblock %}
 
 {% block content %}
-<h1 class="mt-4">Liste - Questions globales</h1>
+<h1 class="mt-4">{{_("Global questions")}}</h1>
 <ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item"><a href="{{url_for('home')}}">Accueil</a></li>
-  <li class="breadcrumb-item">Questions</li>
-  <li class="breadcrumb-item">Questions globales</li>
-  <li class="breadcrumb-item active">Liste</li>
+  <li class="breadcrumb-item">{{_("Dashboard")}}</li>
+  <li class="breadcrumb-item">{{_("Questions")}}</li>
+  <li class="breadcrumb-item active">{{_("Global questions")}}</li>
 </ol>
 
 <div class="card mb-4">
@@ -22,10 +21,10 @@
     <table id="datatable" class="table table-sm table-striped table-hover">
       <thead>
       <tr>
-        <th>UID</th>
-        <th>Label</th>
-        <th>Enquêtes associées</th>
-        <th>Questions associées</th>
+        <th>{{_("UID")}}</th>
+        <th>{{_("Label")}}</th>
+        <th>{{_("Related surveys")}}</th>
+        <th>{{_("Related questions")}}</th>
       </tr>
       </thead>
       <tbody>
