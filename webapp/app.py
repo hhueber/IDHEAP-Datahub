@@ -2,7 +2,7 @@ from logging import FileHandler, Formatter
 import logging
 
 
-from flask import abort, flash, Flask, redirect, render_template, request, url_for
+from flask import abort, flash, Flask, redirect, render_template, request, session, url_for
 from flask_babel import _, Babel
 from flask_login import login_required, login_user, LoginManager, logout_user
 from flask_sqlalchemy import SQLAlchemy
@@ -34,9 +34,14 @@ def create_app():
     app.config["BABEL_DEFAULT_LOCALE"] = "fr"
 
     def get_locale():
-        return request.accept_languages.best_match(["fr", "de", "en"])
+        if "lang" not in session:
+            session["lang"] = request.accept_languages.best_match(["fr", "de", "en"])
+        if request.args.get("lang"):
+            session["lang"] = request.args.get("lang")
+        return session.get("lang", "en")
 
     babel = Babel(app, locale_selector=get_locale)
+    app.jinja_env.globals["get_locale"] = get_locale
 
     @login_manager.user_loader
     def user_loader(user_id):
