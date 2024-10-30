@@ -40,12 +40,17 @@
               <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">{{_("About")}}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i> {{_("Dashboard")}}</a>
+              <a class="nav-link{{' active' if active_page == 'data' }}" href="{{url_for('data')}}">{{_("Data")}}</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i>
+                {{_("Dashboard")}}</a>
             </li>
           </ul>
         </div>
         <div class="me-auto">
-          {% set langdict = {"en": ("🇬🇧", "English", ""), "fr": ("🇫🇷", "Français", ""), "de": ("🇩🇪", "Deutsch", " disabled"), "it": ("🇮🇹", "Italiano", " disabled"), "rm": ("🇷🇲", "Rumantsch", " disabled")} %}
+          {% set langdict = {"en": ("🇬🇧", "English", ""), "fr": ("🇫🇷", "Français", ""), "de": ("🇩🇪", "Deutsch", "
+          disabled"), "it": ("🇮🇹", "Italiano", " disabled"), "rm": ("🇷🇲", "Rumantsch", " disabled")} %}
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             {{langdict[get_locale()][0]}}
           </a>

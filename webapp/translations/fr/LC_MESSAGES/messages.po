@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2024-10-30 10:03+0100\n"
-"PO-Revision-Date: 2024-10-30 10:13+0100\n"
+"POT-Creation-Date: 2024-10-30 11:30+0100\n"
+"PO-Revision-Date: 2024-10-30 11:31+0100\n"
 "Last-Translator: \n"
 "Language-Team: fr <LL@li.org>\n"
 "Language: fr\n"
@@ -81,11 +81,11 @@ msgstr "Top Menu"
 msgid "dashboard"
 msgstr "dashboard"
 
-#: webapp/app.py:75
+#: webapp/app.py:92
 msgid "Logged in successfully."
 msgstr "Connexion réussie."
 
-#: webapp/app.py:79
+#: webapp/app.py:96
 msgid "Problem while loging in."
 msgstr "Problème lors de la connexion."
 
@@ -118,7 +118,7 @@ msgstr "Se connecter"
 msgid "Placeholder"
 msgstr "Teneur de place"
 
-#: webapp/templates/includes/base_public.html:43
+#: webapp/templates/includes/base_public.html:47
 #: webapp/templates/includes/sidebar.html:7 webapp/templates/placeholder.html:7
 #: webapp/templates/places/canton_list.html:11
 #: webapp/templates/places/commune_list.html:11
@@ -135,7 +135,11 @@ msgstr "Accueil"
 msgid "About"
 msgstr "A propos"
 
-#: webapp/templates/includes/base_public.html:56
+#: webapp/templates/includes/base_public.html:43
+msgid "Data"
+msgstr "Données"
+
+#: webapp/templates/includes/base_public.html:74
 msgid "Code available on "
 msgstr "Code disponible sur "
 
@@ -178,6 +182,7 @@ msgid "Categories"
 msgstr "Catégories"
 
 #: webapp/templates/includes/sidebar.html:46
+#: webapp/templates/public/data.html:31
 #: webapp/templates/questions/qg_list.html:2
 #: webapp/templates/questions/qg_list.html:9
 #: webapp/templates/questions/qg_list.html:13
@@ -234,6 +239,8 @@ msgid "Code"
 msgstr "Code"
 
 #: webapp/templates/places/canton_list.html:25
+#: webapp/templates/places/commune_list.html:25
+#: webapp/templates/places/district_list.html:25
 msgid "Name"
 msgstr "Nom"
 
@@ -252,11 +259,6 @@ msgstr "#&nbsp;Communes"
 msgid "#&nbsp;Surveys"
 msgstr "#&nbsp;Enquêtes"
 
-#: webapp/templates/places/commune_list.html:25
-#: webapp/templates/places/district_list.html:25
-msgid "Nom"
-msgstr "Nom"
-
 #: webapp/templates/places/commune_list.html:26
 msgid "District"
 msgstr "District"
@@ -269,7 +271,47 @@ msgstr "Canton"
 #: webapp/templates/public/about-en.html:2
 #: webapp/templates/public/about-fr.html:2
 msgid "About - "
-msgstr "A propos -"
+msgstr "A propos - "
+
+#: webapp/templates/public/data.html:2
+msgid "Data - "
+msgstr "Données - "
+
+#: webapp/templates/public/data.html:6
+msgid "Publicly available data"
+msgstr "Données publiquement disponibles"
+
+#: webapp/templates/public/data.html:7
+msgid "This data is available for further researches."
+msgstr "Ces données sont disponibles pour d'autres recherches."
+
+#: webapp/templates/public/data.html:13
+msgid "All questions"
+msgstr "Toutes les questions"
+
+#: webapp/templates/public/data.html:18
+msgid "Download all questions"
+msgstr "Télécharger toutes les questions"
+
+#: webapp/templates/public/data.html:22
+msgid "All answers"
+msgstr "Toutes les réponses"
+
+#: webapp/templates/public/data.html:27
+msgid "Download all answers"
+msgstr "Télécharger toutes les réponses"
+
+#: webapp/templates/public/data.html:36
+msgid "Download global questions"
+msgstr "Télécharger toutes les réponses"
+
+#: webapp/templates/public/data.html:43
+msgid "GSB "
+msgstr "GSB "
+
+#: webapp/templates/public/data.html:48
+msgid "Download GSB "
+msgstr "Télécharger GSB"
 
 #: webapp/templates/questions/qg_list.html:24
 msgid "UID"
@@ -286,3 +328,6 @@ msgstr "Enquêtes associées"
 #: webapp/templates/questions/qg_list.html:27
 msgid "Related questions"
 msgstr "Questions associées"
+
+#~ msgid "Nom"
+#~ msgstr "Nom"
