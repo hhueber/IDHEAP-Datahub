@@ -15,11 +15,11 @@ from webapp.config import BASEDIR
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load GeoJSON files for lakes, municipalities, and country borders with utf-8 encoding
-    with open("./data/lakes.json", encoding="utf-8") as f:
+    with open(os.path.join(BASEDIR, "data", "geojson", "lakes.json"), encoding="utf-8") as f:
         lakes_data = json.load(f)
-    with open("./data/municipalities.json", encoding="utf-8") as f:
+    with open(os.path.join(BASEDIR, "data", "geojson", "municipalities.json"), encoding="utf-8") as f:
         municipalities_data = json.load(f)
-    with open("./data/country.json", encoding="utf-8") as f:
+    with open(os.path.join(BASEDIR, "data", "geojson", "country.json"), encoding="utf-8") as f:
         country_data = json.load(f)
 
     # Load response data files for current and past commune responses
