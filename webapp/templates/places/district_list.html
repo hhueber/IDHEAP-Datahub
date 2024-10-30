@@ -1,16 +1,16 @@
 {% extends "includes/base.html" %}
-{% block title %}Districts{% endblock %}
+{% block title %}{{_("Districts")}}{% endblock %}
 
 {% block css %}
 <link href="{{url_for('static', filename='css/datatables.min.css')}}" rel="stylesheet"/>
 {% endblock %}
 
 {% block content %}
-<h1 class="mt-4">Districts</h1>
+<h1 class="mt-4">{{_("Districts")}}</h1>
 <ol class="breadcrumb mb-4">
-  <li class="breadcrumb-item">Dashboard</li>
-  <li class="breadcrumb-item">Lieux</li>
-  <li class="breadcrumb-item active">Districts</li>
+  <li class="breadcrumb-item">{{_("Dashboard")}}</li>
+  <li class="breadcrumb-item">{{_("Places")}}</li>
+  <li class="breadcrumb-item active">{{_("Districts")}}</li>
 </ol>
 
 <div class="card mb-4">
@@ -22,10 +22,10 @@
       <thead>
       <tr>
         <th>Code</th>
-        <th>Nom</th>
-        <th>Canton</th>
-        <th>#&nbsp;Communes</th>
-        <th>#&nbsp;Enquêtes</th>
+        <th>{{_("Name")}}</th>
+        <th>{{_("Canton")}}</th>
+        <th>{{_("#&nbsp;Municipalities")}}</th>
+        <th>{{_("#&nbsp;Surveys")}}</th>
       </tr>
       </thead>
       <tbody>

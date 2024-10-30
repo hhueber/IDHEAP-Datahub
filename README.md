@@ -19,6 +19,10 @@ Projet de visualisation de données géographiques longitudinales.
 ## Dev
 
 - Lancer l'application : `python webapp/app.py`
+- Traduire  :
+  1. Générer un fichier POT global : `pybabel extract -F babel.cfg -o messages.pot .`
+  2. Générer un fichier POT par langue : `pybabel update -i messages.pot -d webapp/translations -l LANG`
+  3. Appliquer les traductions : `pybabel compile -d webapp/translations`
 
 ## Crédits
 
