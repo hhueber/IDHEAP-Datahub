@@ -3,7 +3,7 @@ import os
 
 
 from dash import Dash, dcc, html, Input, Output
-from flask import Flask, render_template_string, request, session
+from flask import Flask, render_template_string
 from flask_babel import _
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 
 
 from webapp.config import BASEDIR
+from webapp.map_helpers import fig_switzerland_empty
 
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
@@ -130,7 +131,8 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Input("slider", "value"),
     )
     def update_dropdown_and_map(selected_survey, selected_variable, selected_year):
-        selected_language = get_locale()
+        selected_language = "fr"  # get_locale()
+
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
@@ -206,7 +208,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 )
             else:
                 # If no survey question selected, return an empty map
-                return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
+                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
         # Prepare the map figure for global question selection with slider control
         if selected_variable and selected_survey == "global_question":
@@ -218,7 +220,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 response_dict = dict(zip(communes, responses))
             else:
                 # No data for the selected year; return an empty map
-                return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
+                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
             aggregated_responses = [
                 response_dict.get(feature["properties"]["id"], -99) for feature in municipalities_data["features"]
@@ -235,78 +237,17 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
 
         # Default fallback: return empty map and no options if conditions aren't met
-        return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
-
-    # Function to create an empty map figure when no data is available
-    def create_empty_map_figure():
-        fig = go.Figure()
-
-        # Add base layer for the country, in white
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=country_data,
-                locations=[feature["properties"]["id"] for feature in country_data["features"]],
-                z=[1] * len(country_data["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Country",
-            )
-        )
-
-        # Add municipalities layer in white
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=municipalities_data,
-                locations=[feature["properties"]["id"] for feature in municipalities_data["features"]],
-                z=[1] * len(municipalities_data["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Municipalities",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in municipalities_data["features"]],
-                showscale=False,
-            )
-        )
-
-        # Add lakes layer in blue
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=lakes_data,
-                locations=[feature["properties"]["id"] for feature in lakes_data["features"]],
-                z=[1] * len(lakes_data["features"]),
-                colorscale="Blues",
-                featureidkey="properties.id",
-                name="Lakes",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in lakes_data["features"]],
-                showscale=False,
-            )
-        )
-
-        # Map layout configuration for an empty view
-        fig.update_layout(
-            mapbox_zoom=7,
-            mapbox_center={"lat": 46.4, "lon": 8.8},
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            height=800,
-            width=1200,
-            dragmode=False,
-            uirevision=True,
-            mapbox=dict(
-                layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
-            ),
-            showlegend=False,
-        )
-        return fig
+        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
     # Function to create the map figure based on survey responses
     def create_figure(variable_values, communes):
         # Count unique non-NaN values
         unique_values = [v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)]
         num_unique_values = len(set(unique_values))
+        print(num_unique_values)
 
         # Determine color scale based on the number of unique values
-        if num_unique_values == 99:  # to correct once we know how to
+        if num_unique_values < 11:  # to correct once we know how to
             # Use discrete color scale for 10 or fewer unique values
             color_scale = [
                 [-1, "gray"],  # Voluntary no response (-99)
@@ -326,34 +267,17 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             # Use Viridis continuous color scale for more than 10 unique values
             color_scale = "Viridis"
 
-        # Prepare display values, assigning -1 to NaN values to appear as gray if using discrete scale
-        # display_values = [
-        #    -1 if pd.isna(value) else value for value in variable_values
-        # ]
-
-        fig = go.Figure()
-
-        # Add the country layer as a white background
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=country_data,
-                locations=[feature["properties"]["id"] for feature in country_data["features"]],
-                z=[1] * len(country_data["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Country",
-            )
-        )
+        fig = fig_switzerland_empty()
 
         # Add the municipalities layer with dynamic or discrete color scale based on unique value count
         fig.add_trace(
             go.Choroplethmapbox(
+                name="municipalities",
                 geojson=municipalities_data,
                 locations=communes,
                 z=variable_values,
                 colorscale=color_scale,
                 featureidkey="properties.id",
-                name="Municipalities",
                 hoverinfo="text",
                 text=[
                     f"{feature['properties']['name']}: "
@@ -371,21 +295,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 showscale=True,
                 zmin=0 if num_unique_values <= 10 else None,
                 zmax=10 if num_unique_values <= 10 else None,
-            )
-        )
-
-        # Add the lakes layer
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=lakes_data,
-                locations=[feature["properties"]["id"] for feature in lakes_data["features"]],
-                z=[1] * len(lakes_data["features"]),
-                colorscale="Blues",
-                featureidkey="properties.id",
-                name="Lakes",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in lakes_data["features"]],
-                showscale=False,
             )
         )
 
@@ -408,16 +317,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
     # Black magic tkt
     with flask_server.app_context(), flask_server.test_request_context():
-
-        def get_locale():
-            if "lang" not in session:
-                session["lang"] = request.accept_languages.best_match(["fr", "de", "en"])
-            if request.args.get("lang"):
-                session["lang"] = request.args.get("lang")
-            return session.get("lang") or "en"
-
-        flask_server.jinja_env.globals["get_locale"] = get_locale
-
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
             html_body = render_template_string(f.read())
 
