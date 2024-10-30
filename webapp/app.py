@@ -57,7 +57,7 @@ def create_app():
             session["lang"] = request.accept_languages.best_match(["fr", "de", "en"])
         if request.args.get("lang"):
             session["lang"] = request.args.get("lang")
-        return session.get("lang", "en")
+        return session.get("lang") or "en"
 
     babel = Babel(app, locale_selector=get_locale)
     app.jinja_env.globals["get_locale"] = get_locale
@@ -111,9 +111,9 @@ def create_app():
         return redirect(url_for("home"))
 
     # Homepage, with default visualisation
-    @app.route("/")
+    @app.route("/map")
     def map():
-        return render_template("public/home.html")
+        return redirect("/")
 
     # Data download
     @app.route("/data")
@@ -203,7 +203,7 @@ def create_app():
     def config():  # TODO
         return render_template("placeholder.html")
 
-    app = create_dash_app(app)
+    app = create_dash_app(app, "/")
 
     if not app.debug:
         file_handler = FileHandler("error.log")
