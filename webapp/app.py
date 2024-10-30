@@ -115,9 +115,11 @@ def create_app():
     def data():
         if request.args.get("dl"):
             dl = request.args.get("dl")
-            print(dl)  # TODO
-            path = os.path.join(BASEDIR, "public_data", "empty.csv")
-            print(path)
+            match dl:  # TODO
+                case "test":
+                    path = os.path.join(BASEDIR, "public_data", "empty.csv")
+                case _:
+                    path = os.path.join(BASEDIR, "public_data", "empty.csv")
             return send_file(path, as_attachment=True)
 
         years = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
