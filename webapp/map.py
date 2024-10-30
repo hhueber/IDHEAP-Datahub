@@ -1,12 +1,19 @@
 import json
+import os
+
+
 from dash import Dash, dcc, html, Input, Output
-from flask import Flask
+from flask import Flask, render_template_string, request, session
 import dash_bootstrap_components as dbc
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
-def create_dash_app(flask_server: Flask):
+
+from webapp.config import BASEDIR
+
+
+def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load GeoJSON files for lakes, municipalities, and country borders with utf-8 encoding
     with open("./data/lakes.json", encoding="utf-8") as f:
         lakes_data = json.load(f)
@@ -18,7 +25,9 @@ def create_dash_app(flask_server: Flask):
     # Load response data files for current and past commune responses
     df_commune_responses = pd.read_csv("data/commune_responses.csv")
     # Map language codes to integers for easier processing
-    df_commune_responses['GSB23_UserLanguage'] = df_commune_responses['GSB23_UserLanguage'].map({'DE': 1, 'FR': 2, 'RO': 3, 'IT': 4})
+    df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
+        {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
+    )
     df_commune_response_old_year = pd.read_csv("data/GSB_1988_2017_V1.csv", low_memory=False)
 
     # Load combined responses from both current and old years
@@ -26,22 +35,22 @@ def create_dash_app(flask_server: Flask):
 
     # Define a row for the user language question, with labels and options in multiple languages
     sprache_row = {
-        'label': 'spr', 
-        'code_first_question': 'GSB23_UserLanguage', 
-        'code_other_question': 'spr88; spr94; spr98; spr05; spr09; spr17',
-        'text_de': 'Benutzersprache', 
-        'text_fr': 'Langue de l\'utilisateur', 
-        'text_it': 'Lingua dell\'utente', 
-        'text_ro': 'lingua da l\'utilisader', 
-        'text_en': 'User language', 
-        'category_label': 'discrete', 
-        'category_text_de': 'character-200', 
-        'category_text_fr': 'character-200', 
-        'category_text_it': 'character-200', 
-        'category_text_ro': 'character-200', 
-        'category_text_en': 'character-200', 
-        'options_value': None, 
-        'options_label': None
+        "label": "spr",
+        "code_first_question": "GSB23_UserLanguage",
+        "code_other_question": "spr88; spr94; spr98; spr05; spr09; spr17",
+        "text_de": "Benutzersprache",
+        "text_fr": "Langue de l'utilisateur",
+        "text_it": "Lingua dell'utente",
+        "text_ro": "lingua da l'utilisader",
+        "text_en": "User language",
+        "category_label": "discrete",
+        "category_text_de": "character-200",
+        "category_text_fr": "character-200",
+        "category_text_it": "character-200",
+        "category_text_ro": "character-200",
+        "category_text_en": "character-200",
+        "options_value": None,
+        "options_label": None,
     }
 
     # Load additional data files for the app
@@ -51,7 +60,10 @@ def create_dash_app(flask_server: Flask):
 
     # Create a Dash app instance with Bootstrap styling
     dash_app = Dash(
-        __name__, external_stylesheets=[dbc.themes.BOOTSTRAP], server=flask_server, url_base_pathname="/map/"
+        __name__,
+        external_stylesheets=[dbc.themes.BOOTSTRAP],
+        server=flask_server,
+        url_base_pathname=url_path,
     )
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
@@ -118,7 +130,7 @@ def create_dash_app(flask_server: Flask):
             "values": "Valurs",
         },
     }
-    
+
     # Translations for survey responses based on language, with unique mappings for special responses
     response_translations = {
         "fr": {-99: "Réponse volontaire non fournie", 99: "Pas d'opinion", "default": "Enquête abandonnée"},
@@ -132,7 +144,6 @@ def create_dash_app(flask_server: Flask):
         [
             # Application title displayed at the top
             html.H1(id="page-title", style={"text-align": "left", "margin-bottom": "40px"}),
-            
             # Dropdown menu for language selection
             html.Div(
                 [
@@ -163,7 +174,6 @@ def create_dash_app(flask_server: Flask):
                     "overflow-y": "auto",
                 },
             ),
-            
             # Dropdowns for selecting the survey and variable (question)
             html.Div(
                 [
@@ -189,28 +199,24 @@ def create_dash_app(flask_server: Flask):
                 ],
                 style={"display": "flex", "justify-content": "space-between"},
             ),
-            
             # Map display component
             dcc.Graph(id="map-graph", style={"position": "relative", "z-index": "0"}),
-
             # Slider for selecting a year, dynamically updated based on selected global question
             html.Div(
                 id="slider-container",
                 style={"display": "none"},
                 children=[
                     html.Label(id="slider-label"),
-                    html.Div(  
+                    html.Div(
                         dcc.Slider(
                             id="slider",
                             min=1988,
                             max=2023,
-                            value
-
-=None,  # Initial value depends on selected global question
+                            value=None,  # Initial value depends on selected global question
                             marks={},  # Marks updated based on available years for the question
                             step=None,  # No intermediate values
                         ),
-                        style={"width": "600px", "margin": "auto"},  
+                        style={"width": "600px", "margin": "auto"},
                     ),
                 ],
             ),
@@ -251,7 +257,7 @@ def create_dash_app(flask_server: Flask):
         )
 
     # Callback to update options, map figure, and slider properties based on survey selection and year
-   
+
     @dash_app.callback(
         Output("variable-dropdown", "options"),
         Output("slider-container", "style"),
@@ -265,7 +271,7 @@ def create_dash_app(flask_server: Flask):
     )
     def update_dropdown_and_map(selected_survey, selected_variable, selected_language, selected_year):
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
-        if 'year' not in df_commune_responses_combined.index:
+        if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
 
         # Handle global questions selection
@@ -280,18 +286,24 @@ def create_dash_app(flask_server: Flask):
 
             if selected_variable:
                 # Find associated survey questions and years for the selected global question
-                if 'quest_glob' in df_commune_responses_combined.index:
+                if "quest_glob" in df_commune_responses_combined.index:
                     survey_columns = df_commune_responses_combined.columns[
-                        df_commune_responses_combined.loc['quest_glob'] == selected_variable
+                        df_commune_responses_combined.loc["quest_glob"] == selected_variable
                     ]
-                    year_row = df_commune_responses_combined.loc['year', survey_columns]
-                    associated_years = [int(year) for year in year_row.unique() if pd.notna(year) and str(year).isdigit()]
+                    year_row = df_commune_responses_combined.loc["year", survey_columns]
+                    associated_years = [
+                        int(year) for year in year_row.unique() if pd.notna(year) and str(year).isdigit()
+                    ]
                     year_to_survey = dict(zip(associated_years, survey_columns))
 
                     slider_marks = {year: str(year) for year in sorted(associated_years)}
-                    
+
                     # Use the last selected slider value if valid; otherwise, reset to the first available year
-                    slider_value = selected_year if selected_year in associated_years else associated_years[0] if associated_years else None
+                    slider_value = (
+                        selected_year
+                        if selected_year in associated_years
+                        else associated_years[0] if associated_years else None
+                    )
                 else:
                     print("Error: 'quest_glob' row not found in df_commune_responses_combined.")
                     slider_marks, slider_value = {}, None
@@ -303,13 +315,12 @@ def create_dash_app(flask_server: Flask):
         # Handle individual survey question selection
         else:  # selected_survey == "survey"
             options = [
-                {"label": row[f"text_{selected_language}"], "value": row["code"]}
-                for _, row in df_combined.iterrows()
+                {"label": row[f"text_{selected_language}"], "value": row["code"]} for _, row in df_combined.iterrows()
             ]
-            
+
             # Hide the slider and reset map for "survey" selection
             slider_style, slider_marks, slider_value = {"display": "none"}, {}, None
-            
+
             # Display the map based on selected survey question
             if selected_variable and selected_variable in df_commune_responses_combined.columns:
                 # Filter data for the selected survey question
@@ -320,16 +331,17 @@ def create_dash_app(flask_server: Flask):
                 aggregated_responses = [
                     response_dict.get(feature["properties"]["id"], -99) for feature in municipalities_data["features"]
                 ]
-                
+
                 # Return the options and updated map figure
                 return (
                     options,
                     slider_style,
                     create_figure(
-                        aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]
+                        aggregated_responses,
+                        [feature["properties"]["id"] for feature in municipalities_data["features"]],
                     ),
                     slider_marks,
-                    slider_value
+                    slider_value,
                 )
             else:
                 # If no survey question selected, return an empty map
@@ -358,12 +370,11 @@ def create_dash_app(flask_server: Flask):
                     aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]
                 ),
                 slider_marks,
-                slider_value
+                slider_value,
             )
 
         # Default fallback: return empty map and no options if conditions aren't met
         return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
-
 
     # Function to create an empty map figure when no data is available
     def create_empty_map_figure():
@@ -434,7 +445,7 @@ def create_dash_app(flask_server: Flask):
         num_unique_values = len(set(unique_values))
 
         # Determine color scale based on the number of unique values
-        if num_unique_values == 99: # to correct once we know how to 
+        if num_unique_values == 99:  # to correct once we know how to
             # Use discrete color scale for 10 or fewer unique values
             color_scale = [
                 [-1, "gray"],  # Voluntary no response (-99)
@@ -448,16 +459,16 @@ def create_dash_app(flask_server: Flask):
                 [7, "rgb(4,90,141)"],
                 [8, "rgb(2,56,88)"],
                 [9, "rgb(1,42,62)"],
-                [10, "rgb(0,30,45)"]
+                [10, "rgb(0,30,45)"],
             ]
-        else: 
+        else:
             # Use Viridis continuous color scale for more than 10 unique values
             color_scale = "Viridis"
 
         # Prepare display values, assigning -1 to NaN values to appear as gray if using discrete scale
-        #display_values = [
+        # display_values = [
         #    -1 if pd.isna(value) else value for value in variable_values
-        #]
+        # ]
 
         fig = go.Figure()
 
@@ -534,5 +545,24 @@ def create_dash_app(flask_server: Flask):
 
         return fig
 
+    # Black magic tkt
+    with flask_server.app_context(), flask_server.test_request_context():
+
+        def get_locale():
+            if "lang" not in session:
+                session["lang"] = request.accept_languages.best_match(["fr", "de", "en"])
+            if request.args.get("lang"):
+                session["lang"] = request.args.get("lang")
+            return session.get("lang") or "en"
+
+        flask_server.jinja_env.globals["get_locale"] = get_locale
+
+        with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
+            html_body = render_template_string(f.read())
+
+        for comment in ["app_entry", "config", "scripts", "renderer"]:
+            html_body = html_body.replace(f"<!-- {comment} -->", "{%" + comment + "%}")
+
+        dash_app.index_string = html_body
 
     return dash_app.server
