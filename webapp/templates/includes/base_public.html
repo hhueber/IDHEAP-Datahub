@@ -51,7 +51,7 @@
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             {% for code, cont in langdict.items() %}
-            {% if code != get_locale() %}
+            {% if cont[2] == "" and code != get_locale() %}
             <li><a class="dropdown-item{{cont[2]}}" href="?lang={{code}}">{{cont[0]}} {{cont[1]}}</a></li>
             {% endif %}
             {% endfor %}
