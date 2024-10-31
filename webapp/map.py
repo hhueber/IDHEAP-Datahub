@@ -11,18 +11,10 @@ import plotly.graph_objects as go
 
 
 from webapp.config import BASEDIR
-from webapp.map_helpers import fig_switzerland_empty
+from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
 
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
-    # Load GeoJSON files for lakes, municipalities, and country borders with utf-8 encoding
-    with open(os.path.join(BASEDIR, "data", "geojson", "lakes.json"), encoding="utf-8") as f:
-        lakes_data = json.load(f)
-    with open(os.path.join(BASEDIR, "data", "geojson", "municipalities.json"), encoding="utf-8") as f:
-        municipalities_data = json.load(f)
-    with open(os.path.join(BASEDIR, "data", "geojson", "country.json"), encoding="utf-8") as f:
-        country_data = json.load(f)
-
     # Load response data files for current and past commune responses
     df_commune_responses = pd.read_csv("data/commune_responses.csv")
     # Map language codes to integers for easier processing
@@ -119,7 +111,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     )
 
     # Callback to update options, map figure, and slider properties based on survey selection and year
-
     @dash_app.callback(
         Output("variable-dropdown", "options"),
         Output("slider-container", "style"),
@@ -192,7 +183,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 responses = filtered_responses[selected_variable].tolist()
                 response_dict = dict(zip(communes, responses))
                 aggregated_responses = [
-                    response_dict.get(feature["properties"]["id"], -99) for feature in municipalities_data["features"]
+                    response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
 
                 # Return the options and updated map figure
@@ -201,7 +192,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     slider_style,
                     create_figure(
                         aggregated_responses,
-                        [feature["properties"]["id"] for feature in municipalities_data["features"]],
+                        [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
                     ),
                     slider_marks,
                     slider_value,
@@ -223,14 +214,14 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
             aggregated_responses = [
-                response_dict.get(feature["properties"]["id"], -99) for feature in municipalities_data["features"]
+                response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
             ]
 
             return (
                 options,
                 slider_style,
                 create_figure(
-                    aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]
+                    aggregated_responses, [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]]
                 ),
                 slider_marks,
                 slider_value,
@@ -273,7 +264,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         fig.add_trace(
             go.Choroplethmapbox(
                 name="municipalities",
-                geojson=municipalities_data,
+                geojson=MUNICIPALITIES_DATA,
                 locations=communes,
                 z=variable_values,
                 colorscale=color_scale,
@@ -282,7 +273,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 text=[
                     f"{feature['properties']['name']}: "
                     f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
-                    for value, feature in zip(variable_values, municipalities_data["features"])
+                    for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
                 ],
                 colorbar=dict(
                     title="Values",
