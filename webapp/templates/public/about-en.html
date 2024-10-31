@@ -3,38 +3,42 @@
 {% set active_page = 'about' %}
 
 {% block content %}
-<div class="jumbotron">
+<!-- Main jumbotron for a primary marketing message or call to action -->
+<div class="jumbotron mb-5">
   <div class="container">
-    <h1 class="display-3">IDHEAP DataHub</h1>
-    <p class="lead">Projet de visualisation de données géographiques longitudinales.</p>
+    <h1 class="display-3">IDHEAP Data Hub</h1>
+    <p class="lead">Longitudinal geographical data visualisation project.</p>
+    <a href="{{url_for('map')}}" class="btn btn-lg btn-dark fw-bold">See visualization!</a>
   </div>
 </div>
 
 <div class="container">
-  <h2>Contexte du projet</h2>
+  <p>
+    <em>For the moment, the IDHEAP Data Hub only shows data from the survey of municipal secretaries.</em>
+  </p>
+
+  <h2>Project background</h2>
   <p class="text-start">
-    Lancée en 1988 par le Prof. Andreas Ladner, l'enquête Swiss Municipal Monitoring observe l’évolution et le
-    développement des communes suisses en se focalisant sur des thématiques clés telles que la performance des communes,
-    les finances locales, les réformes institutionnelles, la collaboration intercommunale et les enjeux politiques.
-    Cette initiative, en collaboration avec la ZHAW, constitue une ressource précieuse et exhaustive pour les
-    associations, les institutions publiques, le milieu académique et le grand public, fournissant des données
-    essentielles pour éclairer la prise de décision et orienter les politiques locales.
+    Launched in 1988 by Prof. Andreas Ladner, the Swiss Municipal Monitoring survey observes the evolution and
+    development of Swiss municipalities by focusing on key themes such as municipal performance, local finances,
+    institutional reforms, inter-municipal collaboration and political issues. This initiative, in collaboration with
+    ZHAW, is a valuable and comprehensive resource for associations, public institutions, academics and the general
+    public, providing essential data to inform decision-making and guide local policies.
   </p>
 
   <p class="text-start">
-    En 2023, le Prof. Markus Hinterleitner et le Prof. Olivier Schöni ont pris la relève, assurant ainsi la continuité
-    de cette enquête fondamentale. L’IDHEAP Data Hub vise à préserver et valoriser l'héritage du défunt Prof. Ladner
-    grâce aux technologies de l'information, afin de capitaliser sur des décennies de recherche et de données portant
-    sur le développement des communes suisses.
+    In 2023, Prof. Markus Hinterleitner and Prof. Olivier Schöni took over, ensuring the continuity of this fundamental
+    research. The IDHEAP Data Hub aims to preserve and enhance the legacy of the late Prof. Ladner by using information
+    technology to capitalise on decades of research and data on the development of Swiss municipalities.
   </p>
   <h2>Développement</h2>
   <p class="text-start">
-    Le développement du code pour l'application web est réalisé par l'ingénieur de recherche DCSR dédié à la FDCA, en
-    collaboration avec un assistant-étudiant de l'EPFL.
+    The code for the web application is being developed by the DCSR research engineer dedicated to the FDCA, in
+    collaboration with an EPFL student assistant.
   </p>
 
   <p class="text-start">
-    Le code est distribué sous la licence MIT. Vous pouvez le découvrir et le télécharger sur notre dépôt GitHub.
+    The code is distributed under the MIT licence. You can view and download it from our GitHub repository.
   </p>
-</div>
+</div> <!-- /container -->
 {% endblock %}

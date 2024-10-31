@@ -3,22 +3,10 @@ import logging
 import os.path
 
 
-from flask import (
-    abort,
-    flash,
-    Flask,
-    redirect,
-    render_template,
-    request,
-    send_file,
-    send_from_directory,
-    session,
-    url_for,
-)
+from flask import abort, flash, Flask, redirect, render_template, request, send_file, session, url_for
 from flask_babel import _, Babel
 from flask_login import login_required, login_user, LoginManager, logout_user
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import check_password_hash
 import flask
 
 
@@ -118,9 +106,15 @@ def create_app():
     # Data download
     @app.route("/data")
     def data():
-        if request.args.get("dl"):
-            dl = request.args.get("dl")
-            match dl:  # TODO
+        # Table
+        if request.args.get("table"):
+            table = request.args.get("table")
+            return render_template("public/show.html")
+
+        # Download
+        if request.args.get("download"):
+            download = request.args.get("download")
+            match download:  # TODO
                 case "test":
                     path = os.path.join(BASEDIR, "public_data", "empty.csv")
                 case _:

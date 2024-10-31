@@ -1,7 +1,6 @@
 config.py
 *.db*
-data/*.*
-!data/.gitkeep
+data/
 webapp/initial_data/*.*
 !webapp/initial_data/*.py
 gunicorn.py
