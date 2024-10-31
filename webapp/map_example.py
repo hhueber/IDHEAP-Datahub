@@ -2,15 +2,29 @@ import random
 
 
 from dash import callback, Dash, dcc, Input, Output
-from map_helpers import (
-    COLOR_SCALE_10,
-    COLOR_SCALE_SPECIAL,
-    fig_switzerland_empty,
-    MUNICIPALITIES,
-    MUNICIPALITIES_DATA,
-    MUNICIPALITIES_IDS,
-    SPECIAL_ANSWERS,
-)
+
+
+if __name__ == "__main__":
+    from map_helpers import (
+        COLOR_SCALE_10,
+        COLOR_SCALE_SPECIAL,
+        fig_switzerland_empty,
+        MUNICIPALITIES,
+        MUNICIPALITIES_DATA,
+        MUNICIPALITIES_IDS,
+        SPECIAL_ANSWERS,
+    )
+else:
+    from .map_helpers import (
+        COLOR_SCALE_10,
+        COLOR_SCALE_SPECIAL,
+        fig_switzerland_empty,
+        MUNICIPALITIES,
+        MUNICIPALITIES_DATA,
+        MUNICIPALITIES_IDS,
+        SPECIAL_ANSWERS,
+    )
+
 import pandas as pd
 
 

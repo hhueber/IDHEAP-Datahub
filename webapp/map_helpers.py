@@ -5,11 +5,13 @@ import os
 import plotly.graph_objects as go
 
 
-from webapp.config import BASEDIR
+# L'endroit où t'as tes geojson en gros
+try:
+    from webapp.config import BASEDIR
 
-
-# L'endroit où t'as tes geojsonen gros
-BASE_PATH = os.path.join(BASEDIR, "data", "geojson")
+    BASE_PATH = os.path.join(BASEDIR, "data", "geojson")
+except:
+    BASE_PATH = os.path.join("data", "geojson")
 
 with open(os.path.join(BASE_PATH, "country.json"), encoding="utf-8") as f:
     COUNTRY_DATA = json.load(f)
