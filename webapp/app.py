@@ -116,9 +116,15 @@ def create_app():
     # Data download
     @app.route("/data")
     def data():
-        if request.args.get("dl"):
-            dl = request.args.get("dl")
-            match dl:  # TODO
+        # Table
+        if request.args.get("table"):
+            table = request.args.get("table")
+            return render_template("public/show.html")
+
+        # Download
+        if request.args.get("download"):
+            download = request.args.get("download")
+            match download:  # TODO
                 case "test":
                     path = os.path.join(BASEDIR, "public_data", "empty.csv")
                 case _:
