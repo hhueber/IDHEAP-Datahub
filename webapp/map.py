@@ -269,10 +269,13 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Input("language-dropdown", "value"),
         Input("slider", "value"),
     )
+
     def update_dropdown_and_map(selected_survey, selected_variable, selected_language, selected_year):
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
+
+        empty_map = create_empty_map_figure()
 
         # Handle global questions selection
         if selected_survey == "global_question":
@@ -324,22 +327,21 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             # Display the map based on selected survey question
             if selected_variable and selected_variable in df_commune_responses_combined.columns:
                 # Filter data for the selected survey question
-                filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].dropna()
+                filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
                 communes = filtered_responses["GSB23_Q100"].astype(int).tolist()
                 responses = filtered_responses[selected_variable].tolist()
                 response_dict = dict(zip(communes, responses))
+
+                # assign a default value (99) to communes without data
                 aggregated_responses = [
-                    response_dict.get(feature["properties"]["id"], -99) for feature in municipalities_data["features"]
+                    response_dict.get(feature["properties"]["id"], 99) for feature in municipalities_data["features"]
                 ]
 
                 # Return the options and updated map figure
                 return (
                     options,
                     slider_style,
-                    create_figure(
-                        aggregated_responses,
-                        [feature["properties"]["id"] for feature in municipalities_data["features"]],
-                    ),
+                    create_figure(aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]),
                     slider_marks,
                     slider_value,
                 )
@@ -351,7 +353,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         if selected_variable and selected_survey == "global_question":
             selected_survey_column = year_to_survey.get(slider_value)
             if selected_survey_column:
-                filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_survey_column]].dropna()
+                filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_survey_column]].fillna(99)
                 communes = filtered_responses["GSB23_Q100"].astype(int).tolist()
                 responses = filtered_responses[selected_survey_column].tolist()
                 response_dict = dict(zip(communes, responses))
@@ -359,22 +361,21 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 # No data for the selected year; return an empty map
                 return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
 
+            # assign a default value (99) to communes without data
             aggregated_responses = [
-                response_dict.get(feature["properties"]["id"], -99) for feature in municipalities_data["features"]
+                response_dict.get(feature["properties"]["id"], 99) for feature in municipalities_data["features"]
             ]
 
             return (
                 options,
                 slider_style,
-                create_figure(
-                    aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]
-                ),
+                create_figure(aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]),
                 slider_marks,
                 slider_value,
             )
 
         # Default fallback: return empty map and no options if conditions aren't met
-        return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
+        return options, slider_style, empty_map, slider_marks, slider_value
 
     # Function to create an empty map figure when no data is available
     def create_empty_map_figure():
@@ -465,11 +466,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             # Use Viridis continuous color scale for more than 10 unique values
             color_scale = "Viridis"
 
-        # Prepare display values, assigning -1 to NaN values to appear as gray if using discrete scale
-        # display_values = [
-        #    -1 if pd.isna(value) else value for value in variable_values
-        # ]
-
+       
         fig = go.Figure()
 
         # Add the country layer as a white background
@@ -481,6 +478,22 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 colorscale=[[0, "white"], [1, "white"]],
                 featureidkey="properties.id",
                 name="Country",
+            )
+        )
+
+
+        # temporary white layer to avoid the holes in the map
+        fig.add_trace(
+            go.Choroplethmapbox(
+                geojson=municipalities_data,
+                locations=[feature["properties"]["id"] for feature in municipalities_data["features"]],
+                z=[1] * len(municipalities_data["features"]),
+                colorscale=[[0, "white"], [1, "white"]],
+                featureidkey="properties.id",
+                name="Municipalities",
+                hoverinfo="text",
+                text=[feature["properties"]["name"] for feature in municipalities_data["features"]],
+                showscale=False,
             )
         )
 
@@ -505,7 +518,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     x=1.05,
                     y=0.5,
                     tickvals=[-99] + list(range(0, 11)),
-                    ticktext=["Voluntary No Response", "No Data"] + [str(i) for i in range(0, 11)],
+                    ticktext=["No Data", "Voluntary No Response"] + [str(i) for i in range(0, 11)],
                 ),
                 showscale=True,
                 zmin=0 if num_unique_values <= 10 else None,
@@ -536,7 +549,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             height=800,
             width=1200,
             dragmode=False,
-            uirevision=True,
+            uirevision=str(np.random.rand()), 
             mapbox=dict(
                 layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
             ),
