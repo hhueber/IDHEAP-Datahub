@@ -10,10 +10,6 @@ from webapp.config import BASEDIR
 from webapp.map_helpers import fig_switzerland_empty
 
 
-# Data to test
-YEARS = sorted([2001, 2004, 2031, 2023, 2022])
-
-
 def create_dash_app(flask_server: Flask, url_path="/map"):
     # Create a Dash app instance with Bootstrap styling
     dash_app = Dash(
