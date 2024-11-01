@@ -8,10 +8,10 @@ import string
 
 if __name__ == "__main__":
     from config import BASEDIR, DB_URI
-    from initial_data.cantons import CANTONS
+    from data.cantons import CANTONS
 else:
     from .config import BASEDIR, DB_URI
-    from .initial_data.cantons import CANTONS
+    from .data.cantons import CANTONS
 
 from sqlalchemy import create_engine, ForeignKey, select
 from sqlalchemy.ext.hybrid import hybrid_property

@@ -3,59 +3,30 @@ import os
 
 
 from dash import Dash, dcc, html, Input, Output
-from flask import Flask, render_template_string, request, session
+from flask import Flask, render_template_string
+from flask_babel import _
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
 
 from webapp.config import BASEDIR
+from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
 
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
-    # Load GeoJSON files for lakes, municipalities, and country borders with utf-8 encoding
-    with open("./data/lakes.json", encoding="utf-8") as f:
-        lakes_data = json.load(f)
-    with open("./data/municipalities.json", encoding="utf-8") as f:
-        municipalities_data = json.load(f)
-    with open("./data/country.json", encoding="utf-8") as f:
-        country_data = json.load(f)
-
     # Load response data files for current and past commune responses
     df_commune_responses = pd.read_csv("data/commune_responses.csv")
     # Map language codes to integers for easier processing
     df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
         {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
     )
-    df_commune_response_old_year = pd.read_csv("data/GSB_1988_2017_V1.csv", low_memory=False)
 
     # Load combined responses from both current and old years
     df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv")
 
-    # Define a row for the user language question, with labels and options in multiple languages
-    sprache_row = {
-        "label": "spr",
-        "code_first_question": "GSB23_UserLanguage",
-        "code_other_question": "spr88; spr94; spr98; spr05; spr09; spr17",
-        "text_de": "Benutzersprache",
-        "text_fr": "Langue de l'utilisateur",
-        "text_it": "Lingua dell'utente",
-        "text_ro": "lingua da l'utilisader",
-        "text_en": "User language",
-        "category_label": "discrete",
-        "category_text_de": "character-200",
-        "category_text_fr": "character-200",
-        "category_text_it": "character-200",
-        "category_text_ro": "character-200",
-        "category_text_en": "character-200",
-        "options_value": None,
-        "options_label": None,
-    }
-
     # Load additional data files for the app
     df_combined = pd.read_csv("data/combined_df.csv")
-    question_globale_NLP = pd.read_csv("data/QuestionGlobales_NLP.csv")
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
 
     # Create a Dash app instance with Bootstrap styling
@@ -67,122 +38,24 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     )
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
-    # Translation dictionaries for different languages used in the interface
-    translation = {
-        "fr": {
-            "title": "Carte avec échelle de couleur dynamique",
-            "survey_selection": "Sélection de l'enquête",
-            "variable_selection": "Sélection de la variable",
-            "slider_label": "Ajuster le curseur",
-            "global_question": "Question globale",
-            "survey": "Enquête",
-            "voluntary_no_response": "Réponse volontaire non fournie",
-            "exited_survey": "Enquête abandonnée",
-            "no_opinion": "Pas d'opinion",
-            "values": "Valeurs",
-        },
-        "en": {
-            "title": "Map with dynamic color scale",
-            "survey_selection": "Survey selection",
-            "variable_selection": "Variable selection",
-            "slider_label": "Adjust the slider",
-            "global_question": "Global question",
-            "survey": "Survey",
-            "voluntary_no_response": "Voluntary no response",
-            "exited_survey": "Exited survey",
-            "no_opinion": "No opinion",
-            "values": "Values",
-        },
-        "de": {
-            "title": "Karte mit dynamischer Farbskala",
-            "survey_selection": "Umfrageauswahl",
-            "variable_selection": "Variablenauswahl",
-            "slider_label": "Schieberegler anpassen",
-            "global_question": "Globale Frage",
-            "survey": "Umfrage",
-            "voluntary_no_response": "Freiwillige keine Antwort",
-            "exited_survey": "Umfrage verlassen",
-            "no_opinion": "Keine Meinung",
-            "values": "Werte",
-        },
-        "it": {
-            "title": "Mappa con scala cromatica dinamica",
-            "survey_selection": "Selezione del sondaggio",
-            "variable_selection": "Selezione della variabile",
-            "slider_label": "Regola il cursore",
-            "global_question": "Domanda globale",
-            "survey": "Sondaggio",
-            "voluntary_no_response": "Nessuna risposta volontaria",
-            "exited_survey": "Sondaggio abbandonato",
-            "no_opinion": "Nessuna opinione",
-            "values": "Valori",
-        },
-        "ro": {  # Romansh
-            "title": "Carta cun scala da colur dinamica",
-            "survey_selection": "Tscherna da l'enquista",
-            "variable_selection": "Tscherna da la variabla",
-            "slider_label": "Midar il slider",
-            "global_question": "Dumonda globala",
-            "survey": "Enquista",
-            "voluntary_no_response": "Risposta betg dada voluntarmain",
-            "exited_survey": "Enquista terminada",
-            "no_opinion": "Nagina opiniun",
-            "values": "Valurs",
-        },
-    }
-
-    # Translations for survey responses based on language, with unique mappings for special responses
-    response_translations = {
-        "fr": {-99: "Réponse volontaire non fournie", 99: "Pas d'opinion", "default": "Enquête abandonnée"},
-        "de": {-99: "Freiwillige keine Antwort", 99: "Keine Meinung", "default": "Umfrage verlassen"},
-        "it": {-99: "Nessuna risposta volontaria", 99: "Nessuna opinione", "default": "Sondaggio abbandonato"},
-        "ro": {-99: "Risposta betg dada voluntarmain", 99: "Nagina opiniun", "default": "Enquista terminada"},
-    }
-
     # Define the layout of the app, including dropdowns, map, and slider
     dash_app.layout = html.Div(
         [
-            # Application title displayed at the top
-            html.H1(id="page-title", style={"text-align": "left", "margin-bottom": "40px"}),
-            # Dropdown menu for language selection
-            html.Div(
-                [
-                    html.Label("Language"),
-                    dcc.Dropdown(
-                        id="language-dropdown",
-                        options=[
-                            {"label": "Français", "value": "fr"},
-                            {"label": "Deutsch", "value": "de"},
-                            {"label": "Italiano", "value": "it"},
-                            {"label": "Rumantsch", "value": "ro"},
-                            {"label": "English", "value": "en"},
-                        ],
-                        value="fr",  # Default language set to French
-                        clearable=False,
-                    ),
-                ],
-                style={
-                    "position": "fixed",
-                    "bottom": "10px",
-                    "left": "10px",
-                    "width": "200px",
-                    "background-color": "white",
-                    "padding": "10px",
-                    "box-shadow": "0px 0px 5px rgba(0, 0, 0, 0.1)",
-                    "z-index": "1000",
-                    "max-height": "150px",
-                    "overflow-y": "auto",
-                },
-            ),
             # Dropdowns for selecting the survey and variable (question)
             html.Div(
                 [
                     html.Div(
                         [
-                            html.Label(id="survey-selection-label"),
+                            html.Label(
+                                _("Survey selection"),
+                                id="survey-selection-label",
+                            ),
                             dcc.Dropdown(
                                 id="survey-dropdown",
-                                options=[],
+                                options=[
+                                    {"value": "survey", "label": "2023"},
+                                    {"value": "global_question", "label": _("All surveys")},
+                                ],
                                 value="survey",
                                 clearable=False,
                             ),
@@ -191,7 +64,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     ),
                     html.Div(
                         [
-                            html.Label(id="variable-selection-label"),
+                            html.Label(
+                                _("Question"),
+                                id="variable-selection-label",
+                            ),
                             dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
                         ],
                         style={"width": "48%", "display": "inline-block"},
@@ -206,7 +82,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 id="slider-container",
                 style={"display": "none"},
                 children=[
-                    html.Label(id="slider-label"),
+                    html.Label(
+                        _("Select a year"),
+                        id="slider-label",
+                    ),
                     html.Div(
                         dcc.Slider(
                             id="slider",
@@ -231,33 +110,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         },
     )
 
-    # Callback for updating the language of the app based on the selected language
-    @dash_app.callback(
-        Output("page-title", "children"),
-        Output("survey-selection-label", "children"),
-        Output("variable-selection-label", "children"),
-        Output("survey-dropdown", "options"),
-        Output("slider-label", "children"),
-        Input("language-dropdown", "value"),
-    )
-    def update_language(selected_language):
-        # Define options based on translation dictionary
-        options = [
-            {"label": translation[selected_language]["global_question"], "value": "global_question"},
-            {"label": translation[selected_language]["survey"], "value": "survey"},
-        ]
-
-        # Return translated text for page title, labels, dropdown options, and slider label
-        return (
-            translation[selected_language]["title"],
-            translation[selected_language]["survey_selection"],
-            translation[selected_language]["variable_selection"],
-            options,
-            translation[selected_language]["slider_label"],
-        )
-
     # Callback to update options, map figure, and slider properties based on survey selection and year
-
     @dash_app.callback(
         Output("variable-dropdown", "options"),
         Output("slider-container", "style"),
@@ -266,11 +119,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Output("slider", "value"),
         Input("survey-dropdown", "value"),
         Input("variable-dropdown", "value"),
-        Input("language-dropdown", "value"),
         Input("slider", "value"),
     )
-
-    def update_dropdown_and_map(selected_survey, selected_variable, selected_language, selected_year):
+    def update_dropdown_and_map(selected_survey, selected_variable, selected_year):
+        selected_language = "fr"  # get_locale()
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
@@ -334,20 +186,23 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
                 # assign a default value (99) to communes without data
                 aggregated_responses = [
-                    response_dict.get(feature["properties"]["id"], 99) for feature in municipalities_data["features"]
+                    response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
 
                 # Return the options and updated map figure
                 return (
                     options,
                     slider_style,
-                    create_figure(aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]),
+                    create_figure(
+                        aggregated_responses,
+                        [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
+                    ),
                     slider_marks,
                     slider_value,
                 )
             else:
                 # If no survey question selected, return an empty map
-                return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
+                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
         # Prepare the map figure for global question selection with slider control
         if selected_variable and selected_survey == "global_question":
@@ -359,94 +214,35 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 response_dict = dict(zip(communes, responses))
             else:
                 # No data for the selected year; return an empty map
-                return options, slider_style, create_empty_map_figure(), slider_marks, slider_value
+                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
             # assign a default value (99) to communes without data
             aggregated_responses = [
-                response_dict.get(feature["properties"]["id"], 99) for feature in municipalities_data["features"]
+                response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
             ]
 
             return (
                 options,
                 slider_style,
-                create_figure(aggregated_responses, [feature["properties"]["id"] for feature in municipalities_data["features"]]),
+                create_figure(
+                    aggregated_responses, [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]]
+                ),
                 slider_marks,
                 slider_value,
             )
 
         # Default fallback: return empty map and no options if conditions aren't met
-        return options, slider_style, empty_map, slider_marks, slider_value
-
-    # Function to create an empty map figure when no data is available
-    def create_empty_map_figure():
-        fig = go.Figure()
-
-        # Add base layer for the country, in white
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=country_data,
-                locations=[feature["properties"]["id"] for feature in country_data["features"]],
-                z=[1] * len(country_data["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Country",
-            )
-        )
-
-        # Add municipalities layer in white
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=municipalities_data,
-                locations=[feature["properties"]["id"] for feature in municipalities_data["features"]],
-                z=[1] * len(municipalities_data["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Municipalities",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in municipalities_data["features"]],
-                showscale=False,
-            )
-        )
-
-        # Add lakes layer in blue
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=lakes_data,
-                locations=[feature["properties"]["id"] for feature in lakes_data["features"]],
-                z=[1] * len(lakes_data["features"]),
-                colorscale="Blues",
-                featureidkey="properties.id",
-                name="Lakes",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in lakes_data["features"]],
-                showscale=False,
-            )
-        )
-
-        # Map layout configuration for an empty view
-        fig.update_layout(
-            mapbox_zoom=7,
-            mapbox_center={"lat": 46.4, "lon": 8.8},
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            height=800,
-            width=1200,
-            dragmode=False,
-            uirevision=True,
-            mapbox=dict(
-                layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
-            ),
-            showlegend=False,
-        )
-        return fig
+        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
     # Function to create the map figure based on survey responses
     def create_figure(variable_values, communes):
         # Count unique non-NaN values
         unique_values = [v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)]
         num_unique_values = len(set(unique_values))
+        print(num_unique_values)
 
         # Determine color scale based on the number of unique values
-        if num_unique_values == 99:  # to correct once we know how to
+        if num_unique_values < 11:  # to correct once we know how to
             # Use discrete color scale for 10 or fewer unique values
             color_scale = [
                 [-1, "gray"],  # Voluntary no response (-99)
@@ -466,21 +262,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             # Use Viridis continuous color scale for more than 10 unique values
             color_scale = "Viridis"
 
-       
-        fig = go.Figure()
-
-        # Add the country layer as a white background
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=country_data,
-                locations=[feature["properties"]["id"] for feature in country_data["features"]],
-                z=[1] * len(country_data["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Country",
-            )
-        )
-
+        fig = fig_switzerland_empty()
 
         # temporary white layer to avoid the holes in the map
         fig.add_trace(
@@ -500,17 +282,17 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         # Add the municipalities layer with dynamic or discrete color scale based on unique value count
         fig.add_trace(
             go.Choroplethmapbox(
-                geojson=municipalities_data,
+                name="municipalities",
+                geojson=MUNICIPALITIES_DATA,
                 locations=communes,
                 z=variable_values,
                 colorscale=color_scale,
                 featureidkey="properties.id",
-                name="Municipalities",
                 hoverinfo="text",
                 text=[
                     f"{feature['properties']['name']}: "
                     f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
-                    for value, feature in zip(variable_values, municipalities_data["features"])
+                    for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
                 ],
                 colorbar=dict(
                     title="Values",
@@ -526,21 +308,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
         )
 
-        # Add the lakes layer
-        fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=lakes_data,
-                locations=[feature["properties"]["id"] for feature in lakes_data["features"]],
-                z=[1] * len(lakes_data["features"]),
-                colorscale="Blues",
-                featureidkey="properties.id",
-                name="Lakes",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in lakes_data["features"]],
-                showscale=False,
-            )
-        )
-
         # Update layout for the map
         fig.update_layout(
             mapbox_zoom=7,
@@ -549,7 +316,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             height=800,
             width=1200,
             dragmode=False,
-            uirevision=str(np.random.rand()), 
+            uirevision=str(np.random.rand()),
             mapbox=dict(
                 layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
             ),
@@ -560,16 +327,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
     # Black magic tkt
     with flask_server.app_context(), flask_server.test_request_context():
-
-        def get_locale():
-            if "lang" not in session:
-                session["lang"] = request.accept_languages.best_match(["fr", "de", "en"])
-            if request.args.get("lang"):
-                session["lang"] = request.args.get("lang")
-            return session.get("lang") or "en"
-
-        flask_server.jinja_env.globals["get_locale"] = get_locale
-
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
             html_body = render_template_string(f.read())
 
