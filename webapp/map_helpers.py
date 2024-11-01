@@ -108,14 +108,13 @@ def fig_switzerland_empty():
 
     # Map layout configuration for an empty view
     fig.update_layout(
-        mapbox_zoom=7,
-        mapbox_center={"lat": 46.4, "lon": 8.8},
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        height=800,
-        width=1200,
+        # height=10,
+        # width=1200,
+        autosize=True,
         dragmode="zoom",
         uirevision=True,
-        mapbox=dict(layers=[], zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"),
+        mapbox=dict(layers=[], zoom=7.8, center={"lat": 46.8, "lon": 8.1}, style="white-bg"),
     )
 
     return fig

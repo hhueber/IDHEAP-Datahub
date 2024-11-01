@@ -1,12 +1,17 @@
 import os
 
 
-from dash import ALL, ctx, Dash, dcc, html, Input, Output
+from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
 from flask import Flask, render_template_string
 import dash_bootstrap_components as dbc
 
 
 from webapp.config import BASEDIR
+from webapp.map_helpers import fig_switzerland_empty
+
+
+# Data to test
+YEARS = sorted([2001, 2004, 2031, 2023, 2022])
 
 
 def create_dash_app(flask_server: Flask, url_path="/map"):
@@ -29,9 +34,13 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                             # Map display component
                             dbc.Card(
                                 dbc.CardBody(
-                                    [
-                                        dcc.Graph(id="map-graph"),
-                                    ]
+                                    dcc.Graph(
+                                        id="map-graph",
+                                        figure=fig_switzerland_empty(),
+                                        style={
+                                            "height": "75vh",
+                                        },
+                                    ),
                                 )
                             )
                         ],
@@ -42,8 +51,12 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                             dbc.Card(
                                 dbc.CardBody(
                                     [
-                                        html.H4("Title", id="info-title", className="card-title"),
-                                        html.P("Text", id="info-text", className="card-text"),
+                                        html.H4("Instructions", id="info-title", className="card-title"),
+                                        html.P(
+                                            "Select a question in the list bellow, then select a municipality on the map.",
+                                            id="info-text",
+                                            className="card-text",
+                                        ),
                                     ]
                                 ),
                                 className="mb-4",
@@ -67,9 +80,10 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                                                 dbc.Col(
                                                     [
                                                         dcc.Dropdown(
-                                                            id="questions-dropdown",
+                                                            id="years-dropdown",
                                                             options=[
-                                                                {"label": "9999", "value": 9999},
+                                                                {"label": str(year), "value": str(year)}
+                                                                for year in YEARS
                                                             ],
                                                             value=None,
                                                             clearable=True,
@@ -96,32 +110,42 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                     ),
                 ]
             ),
-        ]
+        ],
+        style={
+            # "min-height": "100vh",
+        },
     )
 
     @dash_app.callback(
-        Output("questions-dropdown", "className"),
+        Output("years-dropdown", "className"),
+        Output("years-dropdown", "value"),
         Output("questions", "children"),
         Input("global-question-switch", "value"),
+        Input("years-dropdown", "value"),
     )
-    def global_question_switch(switch_value):
+    def update_question_list(switch_value, year):
         """
-        Update the list of questions and the dropbox
+        Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
         """
-        toggle_global_question = len(switch_value) == 1
+        questions_list = list()
 
-        test1 = [dbc.ListGroupItem("q1", id={"type": "list-group-item", "index": 1}, action=True, active=False)]
-        test2 = [dbc.ListGroupItem("q2", id={"type": "list-group-item", "index": 2}, action=True, active=False)]
+        if switch_value:  # Global questions
+            return "invisible", None, questions_list
+        else:  # Per survey questions
+            return "visible", year, questions_list
 
-        if toggle_global_question:
-            return "invisible", test1
-        else:
-            return "visible", test2
-
-    @dash_app.callback(Input({"type": "list-group-item", "index": ALL}, "n_clicks"))
-    def question_update(_):
-        print(f"Clicked on Item {ctx.triggered_id.index}")
-        return
+    @dash_app.callback(
+        Output({"type": "list-group-item", "index": ALL}, "active"),
+        Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
+        Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
+    )
+    def question_update(list_group_items):
+        """
+        Update the map when a question is selected.
+        """
+        if any(list_group_items):
+            print(f"Clicked on Item {ctx.triggered_id.index}")
+        return list_group_items, [0] * len(list_group_items)
 
     with flask_server.app_context(), flask_server.test_request_context():
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
