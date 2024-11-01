@@ -4,14 +4,19 @@
 
 {% block content %}
 <!-- Main jumbotron for a primary marketing message or call to action -->
-<div class="jumbotron">
+<div class="jumbotron mb-5">
   <div class="container">
-    <h1 class="display-3">IDHEAP DataHub</h1>
+    <h1 class="display-3">IDHEAP Data Hub</h1>
     <p class="lead">Projet de visualisation de données géographiques longitudinales.</p>
+    <a href="{{url_for('map')}}" class="btn btn-lg btn-dark fw-bold">Voir la visualisation !</a>
   </div>
 </div>
 
 <div class="container">
+  <p>
+    <em>Pour l'instant,l'IDHEAP Data Hub montre uniquement les données de l'enquête sur les secrétaires communaux.</em>
+  </p>
+
   <h2>Contexte du projet</h2>
   <p class="text-start">
     Lancée en 1988 par le Prof. Andreas Ladner, l'enquête Swiss Municipal Monitoring observe l’évolution et le

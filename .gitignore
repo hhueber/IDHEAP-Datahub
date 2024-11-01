@@ -1,9 +1,6 @@
 config.py
 *.db*
-data/*.*
-!data/.gitkeep
-webapp/initial_data/*.*
-!webapp/initial_data/*.py
+data/
 gunicorn.py
 
 # Created by https://www.toptal.com/developers/gitignore/api/windows,macos,linux,visualstudiocode,pycharm+all,python

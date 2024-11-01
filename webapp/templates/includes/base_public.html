@@ -34,7 +34,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link{{' active' if active_page == 'map' }}" href="{{url_for('map')}}">{{_("Home")}}</a>
+              <a class="nav-link{{' active' if active_page == 'map' }}" href="{{url_for('map')}}">{{_("Map")}}</a>
             </li>
             <li class="nav-item">
               <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">{{_("About")}}</a>
@@ -42,10 +42,12 @@
             <li class="nav-item">
               <a class="nav-link{{' active' if active_page == 'data' }}" href="{{url_for('data')}}">{{_("Data")}}</a>
             </li>
+            {% if not config["DEMO"] %}
             <li class="nav-item">
               <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i>
                 {{_("Dashboard")}}</a>
             </li>
+            {% endif %}
           </ul>
         </div>
         <div class="me-auto">
@@ -79,5 +81,22 @@
 <script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" crossorigin="anonymous"></script>
 <script src="{{url_for('static', filename='js/scripts.js')}}"></script>
 {% block javascript %}{% endblock %}
+
+{% if config["DEMO"] %}
+<!--meta http-equiv="refresh" content="30; URL={{url_for('about')}}"-->
+<script>
+    /* The redirect to autoplay page function */
+    function redirect() {
+        window.location.href = "{{url_for('about')}}";
+    }
+
+    var initial = setTimeout(redirect, 30000);
+
+    $(document).click(function (event) {
+        clearTimeout(initial);
+        initial = setTimeout(redirect, 30000);
+    });
+</script>
+{% endif %}
 </body>
 </html>
