@@ -48,11 +48,12 @@ COLOR_SCALE_10 = [
     "#6a3d9a",
 ]
 COLOR_SCALE_10 = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_10]
-COLOR_SCALE_SPECIAL = {
-    "-1": ((0.0, "#FFFFFF"), (1.0, "#FFFFFF")),
-    "-99": ((0.0, "#404040"), (1.0, "#404040")),
-    "99": ((0.0, "#C0C0C0"), (1.0, "#C0C0C0")),
-}
+COLOR_SCALE_SPECIAL = [
+    "#FFFFFF",
+    "#404040",
+    "#C0C0C0",
+]
+COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
 
 
 def fig_switzerland_empty():
