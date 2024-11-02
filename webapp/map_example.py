@@ -119,10 +119,7 @@ def update_graph(chosen_question):
             fig.add_choroplethmapbox(
                 geojson=MUNICIPALITIES_DATA,
                 locations=dfp["id"],
-                z=[
-                    i,
-                ]
-                * len(dfp),
+                z=[i] * len(dfp),
                 featureidkey="properties.id",
                 showlegend=True,
                 name=text_answer,
@@ -144,10 +141,7 @@ def update_graph(chosen_question):
         fig.add_choroplethmapbox(
             geojson=MUNICIPALITIES_DATA,
             locations=dfp["id"],
-            z=[
-                i,
-            ]
-            * len(dfp),
+            z=[i] * len(dfp),
             featureidkey="properties.id",
             showlegend=True,
             name=text_answer,

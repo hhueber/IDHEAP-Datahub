@@ -502,6 +502,12 @@ if __name__ == "__main__":
                     text_ro=row["text_ro"],
                     text_en=row["text_en"],
                 )
+                if not pd.isnull(row["survey_codes"]):
+                    for qid in row["survey_codes"].split(";"):
+                        db_qps = session.execute(select(QuestionPerSurvey).filter_by(code=qid)).one_or_none()
+                        if db_qps:
+                            db_qps = db_qps[0]
+                            db_global_question.questions_linked.append(db_qps)
                 session.add(db_global_question)
                 session.flush()
 

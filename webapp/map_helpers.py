@@ -4,6 +4,7 @@ import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+import pandas as pd
 import plotly.graph_objects as go
 
 
@@ -18,6 +19,7 @@ try:
 except:
     BASE_PATH = os.path.join("data", "geojson")
 
+# Geojson
 with open(os.path.join(BASE_PATH, "country.json"), encoding="utf-8") as f:
     COUNTRY_DATA = json.load(f)
 
@@ -27,15 +29,15 @@ with open(os.path.join(BASE_PATH, "lakes.json"), encoding="utf-8") as f:
 with open(os.path.join(BASE_PATH, "municipalities.json"), encoding="utf-8") as f:
     MUNICIPALITIES_DATA = json.load(f)
 
+# Data en plus sur les communes
 MUNICIPALITIES = {
     feature["properties"]["id"]: feature["properties"]["name"] for feature in MUNICIPALITIES_DATA["features"]
 }
 MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 
-ENGINE = create_engine(DB_URI, echo=True)
-with Session(ENGINE) as session:
-    DB_YEARS = list(session.execute(session.query(Survey.year)).scalars())
-    DB_QUESTIONS_GLOBAL = list(session.execute(session.query(QuestionGlobal)).scalars())
+# TODO en attendant
+DF_COMMUNES_RESPONES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
+print(DF_COMMUNES_RESPONES_COMBINED)
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {

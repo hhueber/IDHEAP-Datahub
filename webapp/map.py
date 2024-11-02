@@ -4,14 +4,15 @@ import random
 
 from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
 from flask import Flask, render_template_string
+from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
 
 
-from webapp.config import BASEDIR
-from webapp.database import QuestionPerSurvey, Survey
+from webapp.config import BASEDIR, DB_URI
+from webapp.database import QuestionGlobal, QuestionPerSurvey, Survey
 from webapp.map_helpers import (
     COLOR_SCALE_10,
     COLOR_SCALE_SPECIAL,
@@ -26,43 +27,6 @@ from webapp.map_helpers import (
 )
 
 
-# Create fake data
-FAKE_QUESTIONS = ["q1", "q2", "q3"]
-Q1_ANSWERS = {
-    "0": "no",
-    "1": "yes",
-}
-Q2_ANSWERS = {
-    "0": "kit",
-    "1": "satellite",
-    "2": "avenue",
-    "3": "security",
-    "4": "tactic",
-    "5": "practical",
-}
-Q3_ANSWERS = None  # It'll be a range instead!
-
-# Generate some garbage dataframe for the questions
-DF_QUESTIONS_ANSWERS = pd.DataFrame(
-    {
-        "id": MUNICIPALITIES_IDS,
-        "name": list(MUNICIPALITIES.values()),
-        "q1": list(random.choice([*Q1_ANSWERS.keys(), *SPECIAL_ANSWERS.keys()]) for i in MUNICIPALITIES_IDS),
-        "q2": list(random.choice([*Q2_ANSWERS.keys(), *SPECIAL_ANSWERS.keys()]) for i in MUNICIPALITIES_IDS),
-        "q3": list(
-            int(1000 * random.random()) if random.randint(0, 5) != 3 else random.choice([*SPECIAL_ANSWERS.keys()])
-            for i in MUNICIPALITIES_IDS
-        ),
-    }
-)
-# Generate some garbage dict for the answers
-QUESTIONS_ANSWERS = {
-    "q1": Q1_ANSWERS,
-    "q2": Q2_ANSWERS,
-    "q3": Q2_ANSWERS,
-}
-
-
 LOCALE = "de"
 
 
@@ -75,6 +39,12 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         url_base_pathname=url_path,
     )
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
+
+    ENGINE = create_engine(DB_URI, echo=True)
+    with Session(ENGINE) as session:
+        db_years = list(session.execute(session.query(Survey.year)).scalars())
+        DB_QUESTIONS_GLOBAL = list(session.execute(session.query(QuestionGlobal)).scalars())
+        # TODO réponses
 
     # Define the layout of the app, including dropdowns, map, and slider
     dash_app.layout = html.Div(
@@ -135,7 +105,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                                                             id="years-dropdown",
                                                             options=[
                                                                 {"label": str(year), "value": str(year)}
-                                                                for year in DB_YEARS
+                                                                for year in db_years
                                                             ],
                                                             value=None,
                                                             clearable=True,
@@ -219,9 +189,9 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
             return "visible", year, questions_list
 
     @dash_app.callback(
-        Output({"type": "list-group-item", "index": ALL}, "active"),
-        Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
         Output("map-graph", "figure"),
+        # Output({"type": "list-group-item", "index": ALL}, "active"),
+        # Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
         State("global-question-switch", "value"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
     )
@@ -236,7 +206,12 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
             print(f"Clicked on Item {ctx.triggered_id.index}")
             chosen_question = ctx.triggered_id.index
 
-        return list_group_items, [0] * len(list_group_items), fig
+            if switch_value:  # Global questions
+                pass
+            else:  # Per survey questions
+                pass
+
+        return fig  # , list_group_items, [0] * len(list_group_items)
 
     with flask_server.app_context(), flask_server.test_request_context():
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
