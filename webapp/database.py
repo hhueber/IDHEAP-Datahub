@@ -367,7 +367,7 @@ if __name__ == "__main__":
         # Populate
         with Session(engine) as session:
             communes = pd.read_excel(
-                os.path.join(BASEDIR, "initial_data", "EtatCommunes.xlsx"),
+                os.path.join(BASEDIR, "data", "EtatCommunes.xlsx"),
                 index_col=4,
                 header=0,
             )
@@ -442,7 +442,7 @@ if __name__ == "__main__":
                 session.flush()
 
                 gsb = pd.read_excel(
-                    os.path.join(BASEDIR, "initial_data", "Extraction CodeBook - 3. Cleaned.xlsx"),
+                    os.path.join(BASEDIR, "data", "CodeBook_Cleaned.xlsx"),
                     sheet_name=str(year),
                     index_col=1,
                     header=0,
@@ -461,8 +461,8 @@ if __name__ == "__main__":
                     session.add(db_question)
                     session.flush()
 
-            gq = pd.read_excel(
-                os.path.join(BASEDIR, "initial_data", "QuestionGlobales.xlsx"),
+            gq = pd.read_csv(
+                os.path.join(BASEDIR, "data", "QuestionsGlobales.csv"),
                 index_col=None,
                 header=0,
             )

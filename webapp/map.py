@@ -1,13 +1,69 @@
 import os
+import random
 
 
 from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
 from flask import Flask, render_template_string
+from sqlalchemy.orm import Session
 import dash_bootstrap_components as dbc
+import pandas as pd
+import plotly.graph_objects as go
 
 
 from webapp.config import BASEDIR
-from webapp.map_helpers import fig_switzerland_empty
+from webapp.database import QuestionPerSurvey, Survey
+from webapp.map_helpers import (
+    COLOR_SCALE_10,
+    COLOR_SCALE_SPECIAL,
+    DB_QUESTIONS_GLOBAL,
+    DB_YEARS,
+    ENGINE,
+    fig_switzerland_empty,
+    MUNICIPALITIES,
+    MUNICIPALITIES_DATA,
+    MUNICIPALITIES_IDS,
+    SPECIAL_ANSWERS,
+)
+
+
+# Create fake data
+FAKE_QUESTIONS = ["q1", "q2", "q3"]
+Q1_ANSWERS = {
+    "0": "no",
+    "1": "yes",
+}
+Q2_ANSWERS = {
+    "0": "kit",
+    "1": "satellite",
+    "2": "avenue",
+    "3": "security",
+    "4": "tactic",
+    "5": "practical",
+}
+Q3_ANSWERS = None  # It'll be a range instead!
+
+# Generate some garbage dataframe for the questions
+DF_QUESTIONS_ANSWERS = pd.DataFrame(
+    {
+        "id": MUNICIPALITIES_IDS,
+        "name": list(MUNICIPALITIES.values()),
+        "q1": list(random.choice([*Q1_ANSWERS.keys(), *SPECIAL_ANSWERS.keys()]) for i in MUNICIPALITIES_IDS),
+        "q2": list(random.choice([*Q2_ANSWERS.keys(), *SPECIAL_ANSWERS.keys()]) for i in MUNICIPALITIES_IDS),
+        "q3": list(
+            int(1000 * random.random()) if random.randint(0, 5) != 3 else random.choice([*SPECIAL_ANSWERS.keys()])
+            for i in MUNICIPALITIES_IDS
+        ),
+    }
+)
+# Generate some garbage dict for the answers
+QUESTIONS_ANSWERS = {
+    "q1": Q1_ANSWERS,
+    "q2": Q2_ANSWERS,
+    "q3": Q2_ANSWERS,
+}
+
+
+LOCALE = "de"
 
 
 def create_dash_app(flask_server: Flask, url_path="/map"):
@@ -79,7 +135,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                                                             id="years-dropdown",
                                                             options=[
                                                                 {"label": str(year), "value": str(year)}
-                                                                for year in YEARS
+                                                                for year in DB_YEARS
                                                             ],
                                                             value=None,
                                                             clearable=True,
@@ -123,25 +179,64 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         """
         Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
         """
-        questions_list = list()
-
         if switch_value:  # Global questions
+            questions_list = [
+                dbc.ListGroupItem(
+                    getattr(
+                        question,
+                        f"text_{LOCALE}",
+                    ),
+                    id={"type": "list-group-item", "index": question.uid},
+                    n_clicks=0,
+                    action=True,
+                )
+                for question in DB_QUESTIONS_GLOBAL
+            ]
             return "invisible", None, questions_list
         else:  # Per survey questions
+            questions_list = []
+            if year:
+                with Session(ENGINE) as session:
+                    db_survey = session.execute(session.query(Survey).where(Survey.year == int(year))).one_or_none()
+                    if db_survey:
+                        db_questions = [question for question in db_survey[0].questions]
+                        questions_list = [
+                            dbc.ListGroupItem(
+                                getattr(
+                                    question,
+                                    f"text_{LOCALE}",
+                                ),
+                                id={"type": "list-group-item", "index": question.uid},
+                                n_clicks=0,
+                                action=True,
+                            )
+                            for question in db_questions
+                        ]
+                    else:
+                        print("ERROR")
+            else:
+                print("ERROR")
             return "visible", year, questions_list
 
     @dash_app.callback(
         Output({"type": "list-group-item", "index": ALL}, "active"),
         Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
+        Output("map-graph", "figure"),
+        State("global-question-switch", "value"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
     )
-    def question_update(list_group_items):
+    def question_update(switch_value, list_group_items):
         """
         Update the map when a question is selected.
         """
+        # Generate empty basic map
+        fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
+
         if any(list_group_items):
             print(f"Clicked on Item {ctx.triggered_id.index}")
-        return list_group_items, [0] * len(list_group_items)
+            chosen_question = ctx.triggered_id.index
+
+        return list_group_items, [0] * len(list_group_items), fig
 
     with flask_server.app_context(), flask_server.test_request_context():
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:

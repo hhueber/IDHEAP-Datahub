@@ -2,12 +2,17 @@ import json
 import os
 
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 import plotly.graph_objects as go
+
+
+from webapp.database import Commune, QuestionGlobal, Survey
 
 
 # L'endroit où t'as tes geojson en gros
 try:
-    from webapp.config import BASEDIR
+    from webapp.config import BASEDIR, DB_URI
 
     BASE_PATH = os.path.join(BASEDIR, "data", "geojson")
 except:
@@ -26,6 +31,11 @@ MUNICIPALITIES = {
     feature["properties"]["id"]: feature["properties"]["name"] for feature in MUNICIPALITIES_DATA["features"]
 }
 MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
+
+ENGINE = create_engine(DB_URI, echo=True)
+with Session(ENGINE) as session:
+    DB_YEARS = list(session.execute(session.query(Survey.year)).scalars())
+    DB_QUESTIONS_GLOBAL = list(session.execute(session.query(QuestionGlobal)).scalars())
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
