@@ -16,9 +16,6 @@ from webapp.database import QuestionGlobal, QuestionPerSurvey, Survey
 from webapp.map_helpers import (
     COLOR_SCALE_10,
     COLOR_SCALE_SPECIAL,
-    DB_QUESTIONS_GLOBAL,
-    DB_YEARS,
-    ENGINE,
     fig_switzerland_empty,
     MUNICIPALITIES,
     MUNICIPALITIES_DATA,
