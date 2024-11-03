@@ -366,14 +366,6 @@ if __name__ == "__main__":
 
         # Populate
         with Session(engine) as session:
-            communes = pd.read_excel(
-                os.path.join(BASEDIR, "data", "EtatCommunes.xlsx"),
-                index_col=4,
-                header=0,
-            )
-            communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
-            communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
-
             # Cantons
             with session.begin():
                 for code, lang in CANTONS.items():
@@ -390,7 +382,16 @@ if __name__ == "__main__":
                     session.add(db_canton)
                     session.flush()
 
+            # Districts and communes
             with session.begin():
+                communes = pd.read_excel(
+                    os.path.join(BASEDIR, "data", "EtatCommunes.xlsx"),
+                    index_col=4,
+                    header=0,
+                )
+                communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
+                communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
+
                 for index, row in communes.iterrows():
                     db_canton = session.execute(select(Canton).filter_by(code=row["Canton"])).one_or_none()
                     if db_canton:
@@ -433,98 +434,131 @@ if __name__ == "__main__":
                     session.add(db_commune)
                     session.flush()
 
-            for year in [1988, 1994, 1998, 2005, 2009, 2017]:
-                db_survey = Survey(
-                    name=f"GSB{str(year)[2:]}",
-                    year=year,
-                )
-                session.add(db_survey)
-                session.flush()
+            # Surveys and questions per survey
+            with session.begin():
+                for year in [1988, 1994, 1998, 2005, 2009, 2017]:
+                    db_survey = Survey(
+                        name=f"GSB{str(year)[2:]}",
+                        year=year,
+                    )
+                    session.add(db_survey)
+                    session.flush()
 
-                gsb = pd.read_excel(
-                    os.path.join(BASEDIR, "data", "CodeBook_Cleaned.xlsx"),
-                    sheet_name=str(year),
-                    index_col=1,
+                    gsb = pd.read_excel(
+                        os.path.join(BASEDIR, "data", "CodeBook_Cleaned.xlsx"),
+                        sheet_name=str(year),
+                        index_col=1,
+                        header=0,
+                    )
+                    for index, row in gsb.iterrows():
+                        db_question = QuestionPerSurvey(
+                            code=index,
+                            label=row["label"],
+                            survey_uid=db_survey.uid,
+                            text_de=row["text_de"],
+                            text_fr=row["text_fr"],
+                            text_it=row["text_it"],
+                            text_ro=row["text_ro"],
+                            text_en=row["text_en"],
+                        )
+                        session.add(db_question)
+                        session.flush()
+
+            # Global questions and categories
+            with session.begin():
+                gq = pd.read_csv(
+                    os.path.join(BASEDIR, "data", "QuestionsGlobales.csv"),
+                    index_col=None,
                     header=0,
                 )
-                for index, row in gsb.iterrows():
-                    db_question = QuestionPerSurvey(
-                        code=index,
+                for index, row in gq.iterrows():
+                    if not pd.isnull(row["category_label"]):
+                        db_question_category = QuestionCategory(
+                            label=row["category_label"],
+                            text_de=row["category_text_de"],
+                            text_fr=row["category_text_fr"],
+                            text_it=row["category_text_it"],
+                            text_ro=row["category_text_ro"],
+                            text_en=row["category_text_en"],
+                        )
+
+                        session.add(db_question_category)
+                        session.flush()
+
+                        for option_value, option_label in zip(
+                            row["options_value"].split(";"), row["options_label"].split(";")
+                        ):
+                            db_option = Option(
+                                value=option_value,
+                                label=option_label,
+                                question_category=db_question_category,
+                            )
+                            session.add(db_option)
+                            session.flush()
+                    else:
+                        db_question_category = None
+
+                    db_global_question = QuestionGlobal(
                         label=row["label"],
-                        survey_uid=db_survey.uid,
+                        question_category=db_question_category,
                         text_de=row["text_de"],
                         text_fr=row["text_fr"],
                         text_it=row["text_it"],
                         text_ro=row["text_ro"],
                         text_en=row["text_en"],
                     )
-                    session.add(db_question)
+                    if not pd.isnull(row["survey_codes"]):
+                        for qid in row["survey_codes"].split(";"):
+                            db_qps = session.execute(select(QuestionPerSurvey).filter_by(code=qid)).one_or_none()
+                            if db_qps:
+                                db_qps = db_qps[0]
+                                db_global_question.questions_linked.append(db_qps)
+                    session.add(db_global_question)
                     session.flush()
 
-            gq = pd.read_csv(
-                os.path.join(BASEDIR, "data", "QuestionsGlobales.csv"),
-                index_col=None,
-                header=0,
-            )
-            for index, row in gq.iterrows():
-                if not pd.isnull(row["category_label"]):
-                    db_question_category = QuestionCategory(
-                        label=row["category_label"],
-                        text_de=row["category_text_de"],
-                        text_fr=row["category_text_fr"],
-                        text_it=row["category_text_it"],
-                        text_ro=row["category_text_ro"],
-                        text_en=row["category_text_en"],
-                    )
-
-                    session.add(db_question_category)
-                    session.flush()
-
-                    for option_value, option_label in zip(
-                        row["options_value"].split(";"), row["options_label"].split(";")
-                    ):
-                        db_option = Option(
-                            value=option_value,
-                            label=option_label,
-                            question_category=db_question_category,
-                        )
-                        session.add(db_option)
-                        session.flush()
-                else:
-                    db_question_category = None
-
-                db_global_question = QuestionGlobal(
-                    label=row["label"],
-                    question_category=db_question_category,
-                    text_de=row["text_de"],
-                    text_fr=row["text_fr"],
-                    text_it=row["text_it"],
-                    text_ro=row["text_ro"],
-                    text_en=row["text_en"],
+            # Answers
+            with session.begin():
+                answers = pd.read_excel(
+                    "./data/demo_answers.xlsx",
+                    index_col=0,
+                    header=0,
                 )
-                if not pd.isnull(row["survey_codes"]):
-                    for qid in row["survey_codes"].split(";"):
-                        db_qps = session.execute(select(QuestionPerSurvey).filter_by(code=qid)).one_or_none()
+                for col in answers.columns:
+                    print(f">>> CURRENT ANSWER: {col}")
+                    if "GSB" in col:
+                        survey = col.split("_")[0]
+                        year = int(survey.replace("GSB", ""))
+                        year = 2000 + year if year < 50 else 1900 + year
+
+                        db_qps = session.execute(select(QuestionPerSurvey).filter_by(code=col)).one_or_none()
                         if db_qps:
                             db_qps = db_qps[0]
-                            db_global_question.questions_linked.append(db_qps)
-                session.add(db_global_question)
-                session.flush()
+                            print(f">>> QUESTION FOUND: {col}")
+
+                            for index, _ in answers[col].items():
+                                print(f">>> CREATING ANSWER: CANTON {index}")
+                                db_answer = Answer(
+                                    year=year,
+                                    question_uid=db_qps.uid,
+                                    commune_uid=index,
+                                    _value=answers[col][index],
+                                )
+                                session.add(db_answer)
+                                session.flush()
 
             # Admin
-            alphabet = string.ascii_letters + string.digits
-            password = "".join(secrets.choice(alphabet) for i in range(8))
+            with session.begin():
+                alphabet = string.ascii_letters + string.digits
+                password = "".join(secrets.choice(alphabet) for i in range(8))
 
-            print(f">>> CREATING admin")
-            admin = User(
-                username="admin",
-                email="noreply@unil.ch",
-                password=password,
-            )
-            session.add(admin)
-            session.flush()
-
-            session.commit()
+                print(f">>> CREATING admin")
+                admin = User(
+                    username="admin",
+                    email="noreply@unil.ch",
+                    password=password,
+                )
+                session.add(admin)
+                session.flush()
 
             print(f"Password for admin (please change it): {password}")
     else:
