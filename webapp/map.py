@@ -1,5 +1,4 @@
 import os
-import random
 
 
 from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
@@ -7,24 +6,14 @@ from flask import Flask, render_template_string
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 import dash_bootstrap_components as dbc
-import pandas as pd
-import plotly.graph_objects as go
 
 
-from webapp.config import BASEDIR, DB_URI
+from webapp.config import BASEDIR, DB_URI, DEMO
 from webapp.database import QuestionGlobal, QuestionPerSurvey, Survey
-from webapp.map_helpers import (
-    COLOR_SCALE_10,
-    COLOR_SCALE_SPECIAL,
-    fig_switzerland_empty,
-    MUNICIPALITIES,
-    MUNICIPALITIES_DATA,
-    MUNICIPALITIES_IDS,
-    SPECIAL_ANSWERS,
-)
+from webapp.map_helpers import DF_ANSWERS, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
 
 
-LOCALE = "de"
+LOCALE = "fr"
 
 
 def create_dash_app(flask_server: Flask, url_path="/map"):
@@ -40,6 +29,8 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
     ENGINE = create_engine(DB_URI, echo=True)
     with Session(ENGINE) as session:
         db_years = list(session.execute(session.query(Survey.year)).scalars())
+        if DEMO:
+            db_years.append(2023)  # TODO enlever
         DB_QUESTIONS_GLOBAL = list(session.execute(session.query(QuestionGlobal)).scalars())
         # TODO réponses
 
@@ -161,12 +152,31 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
             ]
             return "invisible", None, questions_list
         else:  # Per survey questions
-            questions_list = []
             if year:
-                with Session(ENGINE) as session:
-                    db_survey = session.execute(session.query(Survey).where(Survey.year == int(year))).one_or_none()
-                    if db_survey:
-                        db_questions = [question for question in db_survey[0].questions]
+                if DEMO:
+                    dft = DF_QUESTIONS[DF_QUESTIONS["year" == year]]
+                    print(dft)
+                    db_questions = []
+                    questions_list = [
+                        dbc.ListGroupItem(
+                            getattr(
+                                question,
+                                f"text_{LOCALE}",
+                            ),
+                            id={"type": "list-group-item", "index": question.uid},
+                            n_clicks=0,
+                            action=True,
+                        )
+                        for question in db_questions
+                    ]
+                else:
+                    with Session(ENGINE) as session:
+                        db_survey = session.execute(session.query(Survey).where(Survey.year == int(year))).one_or_none()
+                        if db_survey:
+                            db_questions = [question for question in db_survey[0].questions]
+                        else:
+                            print("Warning: no survey in database")
+                            db_questions = []
                         questions_list = [
                             dbc.ListGroupItem(
                                 getattr(
@@ -179,10 +189,9 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                             )
                             for question in db_questions
                         ]
-                    else:
-                        print("ERROR")
             else:
-                print("ERROR")
+                print("Warning: no year")
+                questions_list = []
             return "visible", year, questions_list
 
     @dash_app.callback(
@@ -196,19 +205,22 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         """
         Update the map when a question is selected.
         """
-        # Generate empty basic map
-        fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
-
         if any(list_group_items):
-            print(f"Clicked on Item {ctx.triggered_id.index}")
-            chosen_question = ctx.triggered_id.index
+            # print(f"Clicked on Item {ctx.triggered_id.index}")
+            chosen_question = session.execute(
+                session.query(QuestionPerSurvey).where(QuestionPerSurvey.uid == int(ctx.triggered_id.index))
+            ).one_or_none()
+            if chosen_question:
+                chosen_question = chosen_question[0].code
 
             if switch_value:  # Global questions
                 pass
             else:  # Per survey questions
-                pass
-
-        return fig  # , list_group_items, [0] * len(list_group_items)
+                return fig_map_with_data(
+                    DF_COMMUNES_RESPONES_COMBINED, chosen_question
+                )  # , list_group_items, [0] * len(list_group_items)
+        else:
+            return fig_switzerland_empty()  # , list_group_items, [0] * len(list_group_items)
 
     with flask_server.app_context(), flask_server.test_request_context():
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:

@@ -36,8 +36,11 @@ MUNICIPALITIES = {
 MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 
 # TODO en attendant
-DF_COMMUNES_RESPONES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
-print(DF_COMMUNES_RESPONES_COMBINED)
+print("memory leak lol")
+DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
+print("db questions loaded")
+DF_ANSWERS = pd.read_excel("./data/demo_answers.xlsx")
+print("db ansers loaded")
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
@@ -129,5 +132,86 @@ def fig_switzerland_empty():
         uirevision=True,
         mapbox=dict(layers=[], zoom=7.8, center={"lat": 46.8, "lon": 8.1}, style="white-bg"),
     )
+
+    return fig
+
+
+def fig_map_with_data(df, chosen_question):
+    # Generate empty basic map
+    fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
+
+    # Now for the fun partS!
+
+    # We take the chose questions, and extract their unique answers
+    answers_unique = list(df[chosen_question].unique())
+    print(answers_unique)
+    # We remove the special values
+    for value in SPECIAL_ANSWERS.keys():
+        try:
+            answers_unique.remove(value)
+        except ValueError:
+            pass
+
+    # Continuous or too many differents answers
+    if len(answers_unique) > len(COLOR_SCALE_10):
+        print("BEAUCOUP TRUCS")
+        # We take only the answers which are not special answers
+        dfp = df[~df[chosen_question].isin(SPECIAL_ANSWERS.keys())]
+
+        # And we add the layer
+        fig.add_choroplethmapbox(
+            geojson=MUNICIPALITIES_DATA,
+            locations=dfp.index,
+            z=dfp[chosen_question],
+            featureidkey="properties.id",
+            hoverinfo="text",
+            text=[f"{name}: {value}" for name, value in zip(MUNICIPALITIES.values(), dfp[chosen_question])],
+        )
+    # Discrete or few answers
+    else:
+        print("PAS BEAUCOUP TRUCS")
+        # For each unique answer, we create a layer for the map, and assign it a value
+        for i, value in enumerate(answers_unique):
+            # We extract the rows that have that value
+            dfp = df[df[chosen_question] == value]
+
+            # We create the text
+            text_answer = "bla"
+
+            # And we add the layer
+            fig.add_choroplethmapbox(
+                geojson=MUNICIPALITIES_DATA,
+                locations=dfp.index,
+                z=[i] * len(dfp),
+                featureidkey="properties.id",
+                showlegend=True,
+                name=text_answer,
+                colorscale=COLOR_SCALE_10[i],
+                showscale=False,  # Hidding the scale lol
+                hoverinfo="text",
+                text=[f"{name}: {text_answer}" for name in MUNICIPALITIES.values()],
+            )
+
+    # And FINALLY, we add the special values!
+    for i, value in enumerate(SPECIAL_ANSWERS):
+        # We extract the rows that have that value
+        dfp = df[df[chosen_question] == value]
+
+        # We create the text
+        text_answer = SPECIAL_ANSWERS[value]
+
+        # And we add the layer
+        fig.add_choroplethmapbox(
+            geojson=MUNICIPALITIES_DATA,
+            locations=dfp.index,
+            z=[i] * len(dfp),
+            featureidkey="properties.id",
+            showlegend=True,
+            name=text_answer,
+            colorscale=COLOR_SCALE_SPECIAL[i],
+            showscale=False,  # Hidding the scale lol
+            hoverinfo="text",
+            text=[f"{name}: {text_answer}" for name in MUNICIPALITIES.values()],
+        )
 
     return fig
