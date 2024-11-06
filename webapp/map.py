@@ -10,7 +10,7 @@ import dash_bootstrap_components as dbc
 
 from webapp.config import BASEDIR, DB_URI, DEMO
 from webapp.database import Answer, QuestionGlobal, QuestionPerSurvey, Survey
-from webapp.map_helpers import DF_COMMUNES_RESPONSES_COMBINED, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
+from webapp.map_helpers import DF_2023, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
 
 
 LOCALE = "fr"
@@ -228,7 +228,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                     print(f"Question: {chosen_question}")
 
                     return fig_map_with_data(
-                        DF_COMMUNES_RESPONSES_COMBINED, chosen_question
+                        DF_2023, chosen_question
                     )  # , list_group_items, [0] * len(list_group_items)
                 else:
                     print(f"NO SUCH QUESTION: {ctx.triggered_id.index}")

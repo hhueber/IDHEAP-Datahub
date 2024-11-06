@@ -43,8 +43,9 @@ DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
 print("db questions loaded")
 # DF_ANSWERS = pd.read_excel("../data/demo_answers.xlsx")
 # print("db ansers loaded")
-DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
-print(DF_COMMUNES_RESPONSES_COMBINED)
+# DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
+# print(DF_COMMUNES_RESPONSES_COMBINED)
+DF_2023 = pd.read_excel("./data/GSB 2023_V1.xlsx").set_index("gemid")
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
