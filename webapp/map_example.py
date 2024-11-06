@@ -145,7 +145,7 @@ def update_graph(chosen_question):
             featureidkey="properties.id",
             showlegend=True,
             name=text_answer,
-            colorscale=COLOR_SCALE_SPECIAL[value],
+            colorscale=COLOR_SCALE_SPECIAL[i],
             showscale=False,  # Hidding the scale lol
             hoverinfo="text",
             text=[f"{name}: {text_answer}" for name in dfp["name"].tolist()],

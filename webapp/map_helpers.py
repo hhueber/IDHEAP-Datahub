@@ -1,9 +1,11 @@
+import ast
 import json
 import os
 
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -39,14 +41,16 @@ MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 print("memory leak lol")
 DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
 print("db questions loaded")
-DF_ANSWERS = pd.read_excel("./data/demo_answers.xlsx")
-print("db ansers loaded")
+# DF_ANSWERS = pd.read_excel("../data/demo_answers.xlsx")
+# print("db ansers loaded")
+DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
+print(DF_COMMUNES_RESPONSES_COMBINED)
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
-    "-1": "(no data)",
-    "-99": "(did not answer)",
-    "99": "(no opinion)",
+    -1.0: "(no data)",
+    -99.0: "(did not answer)",
+    99.0: "(no opinion)",
 }
 
 # Color scale
@@ -67,8 +71,19 @@ COLOR_SCALE_SPECIAL = [
     "#FFFFFF",
     "#404040",
     "#C0C0C0",
+    "#BEBEBE",
 ]
 COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
+
+
+def cast_lol(x):
+    try:
+        x = float(x)
+        if x.is_integer():
+            return int(x)
+    except ValueError:
+        pass
+    return x
 
 
 def fig_switzerland_empty():
@@ -137,14 +152,20 @@ def fig_switzerland_empty():
 
 
 def fig_map_with_data(df, chosen_question):
+    print(chosen_question)
+    df_int = df[[chosen_question]]
+    # df_int[chosen_question] = df_int[chosen_question].apply(lambda x: cast_lol(x))
+    print(df_int)
+
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
 
     # Now for the fun partS!
 
     # We take the chose questions, and extract their unique answers
-    answers_unique = list(df[chosen_question].unique())
+    answers_unique = list(df_int[chosen_question].unique())
     print(answers_unique)
+
     # We remove the special values
     for value in SPECIAL_ANSWERS.keys():
         try:
@@ -154,9 +175,8 @@ def fig_map_with_data(df, chosen_question):
 
     # Continuous or too many differents answers
     if len(answers_unique) > len(COLOR_SCALE_10):
-        print("BEAUCOUP TRUCS")
         # We take only the answers which are not special answers
-        dfp = df[~df[chosen_question].isin(SPECIAL_ANSWERS.keys())]
+        dfp = df_int[~df_int[chosen_question].isin(SPECIAL_ANSWERS.keys())]
 
         # And we add the layer
         fig.add_choroplethmapbox(
@@ -169,14 +189,13 @@ def fig_map_with_data(df, chosen_question):
         )
     # Discrete or few answers
     else:
-        print("PAS BEAUCOUP TRUCS")
         # For each unique answer, we create a layer for the map, and assign it a value
         for i, value in enumerate(answers_unique):
             # We extract the rows that have that value
-            dfp = df[df[chosen_question] == value]
+            dfp = df_int[df_int[chosen_question] == value]
 
             # We create the text
-            text_answer = "bla"
+            text_answer = value
 
             # And we add the layer
             fig.add_choroplethmapbox(
@@ -195,7 +214,7 @@ def fig_map_with_data(df, chosen_question):
     # And FINALLY, we add the special values!
     for i, value in enumerate(SPECIAL_ANSWERS):
         # We extract the rows that have that value
-        dfp = df[df[chosen_question] == value]
+        dfp = df_int[df_int[chosen_question] == value]
 
         # We create the text
         text_answer = SPECIAL_ANSWERS[value]
@@ -213,5 +232,18 @@ def fig_map_with_data(df, chosen_question):
             hoverinfo="text",
             text=[f"{name}: {text_answer}" for name in MUNICIPALITIES.values()],
         )
+
+    fig.add_choroplethmapbox(
+        geojson=MUNICIPALITIES_DATA,
+        locations=[None] * len(MUNICIPALITIES_DATA),
+        z=[None] * len(MUNICIPALITIES_DATA),
+        featureidkey="properties.id",
+        showlegend=True,
+        name="(no value)",
+        colorscale=COLOR_SCALE_SPECIAL[0],
+        showscale=False,  # Hidding the scale lol
+        hoverinfo="text",
+        text=[f"{name}: (no data)" for name in MUNICIPALITIES.values()],
+    )
 
     return fig

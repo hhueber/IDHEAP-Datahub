@@ -395,7 +395,7 @@ if __name__ == "__main__":
                 for index, row in communes.iterrows():
                     db_canton = session.execute(select(Canton).filter_by(code=row["Canton"])).one_or_none()
                     if db_canton:
-                        canton_id = db_canton[0].uid
+                        db_canton = db_canton[0]
                     else:
                         raise RuntimeError("bleh")
 
@@ -413,7 +413,7 @@ if __name__ == "__main__":
                             name_it=row["Nom du district"],
                             name_ro=row["Nom du district"],
                             name_en=row["Nom du district"],
-                            canton_uid=canton_id,
+                            canton=db_canton,
                         )
                         print(f">>> CREATING: {db_district.name}")
                         session.add(db_district)
@@ -428,7 +428,7 @@ if __name__ == "__main__":
                         name_it=row["Nom de la commune"],
                         name_ro=row["Nom de la commune"],
                         name_en=row["Nom de la commune"],
-                        district_uid=db_district.uid,
+                        district=db_district,
                     )
                     print(f">>> CREATING: {db_commune.name}")
                     session.add(db_commune)
@@ -436,7 +436,7 @@ if __name__ == "__main__":
 
             # Surveys and questions per survey
             with session.begin():
-                for year in [1988, 1994, 1998, 2005, 2009, 2017]:
+                for year in [1988, 1994, 1998, 2005, 2009, 2017, 2023]:
                     db_survey = Survey(
                         name=f"GSB{str(year)[2:]}",
                         year=year,
@@ -454,7 +454,7 @@ if __name__ == "__main__":
                         db_question = QuestionPerSurvey(
                             code=index,
                             label=row["label"],
-                            survey_uid=db_survey.uid,
+                            survey=db_survey,
                             text_de=row["text_de"],
                             text_fr=row["text_fr"],
                             text_it=row["text_it"],
@@ -519,7 +519,7 @@ if __name__ == "__main__":
             # Answers
             with session.begin():
                 answers = pd.read_excel(
-                    "./data/demo_answers.xlsx",
+                    os.path.join(BASEDIR, "..", "data", "demo_answers.xlsx"),
                     index_col=0,
                     header=0,
                 )
@@ -536,11 +536,29 @@ if __name__ == "__main__":
                             print(f">>> QUESTION FOUND: {col}")
 
                             for index, _ in answers[col].items():
-                                print(f">>> CREATING ANSWER: CANTON {index}")
+                                db_commune = session.execute(select(Commune).filter_by(code=index)).one_or_none()
+                                if db_commune:
+                                    db_commune = db_commune[0]
+                                else:
+                                    db_commune = Commune(
+                                        code=index,
+                                        name=answers["gemidname"][index],
+                                        name_de=answers["gemidname"][index],
+                                        name_fr=answers["gemidname"][index],
+                                        name_it=answers["gemidname"][index],
+                                        name_ro=answers["gemidname"][index],
+                                        name_en=answers["gemidname"][index],
+                                        district=db_district,
+                                    )
+                                    print(f">>> CREATING: {db_commune.name}")
+                                    session.add(db_commune)
+                                    session.flush()
+
+                                print(f">>> CREATING ANSWER: COMMUNE {db_commune.name}")
                                 db_answer = Answer(
                                     year=year,
-                                    question_uid=db_qps.uid,
-                                    commune_uid=index,
+                                    question=db_qps,
+                                    commune=db_commune,
                                     _value=answers[col][index],
                                 )
                                 session.add(db_answer)

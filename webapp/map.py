@@ -9,8 +9,8 @@ import dash_bootstrap_components as dbc
 
 
 from webapp.config import BASEDIR, DB_URI, DEMO
-from webapp.database import QuestionGlobal, QuestionPerSurvey, Survey
-from webapp.map_helpers import DF_ANSWERS, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
+from webapp.database import Answer, QuestionGlobal, QuestionPerSurvey, Survey
+from webapp.map_helpers import DF_COMMUNES_RESPONSES_COMBINED, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
 
 
 LOCALE = "fr"
@@ -28,9 +28,10 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
 
     ENGINE = create_engine(DB_URI, echo=True)
     with Session(ENGINE) as session:
-        db_years = list(session.execute(session.query(Survey.year)).scalars())
         if DEMO:
-            db_years.append(2023)  # TODO enlever
+            db_years = [2023]
+        else:
+            db_years = list(session.execute(session.query(Survey.year)).scalars())
         DB_QUESTIONS_GLOBAL = list(session.execute(session.query(QuestionGlobal)).scalars())
         # TODO réponses
 
@@ -137,6 +138,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         """
         Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
         """
+        questions_list = list()
         if switch_value:  # Global questions
             questions_list = [
                 dbc.ListGroupItem(
@@ -154,20 +156,18 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         else:  # Per survey questions
             if year:
                 if DEMO:
-                    dft = DF_QUESTIONS[DF_QUESTIONS["year" == year]]
-                    print(dft)
-                    db_questions = []
+                    dft = DF_QUESTIONS[DF_QUESTIONS["year"] == int(year)]
                     questions_list = [
                         dbc.ListGroupItem(
                             getattr(
                                 question,
                                 f"text_{LOCALE}",
                             ),
-                            id={"type": "list-group-item", "index": question.uid},
+                            id={"type": "list-group-item", "index": question.code},
                             n_clicks=0,
                             action=True,
                         )
-                        for question in db_questions
+                        for index, question in dft.iterrows()
                     ]
                 else:
                     with Session(ENGINE) as session:
@@ -207,18 +207,35 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         """
         if any(list_group_items):
             # print(f"Clicked on Item {ctx.triggered_id.index}")
-            chosen_question = session.execute(
-                session.query(QuestionPerSurvey).where(QuestionPerSurvey.uid == int(ctx.triggered_id.index))
-            ).one_or_none()
-            if chosen_question:
-                chosen_question = chosen_question[0].code
-
             if switch_value:  # Global questions
                 pass
             else:  # Per survey questions
-                return fig_map_with_data(
-                    DF_COMMUNES_RESPONES_COMBINED, chosen_question
-                )  # , list_group_items, [0] * len(list_group_items)
+                print(f"Clicked on Item {ctx.triggered_id.index}")
+
+                if DEMO:
+                    if ctx.triggered_id.index in DF_QUESTIONS["code"].values:
+                        chosen_question = ctx.triggered_id.index
+                    else:
+                        chosen_question = None
+                else:
+                    chosen_question = session.execute(
+                        session.query(QuestionPerSurvey).where(QuestionPerSurvey.uid == int(ctx.triggered_id.index))
+                    ).one_or_none()
+                    if chosen_question:
+                        chosen_question = chosen_question[0].code
+
+                if chosen_question:
+                    print(f"Question: {chosen_question}")
+
+                    return fig_map_with_data(
+                        DF_COMMUNES_RESPONSES_COMBINED, chosen_question
+                    )  # , list_group_items, [0] * len(list_group_items)
+                else:
+                    print(f"NO SUCH QUESTION: {ctx.triggered_id.index}")
+
+                # db_answers = session.execute(session.query(Answer).where(Answer.question_uid == 2325)).scalars()
+                # print([answer.value for answer in db_answers])
+                # print("done")
         else:
             return fig_switzerland_empty()  # , list_group_items, [0] * len(list_group_items)
 
