@@ -90,7 +90,9 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                         dbc.Col(
                             dcc.Dropdown(
                                 id="years-dropdown",
-                                options=[{"label": str(year), "value": str(year)} for year in db_years],
+                                options=[
+                                    {"label": str(year), "value": str(year)} for year in [2023]
+                                ],  # TODO replace with db_years if needed
                                 value=None,
                                 clearable=True,
                                 className="invisible",
@@ -149,6 +151,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
             ]
         )
     )
+
     #
     # @dash_app.callback(
     #     Output("years-dropdown", "className"),
@@ -260,8 +263,6 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         Output("years-dropdown", "className"),
         Output("years-dropdown", "value"),
         Output("years-slider-container", "className"),
-        # Output("years-slider", "marks"),
-        # Output("years-slider", "value"),
         Input("global-question-switch", "value"),
         Input("years-dropdown", "value"),
     )
@@ -270,9 +271,9 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
         """
         if switch_value:  # Global questions
-            return "invisible", None, "visible"  # , {year: str(year) for year in db_years}, db_years[-1]
+            return "invisible", None, "visible"
         else:  # Per survey questions
-            return "visible", year_from_dropdown, "invisible"  # , {}, None
+            return "visible", year_from_dropdown, "invisible"
 
     @dash_app.callback(
         Output("map-graph", "figure"),
@@ -322,12 +323,14 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                     except AttributeError:
                         trans_questions = {db_year: f"GSB{str(db_year)[2:]}_{chosen_question}" for db_year in db_years}
 
+                    all_years = list(trans_questions.keys())
+
                     if not year_from_slider:
-                        year_from_slider = list(trans_questions.keys())[-1]
+                        year_from_slider = all_years[-1]
 
                     return (
                         fig_map_with_data(DF_DEMO_ANSWERS, trans_questions[year_from_slider]),
-                        {year: str(year) for year in trans_questions.keys()},
+                        {year: str(year) for year in all_years},
                         year_from_slider,
                         [0] * len(list_group_items),
                     )
@@ -349,12 +352,22 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                 if chosen_question:
                     print(f"Question: {chosen_question}")
 
-                    return (
-                        fig_map_with_data(DF_2023, chosen_question),
-                        {year: "" for year in db_years},
-                        None,
-                        [0] * len(list_group_items),
-                    )  # , list_group_items, [0] * len(list_group_items)
+                    try:
+                        return (
+                            fig_map_with_data(
+                                DF_2023, chosen_question
+                            ),  # TODO Replace with DF_COMMUNES_RESPONSES_COMBINED if needed
+                            {year: "" for year in db_years},
+                            None,
+                            [0] * len(list_group_items),
+                        )  # , list_group_items, [0] * len(list_group_items)
+                    except:
+                        return (
+                            fig_switzerland_empty(),
+                            {year: "" for year in db_years},
+                            None,
+                            [0] * len(list_group_items),
+                        )  # , list_group_items, [0] * len(list_group_items)
                 else:
                     print(f"NO SUCH QUESTION: {ctx.triggered_id.index}")
 
