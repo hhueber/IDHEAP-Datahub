@@ -2,7 +2,9 @@ import os
 
 
 from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
+from dash.exceptions import PreventUpdate
 from flask import Flask, render_template_string
+from flask_babel import _
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 import dash_bootstrap_components as dbc
@@ -13,7 +15,7 @@ from webapp.database import Answer, QuestionGlobal, QuestionPerSurvey, Survey
 from webapp.map_helpers import DF_2023, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
 
 
-LOCALE = "fr"
+LOCALE = "en"
 
 
 def create_dash_app(flask_server: Flask, url_path="/map"):
@@ -24,123 +26,117 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         server=flask_server,
         url_base_pathname=url_path,
     )
-    dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
+    # dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
     ENGINE = create_engine(DB_URI, echo=True)
     with Session(ENGINE) as session:
         if DEMO:
-            db_years = [2023]
+            db_years = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
         else:
             db_years = list(session.execute(session.query(Survey.year)).scalars())
+        db_years = sorted(db_years)
         DB_QUESTIONS_GLOBAL = list(session.execute(session.query(QuestionGlobal)).scalars())
         # TODO réponses
 
     # Define the layout of the app, including dropdowns, map, and slider
-    dash_app.layout = html.Div(
-        [
-            dbc.Row(
-                [
-                    dbc.Col(
-                        [
-                            # Map display component
-                            dbc.Card(
-                                dbc.CardBody(
-                                    dcc.Graph(
-                                        id="map-graph",
-                                        figure=fig_switzerland_empty(),
-                                        style={
-                                            "height": "75vh",
-                                        },
-                                    ),
-                                )
+    # Map display component
+    layout_card = dbc.Card(
+        dbc.CardBody(
+            dcc.Graph(
+                id="map-graph",
+                figure=fig_switzerland_empty(),
+                style={
+                    "height": "75vh",
+                },
+            )
+        )
+    )
+    layout_infos = dbc.Card(
+        dbc.CardBody(
+            [
+                html.H4("Instructions", id="info-title", className="card-title"),
+                html.P(
+                    "Select a question in the list bellow, then select a municipality on the map.",
+                    id="info-text",
+                    className="card-text",
+                ),
+            ]
+        ),
+        className="mb-4",
+    )
+    layout_questions = dbc.Card(
+        dbc.CardBody(
+            [
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            dbc.Checklist(
+                                id="global-question-switch",
+                                options=[{"label": "Global questions", "value": 1}],
+                                value=[1],
+                                switch=True,
+                                className="text-start",
                             )
-                        ],
-                        width=8,
-                    ),
+                        ),
+                        dbc.Col(
+                            dcc.Dropdown(
+                                id="years-dropdown",
+                                options=[{"label": str(year), "value": str(year)} for year in db_years],
+                                value=None,
+                                clearable=True,
+                                className="invisible",
+                            )
+                        ),
+                    ],
+                    className="card-text mb-3",
+                ),
+                dbc.Row(
                     dbc.Col(
-                        [
-                            dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                        html.H4("Instructions", id="info-title", className="card-title"),
-                                        html.P(
-                                            "Select a question in the list bellow, then select a municipality on the map.",
-                                            id="info-text",
-                                            className="card-text",
-                                        ),
-                                    ]
-                                ),
-                                className="mb-4",
-                            ),
-                            dbc.Card(
-                                dbc.CardBody(
-                                    [
-                                        dbc.Row(
-                                            [
-                                                dbc.Col(
-                                                    [
-                                                        dbc.Checklist(
-                                                            id="global-question-switch",
-                                                            options=[{"label": "Global questions", "value": 1}],
-                                                            value=[1],
-                                                            switch=True,
-                                                            className="text-start",
-                                                        ),
-                                                    ]
-                                                ),
-                                                dbc.Col(
-                                                    [
-                                                        dcc.Dropdown(
-                                                            id="years-dropdown",
-                                                            options=[
-                                                                {"label": str(year), "value": str(year)}
-                                                                for year in db_years
-                                                            ],
-                                                            value=None,
-                                                            clearable=True,
-                                                            className="invisible",
-                                                        ),
-                                                    ]
-                                                ),
-                                            ],
-                                            className="card-text mb-3",
-                                        ),
-                                        html.Div(
-                                            [
-                                                dbc.ListGroup(
-                                                    id="questions", style={"overflow-y": "auto", "max-height": "300px"}
-                                                ),
-                                            ],
-                                            className="card-text",
-                                        ),
-                                    ]
-                                )
-                            ),
-                        ],
-                        width=4,
+                        html.Em(_("Please note that some of the data is incomplete/still being worked on.")),
+                        className="card-text mb-3",
+                    )
+                ),
+                dbc.Row(
+                    dbc.Col(
+                        dcc.Slider(
+                            db_years[0],
+                            db_years[-1],
+                            id="years-slider",
+                            step=None,
+                            marks=None,
+                            value=db_years[-1],
+                        ),
+                        className="card-text mb-3",
                     ),
-                ]
-            ),
-        ],
-        style={
-            # "min-height": "100vh",
-        },
+                    id="years-slider-container",
+                ),
+                dbc.Row(
+                    dbc.Col(
+                        dbc.ListGroup([], id="questions", style={"overflow-y": "auto", "max-height": "300px"}),
+                        className="card-text",
+                    )
+                ),
+            ]
+        )
+    )
+
+    dash_app.layout = html.Div(
+        dbc.Row(
+            [
+                dbc.Col(layout_card, width=8),
+                dbc.Col([layout_infos, layout_questions], width=4),
+            ]
+        )
     )
 
     @dash_app.callback(
-        Output("years-dropdown", "className"),
-        Output("years-dropdown", "value"),
         Output("questions", "children"),
         Input("global-question-switch", "value"),
         Input("years-dropdown", "value"),
     )
     def update_question_list(switch_value, year):
-        """
-        Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
-        """
-        questions_list = list()
-        if switch_value:  # Global questions
-            questions_list = [
+        if switch_value:
+            questions_list = list(
                 dbc.ListGroupItem(
                     getattr(
                         question,
@@ -151,64 +147,85 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                     action=True,
                 )
                 for question in DB_QUESTIONS_GLOBAL
-            ]
-            return "invisible", None, questions_list
-        else:  # Per survey questions
+            )
+        else:
             if year:
-                if DEMO:
-                    dft = DF_QUESTIONS[DF_QUESTIONS["year"] == int(year)]
-                    questions_list = [
-                        dbc.ListGroupItem(
-                            getattr(
-                                question,
-                                f"text_{LOCALE}",
-                            ),
-                            id={"type": "list-group-item", "index": question.code},
-                            n_clicks=0,
-                            action=True,
-                        )
-                        for index, question in dft.iterrows()
-                    ]
-                else:
-                    with Session(ENGINE) as session:
-                        db_survey = session.execute(session.query(Survey).where(Survey.year == int(year))).one_or_none()
-                        if db_survey:
-                            db_questions = [question for question in db_survey[0].questions]
-                        else:
-                            print("Warning: no survey in database")
-                            db_questions = []
-                        questions_list = [
-                            dbc.ListGroupItem(
-                                getattr(
-                                    question,
-                                    f"text_{LOCALE}",
-                                ),
-                                id={"type": "list-group-item", "index": question.uid},
-                                n_clicks=0,
-                                action=True,
-                            )
-                            for question in db_questions
-                        ]
+                dft = DF_QUESTIONS[DF_QUESTIONS["year"] == int(year)]
+                questions_list = list(
+                    dbc.ListGroupItem(
+                        getattr(
+                            question,
+                            f"text_{LOCALE}",
+                        ),
+                        id={"type": "list-group-item", "index": question.code},
+                        n_clicks=0,
+                        action=True,
+                    )
+                    for index, question in dft.iterrows()
+                )
             else:
-                print("Warning: no year")
-                questions_list = []
-            return "visible", year, questions_list
+                questions_list = list()
+            #     else:
+            #         with Session(ENGINE) as session:
+            #             db_survey = session.execute(session.query(Survey).where(Survey.year == int(year))).one_or_none()
+            #             if db_survey:
+            #                 db_questions = [question for question in db_survey[0].questions]
+            #             else:
+            #                 print("Warning: no survey in database")
+            #                 db_questions = []
+            #             questions_list = [
+            #                 dbc.ListGroupItem(
+            #                     getattr(
+            #                         question,
+            #                         f"text_{LOCALE}",
+            #                     ),
+            #                     id={"type": "list-group-item", "index": question.uid},
+            #                     n_clicks=0,
+            #                     action=True,
+            #                 )
+            #                 for question in db_questions
+            #             ]
+            # else:
+            #     print("Warning: no year")
+            #     questions_list = list()
+            # print(questions_list)
+        return questions_list
+
+    @dash_app.callback(
+        Output("years-dropdown", "className"),
+        Output("years-dropdown", "value"),
+        Output("years-slider-container", "className"),
+        Output("years-slider", "marks"),
+        Output("years-slider", "value"),
+        Input("global-question-switch", "value"),
+        Input("years-dropdown", "value"),
+    )
+    def update_years(switch_value, year):
+        """
+        Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
+        """
+        if switch_value:  # Global questions
+            return "invisible", None, "visible", {year: str(year) for year in db_years}, db_years[-1]
+        else:  # Per survey questions
+            return "visible", year, "invisible", None, None
 
     @dash_app.callback(
         Output("map-graph", "figure"),
         # Output({"type": "list-group-item", "index": ALL}, "active"),
         # Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
-        State("global-question-switch", "value"),
+        Input("global-question-switch", "value"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
     )
     def question_update(switch_value, list_group_items):
         """
         Update the map when a question is selected.
         """
+        if not ctx.triggered:
+            raise PreventUpdate
         if any(list_group_items):
             # print(f"Clicked on Item {ctx.triggered_id.index}")
             if switch_value:  # Global questions
-                pass
+                return fig_switzerland_empty()
             else:  # Per survey questions
                 print(f"Clicked on Item {ctx.triggered_id.index}")
 

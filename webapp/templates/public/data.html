@@ -17,7 +17,7 @@
       <dl class="row">
         <dt class="col-sm-4">{{_("All questions")}}</dt>
         <dd class="col-sm-8">
-          <a class="btn btn-outline-primary" href="?table=questions_all">
+          <a class="btn btn-outline-primary{% if config['DEMO'] %} disabled{% endif %}" href="?table=questions_all">
             <i class="fa-solid fa-magnifying-glass"></i>
             {{_("Preview")}}
           </a>
@@ -30,7 +30,7 @@
 
         <dt class="col-sm-4">{{_("All answers")}}</dt>
         <dd class="col-sm-8">
-          <a class="btn btn-outline-primary" href="?table=answers_all">
+          <a class="btn btn-outline-primary{% if config['DEMO'] %} disabled{% endif %}" href="?table=answers_all">
             <i class="fa-solid fa-magnifying-glass"></i>
             {{_("Preview")}}
           </a>
@@ -43,7 +43,7 @@
 
         <dt class="col-sm-4">{{_("Global questions")}}</dt>
         <dd class="col-sm-8">
-          <a class="btn btn-outline-primary" href="?table=questions_global">
+          <a class="btn btn-outline-primary{% if config['DEMO'] %} disabled{% endif %}" href="?table=questions_global">
             <i class="fa-solid fa-magnifying-glass"></i>
             {{_("Preview")}}
           </a>
@@ -59,7 +59,7 @@
         {% for year in years %}
         <dt class="col-sm-4">{{_("GSB ")}}{{year}}</dt>
         <dd class="col-sm-8">
-          <a class="btn btn-outline-primary" href="?table=gsb{{year}}">
+          <a class="btn btn-outline-primary{% if config['DEMO'] %} disabled{% endif %}" href="?table=gsb{{year}}">
             <i class="fa-solid fa-magnifying-glass"></i>
             {{_("Preview")}}
           </a>
