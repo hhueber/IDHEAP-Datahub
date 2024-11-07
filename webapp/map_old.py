@@ -14,6 +14,54 @@ from webapp.config import BASEDIR
 from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
 
 
+canton_names = {
+    1: "ZH",
+    2: "BE",
+    3: "LU",
+    4: "UR",
+    5: "SZ",
+    6: "OW",
+    7: "NW",
+    8: "GL",
+    9: "ZG",
+    10: "FR",
+    11: "SO",
+    12: "BS",
+    13: "BL",
+    14: "SH",
+    15: "AR",
+    16: "AI",
+    17: "SG",
+    18: "GR",
+    19: "AG",
+    20: "TG",
+    21: "TI",
+    22: "VD",
+    23: "VS",
+    24: "NE",
+    25: "GE",
+    26: "JU",
+}
+labels_impact_4 = {1: "Fortement impacté", 2: "Partiellement impacté", 3: "Non impacté", -99: "Pas de réponse"}
+labels_impact_2 = {1: "Oui", 2: "Non", -99: "Pas de réponse"}
+labels_percentage = {
+    1: "Moins de 25%",
+    2: "Entre 25% et 49%",
+    3: "Entre 50% et 64%",
+    4: "Entre 65% et 80%",
+    5: "Plus de 80%",
+    99: "Ne sait pas",
+    -99: "Pas de réponse",
+}
+labels_visibility = {
+    1: "Aucune limite de performance visible",
+    2: "Limite de performance en vue",
+    3: "Limite de performance atteinte",
+    4: "Limite de performance dépassée",
+    5: "Non applicable à la commune",
+    -99: "Pas de réponse",
+}
+
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
     -1.0: "(no data)",
@@ -69,7 +117,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
     # Define the layout of the app, including dropdowns, map, and slider
-    layout_1 = html.Div(
+    dash_app.layout = html.Div(
         [
             # Dropdowns for selecting the survey and variable (question)
             html.Div(
@@ -253,8 +301,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Output("map-graph", "figure"),
         Output("slider", "marks"),
         Output("slider", "value"),
-        Output("slider", "disabled"),
-        Output("slider-label", "children"),
         Input("survey-dropdown", "value"),
         # Input("variable-dropdown", "value"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
@@ -272,6 +318,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         slider_label = "Select a question to see the years"
 
         selected_language = "en"  # get_locale()
+
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
@@ -317,18 +364,11 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         if selected_year in associated_years
                         else associated_years[0] if associated_years else None
                     )
-
-                    disabled = False
-                    slider_label = "Select a year"
                 else:
                     print("Error: 'quest_glob' row not found in df_commune_responses_combined.")
-                    slider_marks, slider_value = {
-                        year: "" for year in sorted([1988, 1994, 1998, 2005, 2009, 2017, 2023])
-                    }, None
+                    slider_marks, slider_value = {}, None
             else:
-                slider_marks, slider_value = {
-                    year: "" for year in sorted([1988, 1994, 1998, 2005, 2009, 2017, 2023])
-                }, None
+                slider_marks, slider_value = {}, None
 
             slider_style = {"display": "block"}
 
@@ -344,7 +384,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     n_clicks=0,
                     action=True,
                 )
-                for _, row in df_combined.iterrows()
+                for _, row in [(i, r) for i, r in df_combined.iterrows()][3:]
             ]
 
             # Hide the slider and reset map for "survey" selection
@@ -374,20 +414,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     ),
                     slider_marks,
                     slider_value,
-                    disabled,
-                    slider_label,
                 )
             else:
                 # If no survey question selected, return an empty map
-                return (
-                    options,
-                    slider_style,
-                    fig_switzerland_empty(),
-                    slider_marks,
-                    slider_value,
-                    disabled,
-                    slider_label,
-                )
+                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
         # Prepare the map figure for global question selection with slider control
         if selected_variable and selected_survey == "global_question":
@@ -399,15 +429,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 response_dict = dict(zip(communes, responses))
             else:
                 # No data for the selected year; return an empty map
-                return (
-                    options,
-                    slider_style,
-                    fig_switzerland_empty(),
-                    slider_marks,
-                    slider_value,
-                    disabled,
-                    slider_label,
-                )
+                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
             # assign a default value (99) to communes without data
             aggregated_responses = [
@@ -422,12 +444,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 ),
                 slider_marks,
                 slider_value,
-                disabled,
-                slider_label,
             )
 
         # Default fallback: return empty map and no options if conditions aren't met
-        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value, disabled, slider_label
+        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
     # Function to create the map figure based on survey responses
     def create_figure(variable_values, communes):

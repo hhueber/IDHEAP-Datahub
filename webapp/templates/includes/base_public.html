@@ -54,7 +54,7 @@
           {% set langdict = {"en": ("🇬🇧", "English", ""), "fr": ("🇫🇷", "Français", ""), "de": ("🇩🇪", "Deutsch", "
           disabled"), "it": ("🇮🇹", "Italiano", " disabled"), "rm": ("🇷🇲", "Rumantsch", " disabled")} %}
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {{langdict[get_locale()][0]}}
+            {{ langdict.get(get_locale(), langdict['fr'])[0] }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             {% for code, cont in langdict.items() %}

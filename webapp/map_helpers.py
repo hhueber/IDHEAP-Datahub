@@ -41,7 +41,7 @@ MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 print("memory leak lol")
 # DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
 # DF_QUESTIONS_GLOBAL = pd.read_csv("./webapp/data/QuestionsGlobales.csv")
-# print("db questions loaded")
+print("db questions loaded")
 # DF_ANSWERS = pd.read_excel("../data/demo_answers.xlsx")
 # print("db ansers loaded")
 # DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv").set_index("gemid")
@@ -166,10 +166,10 @@ def fig_map_with_data(df, chosen_question):
 
     # Labels
     # if chosen_question in DF_LABELS["code"].values:
-    #     df_labels = DF_LABELS[DF_LABELS["code"] == chosen_question]
-    #     labels = {}
+    # df_labels = DF_LABELS[DF_LABELS["code"] == chosen_question]
+    # labels = {}
     # else:
-    #     labels = None
+    # labels = None
 
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
