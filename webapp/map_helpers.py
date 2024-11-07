@@ -49,6 +49,8 @@ DF_DEMO_ANSWERS = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
 # print(DF_COMMUNES_RESPONSES_COMBINED)
 DF_2023 = pd.read_excel("./data/GSB 2023_V1.xlsx").set_index("gemid")
 
+DF_LABELS = pd.read_excel("./data/answer_labels.xlsx")
+
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
     -1.0: "(no data)",
@@ -155,8 +157,16 @@ def fig_switzerland_empty():
 
 
 def fig_map_with_data(df, chosen_question):
+    # Values
     df_int = df[[chosen_question]]
     # df_int[chosen_question] = df_int[chosen_question].apply(lambda x: cast_lol(x))
+
+    # Labels
+    if chosen_question in DF_LABELS["code"].values:
+        df_labels = DF_LABELS[DF_LABELS["code"] == chosen_question]
+        labels = {}
+    else:
+        labels = None
 
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
