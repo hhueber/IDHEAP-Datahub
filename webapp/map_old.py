@@ -404,6 +404,15 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         num_unique_values = len(unique_values)
         print(unique_values)
 
+        # We remove the special values
+        keep_special_values = set()
+        for value in SPECIAL_ANSWERS.keys():
+            try:
+                unique_values.remove(value)
+                keep_special_values.add(value)
+            except KeyError:
+                pass
+
         # Determine color scale based on the number of unique values
         # if num_unique_values < 11:  # to correct once we know how to
         # if num_unique_values == 99:
@@ -492,6 +501,29 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         showscale=False,  # Hidding the scale lol
                     )
                 )
+
+        # Add special values back
+        for i, value in enumerate(keep_special_values):
+            temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
+            print(temp_answers)
+            text_answer = SPECIAL_ANSWERS[value]
+            fig.add_trace(
+                go.Choroplethmapbox(
+                    geojson=MUNICIPALITIES_DATA,
+                    locations=[x[0] for x in temp_answers],
+                    z=[i] * len(temp_answers),
+                    featureidkey="properties.id",
+                    showlegend=True,
+                    name=text_answer,
+                    colorscale=COLOR_SCALE_SPECIAL[i],
+                    hoverinfo="text",
+                    text=[
+                        f"{feature['properties']['name']}: {text_answer}"
+                        for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
+                    ],
+                    showscale=False,  # Hidding the scale lol
+                )
+            )
 
         # Add the municipalities layer with dynamic or discrete color scale based on unique value count
         # fig.add_trace(

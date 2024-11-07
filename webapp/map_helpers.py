@@ -56,6 +56,9 @@ SPECIAL_ANSWERS = {
     -1.0: "(no data)",
     -99.0: "(did not answer)",
     99.0: "(no opinion)",
+    -1: "(no data)",
+    -99: "(did not answer)",
+    99: "(no opinion)",
 }
 
 # Color scale
