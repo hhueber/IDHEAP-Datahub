@@ -1,7 +1,7 @@
 import os
 
 
-from dash import Dash, dcc, html, Input, Output
+from dash import ALL, ctx, Dash, dcc, html, Input, Output
 from flask import Flask, render_template_string
 from flask_babel import _
 import dash_bootstrap_components as dbc
@@ -221,7 +221,12 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                             _("Question"),
                             id="variable-selection-label",
                         ),
-                        dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
+                        # dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
+                        dbc.ListGroup(
+                            [],
+                            id="questions-list",
+                            style={"overflow-y": "auto", "max-height": "300px"},
+                        ),
                     ],
                 ),
             ]
@@ -242,7 +247,8 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
     # Callback to update options, map figure, and slider properties based on survey selection and year
     @dash_app.callback(
-        Output("variable-dropdown", "options"),
+        # Output("variable-dropdown", "options"),
+        Output("questions-list", "children"),
         Output("slider-container", "style"),
         Output("map-graph", "figure"),
         Output("slider", "marks"),
@@ -250,10 +256,18 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Output("slider", "disabled"),
         Output("slider-label", "children"),
         Input("survey-dropdown", "value"),
-        Input("variable-dropdown", "value"),
+        # Input("variable-dropdown", "value"),
+        Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
         Input("slider", "value"),
     )
-    def update_dropdown_and_map(selected_survey, selected_variable, selected_year):
+    def update_dropdown_and_map(selected_survey, list_group_items, selected_year):
+        if any(list_group_items):
+            selected_variable = ctx.triggered_id.index
+        else:
+            selected_variable = None
+
+        print(selected_variable)
+
         disabled = True
         slider_label = "Select a question to see the years"
 
@@ -269,8 +283,17 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             codes = top_10_question_globales[
                 top_10_question_globales["code_first_question"].isin(df_commune_responses_combined.columns)
             ]
+            # options = [
+            #    {"label": row[f"text_{selected_language}"], "value": row["code_first_question"]}
+            #    for _, row in codes.iterrows()
+            # ]
             options = [
-                {"label": row[f"text_{selected_language}"], "value": row["code_first_question"]}
+                dbc.ListGroupItem(
+                    row[f"text_{selected_language}"],
+                    id={"type": "list-group-item", "index": row["code_first_question"]},
+                    n_clicks=0,
+                    action=True,
+                )
                 for _, row in codes.iterrows()
             ]
 
@@ -311,8 +334,17 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
         # Handle individual survey question selection
         else:  # selected_survey == "survey"
+            # options = [
+            #    {"label": row[f"text_{selected_language}"], "value": row["code"]} for _, row in df_combined.iterrows()
+            # ]
             options = [
-                {"label": row[f"text_{selected_language}"], "value": row["code"]} for _, row in df_combined.iterrows()
+                dbc.ListGroupItem(
+                    row[f"text_{selected_language}"],
+                    id={"type": "list-group-item", "index": row["code"]},
+                    n_clicks=0,
+                    action=True,
+                )
+                for _, row in df_combined.iterrows()
             ]
 
             # Hide the slider and reset map for "survey" selection
