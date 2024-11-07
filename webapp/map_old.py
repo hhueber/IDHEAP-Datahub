@@ -14,6 +14,36 @@ from webapp.config import BASEDIR
 from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
 
 
+# Réponses spéciales à extraire
+SPECIAL_ANSWERS = {
+    -1.0: "(no data)",
+    -99.0: "(did not answer)",
+    99.0: "(no opinion)",
+}
+
+# Color scale
+COLOR_SCALE_10 = [
+    "#a6cee3",
+    "#1f78b4",
+    "#b2df8a",
+    "#33a02c",
+    "#fb9a99",
+    "#e31a1c",
+    "#fdbf6f",
+    "#ff7f00",
+    "#cab2d6",
+    "#6a3d9a",
+]
+COLOR_SCALE_10 = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_10]
+COLOR_SCALE_SPECIAL = [
+    "#FFFFFF",
+    "#404040",
+    "#C0C0C0",
+    "#BEBEBE",
+]
+COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
+
+
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load response data files for current and past commune responses
     # df_commune_responses = pd.read_csv("data/commune_responses.csv")
@@ -129,6 +159,9 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     "Select a question in the list bellow, then select a municipality on the map.",
                     id="info-text",
                     className="card-text",
+                ),
+                html.Em(
+                    "Please note that some of the data is incomplete/still being worked on. Bugs and inconsistency are to be expected!"
                 ),
             ]
         ),
@@ -297,6 +330,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 aggregated_responses = [
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
+                print(aggregated_responses)
 
                 # Return the options and updated map figure
                 return (
@@ -366,31 +400,31 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Function to create the map figure based on survey responses
     def create_figure(variable_values, communes):
         # Count unique non-NaN values
-        unique_values = [v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)]
-        num_unique_values = len(set(unique_values))
-        print(num_unique_values)
+        unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
+        num_unique_values = len(unique_values)
+        print(unique_values)
 
         # Determine color scale based on the number of unique values
         # if num_unique_values < 11:  # to correct once we know how to
-        if num_unique_values == 99:
-            # Use discrete color scale for 10 or fewer unique values
-            color_scale = [
-                [-1, "gray"],  # Voluntary no response (-99)
-                [0, "rgb(255,247,251)"],  # Example colors, you can customize these as needed
-                [1, "rgb(236,231,242)"],
-                [2, "rgb(208,209,230)"],
-                [3, "rgb(166,189,219)"],
-                [4, "rgb(116,169,207)"],
-                [5, "rgb(54,144,192)"],
-                [6, "rgb(5,112,176)"],
-                [7, "rgb(4,90,141)"],
-                [8, "rgb(2,56,88)"],
-                [9, "rgb(1,42,62)"],
-                [10, "rgb(0,30,45)"],
-            ]
-        else:
-            # Use Viridis continuous color scale for more than 10 unique values
-            color_scale = "Viridis"
+        # if num_unique_values == 99:
+        #     # Use discrete color scale for 10 or fewer unique values
+        #     color_scale = [
+        #         [-1, "gray"],  # Voluntary no response (-99)
+        #         [0, "rgb(255,247,251)"],  # Example colors, you can customize these as needed
+        #         [1, "rgb(236,231,242)"],
+        #         [2, "rgb(208,209,230)"],
+        #         [3, "rgb(166,189,219)"],
+        #         [4, "rgb(116,169,207)"],
+        #         [5, "rgb(54,144,192)"],
+        #         [6, "rgb(5,112,176)"],
+        #         [7, "rgb(4,90,141)"],
+        #         [8, "rgb(2,56,88)"],
+        #         [9, "rgb(1,42,62)"],
+        #         [10, "rgb(0,30,45)"],
+        #     ]
+        # else:
+        #     # Use Viridis continuous color scale for more than 10 unique values
+        #     color_scale = "Viridis"
 
         fig = fig_switzerland_empty()
 
@@ -409,34 +443,84 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
         )"""
 
-        # Add the municipalities layer with dynamic or discrete color scale based on unique value count
-        fig.add_trace(
-            go.Choroplethmapbox(
-                name="municipalities",
-                geojson=MUNICIPALITIES_DATA,
-                locations=communes,
-                z=variable_values,
-                colorscale=color_scale,
-                featureidkey="properties.id",
-                hoverinfo="text",
-                text=[
-                    f"{feature['properties']['name']}: "
-                    f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
-                    for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
-                ],
-                colorbar=dict(
-                    title="Values",
-                    thickness=25,
-                    x=1.05,
-                    y=0.5,
-                    tickvals=[-99] + list(range(0, 11)),
-                    ticktext=["No Data", "Voluntary No Response"] + [str(i) for i in range(0, 11)],
-                ),
-                showscale=True,
-                zmin=0 if num_unique_values <= 10 else None,
-                zmax=10 if num_unique_values <= 10 else None,
+        if num_unique_values > len(COLOR_SCALE_10):
+            fig.add_trace(
+                go.Choroplethmapbox(
+                    geojson=MUNICIPALITIES_DATA,
+                    locations=communes,
+                    z=variable_values,
+                    colorscale="Blues",
+                    featureidkey="properties.id",
+                    hoverinfo="text",
+                    text=[
+                        f"{feature['properties']['name']}: "
+                        f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
+                        for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
+                    ],
+                    # colorbar=dict(
+                    #    title="Values",
+                    #    thickness=25,
+                    #    x=1.05,
+                    #    y=0.5,
+                    #    tickvals=[-99] + list(range(0, 11)),
+                    #    ticktext=["No Data", "Voluntary No Response"] + [str(i) for i in range(0, 11)],
+                    # ),
+                    showscale=True,
+                    # zmin=0 if num_unique_values <= 10 else None,
+                    # zmax=10 if num_unique_values <= 10 else None,
+                )
             )
-        )
+        else:
+            for i, value in enumerate(unique_values):
+                temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
+                print(temp_answers)
+                fig.add_trace(
+                    go.Choroplethmapbox(
+                        geojson=MUNICIPALITIES_DATA,
+                        locations=[x[0] for x in temp_answers],
+                        z=[i] * len(temp_answers),
+                        featureidkey="properties.id",
+                        showlegend=True,
+                        name=value,
+                        colorscale=COLOR_SCALE_10[i],
+                        hoverinfo="text",
+                        text=[
+                            f"{feature['properties']['name']}: "
+                            f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
+                            for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
+                        ],
+                        showscale=False,  # Hidding the scale lol
+                    )
+                )
+
+        # Add the municipalities layer with dynamic or discrete color scale based on unique value count
+        # fig.add_trace(
+        #     go.Choroplethmapbox(
+        #         name="municipalities",
+        #         geojson=MUNICIPALITIES_DATA,
+        #         locations=communes,
+        #         z=variable_values,
+        #         colorscale=color_scale,
+        #         featureidkey="properties.id",
+        #         hoverinfo="text",
+        #         text=[
+        #             f"{feature['properties']['name']}: "
+        #             f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
+        #             for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
+        #         ],
+        #         colorbar=dict(
+        #             title="Values",
+        #             thickness=25,
+        #             x=1.05,
+        #             y=0.5,
+        #             tickvals=[-99] + list(range(0, 11)),
+        #             ticktext=["No Data", "Voluntary No Response"] + [str(i) for i in range(0, 11)],
+        #         ),
+        #         showscale=True,
+        #         zmin=0 if num_unique_values <= 10 else None,
+        #         zmax=10 if num_unique_values <= 10 else None,
+        #     )
+        # )
 
         # Update layout for the map
         # fig.update_layout(
