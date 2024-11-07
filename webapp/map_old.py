@@ -325,7 +325,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 hoverinfo="text",
                text = [
                     f"{feature['properties']['name']}: "
-                    f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else (canton_names.get(value, value) if num_unique_values == 28 else (labels_impact_4.get(value, value) if num_unique_values == 5 else (labels_percentage.get(value, value) if num_unique_values == 8 else (labels_impact_2.get(value, value) if num_unique_values == 4 else labels_visibility.get(value, value) if num_unique_values == 7 else value))))))}"
+                    f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else (canton_names.get(value, value) if num_unique_values == 28 else (labels_impact_4.get(value, value) if num_unique_values == 5 else (labels_percentage.get(value, value) if num_unique_values == 8 else (labels_impact_2.get(value, value) if num_unique_values == 3 else labels_visibility.get(value, value) if num_unique_values == 7 else value))))))}"
                     for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
                 ],
                 colorbar=dict(
