@@ -16,15 +16,15 @@ from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load response data files for current and past commune responses
-    df_commune_responses = pd.read_csv("data/commune_responses.csv")
+    # df_commune_responses = pd.read_csv("data/commune_responses.csv")
     # Map language codes to integers for easier processing
-    df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
-        {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
-    )
+    # df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
+    #    {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
+    # )
 
     # Load combined responses from both current and old years
     df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv").set_index("gemid")
-    #df_commune_responses_combined = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
+    # df_commune_responses_combined = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
     # Load additional data files for the app
     df_combined = pd.read_csv("data/combined_df.csv")
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
@@ -242,7 +242,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         print(num_unique_values)
 
         # Determine color scale based on the number of unique values
-        #if num_unique_values < 11:  # to correct once we know how to
+        # if num_unique_values < 11:  # to correct once we know how to
         if num_unique_values == 99:
             # Use discrete color scale for 10 or fewer unique values
             color_scale = [
@@ -266,7 +266,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         fig = fig_switzerland_empty()
 
         # temporary white layer to avoid the holes in the map
-        '''fig.add_trace(
+        """fig.add_trace(
             go.Choroplethmapbox(
                 geojson=MUNICIPALITIES_DATA,
                 locations=[feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
@@ -278,7 +278,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 text=[feature["properties"]["name"] for feature in MUNICIPALITIES_DATA["features"]],
                 showscale=False,
             )
-        )'''
+        )"""
 
         # Add the municipalities layer with dynamic or discrete color scale based on unique value count
         fig.add_trace(

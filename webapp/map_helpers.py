@@ -39,17 +39,17 @@ MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 
 # TODO en attendant
 print("memory leak lol")
-DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
-DF_QUESTIONS_GLOBAL = pd.read_csv("./webapp/data/QuestionsGlobales.csv")
-print("db questions loaded")
+# DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
+# DF_QUESTIONS_GLOBAL = pd.read_csv("./webapp/data/QuestionsGlobales.csv")
+# print("db questions loaded")
 # DF_ANSWERS = pd.read_excel("../data/demo_answers.xlsx")
 # print("db ansers loaded")
-DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv").set_index("gemid")
-DF_DEMO_ANSWERS = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
+# DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv").set_index("gemid")
+# DF_DEMO_ANSWERS = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
 # print(DF_COMMUNES_RESPONSES_COMBINED)
-DF_2023 = pd.read_excel("./data/GSB 2023_V1.xlsx").set_index("gemid")
+# DF_2023 = pd.read_excel("./data/GSB 2023_V1.xlsx").set_index("gemid")
 
-DF_LABELS = pd.read_excel("./data/answer_labels.xlsx")
+# DF_LABELS = pd.read_excel("./data/answer_labels.xlsx")
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
@@ -162,11 +162,11 @@ def fig_map_with_data(df, chosen_question):
     # df_int[chosen_question] = df_int[chosen_question].apply(lambda x: cast_lol(x))
 
     # Labels
-    if chosen_question in DF_LABELS["code"].values:
-        df_labels = DF_LABELS[DF_LABELS["code"] == chosen_question]
-        labels = {}
-    else:
-        labels = None
+    # if chosen_question in DF_LABELS["code"].values:
+    #     df_labels = DF_LABELS[DF_LABELS["code"] == chosen_question]
+    #     labels = {}
+    # else:
+    #     labels = None
 
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
