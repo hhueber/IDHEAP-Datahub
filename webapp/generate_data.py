@@ -7,7 +7,7 @@ import pandas as pd
 
 # from webapp.config import BASEDIR
 
-with open("./webapp/data/geojson/municipalities.json", encoding="utf-8") as f:
+with open("../webapp/data/geojson/municipalities.json", encoding="utf-8") as f:
     MUNICIPALITIES_DATA = json.load(f)
 
 # Data en plus sur les communes
@@ -51,13 +51,16 @@ base_questions = [
     "GSB09_spr",
     "GSB17_spr",
     "GSB23_bez",
+    "GSB23_kant",
+    "GSB23_pop",
+    "GSB23_spr",
     "GSB23_bezname",
 ]
 global_questions = ["GSB23_Q52", "GSB17_Q58", "GSB23_Q9", "GSB17_Q7", "GSB23_Q7", "GSB17_Q6"]
 questions = base_questions + global_questions
 print(questions)
 
-df_answers = pd.read_excel("./data/demo_answers.xlsx")
+df_answers = pd.read_excel("../data/demo_answers.xlsx")
 df_answers = df_answers[questions]
 df_answers.set_index("gemid", inplace=True)
 

@@ -12,7 +12,15 @@ import dash_bootstrap_components as dbc
 
 from webapp.config import BASEDIR, DB_URI, DEMO
 from webapp.database import Answer, QuestionGlobal, QuestionPerSurvey, Survey
-from webapp.map_helpers import DF_2023, DF_QUESTIONS, fig_map_with_data, fig_switzerland_empty
+from webapp.map_helpers import (
+    DF_2023,
+    DF_COMMUNES_RESPONSES_COMBINED,
+    DF_DEMO_ANSWERS,
+    DF_QUESTIONS,
+    DF_QUESTIONS_GLOBAL,
+    fig_map_with_data,
+    fig_switzerland_empty,
+)
 
 
 LOCALE = "en"
@@ -31,6 +39,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
     ENGINE = create_engine(DB_URI, echo=True)
     with Session(ENGINE) as session:
         if DEMO:
+            # db_years = [2023]
             db_years = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
         else:
             db_years = list(session.execute(session.query(Survey.year)).scalars())
@@ -64,7 +73,7 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         ),
         className="mb-4",
     )
-    layout_questions = dbc.Card(
+    layout_options = dbc.Card(
         dbc.CardBody(
             [
                 dbc.Row(
@@ -99,42 +108,98 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                 dbc.Row(
                     dbc.Col(
                         dcc.Slider(
-                            db_years[0],
-                            db_years[-1],
                             id="years-slider",
                             step=None,
-                            marks=None,
-                            value=db_years[-1],
+                            min=db_years[0],
+                            max=db_years[-1],
+                            marks={year: "" for year in db_years},
+                            value=None,
                         ),
                         className="card-text mb-3",
                     ),
                     id="years-slider-container",
                 ),
+            ]
+        ),
+        className="mb-4",
+    )
+    layout_questions = dbc.Card(
+        dbc.CardBody(
+            [
                 dbc.Row(
                     dbc.Col(
-                        dbc.ListGroup([], id="questions", style={"overflow-y": "auto", "max-height": "300px"}),
+                        dbc.ListGroup(
+                            [],
+                            id="questions",
+                            style={"overflow-y": "auto", "max-height": "300px"},
+                        ),
                         className="card-text",
                     )
                 ),
             ]
-        )
+        ),
+        className="mb-4",
     )
 
     dash_app.layout = html.Div(
         dbc.Row(
             [
                 dbc.Col(layout_card, width=8),
-                dbc.Col([layout_infos, layout_questions], width=4),
+                dbc.Col([layout_infos, layout_options, layout_questions], width=4),
             ]
         )
     )
+    #
+    # @dash_app.callback(
+    #     Output("years-dropdown", "className"),
+    #     Input("global-question-switch", "value"),
+    # )
+    # def question_global_update_years_dropdown(switch_global_question):
+    #     if switch_global_question:
+    #         return "invisible"
+    #     else:
+    #         return "visible"
+    #
+    # @dash_app.callback(
+    #     Output("questions", "children"),
+    #     Output("years-dropdown", "value"),
+    #     Input("global-question-switch", "value"),
+    #     Input("years-dropdown", "value"),
+    # )
+    # def question_global_update_questions(switch_global_question, year):
+    #     if switch_global_question:
+    #         question_buttons = [
+    #             dbc.Button(
+    #                 getattr(question, f"text_{LOCALE}"),
+    #                 id={"type": "button-question", "index": question.label},
+    #                 color="light",
+    #                 n_clicks=0,
+    #             )
+    #             for index, question in DF_QUESTIONS_GLOBAL.iterrows()
+    #         ]
+    #         year = None
+    #     else:
+    #         if year:
+    #             dft = DF_QUESTIONS[DF_QUESTIONS["year"] == int(year)]
+    #             question_buttons = [
+    #                 dbc.Button(
+    #                     getattr(question, f"text_{LOCALE}"),
+    #                     id={"type": "button-question", "index": question.code},
+    #                     color="light",
+    #                     n_clicks=0,
+    #                 )
+    #                 for index, question in dft.iterrows()
+    #             ]
+    #         else:
+    #             question_buttons = list()
+    #     return question_buttons, year
 
     @dash_app.callback(
         Output("questions", "children"),
         Input("global-question-switch", "value"),
         Input("years-dropdown", "value"),
     )
-    def update_question_list(switch_value, year):
+    def update_question_list(switch_value, year_from_dropdown):
         if switch_value:
             questions_list = list(
                 dbc.ListGroupItem(
@@ -142,15 +207,15 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                         question,
                         f"text_{LOCALE}",
                     ),
-                    id={"type": "list-group-item", "index": question.uid},
+                    id={"type": "list-group-item", "index": question.label},
                     n_clicks=0,
                     action=True,
                 )
-                for question in DB_QUESTIONS_GLOBAL
+                for index, question in DF_QUESTIONS_GLOBAL.iterrows()
             )
         else:
-            if year:
-                dft = DF_QUESTIONS[DF_QUESTIONS["year"] == int(year)]
+            if year_from_dropdown:
+                dft = DF_QUESTIONS[DF_QUESTIONS["year"] == int(year_from_dropdown)]
                 questions_list = list(
                     dbc.ListGroupItem(
                         getattr(
@@ -195,40 +260,80 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
         Output("years-dropdown", "className"),
         Output("years-dropdown", "value"),
         Output("years-slider-container", "className"),
-        Output("years-slider", "marks"),
-        Output("years-slider", "value"),
+        # Output("years-slider", "marks"),
+        # Output("years-slider", "value"),
         Input("global-question-switch", "value"),
         Input("years-dropdown", "value"),
     )
-    def update_years(switch_value, year):
+    def update_years_visibility(switch_value, year_from_dropdown):
         """
         Update the list of questions and the dropbox when the question global switch is used and/or a year selected.
         """
         if switch_value:  # Global questions
-            return "invisible", None, "visible", {year: str(year) for year in db_years}, db_years[-1]
+            return "invisible", None, "visible"  # , {year: str(year) for year in db_years}, db_years[-1]
         else:  # Per survey questions
-            return "visible", year, "invisible", None, None
+            return "visible", year_from_dropdown, "invisible"  # , {}, None
 
     @dash_app.callback(
         Output("map-graph", "figure"),
+        Output("years-slider", "marks"),
+        Output("years-slider", "value"),
         # Output({"type": "list-group-item", "index": ALL}, "active"),
-        # Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
-        Input("global-question-switch", "value"),
+        Output({"type": "list-group-item", "index": ALL}, "n_clicks"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
+        Input("years-slider", "value"),
+        State("global-question-switch", "value"),
     )
-    def question_update(switch_value, list_group_items):
+    def question_update_map_and_slider(list_group_items, year_from_slider, switch_value):
         """
         Update the map when a question is selected.
         """
-        if not ctx.triggered:
-            raise PreventUpdate
         if any(list_group_items):
             # print(f"Clicked on Item {ctx.triggered_id.index}")
             if switch_value:  # Global questions
-                return fig_switzerland_empty()
-            else:  # Per survey questions
-                print(f"Clicked on Item {ctx.triggered_id.index}")
+                if DEMO:
+                    if ctx.triggered_id.index in DF_QUESTIONS_GLOBAL["label"].values:
+                        chosen_question = ctx.triggered_id.index
+                    else:
+                        chosen_question = None
+                else:
+                    chosen_question = session.execute(
+                        session.query(QuestionGlobal).where(QuestionGlobal.uid == int(ctx.triggered_id.index))
+                    ).one_or_none()
+                    if chosen_question:
+                        chosen_question = chosen_question[0]
 
+                if chosen_question:
+                    print(f"Question globale: {chosen_question}, year: {year_from_slider}")
+
+                    try:
+                        trans_questions = (
+                            DF_QUESTIONS_GLOBAL[DF_QUESTIONS_GLOBAL["label"] == chosen_question]["survey_codes"]
+                            .tolist()[0]
+                            .split(";")
+                        )
+                        ye = [int(q.split("_", 1)[0].replace("GSB", "")) for q in trans_questions]
+                        ye = list(map(lambda x: x + 2000 if x < 50 else x + 1900, ye))
+                        trans_questions = {y: q for y, q in zip(ye, trans_questions)}
+                        if len(trans_questions) == 0:  # Global variable
+                            trans_questions = {
+                                db_year: f"GSB{str(db_year)[2:]}_{chosen_question}" for db_year in db_years
+                            }
+                    except AttributeError:
+                        trans_questions = {db_year: f"GSB{str(db_year)[2:]}_{chosen_question}" for db_year in db_years}
+
+                    if not year_from_slider:
+                        year_from_slider = list(trans_questions.keys())[-1]
+
+                    return (
+                        fig_map_with_data(DF_DEMO_ANSWERS, trans_questions[year_from_slider]),
+                        {year: str(year) for year in trans_questions.keys()},
+                        year_from_slider,
+                        [0] * len(list_group_items),
+                    )
+                else:
+                    print(f"NO SUCH GLOBAL QUESTION: {ctx.triggered_id.index}")
+            else:  # Per survey questions
                 if DEMO:
                     if ctx.triggered_id.index in DF_QUESTIONS["code"].values:
                         chosen_question = ctx.triggered_id.index
@@ -244,8 +349,11 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                 if chosen_question:
                     print(f"Question: {chosen_question}")
 
-                    return fig_map_with_data(
-                        DF_2023, chosen_question
+                    return (
+                        fig_map_with_data(DF_2023, chosen_question),
+                        {year: "" for year in db_years},
+                        None,
+                        [0] * len(list_group_items),
                     )  # , list_group_items, [0] * len(list_group_items)
                 else:
                     print(f"NO SUCH QUESTION: {ctx.triggered_id.index}")
@@ -254,7 +362,12 @@ def create_dash_app(flask_server: Flask, url_path="/map"):
                 # print([answer.value for answer in db_answers])
                 # print("done")
         else:
-            return fig_switzerland_empty()  # , list_group_items, [0] * len(list_group_items)
+            return (
+                fig_switzerland_empty(),
+                {year: "" for year in db_years},
+                None,
+                [0] * len(list_group_items),
+            )  # , list_group_items, [0] * len(list_group_items)
 
     with flask_server.app_context(), flask_server.test_request_context():
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:

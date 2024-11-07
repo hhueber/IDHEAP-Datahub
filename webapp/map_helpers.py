@@ -40,10 +40,12 @@ MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 # TODO en attendant
 print("memory leak lol")
 DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
+DF_QUESTIONS_GLOBAL = pd.read_csv("./webapp/data/QuestionsGlobales.csv")
 print("db questions loaded")
 # DF_ANSWERS = pd.read_excel("../data/demo_answers.xlsx")
 # print("db ansers loaded")
-# DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
+DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv")
+DF_DEMO_ANSWERS = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
 # print(DF_COMMUNES_RESPONSES_COMBINED)
 DF_2023 = pd.read_excel("./data/GSB 2023_V1.xlsx").set_index("gemid")
 
@@ -153,10 +155,8 @@ def fig_switzerland_empty():
 
 
 def fig_map_with_data(df, chosen_question):
-    print(chosen_question)
     df_int = df[[chosen_question]]
     # df_int[chosen_question] = df_int[chosen_question].apply(lambda x: cast_lol(x))
-    print(df_int)
 
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
@@ -165,7 +165,6 @@ def fig_map_with_data(df, chosen_question):
 
     # We take the chose questions, and extract their unique answers
     answers_unique = list(df_int[chosen_question].unique())
-    print(answers_unique)
 
     # We remove the special values
     for value in SPECIAL_ANSWERS.keys():
