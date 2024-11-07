@@ -39,7 +39,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
     # Define the layout of the app, including dropdowns, map, and slider
-    dash_app.layout = html.Div(
+    layout_1 = html.Div(
         [
             # Dropdowns for selecting the survey and variable (question)
             html.Div(
@@ -109,6 +109,86 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             "position": "relative",
         },
     )
+
+    layout_card = (dcc.Graph(id="map-graph"),)
+    layout_infos = html.Div(
+        [
+            html.H4("Instructions", id="info-title", className="card-title"),
+            html.P(
+                "Select a question in the list bellow, then select a municipality on the map.",
+                id="info-text",
+                className="card-text",
+            ),
+        ]
+    )
+    layout_options = html.Div(
+        [
+            html.Div(
+                id="slider-container",
+                style={"display": "none"},
+                children=[
+                    html.Label(
+                        _("Select a year"),
+                        id="slider-label",
+                    ),
+                    html.Div(
+                        dcc.Slider(
+                            id="slider",
+                            min=1988,
+                            max=2023,
+                            value=None,  # Initial value depends on selected global question
+                            marks={},  # Marks updated based on available years for the question
+                            step=None,  # No intermediate values
+                        ),
+                        style={"width": "600px", "margin": "auto"},
+                    ),
+                ],
+            ),
+        ]
+    )
+    layout_questions = html.Div(
+        [
+            html.Div(
+                [
+                    html.Label(
+                        _("Survey selection"),
+                        id="survey-selection-label",
+                    ),
+                    dcc.Dropdown(
+                        id="survey-dropdown",
+                        options=[
+                            {"value": "survey", "label": "2023"},
+                            {"value": "global_question", "label": _("All surveys")},
+                        ],
+                        value="survey",
+                        clearable=False,
+                    ),
+                ],
+                style={"width": "48%", "display": "inline-block"},
+            ),
+            html.Div(
+                [
+                    html.Label(
+                        _("Question"),
+                        id="variable-selection-label",
+                    ),
+                    dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
+                ],
+                style={"width": "48%", "display": "inline-block"},
+            ),
+        ]
+    )
+
+    layout_2 = html.Div(
+        dbc.Row(
+            [
+                dbc.Col(layout_card, width=8),
+                dbc.Col([layout_infos, layout_options, layout_questions], width=4),
+            ]
+        )
+    )
+
+    dash_app.layout = layout_2
 
     # Callback to update options, map figure, and slider properties based on survey selection and year
     @dash_app.callback(
