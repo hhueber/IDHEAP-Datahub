@@ -271,7 +271,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         disabled = True
         slider_label = "Select a question to see the years"
 
-        selected_language = "fr"  # get_locale()
+        selected_language = "en"  # get_locale()
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
