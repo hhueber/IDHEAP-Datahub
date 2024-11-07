@@ -16,11 +16,11 @@ from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load response data files for current and past commune responses
-    df_commune_responses = pd.read_csv("data/commune_responses.csv")
+    #df_commune_responses = pd.read_csv("data/commune_responses.csv")
     # Map language codes to integers for easier processing
-    df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
-        {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
-    )
+    #df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
+    #    {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
+    #)
 
     # Load combined responses from both current and old years
     df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv").set_index("gemid")
@@ -239,7 +239,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         # Count unique non-NaN values
         unique_values = [v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)]
         num_unique_values = len(set(unique_values))
-        print(num_unique_values)
+        print('num unique values',num_unique_values)
 
         # Determine color scale based on the number of unique values
         #if num_unique_values < 11:  # to correct once we know how to
@@ -280,6 +280,39 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
         )'''
 
+        canton_names = {
+            1: "ZH", 2: "BE", 3: "LU", 4: "UR", 5: "SZ", 6: "OW", 7: "NW", 8: "GL", 9: "ZG", 10: "FR",
+            11: "SO", 12: "BS", 13: "BL", 14: "SH", 15: "AR", 16: "AI", 17: "SG", 18: "GR", 19: "AG",
+            20: "TG", 21: "TI", 22: "VD", 23: "VS", 24: "NE", 25: "GE", 26: "JU"
+        }
+        labels_impact_4 = {
+            1: "Fortement impacté",      
+            2: "Partiellement impacté",   
+            3: "Non impacté",      
+            -99: "Pas de réponse"      
+        }
+        labels_impact_2 = {
+            1: "Oui",      
+            2: "Non",        
+            -99: "Pas de réponse"      
+        }   
+        labels_percentage = {
+            1: "Moins de 25%",      
+            2: "Entre 25% et 49%",  
+            3: "Entre 50% et 64%",  
+            4: "Entre 65% et 80%",  
+            5: "Plus de 80%",         
+            99: "Ne sait pas",         
+            -99: "Pas de réponse"       
+        }
+        labels_visibility = {
+            1: "Aucune limite de performance visible",      
+            2: "Limite de performance en vue",            
+            3: "Limite de performance atteinte",            
+            4: "Limite de performance dépassée",       
+            5: "Non applicable à la commune",
+            -99: "Pas de réponse"         
+        }
         # Add the municipalities layer with dynamic or discrete color scale based on unique value count
         fig.add_trace(
             go.Choroplethmapbox(
@@ -290,9 +323,9 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 colorscale=color_scale,
                 featureidkey="properties.id",
                 hoverinfo="text",
-                text=[
+               text = [
                     f"{feature['properties']['name']}: "
-                    f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
+                    f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else (canton_names.get(value, value) if num_unique_values == 28 else (labels_impact_4.get(value, value) if num_unique_values == 5 else (labels_percentage.get(value, value) if num_unique_values == 8 else (labels_impact_2.get(value, value) if num_unique_values == 4 else labels_visibility.get(value, value) if num_unique_values == 7 else value))))))}"
                     for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
                 ],
                 colorbar=dict(
