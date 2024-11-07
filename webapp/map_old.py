@@ -42,16 +42,14 @@ canton_names = {
     25: "GE",
     26: "JU",
 }
-labels_impact_4 = {1: "Fortement impacté", 2: "Partiellement impacté", 3: "Non impacté", -99: "Pas de réponse"}
-labels_impact_2 = {1: "Oui", 2: "Non", -99: "Pas de réponse"}
+labels_impact_4 = {1: "Fortement impacté", 2: "Partiellement impacté", 3: "Non impacté"}
+labels_impact_2 = {1: "Oui", 2: "Non"}
 labels_percentage = {
     1: "Moins de 25%",
     2: "Entre 25% et 49%",
     3: "Entre 50% et 64%",
     4: "Entre 65% et 80%",
     5: "Plus de 80%",
-    99: "Ne sait pas",
-    -99: "Pas de réponse",
 }
 labels_visibility = {
     1: "Aucune limite de performance visible",
@@ -59,7 +57,6 @@ labels_visibility = {
     3: "Limite de performance atteinte",
     4: "Limite de performance dépassée",
     5: "Non applicable à la commune",
-    -99: "Pas de réponse",
 }
 
 # Réponses spéciales à extraire
