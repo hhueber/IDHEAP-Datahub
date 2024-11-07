@@ -110,73 +110,90 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         },
     )
 
-    layout_card = (dcc.Graph(id="map-graph"),)
-    layout_infos = html.Div(
-        [
-            html.H4("Instructions", id="info-title", className="card-title"),
-            html.P(
-                "Select a question in the list bellow, then select a municipality on the map.",
-                id="info-text",
-                className="card-text",
-            ),
-        ]
+    layout_card = dbc.Card(
+        dbc.CardBody(
+            dcc.Graph(
+                id="map-graph",
+                style={
+                    "height": "75vh",
+                },
+            )
+        ),
+        className="mb-4",
     )
-    layout_options = html.Div(
-        [
-            html.Div(
-                id="slider-container",
-                style={"display": "none"},
-                children=[
-                    html.Label(
-                        _("Select a year"),
-                        id="slider-label",
-                    ),
-                    html.Div(
-                        dcc.Slider(
-                            id="slider",
-                            min=1988,
-                            max=2023,
-                            value=None,  # Initial value depends on selected global question
-                            marks={},  # Marks updated based on available years for the question
-                            step=None,  # No intermediate values
+    layout_infos = dbc.Card(
+        dbc.CardBody(
+            [
+                html.H4("Instructions", id="info-title", className="card-title"),
+                html.P(
+                    "Select a question in the list bellow, then select a municipality on the map.",
+                    id="info-text",
+                    className="card-text",
+                ),
+            ]
+        ),
+        className="mb-4",
+    )
+    layout_options = dbc.Card(
+        dbc.CardBody(
+            [
+                html.Div(
+                    [
+                        html.Label(
+                            _("Survey selection"),
+                            id="survey-selection-label",
                         ),
-                        style={"width": "600px", "margin": "auto"},
-                    ),
-                ],
-            ),
-        ]
+                        dcc.Dropdown(
+                            id="survey-dropdown",
+                            options=[
+                                {"value": "survey", "label": "2023"},
+                                {"value": "global_question", "label": _("All surveys")},
+                            ],
+                            value="survey",
+                            clearable=False,
+                        ),
+                    ],
+                ),
+                html.Div(
+                    id="slider-container",
+                    style={"display": "none"},
+                    children=[
+                        html.Label(
+                            _("Select a question to see the years"),
+                            id="slider-label",
+                        ),
+                        html.Div(
+                            dcc.Slider(
+                                id="slider",
+                                min=1988,
+                                max=2023,
+                                value=None,  # Initial value depends on selected global question
+                                marks={},  # Marks updated based on available years for the question
+                                step=None,  # No intermediate values
+                                disabled=True,
+                            ),
+                        ),
+                    ],
+                ),
+            ]
+        ),
+        className="mb-4",
     )
-    layout_questions = html.Div(
-        [
-            html.Div(
-                [
-                    html.Label(
-                        _("Survey selection"),
-                        id="survey-selection-label",
-                    ),
-                    dcc.Dropdown(
-                        id="survey-dropdown",
-                        options=[
-                            {"value": "survey", "label": "2023"},
-                            {"value": "global_question", "label": _("All surveys")},
-                        ],
-                        value="survey",
-                        clearable=False,
-                    ),
-                ],
-                style={"width": "48%", "display": "inline-block"},
-            ),
-            html.Div(
-                [
-                    html.Label(
-                        _("Question"),
-                        id="variable-selection-label",
-                    ),
-                    dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
-                ],
-                style={"width": "48%", "display": "inline-block"},
-            ),
-        ]
+    layout_questions = dbc.Card(
+        dbc.CardBody(
+            [
+                html.Div(
+                    [
+                        html.Label(
+                            _("Question"),
+                            id="variable-selection-label",
+                        ),
+                        dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
+                    ],
+                ),
+            ]
+        ),
+        className="mb-4",
     )
 
     layout_2 = html.Div(
@@ -197,11 +214,16 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Output("map-graph", "figure"),
         Output("slider", "marks"),
         Output("slider", "value"),
+        Output("slider", "disabled"),
+        Output("slider-label", "children"),
         Input("survey-dropdown", "value"),
         Input("variable-dropdown", "value"),
         Input("slider", "value"),
     )
     def update_dropdown_and_map(selected_survey, selected_variable, selected_year):
+        disabled = True
+        slider_label = "Select a question to see the years"
+
         selected_language = "fr"  # get_locale()
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
@@ -239,11 +261,18 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         if selected_year in associated_years
                         else associated_years[0] if associated_years else None
                     )
+
+                    disabled = False
+                    slider_label = "Select a year"
                 else:
                     print("Error: 'quest_glob' row not found in df_commune_responses_combined.")
-                    slider_marks, slider_value = {}, None
+                    slider_marks, slider_value = {
+                        year: "" for year in sorted([1988, 1994, 1998, 2005, 2009, 2017, 2023])
+                    }, None
             else:
-                slider_marks, slider_value = {}, None
+                slider_marks, slider_value = {
+                    year: "" for year in sorted([1988, 1994, 1998, 2005, 2009, 2017, 2023])
+                }, None
 
             slider_style = {"display": "block"}
 
@@ -279,10 +308,20 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     ),
                     slider_marks,
                     slider_value,
+                    disabled,
+                    slider_label,
                 )
             else:
                 # If no survey question selected, return an empty map
-                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
+                return (
+                    options,
+                    slider_style,
+                    fig_switzerland_empty(),
+                    slider_marks,
+                    slider_value,
+                    disabled,
+                    slider_label,
+                )
 
         # Prepare the map figure for global question selection with slider control
         if selected_variable and selected_survey == "global_question":
@@ -294,7 +333,15 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 response_dict = dict(zip(communes, responses))
             else:
                 # No data for the selected year; return an empty map
-                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
+                return (
+                    options,
+                    slider_style,
+                    fig_switzerland_empty(),
+                    slider_marks,
+                    slider_value,
+                    disabled,
+                    slider_label,
+                )
 
             # assign a default value (99) to communes without data
             aggregated_responses = [
@@ -309,10 +356,12 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 ),
                 slider_marks,
                 slider_value,
+                disabled,
+                slider_label,
             )
 
         # Default fallback: return empty map and no options if conditions aren't met
-        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
+        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value, disabled, slider_label
 
     # Function to create the map figure based on survey responses
     def create_figure(variable_values, communes):
@@ -390,19 +439,19 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         )
 
         # Update layout for the map
-        fig.update_layout(
-            mapbox_zoom=7,
-            mapbox_center={"lat": 46.4, "lon": 8.8},
-            margin={"r": 0, "t": 0, "l": 0, "b": 0},
-            height=800,
-            width=1200,
-            dragmode=False,
-            uirevision=str(np.random.rand()),
-            mapbox=dict(
-                layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
-            ),
-            showlegend=False,
-        )
+        # fig.update_layout(
+        #     mapbox_zoom=7,
+        #     mapbox_center={"lat": 46.4, "lon": 8.8},
+        #     margin={"r": 0, "t": 0, "l": 0, "b": 0},
+        #     height=800,
+        #     width=1200,
+        #     dragmode=False,
+        #     uirevision=str(np.random.rand()),
+        #     mapbox=dict(
+        #         layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
+        #     ),
+        #     showlegend=False,
+        # )
 
         return fig
 
