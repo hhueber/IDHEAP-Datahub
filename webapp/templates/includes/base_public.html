@@ -54,7 +54,7 @@
           {% set langdict = {"en": ("🇬🇧", "English", ""), "fr": ("🇫🇷", "Français", ""), "de": ("🇩🇪", "Deutsch", "
           disabled"), "it": ("🇮🇹", "Italiano", " disabled"), "rm": ("🇷🇲", "Rumantsch", " disabled")} %}
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-            {{langdict[get_locale()][0]}}
+            {{ langdict.get(get_locale(), langdict['fr'])[0] }}
           </a>
           <ul class="dropdown-menu dropdown-menu-end">
             {% for code, cont in langdict.items() %}
@@ -80,6 +80,7 @@
 <script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
 <script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" crossorigin="anonymous"></script>
 <script src="{{url_for('static', filename='js/scripts.js')}}"></script>
+{% block javascript %}{% endblock %}
 
 {% if config["DEMO"] %}
 <!--meta http-equiv="refresh" content="30; URL={{url_for('about')}}"-->
@@ -89,11 +90,11 @@
         window.location.href = "{{url_for('about')}}";
     }
 
-    var initial = setTimeout(redirect, 30000);
+    var initial = setTimeout(redirect, 300000);
 
     $(document).click(function (event) {
         clearTimeout(initial);
-        initial = setTimeout(redirect, 30000);
+        initial = setTimeout(redirect, 300000);
     });
 </script>
 {% endif %}
