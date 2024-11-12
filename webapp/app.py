@@ -13,11 +13,11 @@ import flask
 if __name__ == "__main__":
     from config import BASEDIR
     from database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey, User
-    from map_old import create_dash_app
+    from map import create_dash_app
 else:
     from .config import BASEDIR
     from .database import Base, Canton, Commune, District, QuestionGlobal, QuestionPerSurvey, Survey, User
-    from .map_old import create_dash_app
+    from .map import create_dash_app
 
 
 def create_app():
