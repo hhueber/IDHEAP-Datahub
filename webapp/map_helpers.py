@@ -1,16 +1,8 @@
-import ast
 import json
 import os
 
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-import numpy as np
-import pandas as pd
 import plotly.graph_objects as go
-
-
-from webapp.database import Commune, QuestionGlobal, Survey
 
 
 # L'endroit où t'as tes geojson en gros
@@ -36,20 +28,6 @@ MUNICIPALITIES = {
     feature["properties"]["id"]: feature["properties"]["name"] for feature in MUNICIPALITIES_DATA["features"]
 }
 MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
-
-# TODO en attendant
-print("memory leak lol")
-# DF_QUESTIONS = pd.read_excel("./data/demo_questions.xlsx")
-# DF_QUESTIONS_GLOBAL = pd.read_csv("./webapp/data/QuestionsGlobales.csv")
-print("db questions loaded")
-# DF_ANSWERS = pd.read_excel("../data/demo_answers.xlsx")
-# print("db ansers loaded")
-# DF_COMMUNES_RESPONSES_COMBINED = pd.read_csv("./data/commune_responses_combined.csv").set_index("gemid")
-# DF_DEMO_ANSWERS = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
-# print(DF_COMMUNES_RESPONSES_COMBINED)
-# DF_2023 = pd.read_excel("./data/GSB 2023_V1.xlsx").set_index("gemid")
-
-# DF_LABELS = pd.read_excel("./data/answer_labels.xlsx")
 
 # Réponses spéciales à extraire
 SPECIAL_ANSWERS = {
@@ -82,16 +60,6 @@ COLOR_SCALE_SPECIAL = [
     "#BEBEBE",
 ]
 COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
-
-
-def cast_lol(x):
-    try:
-        x = float(x)
-        if x.is_integer():
-            return int(x)
-    except ValueError:
-        pass
-    return x
 
 
 def fig_switzerland_empty():
@@ -162,14 +130,6 @@ def fig_switzerland_empty():
 def fig_map_with_data(df, chosen_question):
     # Values
     df_int = df[[chosen_question]]
-    # df_int[chosen_question] = df_int[chosen_question].apply(lambda x: cast_lol(x))
-
-    # Labels
-    # if chosen_question in DF_LABELS["code"].values:
-    # df_labels = DF_LABELS[DF_LABELS["code"] == chosen_question]
-    # labels = {}
-    # else:
-    # labels = None
 
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
@@ -186,7 +146,7 @@ def fig_map_with_data(df, chosen_question):
         except ValueError:
             pass
 
-    # Continuous or too many differents answers
+    # Continuous or too many different answers
     if len(answers_unique) > len(COLOR_SCALE_10):
         # We take only the answers which are not special answers
         dfp = df_int[~df_int[chosen_question].isin(SPECIAL_ANSWERS.keys())]
@@ -219,7 +179,7 @@ def fig_map_with_data(df, chosen_question):
                 showlegend=True,
                 name=text_answer,
                 colorscale=COLOR_SCALE_10[i],
-                showscale=False,  # Hidding the scale lol
+                showscale=False,  # Hiding the scale
                 hoverinfo="text",
                 text=[f"{name}: {text_answer}" for name in MUNICIPALITIES.values()],
             )
@@ -241,7 +201,7 @@ def fig_map_with_data(df, chosen_question):
             showlegend=True,
             name=text_answer,
             colorscale=COLOR_SCALE_SPECIAL[i],
-            showscale=False,  # Hidding the scale lol
+            showscale=False,  # Hiding the scale
             hoverinfo="text",
             text=[f"{name}: {text_answer}" for name in MUNICIPALITIES.values()],
         )
@@ -254,7 +214,7 @@ def fig_map_with_data(df, chosen_question):
         showlegend=True,
         name="(no value)",
         colorscale=COLOR_SCALE_SPECIAL[0],
-        showscale=False,  # Hidding the scale lol
+        showscale=False,  # Hiding the scale
         hoverinfo="text",
         text=[f"{name}: (no data)" for name in MUNICIPALITIES.values()],
     )

@@ -5,101 +5,24 @@ from dash import ALL, ctx, Dash, dcc, html, Input, Output
 from flask import Flask, render_template_string
 from flask_babel import _
 import dash_bootstrap_components as dbc
-import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 
 
 from webapp.config import BASEDIR
-from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES, MUNICIPALITIES_DATA
-
-
-canton_names = {
-    1: "ZH",
-    2: "BE",
-    3: "LU",
-    4: "UR",
-    5: "SZ",
-    6: "OW",
-    7: "NW",
-    8: "GL",
-    9: "ZG",
-    10: "FR",
-    11: "SO",
-    12: "BS",
-    13: "BL",
-    14: "SH",
-    15: "AR",
-    16: "AI",
-    17: "SG",
-    18: "GR",
-    19: "AG",
-    20: "TG",
-    21: "TI",
-    22: "VD",
-    23: "VS",
-    24: "NE",
-    25: "GE",
-    26: "JU",
-}
-labels_impact_4 = {1: "Fortement impacté", 2: "Partiellement impacté", 3: "Non impacté"}
-labels_impact_2 = {1: "Oui", 2: "Non"}
-labels_percentage = {
-    1: "Moins de 25%",
-    2: "Entre 25% et 49%",
-    3: "Entre 50% et 64%",
-    4: "Entre 65% et 80%",
-    5: "Plus de 80%",
-}
-labels_visibility = {
-    1: "Aucune limite de performance visible",
-    2: "Limite de performance en vue",
-    3: "Limite de performance atteinte",
-    4: "Limite de performance dépassée",
-    5: "Non applicable à la commune",
-}
-
-# Réponses spéciales à extraire
-SPECIAL_ANSWERS = {
-    -1.0: "(no data)",
-    -99.0: "(did not answer)",
-    99.0: "(no opinion)",
-}
-
-# Color scale
-COLOR_SCALE_10 = [
-    "#a6cee3",
-    "#1f78b4",
-    "#b2df8a",
-    "#33a02c",
-    "#fb9a99",
-    "#e31a1c",
-    "#fdbf6f",
-    "#ff7f00",
-    "#cab2d6",
-    "#6a3d9a",
-]
-COLOR_SCALE_10 = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_10]
-COLOR_SCALE_SPECIAL = [
-    "#FFFFFF",
-    "#404040",
-    "#C0C0C0",
-    "#BEBEBE",
-]
-COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
+from webapp.map_helpers import (
+    COLOR_SCALE_10,
+    COLOR_SCALE_SPECIAL,
+    fig_switzerland_empty,
+    MUNICIPALITIES,
+    MUNICIPALITIES_DATA,
+    SPECIAL_ANSWERS,
+)
 
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
-    # Load response data files for current and past commune responses
-    # df_commune_responses = pd.read_csv("data/commune_responses.csv")
-    # Map language codes to integers for easier processing
-    # df_commune_responses["GSB23_UserLanguage"] = df_commune_responses["GSB23_UserLanguage"].map(
-    #    {"DE": 1, "FR": 2, "RO": 3, "IT": 4}
-    # )
-
     # Load combined responses from both current and old years
     df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv").set_index("gemid")
-    # df_commune_responses_combined = pd.read_csv("./data/df_answers_demo.csv").set_index("gemid")
     # Load additional data files for the app
     df_combined = pd.read_csv("data/combined_df.csv")
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
@@ -114,77 +37,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     dash_app.config.suppress_callback_exceptions = True  # Suppress callback exceptions for better error handling
 
     # Define the layout of the app, including dropdowns, map, and slider
-    dash_app.layout = html.Div(
-        [
-            # Dropdowns for selecting the survey and variable (question)
-            html.Div(
-                [
-                    html.Div(
-                        [
-                            html.Label(
-                                _("Survey selection"),
-                                id="survey-selection-label",
-                            ),
-                            dcc.Dropdown(
-                                id="survey-dropdown",
-                                options=[
-                                    {"value": "survey", "label": "2023"},
-                                    {"value": "global_question", "label": _("All surveys")},
-                                ],
-                                value="survey",
-                                clearable=False,
-                            ),
-                        ],
-                        style={"width": "48%", "display": "inline-block"},
-                    ),
-                    html.Div(
-                        [
-                            html.Label(
-                                _("Question"),
-                                id="variable-selection-label",
-                            ),
-                            dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
-                        ],
-                        style={"width": "48%", "display": "inline-block"},
-                    ),
-                ],
-                style={"display": "flex", "justify-content": "space-between"},
-            ),
-            # Map display component
-            dcc.Graph(id="map-graph", style={"position": "relative", "z-index": "0"}),
-            # Slider for selecting a year, dynamically updated based on selected global question
-            html.Div(
-                id="slider-container",
-                style={"display": "none"},
-                children=[
-                    html.Label(
-                        _("Select a year"),
-                        id="slider-label",
-                    ),
-                    html.Div(
-                        dcc.Slider(
-                            id="slider",
-                            min=1988,
-                            max=2023,
-                            value=None,  # Initial value depends on selected global question
-                            marks={},  # Marks updated based on available years for the question
-                            step=None,  # No intermediate values
-                        ),
-                        style={"width": "600px", "margin": "auto"},
-                    ),
-                ],
-            ),
-        ],
-        style={
-            "min-height": "100vh",
-            "min-width": "100vw",
-            "padding": "20px",
-            "margin": "0",
-            "font-family": "Arial, sans-serif",
-            "position": "relative",
-        },
-    )
-
     layout_card = dbc.Card(
         dbc.CardBody(
             dcc.Graph(
@@ -266,7 +118,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                             _("Question"),
                             id="variable-selection-label",
                         ),
-                        # dcc.Dropdown(id="variable-dropdown", options=[], value=None, clearable=False),
                         dbc.ListGroup(
                             [],
                             id="questions-list",
@@ -279,7 +130,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         className="mb-4",
     )
 
-    layout_2 = html.Div(
+    layout_full = html.Div(
         dbc.Row(
             [
                 dbc.Col(layout_card, width=8),
@@ -288,18 +139,16 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         )
     )
 
-    dash_app.layout = layout_2
+    dash_app.layout = layout_full
 
     # Callback to update options, map figure, and slider properties based on survey selection and year
     @dash_app.callback(
-        # Output("variable-dropdown", "options"),
         Output("questions-list", "children"),
         Output("slider-container", "style"),
         Output("map-graph", "figure"),
         Output("slider", "marks"),
         Output("slider", "value"),
         Input("survey-dropdown", "value"),
-        # Input("variable-dropdown", "value"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
         Input("slider", "value"),
     )
@@ -309,28 +158,17 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         else:
             selected_variable = None
 
-        # print(selected_variable)
-
-        disabled = True
-        slider_label = "Select a question to see the years"
-
         selected_language = "en"  # get_locale()
 
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
             df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
 
-        empty_map = fig_switzerland_empty()
-
         # Handle global questions selection
         if selected_survey == "global_question":
             codes = top_10_question_globales[
                 top_10_question_globales["code_first_question"].isin(df_commune_responses_combined.columns)
             ]
-            # options = [
-            #    {"label": row[f"text_{selected_language}"], "value": row["code_first_question"]}
-            #    for _, row in codes.iterrows()
-            # ]
             options = [
                 dbc.ListGroupItem(
                     row[f"text_{selected_language}"],
@@ -371,9 +209,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
         # Handle individual survey question selection
         else:  # selected_survey == "survey"
-            # options = [
-            #    {"label": row[f"text_{selected_language}"], "value": row["code"]} for _, row in df_combined.iterrows()
-            # ]
             options = [
                 dbc.ListGroupItem(
                     row[f"text_{selected_language}"],
@@ -399,7 +234,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 aggregated_responses = [
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
-                # print(aggregated_responses)
 
                 # Return the options and updated map figure
                 return (
@@ -451,7 +285,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         # Count unique non-NaN values
         unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
         num_unique_values = len(unique_values)
-        print(unique_values)
 
         # We remove the special values
         keep_special_values = set()
@@ -462,44 +295,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             except KeyError:
                 pass
 
-        # Determine color scale based on the number of unique values
-        # if num_unique_values < 11:  # to correct once we know how to
-        # if num_unique_values == 99:
-        #     # Use discrete color scale for 10 or fewer unique values
-        #     color_scale = [
-        #         [-1, "gray"],  # Voluntary no response (-99)
-        #         [0, "rgb(255,247,251)"],  # Example colors, you can customize these as needed
-        #         [1, "rgb(236,231,242)"],
-        #         [2, "rgb(208,209,230)"],
-        #         [3, "rgb(166,189,219)"],
-        #         [4, "rgb(116,169,207)"],
-        #         [5, "rgb(54,144,192)"],
-        #         [6, "rgb(5,112,176)"],
-        #         [7, "rgb(4,90,141)"],
-        #         [8, "rgb(2,56,88)"],
-        #         [9, "rgb(1,42,62)"],
-        #         [10, "rgb(0,30,45)"],
-        #     ]
-        # else:
-        #     # Use Viridis continuous color scale for more than 10 unique values
-        #     color_scale = "Viridis"
-
         fig = fig_switzerland_empty()
-
-        # temporary white layer to avoid the holes in the map
-        """fig.add_trace(
-            go.Choroplethmapbox(
-                geojson=MUNICIPALITIES_DATA,
-                locations=[feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
-                z=[1] * len(MUNICIPALITIES_DATA["features"]),
-                colorscale=[[0, "white"], [1, "white"]],
-                featureidkey="properties.id",
-                name="Municipalities",
-                hoverinfo="text",
-                text=[feature["properties"]["name"] for feature in MUNICIPALITIES_DATA["features"]],
-                showscale=False,
-            )
-        )"""
 
         if num_unique_values > len(COLOR_SCALE_10):
             fig.add_trace(
@@ -515,23 +311,12 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
                         for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
                     ],
-                    # colorbar=dict(
-                    #    title="Values",
-                    #    thickness=25,
-                    #    x=1.05,
-                    #    y=0.5,
-                    #    tickvals=[-99] + list(range(0, 11)),
-                    #    ticktext=["No Data", "Voluntary No Response"] + [str(i) for i in range(0, 11)],
-                    # ),
                     showscale=True,
-                    # zmin=0 if num_unique_values <= 10 else None,
-                    # zmax=10 if num_unique_values <= 10 else None,
                 )
             )
         else:
             for i, value in enumerate(unique_values):
                 temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
-                # print(temp_answers)
                 fig.add_trace(
                     go.Choroplethmapbox(
                         geojson=MUNICIPALITIES_DATA,
@@ -543,14 +328,13 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         colorscale=COLOR_SCALE_10[i],
                         hoverinfo="text",
                         text=[f"{MUNICIPALITIES[temp_name]}: {temp_value}" for (temp_name, temp_value) in temp_answers],
-                        showscale=False,  # Hidding the scale lol
+                        showscale=False,  # Hidding the scale
                     )
                 )
 
         # Add special values back
         for i, value in enumerate(keep_special_values):
             temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
-            # print(temp_answers)
             text_answer = SPECIAL_ANSWERS[value]
             fig.add_trace(
                 go.Choroplethmapbox(
@@ -563,57 +347,13 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     colorscale=COLOR_SCALE_SPECIAL[i],
                     hoverinfo="text",
                     text=[f"{MUNICIPALITIES[temp_name]}: {text_answer}" for (temp_name, temp_value) in temp_answers],
-                    showscale=False,  # Hidding the scale lol
+                    showscale=False,  # Hidding the scale
                 )
             )
 
-        # Add the municipalities layer with dynamic or discrete color scale based on unique value count
-        # fig.add_trace(
-        #     go.Choroplethmapbox(
-        #         name="municipalities",
-        #         geojson=MUNICIPALITIES_DATA,
-        #         locations=communes,
-        #         z=variable_values,
-        #         colorscale=color_scale,
-        #         featureidkey="properties.id",
-        #         hoverinfo="text",
-        #         text=[
-        #             f"{feature['properties']['name']}: "
-        #             f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
-        #             for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
-        #         ],
-        #         colorbar=dict(
-        #             title="Values",
-        #             thickness=25,
-        #             x=1.05,
-        #             y=0.5,
-        #             tickvals=[-99] + list(range(0, 11)),
-        #             ticktext=["No Data", "Voluntary No Response"] + [str(i) for i in range(0, 11)],
-        #         ),
-        #         showscale=True,
-        #         zmin=0 if num_unique_values <= 10 else None,
-        #         zmax=10 if num_unique_values <= 10 else None,
-        #     )
-        # )
-
-        # Update layout for the map
-        # fig.update_layout(
-        #     mapbox_zoom=7,
-        #     mapbox_center={"lat": 46.4, "lon": 8.8},
-        #     margin={"r": 0, "t": 0, "l": 0, "b": 0},
-        #     height=800,
-        #     width=1200,
-        #     dragmode=False,
-        #     uirevision=str(np.random.rand()),
-        #     mapbox=dict(
-        #         layers=[], accesstoken="your-access-token", zoom=7, center={"lat": 46.4, "lon": 8.1}, style="white-bg"
-        #     ),
-        #     showlegend=False,
-        # )
-
         return fig
 
-    # Black magic tkt
+    # Integrate dash app into flask app
     with flask_server.app_context(), flask_server.test_request_context():
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
             html_body = render_template_string(f.read())
