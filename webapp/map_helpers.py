@@ -41,7 +41,7 @@ SPECIAL_ANSWERS = {
 
 # Color scale
 COLOR_SCALE_10 = [
-    "#a6cee3",
+    "#66c2a5",
     "#1f78b4",
     "#b2df8a",
     "#33a02c",
@@ -54,12 +54,30 @@ COLOR_SCALE_10 = [
 ]
 COLOR_SCALE_10 = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_10]
 COLOR_SCALE_SPECIAL = [
-    "#FFFFFF",
-    "#404040",
-    "#C0C0C0",
-    "#BEBEBE",
+    "#FFFFFF",  
+    "#C0C0C0",  
+    "#BEBEBE",  
+    "#BEBEBE"   
 ]
 COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
+MAIN_CITIES = [
+        "Zurich", "Genève", "Bâle", "Lausanne",
+        "Berne", "Winterthour", "Lucerne",
+        "Saint-Gall", "Lugano"
+    ]
+CITIES_DATA = {
+    "features": [
+        {"properties": {"name": "Zurich", "latitude": 47.3769, "longitude": 8.5417}},
+        {"properties": {"name": "Genève", "latitude": 46.2044, "longitude": 6.1432}},
+        {"properties": {"name": "Bâle", "latitude": 47.5596, "longitude": 7.5886}},
+        {"properties": {"name": "Lausanne", "latitude": 46.5197, "longitude": 6.6323}},
+        {"properties": {"name": "Berne", "latitude": 46.9481, "longitude": 7.4474}},
+        {"properties": {"name": "Winterthour", "latitude": 47.4988, "longitude": 8.7237}},
+        {"properties": {"name": "Lucerne", "latitude": 47.0502, "longitude": 8.3093}},
+        {"properties": {"name": "Saint-Gall", "latitude": 47.4245, "longitude": 9.3767}},
+        {"properties": {"name": "Lugano", "latitude": 46.0037, "longitude": 8.9511}},
+    ]
+}
 
 
 def fig_switzerland_empty():
@@ -105,12 +123,32 @@ def fig_switzerland_empty():
             geojson=LAKES_DATA,
             locations=[feature["properties"]["id"] for feature in LAKES_DATA["features"]],
             z=[1] * len(LAKES_DATA["features"]),
-            colorscale="Blues",
+            colorscale=[[0, '#4DA6FF'], [1, '#4DA6FF']],  # ArcGIS-like blue color
             featureidkey="properties.id",
-            hoverinfo="text",
-            text=[feature["properties"]["name"] for feature in LAKES_DATA["features"]],
+            hoverinfo="none",
             showscale=False,
+            marker=dict(opacity=0.6)
         )
+    )
+
+    fig.add_trace(
+            go.Scattermapbox(
+                name="Main Cities",
+                lat=[feature["properties"]["latitude"] for feature in CITIES_DATA["features"]
+                    if feature["properties"]["name"] in MAIN_CITIES ],
+                lon=[feature["properties"]["longitude"] for feature in CITIES_DATA["features"]
+                    if feature["properties"]["name"] in MAIN_CITIES ],
+                text=[feature["properties"]["name"] for feature in CITIES_DATA["features"]
+                    if feature["properties"]["name"] in MAIN_CITIES ],
+                mode="markers+text",
+                textposition="top center",
+                marker=dict(size=15, color='black'),
+                hoverinfo="none",
+                textfont=dict(
+                size=20, 
+                color='black',
+                )
+            )
     )
 
     # Map layout configuration for an empty view
