@@ -13,6 +13,7 @@ Projet de visualisation de données géographiques longitudinales.
 - Install requirements: `pip install -r requirements.txt`.
 - Copy the template config: `cp webapp/config.py.dist webapp/config.py`.
 - Modify the template config file, especially the `SECRET_KEY`.
+  - The `DEMO` parameter is used for demonstrations in conferences.
 
 ## Utilisation
 
