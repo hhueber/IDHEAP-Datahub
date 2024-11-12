@@ -11,7 +11,7 @@ import plotly.graph_objects as go
 
 
 from webapp.config import BASEDIR
-from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES_DATA
+from webapp.map_helpers import fig_switzerland_empty, MUNICIPALITIES, MUNICIPALITIES_DATA
 
 
 canton_names = {
@@ -309,7 +309,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         else:
             selected_variable = None
 
-        print(selected_variable)
+        # print(selected_variable)
 
         disabled = True
         slider_label = "Select a question to see the years"
@@ -399,7 +399,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 aggregated_responses = [
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
-                print(aggregated_responses)
+                # print(aggregated_responses)
 
                 # Return the options and updated map figure
                 return (
@@ -531,7 +531,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         else:
             for i, value in enumerate(unique_values):
                 temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
-                print(temp_answers)
+                # print(temp_answers)
                 fig.add_trace(
                     go.Choroplethmapbox(
                         geojson=MUNICIPALITIES_DATA,
@@ -542,11 +542,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         name=value,
                         colorscale=COLOR_SCALE_10[i],
                         hoverinfo="text",
-                        text=[
-                            f"{feature['properties']['name']}: "
-                            f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
-                            for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
-                        ],
+                        text=[f"{MUNICIPALITIES[temp_name]}: {temp_value}" for (temp_name, temp_value) in temp_answers],
                         showscale=False,  # Hidding the scale lol
                     )
                 )
@@ -554,7 +550,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         # Add special values back
         for i, value in enumerate(keep_special_values):
             temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
-            print(temp_answers)
+            # print(temp_answers)
             text_answer = SPECIAL_ANSWERS[value]
             fig.add_trace(
                 go.Choroplethmapbox(
@@ -566,10 +562,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     name=text_answer,
                     colorscale=COLOR_SCALE_SPECIAL[i],
                     hoverinfo="text",
-                    text=[
-                        f"{feature['properties']['name']}: {text_answer}"
-                        for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
-                    ],
+                    text=[f"{MUNICIPALITIES[temp_name]}: {text_answer}" for (temp_name, temp_value) in temp_answers],
                     showscale=False,  # Hidding the scale lol
                 )
             )
