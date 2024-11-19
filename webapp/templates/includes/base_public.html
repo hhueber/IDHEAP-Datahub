@@ -22,7 +22,7 @@
   <header class="mb-auto">
     <nav class="navbar navbar-expand-lg navbar-light">
       <div class="container-fluid">
-        <a class="navbar-brand" href="{{url_for('home')}}">
+        <a class="navbar-brand" href="{{url_for('map')}}">
           <img src="{{url_for('static', filename='img/idheap-dh.png')}}" height="28"
                class="d-inline-block align-text-top">
           IDHEAP Data Hub
@@ -34,14 +34,34 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link{{' active' if active_page == 'home' }}" href="{{url_for('home')}}">Home</a>
+              <a class="nav-link{{' active' if active_page == 'map' }}" href="{{url_for('map')}}">{{_("Map")}}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">About</a>
+              <a class="nav-link{{' active' if active_page == 'about' }}" href="{{url_for('about')}}">{{_("About")}}</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i> Dashboard</a>
+              <a class="nav-link{{' active' if active_page == 'data' }}" href="{{url_for('data')}}">{{_("Data")}}</a>
             </li>
+            {% if not config["DEMO"] %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{url_for('dashboard')}}"><i class="fa-solid fa-lock"></i>
+                {{_("Dashboard")}}</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+        <div class="me-auto">
+          {% set langdict = {"en": ("🇬🇧", "English", ""), "fr": ("🇫🇷", "Français", ""), "de": ("🇩🇪", "Deutsch", "
+          disabled"), "it": ("🇮🇹", "Italiano", " disabled"), "rm": ("🇷🇲", "Rumantsch", " disabled")} %}
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ langdict.get(get_locale(), langdict['fr'])[0] }}
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end">
+            {% for code, cont in langdict.items() %}
+            {% if cont[2] == "" and code != get_locale() %}
+            <li><a class="dropdown-item{{cont[2]}}" href="?lang={{code}}">{{cont[0]}} {{cont[1]}}</a></li>
+            {% endif %}
+            {% endfor %}
           </ul>
         </div>
       </div>
@@ -53,10 +73,30 @@
   </main>
 
   <footer class="mt-auto">
-    <p>Code available on <a href="https://github.com/Amustache/SecCom" target="_blank">GitHub</a>.
+    <p>{{_("Code available on ")}}<a href="https://github.com/Amustache/SecCom" target="_blank">GitHub</a>.
     </p>
   </footer>
 </div>
+<script src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/bootstrap.bundle.min.js')}}" crossorigin="anonymous"></script>
+<script src="{{url_for('static', filename='js/scripts.js')}}"></script>
+{% block javascript %}{% endblock %}
 
+{% if config["DEMO"] %}
+<!--meta http-equiv="refresh" content="30; URL={{url_for('about')}}"-->
+<script>
+    /* The redirect to autoplay page function */
+    function redirect() {
+        window.location.href = "{{url_for('about')}}";
+    }
+
+    var initial = setTimeout(redirect, 300000);
+
+    $(document).click(function (event) {
+        clearTimeout(initial);
+        initial = setTimeout(redirect, 300000);
+    });
+</script>
+{% endif %}
 </body>
 </html>

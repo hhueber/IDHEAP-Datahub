@@ -13,12 +13,17 @@ Projet de visualisation de données géographiques longitudinales.
 - Install requirements: `pip install -r requirements.txt`.
 - Copy the template config: `cp webapp/config.py.dist webapp/config.py`.
 - Modify the template config file, especially the `SECRET_KEY`.
+  - The `DEMO` parameter is used for demonstrations in conferences.
 
 ## Utilisation
 
 ## Dev
 
 - Lancer l'application : `python webapp/app.py`
+- Traduire  :
+  1. Générer un fichier POT global : `pybabel extract -F babel.cfg -o messages.pot .`
+  2. Générer un fichier POT par langue : `pybabel update -i messages.pot -d webapp/translations -l LANG`
+  3. Appliquer les traductions : `pybabel compile -d webapp/translations`
 
 ## Crédits
 
