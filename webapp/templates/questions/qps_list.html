@@ -34,8 +34,8 @@
         <td><span style="display:none;">{{item.code_for_ordering}}</span>{{item.code}}</td>
         <td>{{item.label}}</td>
         <td>{{item.survey}}</td>
-        <td>{{item.num_answers or "{{_("Aucune")}}"}}</td>
-        <td>{{item.question_global or "{{_("Aucune")}}"}}</td>
+        <td>{{item.num_answers or _('Aucune')}}</td>
+        <td>{{item.question_global or _('Aucune')}}</td>
       </tr>
       {% endfor %}
       </tbody>
