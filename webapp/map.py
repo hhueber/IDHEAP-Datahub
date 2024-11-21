@@ -26,6 +26,12 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load additional data files for the app
     df_combined = pd.read_csv("data/combined_df.csv")
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
+    # Load labels
+    df_labels = pd.read_csv("data/answ_details_2023.csv", delimiter=";").set_index("qid")
+    labels = {
+        qid: {val: lab for val, lab in zip(cols["values"].split(";"), cols["labels"].split(";"))}
+        for qid, cols in df_labels.to_dict(orient="index").items()
+    }
 
     # Create a Dash app instance with Bootstrap styling
     dash_app = Dash(
@@ -242,6 +248,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     create_figure(
                         aggregated_responses,
                         [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
+                        labels[selected_variable] if selected_variable in labels else None,
                     ),
                     slider_marks,
                     slider_value,
@@ -271,7 +278,9 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 options,
                 slider_style,
                 create_figure(
-                    aggregated_responses, [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]]
+                    aggregated_responses,
+                    [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
+                    labels[selected_variable] if selected_variable in labels else None,
                 ),
                 slider_marks,
                 slider_value,
@@ -281,7 +290,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
     # Function to create the map figure based on survey responses
-    def create_figure(variable_values, communes):
+    def create_figure(variable_values, communes, labels=None):
         # Count unique non-NaN values
         unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
         num_unique_values = len(unique_values)
@@ -324,7 +333,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         z=[i] * len(temp_answers),
                         featureidkey="properties.id",
                         showlegend=True,
-                        name=value,
+                        name=labels[str(int(value))] if labels else value,
                         colorscale=COLOR_SCALE_10[i],
                         hoverinfo="text",
                         text=[f"{MUNICIPALITIES[temp_name]}: {temp_value}" for (temp_name, temp_value) in temp_answers],
