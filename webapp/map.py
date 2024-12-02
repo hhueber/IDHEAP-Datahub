@@ -1,7 +1,7 @@
 import os
 
 
-from dash import ALL, ctx, Dash, dcc, html, Input, Output
+from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
 from flask import Flask, render_template_string
 from flask_babel import _
 import dash_bootstrap_components as dbc
@@ -22,18 +22,46 @@ from webapp.map_helpers import (
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load combined responses from both current and old years
-    df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv").set_index("gemid")
+    df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv").set_index("gemid", drop=False)
+
+
+
+    # modif du commit 879c7a5 mais ça fait bugger quand on change de question pour survey
     df_commune_responses_combined.replace({-99: None, -99.0: None}, inplace=True)
     df_commune_responses_combined = df_commune_responses_combined.applymap(
         lambda x: -99 if pd.notna(x) and isinstance(x, (int, float)) and x < 0 else x
     )
-    df_commune_responses_combined = df_commune_responses_combined.apply(pd.to_numeric, errors="coerce")
+    #df_commune_responses_combined = df_commune_responses_combined.apply(pd.to_numeric, errors="coerce")
 
 
-    
+
+    critical_columns = ["gemid"]
+    metadata_rows = df_commune_responses_combined.loc[df_commune_responses_combined["gemid"].isna()]
+    df_commune_responses_combined_cleaned = df_commune_responses_combined[df_commune_responses_combined["gemid"].notna()]
+    numeric_columns = df_commune_responses_combined_cleaned.select_dtypes(include=["number"]).columns
+    df_commune_responses_combined_cleaned.loc[:, numeric_columns] = df_commune_responses_combined_cleaned[numeric_columns].apply(pd.to_numeric, errors="coerce")
+    df_commune_responses_combined = pd.concat([df_commune_responses_combined_cleaned, metadata_rows])
+    df_commune_responses_combined.set_index("gemid", inplace=True)
+
+
+
+
     # Load additional data files for the app
     df_combined = pd.read_csv("data/combined_df.csv")
     top_10_question_globales = pd.read_csv("data/top_10_QuestionGlobales_NLP.csv")
+
+
+
+    # commit des labels 198befd   
+    # # Load labels
+    df_labels = pd.read_csv("data/answ_details_2023.csv", delimiter=";").set_index("qid")
+    labels = {
+        qid: {val: lab for val, lab in zip(cols["values"].split(";"), cols["labels"].split(";"))}
+        for qid, cols in df_labels.to_dict(orient="index").items()
+    }
+
+
+
 
     # Create a Dash app instance with Bootstrap styling
     dash_app = Dash(
@@ -108,7 +136,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                                 value=None,  # Initial value depends on selected global question
                                 marks={},  # Marks updated based on available years for the question
                                 step=None,  # No intermediate values
-                                disabled=True,
+                                disabled=False, 
                             ),
                         ),
                     ],
@@ -250,6 +278,11 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     create_figure(
                         aggregated_responses,
                         [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
+
+                    # commit des labels 198befd
+                        labels[selected_variable] if selected_variable in labels else None,
+
+
                     ),
                     slider_marks,
                     slider_value,
@@ -275,11 +308,18 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
             ]
 
+
             return (
                 options,
                 slider_style,
                 create_figure(
-                    aggregated_responses, [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]]
+                    #aggregated_responses, [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]]
+                    # commit des labels 198befd
+                    aggregated_responses,
+                    [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
+                    labels[selected_variable] if selected_variable in labels else None,
+
+
                 ),
                 slider_marks,
                 slider_value,
@@ -289,7 +329,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
     # Function to create the map figure based on survey responses
-    def create_figure(variable_values, communes):
+    def create_figure(variable_values, communes, labels=None):
         # Count unique non-NaN values
         unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
         num_unique_values = len(unique_values)
@@ -316,6 +356,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     hoverinfo="text",
                     text=[
                         f"{feature['properties']['name']}: "
+                        #f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
                         f"{('No data' if value == -99 else ('No opinion' if value == 99 else value))}"
                         for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
                     ],
@@ -332,10 +373,15 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         z=[i] * len(temp_answers),
                         featureidkey="properties.id",
                         showlegend=True,
-                        name=value,
+                        #name=value,
+                        name=labels[str(int(value))] if labels else value,
                         colorscale=COLOR_SCALE_10[i],
                         hoverinfo="text",
-                        text=[f"{MUNICIPALITIES[temp_name]}: {temp_value}" for (temp_name, temp_value) in temp_answers],
+                        text=[
+                            f"{MUNICIPALITIES[temp_name]}: {labels[str(int(temp_value))]}" 
+                            if labels and str(int(temp_value)) in labels else f"{MUNICIPALITIES[temp_name]}: {temp_value}" 
+                            for (temp_name, temp_value) in temp_answers
+                        ],
                         showscale=False,  # Hidding the scale
                     )
                 )
