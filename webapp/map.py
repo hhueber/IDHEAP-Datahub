@@ -22,7 +22,7 @@ from webapp.map_helpers import (
 
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load combined responses from both current and old years
-    df_commune_responses_combined = pd.read_csv("data/commune_responses_combined.csv").set_index("gemid", drop=False)
+    df_commune_responses_combined = pd.read_csv("data/commune_responses_combined_with_pop.csv").set_index("gemid", drop=False)
 
 
 
@@ -120,6 +120,25 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                         ),
                     ],
                 ),
+                 html.Div(
+                    [
+                        html.Label(
+                            _("3rd dimension selection"),
+                            id="data-selection-label",
+                        ),
+                        dcc.Dropdown(
+                            id="data-dropdown",
+                            options=[
+                                {"value": "2D", "label": _("Keep the visualization in 2D")},
+                                {"value": "Density", "label": _("Density")},
+                                {"value": "Option2", "label": _("Topography")},
+                            ],
+                            value="2D",  
+                            clearable=False,
+                        ),
+                    ],
+                    style={"marginTop": "20px"},
+                ),
                 html.Div(
                     id="slider-container",
                     style={"display": "none"},
@@ -187,14 +206,19 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Input("survey-dropdown", "value"),
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
         Input("slider", "value"),
+        Input("data-dropdown", "value"),
     )
-    def update_dropdown_and_map(selected_survey, list_group_items, selected_year):
+    def update_dropdown_and_map(selected_survey, list_group_items, selected_year, selected_data):
         if any(list_group_items):
             selected_variable = ctx.triggered_id.index
         else:
             selected_variable = None
 
         selected_language = "en"  # get_locale()
+
+        if selected_data == "Density":
+            fig = create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA)
+            return [], {"display": "none"}, fig, {}, None
 
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
@@ -406,6 +430,79 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
 
         return fig
+    
+
+    # Function to create the 3D density plot
+    def create_3d_map_with_boundaries(df, geojson_data):
+        from shapely.geometry import shape
+
+        line_x, line_y, line_z = [], [], []
+
+        for feature in geojson_data["features"]:
+            gemid = feature["properties"]["id"]
+            density = df.loc[gemid, "Density"] if gemid in df.index else 0
+
+            polygon = shape(feature["geometry"])
+            if polygon.geom_type == "Polygon":
+                polygons = [polygon]
+            elif polygon.geom_type == "MultiPolygon":
+                polygons = list(polygon.geoms)
+            else:
+                continue
+
+            for poly in polygons:
+                coords = list(poly.exterior.coords)
+                
+                # Ajout des lignes pour les bords en 3D
+                for i in range(len(coords) - 1):
+                    x_start, y_start = coords[i]
+                    x_end, y_end = coords[i + 1]
+
+                    # Ajouter la ligne en bas (z=0)
+                    line_x.extend([x_start, x_end, None])
+                    line_y.extend([y_start, y_end, None])
+                    line_z.extend([0, 0, None])
+
+                    # Ajouter la ligne en haut (z=density)
+                    line_x.extend([x_start, x_end, None])
+                    line_y.extend([y_start, y_end, None])
+                    line_z.extend([density, density, None])
+
+                    # Ajouter les colonnes reliant haut et bas
+                    line_x.extend([x_start, x_start, None])
+                    line_y.extend([y_start, y_start, None])
+                    line_z.extend([0, density, None])
+
+        fig = go.Figure()
+
+        # Ajouter les bordures extrudées
+        fig.add_trace(go.Scatter3d(
+            x=line_x,
+            y=line_y,
+            z=line_z,
+            mode="lines",
+            line=dict(color="black", width=2),
+            name="Density Boundaries",
+            hoverinfo="skip",
+        ))
+
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(title="Longitude", visible=False),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, visible=False),
+                zaxis=dict(showgrid=False, showticklabels=False, zeroline=False, visible=False),
+                camera=dict(
+                    eye=dict(x=0.3, y=-0.8, z=1.2),
+                    up=dict(x=0, y=0, z=1)
+                ),
+                bgcolor="white"
+            ),
+            title="3D Extruded Boundaries by Density",
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+        )
+        return fig
+
 
     # Integrate dash app into flask app
     with flask_server.app_context(), flask_server.test_request_context():
