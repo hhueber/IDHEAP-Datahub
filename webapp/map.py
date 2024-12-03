@@ -7,6 +7,8 @@ from flask_babel import _
 import dash_bootstrap_components as dbc
 import pandas as pd
 import plotly.graph_objects as go
+import numpy as np 
+import matplotlib.pyplot as plt
 
 
 from webapp.config import BASEDIR
@@ -23,8 +25,7 @@ from webapp.map_helpers import (
 def create_dash_app(flask_server: Flask, url_path="/map/"):
     # Load combined responses from both current and old years
     df_commune_responses_combined = pd.read_csv("data/commune_responses_combined_with_pop.csv").set_index("gemid", drop=False)
-
-
+    
 
     # modif du commit 879c7a5 mais ça fait bugger quand on change de question pour survey
     df_commune_responses_combined.replace({-99: None, -99.0: None}, inplace=True)
@@ -42,6 +43,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     df_commune_responses_combined_cleaned.loc[:, numeric_columns] = df_commune_responses_combined_cleaned[numeric_columns].apply(pd.to_numeric, errors="coerce")
     df_commune_responses_combined = pd.concat([df_commune_responses_combined_cleaned, metadata_rows])
     df_commune_responses_combined.set_index("gemid", inplace=True)
+    
 
 
 
@@ -430,60 +432,112 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
 
         return fig
-    
+
 
     # Function to create the 3D density plot
     def create_3d_map_with_boundaries(df, geojson_data):
-        from shapely.geometry import shape
+        from shapely.geometry import shape, Polygon, MultiPolygon
+
+        geojson_ids = set([feature['properties']['id'] for feature in geojson_data['features']])
+        dataframe_ids = set(df['Region-ID'])
+        df_cleaned = df.dropna(subset=['Region-ID'])
+        missing_ids = geojson_ids - set(df_cleaned['Region-ID'])
+        missing_data = pd.DataFrame({'Region-ID': list(missing_ids), 'Density': 0})
+        df_complete = pd.concat([df_cleaned, missing_data], ignore_index=True)
+
+        df = df_complete.set_index('Region-ID')
+        #df['log_density'] = np.log10(df['Density']+1)
+
+        df['Normalized_Population'] = (df['Population'] - df['Population'].min()) / (df['Population'].max() - df['Population'].min())
+
 
         line_x, line_y, line_z = [], [], []
+        base_x, base_y = [], []
+        color_list = []
+        
 
         for feature in geojson_data["features"]:
             gemid = feature["properties"]["id"]
+            
             density = df.loc[gemid, "Density"] if gemid in df.index else 0
+            population_normalized = df.loc[gemid, "Normalized_Population"]
+
+
 
             polygon = shape(feature["geometry"])
-            if polygon.geom_type == "Polygon":
-                polygons = [polygon]
-            elif polygon.geom_type == "MultiPolygon":
-                polygons = list(polygon.geoms)
-            else:
+            if polygon.is_empty:
                 continue
 
+            # Si c'est un MultiPolygon, parcourez tous les polygones qu'il contient
+            polygons = []
+            if isinstance(polygon, Polygon):
+                polygons = [polygon]
+            elif isinstance(polygon, MultiPolygon):
+                polygons = list(polygon.geoms)
+
+  
             for poly in polygons:
                 coords = list(poly.exterior.coords)
-                
-                # Ajout des lignes pour les bords en 3D
                 for i in range(len(coords) - 1):
                     x_start, y_start = coords[i]
                     x_end, y_end = coords[i + 1]
+                    base_x.extend([x_start, x_end, None])
+                    base_y.extend([y_start, y_end, None])
 
-                    # Ajouter la ligne en bas (z=0)
-                    line_x.extend([x_start, x_end, None])
-                    line_y.extend([y_start, y_end, None])
-                    line_z.extend([0, 0, None])
 
-                    # Ajouter la ligne en haut (z=density)
-                    line_x.extend([x_start, x_end, None])
-                    line_y.extend([y_start, y_end, None])
-                    line_z.extend([density, density, None])
+            centroid = polygon.centroid
+            rect_size = 0.01
+            rect_coords = [
+                (centroid.x - rect_size, centroid.y - rect_size),
+                (centroid.x - rect_size, centroid.y + rect_size),
+                (centroid.x + rect_size, centroid.y + rect_size),
+                (centroid.x + rect_size, centroid.y - rect_size),
+                (centroid.x - rect_size, centroid.y - rect_size),
+            ]
 
-                    # Ajouter les colonnes reliant haut et bas
-                    line_x.extend([x_start, x_start, None])
-                    line_y.extend([y_start, y_start, None])
-                    line_z.extend([0, density, None])
+            color = plt.cm.Reds(population_normalized)
+
+
+            for i in range(len(rect_coords) - 1):
+                x_start, y_start = rect_coords[i]
+                x_end, y_end = rect_coords[i + 1]
+
+                line_x.extend([x_start, x_end, None])
+                line_y.extend([y_start, y_end, None])
+                line_z.extend([0, 0, None])
+
+                line_x.extend([x_start, x_end, None])
+                line_y.extend([y_start, y_end, None])
+                line_z.extend([density, density, None])
+
+                line_x.extend([x_start, x_start, None])
+                line_y.extend([y_start, y_start, None])
+                line_z.extend([0, density, None])
+
+                color_list.append(f"rgba({int(color[0] * 255)}, {int(color[1] * 255)}, {int(color[2] * 255)}, {color[3]})")
+
 
         fig = go.Figure()
 
-        # Ajouter les bordures extrudées
+        fig.add_trace(go.Scatter3d(
+            x=base_x,
+            y=base_y,
+            z=[0] * len(base_x),
+            mode="lines",
+            line=dict(color="gray", width=1),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+
         fig.add_trace(go.Scatter3d(
             x=line_x,
             y=line_y,
             z=line_z,
             mode="lines",
             line=dict(color="black", width=2),
-            name="Density Boundaries",
+            # un jour modifier la couleur si on veut rajouter la population 
             hoverinfo="skip",
+            showlegend=False,
         ))
 
         fig.update_layout(
@@ -497,11 +551,13 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 ),
                 bgcolor="white"
             ),
-            title="3D Extruded Boundaries by Density",
+            title="3D Map with Uniform Columns",
             paper_bgcolor="white",
             plot_bgcolor="white",
         )
+
         return fig
+       
 
 
     # Integrate dash app into flask app
