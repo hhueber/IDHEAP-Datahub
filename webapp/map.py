@@ -250,8 +250,55 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
         if selected_data == "Topography":
             # Appel de la fonction pour générer la carte 3D avec la topographie
-            return options, slider_style, create_3d_map_with_topography(df_commune_responses_combined, MUNICIPALITIES_DATA, mnt_gdf), {}, None
-        
+            # Vérifier si une question est sélectionnée
+            if selected_variable and selected_variable in df_commune_responses_combined.columns:
+                # Préparer les données pour la carte 2D
+                filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
+                communes = filtered_responses["GSB23_Q100"].dropna().astype(int).tolist()
+                responses = filtered_responses[selected_variable].tolist()
+                response_dict = dict(zip(communes, responses))
+
+                # Préparer les coordonnées (latitude, longitude) et les réponses
+                latitudes = []
+                longitudes = []
+
+                for feature in MUNICIPALITIES_DATA["features"]:
+                    geom = shape(feature["geometry"])
+                    if geom.is_empty:
+                        latitudes.append(None)
+                        longitudes.append(None)
+                    else:
+                        centroid = geom.centroid
+                        latitudes.append(centroid.y)
+                        longitudes.append(centroid.x)
+
+                aggregated_responses = [
+                    response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
+                ]
+
+                # Créer la couche 2D (projection plate en 3D avec z=0)
+                fig_2d = go.Scatter3d(
+                    x=longitudes,
+                    y=latitudes,
+                    z=[0] * len(latitudes),  # Hauteur constante pour la couche 2D
+                    mode="markers",
+                    marker=dict(
+                        size=5,
+                        color=aggregated_responses,
+                        colorscale="Viridis",
+                        colorbar=dict(title="Survey Responses"),
+                    ),
+                    name="Survey Responses (2D)",
+                )
+
+                # Générer la carte 3D des densités
+                fig_3d = create_topo_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA)
+
+                # Ajouter la couche 2D à la figure 3D
+                fig_3d.add_trace(fig_2d)
+
+                # Retourner les résultats avec la figure combinée
+                return options, slider_style, fig_3d, {}, None
         
         # Si "Density" est sélectionné
         if selected_data == "Density":
@@ -442,6 +489,159 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             gemid = feature["properties"]["id"]
             
             density = df.loc[gemid, "Density"] if gemid in df.index else 0
+            population_normalized = df.loc[gemid, "Normalized_Population"]
+
+
+
+            polygon = shape(feature["geometry"])
+            if polygon.is_empty:
+                continue
+
+            # Si c'est un MultiPolygon, parcourez tous les polygones qu'il contient
+            polygons = []
+            if isinstance(polygon, Polygon):
+                polygons = [polygon]
+            elif isinstance(polygon, MultiPolygon):
+                polygons = list(polygon.geoms)
+
+  
+            for poly in polygons:
+                coords = list(poly.exterior.coords)
+                for i in range(len(coords) - 1):
+                    x_start, y_start = coords[i]
+                    x_end, y_end = coords[i + 1]
+                    base_x.extend([x_start, x_end, None])
+                    base_y.extend([y_start, y_end, None])
+
+
+            centroid = polygon.centroid
+            rect_size = 0.01
+            rect_coords = [
+                (centroid.x - rect_size, centroid.y - rect_size),
+                (centroid.x - rect_size, centroid.y + rect_size),
+                (centroid.x + rect_size, centroid.y + rect_size),
+                (centroid.x + rect_size, centroid.y - rect_size),
+                (centroid.x - rect_size, centroid.y - rect_size),
+            ]
+
+            color = plt.cm.Reds(population_normalized)
+
+
+            for i in range(len(rect_coords) - 1):
+                x_start, y_start = rect_coords[i]
+                x_end, y_end = rect_coords[i + 1]
+
+                line_x.extend([x_start, x_end, None])
+                line_y.extend([y_start, y_end, None])
+                line_z.extend([0, 0, None])
+
+                line_x.extend([x_start, x_end, None])
+                line_y.extend([y_start, y_end, None])
+                line_z.extend([density, density, None])
+
+                line_x.extend([x_start, x_start, None])
+                line_y.extend([y_start, y_start, None])
+                line_z.extend([0, density, None])
+
+                color_list.append(f"rgba({int(color[0] * 255)}, {int(color[1] * 255)}, {int(color[2] * 255)}, {color[3]})")
+
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter3d(
+            x=base_x,
+            y=base_y,
+            z=[0] * len(base_x),
+            mode="lines",
+            line=dict(color="gray", width=1),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+
+        fig.add_trace(go.Scatter3d(
+            x=line_x,
+            y=line_y,
+            z=line_z,
+            mode="lines",
+            line=dict(color="black", width=2),
+            # un jour modifier la couleur si on veut rajouter la population 
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+
+        cities = {
+            "Zurich": {"lat": 47.3769, "lon": 8.5417},
+            "Geneva": {"lat": 46.2044, "lon": 6.1432},
+            "Bern": {"lat": 46.9481, "lon": 7.4474},
+            "Basel": {"lat": 47.5596, "lon": 7.5886},
+            "Lausanne": {"lat": 46.5197, "lon": 6.6323},
+            "Lucerne": {"lat": 47.0502, "lon": 8.3093},
+            "St. Gallen": {"lat": 47.4239, "lon": 9.3748},
+            "Winterthur": {"lat": 47.4997, "lon": 8.7241},
+            "Lugano": {"lat": 46.0037, "lon": 8.9511}
+        }
+
+        city_names = list(cities.keys())
+        city_lats = [cities[city]["lat"] for city in cities]
+        city_lons = [cities[city]["lon"] for city in cities]
+
+        fig.add_trace(go.Scatter3d(
+            x=city_lons,
+            y=city_lats,
+            z=[0] * len(city_names),
+            mode='markers+text',
+            marker=dict(size=6, color='red', opacity=0.8),
+            text=city_names,
+            textposition='top center',
+            textfont=dict(size=14, color='Red', family='Arial'),
+            hoverinfo='text',
+            name="Cities"
+        ))
+
+
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(title="Longitude", visible=False),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, visible=False),
+                zaxis=dict(showgrid=False, showticklabels=False, zeroline=False, visible=False),
+                camera=dict(
+                    eye=dict(x=0.3, y=-0.8, z=1.2),
+                    up=dict(x=0, y=0, z=1)
+                ),
+                bgcolor="white"
+            ),
+            title="3D Map with Uniform Columns",
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+        )
+
+        return fig
+    
+    def create_topo_map_with_boundaries(df, geojson_data):
+        from shapely.geometry import shape, Polygon, MultiPolygon
+
+        geojson_ids = set([feature['properties']['id'] for feature in geojson_data['features']])
+        dataframe_ids = set(df['id'])
+        df_cleaned = df.dropna(subset=['id']) 
+        missing_ids = geojson_ids - set(df_cleaned['id'])
+        missing_data = pd.DataFrame({'id': list(missing_ids), '_mean': 0})
+        df_complete = pd.concat([df_cleaned, missing_data], ignore_index=True)
+
+        df = df_complete.set_index('id')
+        #df['log_density'] = np.log10(df['Density']+1)
+
+        df['Normalized_Population'] = (df['Population'] - df['Population'].min()) / (df['Population'].max() - df['Population'].min())
+
+
+        line_x, line_y, line_z = [], [], []
+        base_x, base_y = [], []
+        color_list = []
+        
+
+        for feature in geojson_data["features"]:
+            gemid = feature["properties"]["id"]
+            
+            density = df.loc[gemid, "_mean"] if gemid in df.index else 0
             population_normalized = df.loc[gemid, "Normalized_Population"]
 
 
