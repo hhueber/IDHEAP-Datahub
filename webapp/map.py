@@ -1,6 +1,3 @@
-import os
-
-
 from dash import ALL, ctx, Dash, dcc, html, Input, Output, State
 from flask import Flask, render_template_string
 from flask_babel import _
@@ -9,6 +6,9 @@ import pandas as pd
 import plotly.graph_objects as go
 import numpy as np 
 import matplotlib.pyplot as plt
+from shapely.geometry import shape, Polygon, MultiPolygon
+import os 
+import geopandas as gpd
 
 
 from webapp.config import BASEDIR
@@ -62,7 +62,9 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         for qid, cols in df_labels.to_dict(orient="index").items()
     }
 
-
+    # Load MNT data
+    mnt_gdf = gpd.read_file("data/dhm25_p.shp")
+    print(mnt_gdf.head())
 
 
     # Create a Dash app instance with Bootstrap styling
@@ -211,22 +213,15 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         Input("data-dropdown", "value"),
     )
     def update_dropdown_and_map(selected_survey, list_group_items, selected_year, selected_data):
+        # Identifier la variable sélectionnée
         if any(list_group_items):
             selected_variable = ctx.triggered_id.index
         else:
             selected_variable = None
 
-        selected_language = "en"  # get_locale()
+        selected_language = "en"  # Langue pour afficher les labels des questions
 
-        if selected_data == "Density":
-            fig = create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA)
-            return [], {"display": "none"}, fig, {}, None
-
-        # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
-        if "year" not in df_commune_responses_combined.index:
-            df_commune_responses_combined.set_index(df_commune_responses_combined.columns[0], inplace=True)
-
-        # Handle global questions selection
+        # Préparer les options du menu des questions
         if selected_survey == "global_question":
             codes = top_10_question_globales[
                 top_10_question_globales["code_first_question"].isin(df_commune_responses_combined.columns)
@@ -240,37 +235,8 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 )
                 for _, row in codes.iterrows()
             ]
-
-            if selected_variable:
-                # Find associated survey questions and years for the selected global question
-                if "quest_glob" in df_commune_responses_combined.index:
-                    survey_columns = df_commune_responses_combined.columns[
-                        df_commune_responses_combined.loc["quest_glob"] == selected_variable
-                    ]
-                    year_row = df_commune_responses_combined.loc["year", survey_columns]
-                    associated_years = [
-                        int(year) for year in year_row.unique() if pd.notna(year) and str(year).isdigit()
-                    ]
-                    year_to_survey = dict(zip(associated_years, survey_columns))
-
-                    slider_marks = {year: str(year) for year in sorted(associated_years)}
-
-                    # Use the last selected slider value if valid; otherwise, reset to the first available year
-                    slider_value = (
-                        selected_year
-                        if selected_year in associated_years
-                        else associated_years[0] if associated_years else None
-                    )
-                else:
-                    print("Error: 'quest_glob' row not found in df_commune_responses_combined.")
-                    slider_marks, slider_value = {}, None
-            else:
-                slider_marks, slider_value = {}, None
-
             slider_style = {"display": "block"}
-
-        # Handle individual survey question selection
-        else:  # selected_survey == "survey"
+        else:  # Cas "survey"
             options = [
                 dbc.ListGroupItem(
                     row[f"text_{selected_language}"],
@@ -278,81 +244,96 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     n_clicks=0,
                     action=True,
                 )
-                for _, row in [(i, r) for i, r in df_combined.iterrows()][3:]
+                for _, row in df_combined.iterrows()
             ]
+            slider_style = {"display": "none"}
 
-            # Hide the slider and reset map for "survey" selection
-            slider_style, slider_marks, slider_value = {"display": "none"}, {}, None
-
-            # Display the map based on selected survey question
+        if selected_data == "Topography":
+            # Appel de la fonction pour générer la carte 3D avec la topographie
+            return options, slider_style, create_3d_map_with_topography(df_commune_responses_combined, MUNICIPALITIES_DATA, mnt_gdf), {}, None
+        
+        
+        # Si "Density" est sélectionné
+        if selected_data == "Density":
+            # Vérifier si une question est sélectionnée
             if selected_variable and selected_variable in df_commune_responses_combined.columns:
-                # Filter data for the selected survey question
+                # Préparer les données pour la carte 2D
                 filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
-                communes = filtered_responses["GSB23_Q100"].astype(int).tolist()
+                communes = filtered_responses["GSB23_Q100"].dropna().astype(int).tolist()
                 responses = filtered_responses[selected_variable].tolist()
                 response_dict = dict(zip(communes, responses))
 
-                # assign a default value (-99) to communes without data
+                # Préparer les coordonnées (latitude, longitude) et les réponses
+                latitudes = []
+                longitudes = []
+
+                for feature in MUNICIPALITIES_DATA["features"]:
+                    geom = shape(feature["geometry"])
+                    if geom.is_empty:
+                        latitudes.append(None)
+                        longitudes.append(None)
+                    else:
+                        centroid = geom.centroid
+                        latitudes.append(centroid.y)
+                        longitudes.append(centroid.x)
+
                 aggregated_responses = [
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
 
-                # Return the options and updated map figure
-                return (
-                    options,
-                    slider_style,
-                    create_figure(
-                        aggregated_responses,
-                        [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
-
-                    # commit des labels 198befd
-                        labels[selected_variable] if selected_variable in labels else None,
-
-
+                # Créer la couche 2D (projection plate en 3D avec z=0)
+                fig_2d = go.Scatter3d(
+                    x=longitudes,
+                    y=latitudes,
+                    z=[0] * len(latitudes),  # Hauteur constante pour la couche 2D
+                    mode="markers",
+                    marker=dict(
+                        size=5,
+                        color=aggregated_responses,
+                        colorscale="Viridis",
+                        colorbar=dict(title="Survey Responses"),
                     ),
-                    slider_marks,
-                    slider_value,
+                    name="Survey Responses (2D)",
                 )
-            else:
-                # If no survey question selected, return an empty map
-                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
-        # Prepare the map figure for global question selection with slider control
-        if selected_variable and selected_survey == "global_question":
-            selected_survey_column = year_to_survey.get(slider_value)
-            if selected_survey_column:
-                filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_survey_column]].fillna(99)
-                communes = filtered_responses["GSB23_Q100"].astype(int).tolist()
-                responses = filtered_responses[selected_survey_column].tolist()
-                response_dict = dict(zip(communes, responses))
-            else:
-                # No data for the selected year; return an empty map
-                return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
+                # Générer la carte 3D des densités
+                fig_3d = create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA)
 
-            # assign a default value (99) to communes without data
+                # Ajouter la couche 2D à la figure 3D
+                fig_3d.add_trace(fig_2d)
+
+                # Retourner les résultats avec la figure combinée
+                return options, slider_style, fig_3d, {}, None
+
+            # Si aucune question n'est sélectionnée, afficher uniquement la carte 3D
+            return options, slider_style, create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA), {}, None
+
+        # Cas 2D simple (par défaut)
+        if selected_variable and selected_variable in df_commune_responses_combined.columns:
+            filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
+            communes = filtered_responses["GSB23_Q100"].dropna().astype(int).tolist()
+            responses = filtered_responses[selected_variable].tolist()
+            response_dict = dict(zip(communes, responses))
+
             aggregated_responses = [
                 response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
             ]
 
-
+            # Créer la carte 2D
             return (
                 options,
                 slider_style,
                 create_figure(
-                    #aggregated_responses, [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]]
-                    # commit des labels 198befd
                     aggregated_responses,
                     [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
                     labels[selected_variable] if selected_variable in labels else None,
-
-
                 ),
-                slider_marks,
-                slider_value,
+                {},  # Pas de marks pour le slider
+                None,  # Pas de valeur pour le slider
             )
 
-        # Default fallback: return empty map and no options if conditions aren't met
-        return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
+        # Retourner une carte vide si aucune condition n'est remplie
+        return options, slider_style, fig_switzerland_empty(), {}, None
 
     # Function to create the map figure based on survey responses
     def create_figure(variable_values, communes, labels=None):
@@ -432,6 +413,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
 
         return fig
+
 
 
     # Function to create the 3D density plot
@@ -540,6 +522,36 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             showlegend=False,
         ))
 
+        cities = {
+            "Zurich": {"lat": 47.3769, "lon": 8.5417},
+            "Geneva": {"lat": 46.2044, "lon": 6.1432},
+            "Bern": {"lat": 46.9481, "lon": 7.4474},
+            "Basel": {"lat": 47.5596, "lon": 7.5886},
+            "Lausanne": {"lat": 46.5197, "lon": 6.6323},
+            "Lucerne": {"lat": 47.0502, "lon": 8.3093},
+            "St. Gallen": {"lat": 47.4239, "lon": 9.3748},
+            "Winterthur": {"lat": 47.4997, "lon": 8.7241},
+            "Lugano": {"lat": 46.0037, "lon": 8.9511}
+        }
+
+        city_names = list(cities.keys())
+        city_lats = [cities[city]["lat"] for city in cities]
+        city_lons = [cities[city]["lon"] for city in cities]
+
+        fig.add_trace(go.Scatter3d(
+            x=city_lons,
+            y=city_lats,
+            z=[0] * len(city_names),
+            mode='markers+text',
+            marker=dict(size=6, color='red', opacity=0.8),
+            text=city_names,
+            textposition='top center',
+            textfont=dict(size=14, color='Red', family='Arial'),
+            hoverinfo='text',
+            name="Cities"
+        ))
+
+
         fig.update_layout(
             scene=dict(
                 xaxis=dict(title="Longitude", visible=False),
@@ -559,6 +571,129 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         return fig
        
 
+    # ça marche pas    
+    def create_3d_map_with_topography(df, geojson_data, mnt_gdf):
+        from shapely.geometry import shape, Polygon, MultiPolygon
+
+        # S'assurer que le système de coordonnées est le même
+        mnt_gdf = mnt_gdf.to_crs(geojson_data.crs)
+
+        geojson_ids = set([feature['properties']['id'] for feature in geojson_data['features']])
+        dataframe_ids = set(df['Region-ID'])
+        df_cleaned = df.dropna(subset=['Region-ID'])
+        missing_ids = geojson_ids - set(df_cleaned['Region-ID'])
+        missing_data = pd.DataFrame({'Region-ID': list(missing_ids), 'Density': 0})
+        df_complete = pd.concat([df_cleaned, missing_data], ignore_index=True)
+
+        df = df_complete.set_index('Region-ID')
+
+        line_x, line_y, line_z = [], [], []
+        base_x, base_y = [], []
+        color_list = []
+
+        for feature in geojson_data["features"]:
+            gemid = feature["properties"]["id"]
+            polygon = shape(feature["geometry"])
+            if polygon.is_empty:
+                continue
+
+            # Si c'est un MultiPolygon, parcourez tous les polygones qu'il contient
+            polygons = []
+            if isinstance(polygon, Polygon):
+                polygons = [polygon]
+            elif isinstance(polygon, MultiPolygon):
+                polygons = list(polygon.geoms)
+
+            # Extraire la hauteur moyenne à partir du MNT
+            hauteur_moyenne_points = mnt_gdf[mnt_gdf.intersects(polygon)]
+            if hauteur_moyenne_points.empty:
+                hauteur_moyenne = 0
+            else:
+                # Extraire la hauteur moyenne en accédant directement aux coordonnées Z
+                hauteur_moyenne = hauteur_moyenne_points.geometry.apply(lambda point: point.z).mean()
+
+            # Debug: afficher les résultats intermédiaires
+            print(f"Processing municipality {gemid}, hauteur moyenne: {hauteur_moyenne}")
+            if hauteur_moyenne == 0:
+                print(f"Warning: No intersection found for municipality {gemid}")
+
+            for poly in polygons:
+                coords = list(poly.exterior.coords)
+                for i in range(len(coords) - 1):
+                    x_start, y_start = coords[i]
+                    x_end, y_end = coords[i + 1]
+                    base_x.extend([x_start, x_end, None])
+                    base_y.extend([y_start, y_end, None])
+
+                centroid = poly.centroid
+                rect_size = 0.01
+                rect_coords = [
+                    (centroid.x - rect_size, centroid.y - rect_size),
+                    (centroid.x - rect_size, centroid.y + rect_size),
+                    (centroid.x + rect_size, centroid.y + rect_size),
+                    (centroid.x + rect_size, centroid.y - rect_size),
+                    (centroid.x - rect_size, centroid.y - rect_size),
+                ]
+
+                color = plt.cm.Reds(hauteur_moyenne / mnt_gdf.geometry.apply(lambda point: point.z).max())
+
+                for i in range(len(rect_coords) - 1):
+                    x_start, y_start = rect_coords[i]
+                    x_end, y_end = rect_coords[i + 1]
+
+                    line_x.extend([x_start, x_end, None])
+                    line_y.extend([y_start, y_end, None])
+                    line_z.extend([0, 0, None])
+
+                    line_x.extend([x_start, x_end, None])
+                    line_y.extend([y_start, y_end, None])
+                    line_z.extend([hauteur_moyenne, hauteur_moyenne, None])
+
+                    line_x.extend([x_start, x_start, None])
+                    line_y.extend([y_start, y_start, None])
+                    line_z.extend([0, hauteur_moyenne, None])
+
+                    color_list.append(f"rgba({int(color[0] * 255)}, {int(color[1] * 255)}, {int(color[2] * 255)}, {color[3]})")
+
+        fig = go.Figure()
+
+        fig.add_trace(go.Scatter3d(
+            x=base_x,
+            y=base_y,
+            z=[0] * len(base_x),
+            mode="lines",
+            line=dict(color="gray", width=1),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+
+        fig.add_trace(go.Scatter3d(
+            x=line_x,
+            y=line_y,
+            z=line_z,
+            mode="lines",
+            line=dict(color="black", width=2),
+            hoverinfo="skip",
+            showlegend=False,
+        ))
+
+        fig.update_layout(
+            scene=dict(
+                xaxis=dict(title="Longitude", visible=False),
+                yaxis=dict(showgrid=False, showticklabels=False, zeroline=False, visible=False),
+                zaxis=dict(showgrid=False, showticklabels=False, zeroline=False, visible=False),
+                camera=dict(
+                    eye=dict(x=0.3, y=-0.8, z=1.2),
+                    up=dict(x=0, y=0, z=1)
+                ),
+                bgcolor="white"
+            ),
+            title="3D Map with Topography",
+            paper_bgcolor="white",
+            plot_bgcolor="white",
+        )
+
+        return fig
 
     # Integrate dash app into flask app
     with flask_server.app_context(), flask_server.test_request_context():
