@@ -63,8 +63,9 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
     }
 
     # Load MNT data
-    mnt_gdf = gpd.read_file("data/dhm25_p.shp")
-    print(mnt_gdf.head())
+    #mnt_gdf = gpd.read_file("data/dhm25_p.shp")
+    #print(mnt_gdf.head())
+    print('altitudes', df_commune_responses_combined['_mean'].head())
 
 
     # Create a Dash app instance with Bootstrap styling
@@ -617,32 +618,35 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
         return fig
     
+
+
     def create_topo_map_with_boundaries(df, geojson_data):
         from shapely.geometry import shape, Polygon, MultiPolygon
 
         geojson_ids = set([feature['properties']['id'] for feature in geojson_data['features']])
-        dataframe_ids = set(df['id'])
-        df_cleaned = df.dropna(subset=['id']) 
-        missing_ids = geojson_ids - set(df_cleaned['id'])
-        missing_data = pd.DataFrame({'id': list(missing_ids), '_mean': 0})
+        dataframe_ids = set(df['topo_id'])
+        df_cleaned = df.dropna(subset=['topo_id']) 
+        missing_ids = geojson_ids - set(df_cleaned['id_topo'])
+        missing_data = pd.DataFrame({'topo_id': list(missing_ids), '_mean': 0})
         df_complete = pd.concat([df_cleaned, missing_data], ignore_index=True)
 
-        df = df_complete.set_index('id')
+        df = df_complete.set_index('topo_id')
         #df['log_density'] = np.log10(df['Density']+1)
 
-        df['Normalized_Population'] = (df['Population'] - df['Population'].min()) / (df['Population'].max() - df['Population'].min())
+        #df['Normalized_Population'] = (df['Population'] - df['Population'].min()) / (df['Population'].max() - df['Population'].min())
 
 
         line_x, line_y, line_z = [], [], []
         base_x, base_y = [], []
-        color_list = []
+        #color_list = []
         
 
         for feature in geojson_data["features"]:
             gemid = feature["properties"]["id"]
             
             density = df.loc[gemid, "_mean"] if gemid in df.index else 0
-            population_normalized = df.loc[gemid, "Normalized_Population"]
+            print('altitude mean', density)
+            #population_normalized = df.loc[gemid, "Normalized_Population"]
 
 
 
@@ -677,7 +681,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 (centroid.x - rect_size, centroid.y - rect_size),
             ]
 
-            color = plt.cm.Reds(population_normalized)
+            #color = plt.cm.Reds(population_normalized)
 
 
             for i in range(len(rect_coords) - 1):
@@ -696,7 +700,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 line_y.extend([y_start, y_start, None])
                 line_z.extend([0, density, None])
 
-                color_list.append(f"rgba({int(color[0] * 255)}, {int(color[1] * 255)}, {int(color[2] * 255)}, {color[3]})")
+                #color_list.append(f"rgba({int(color[0] * 255)}, {int(color[1] * 255)}, {int(color[2] * 255)}, {color[3]})")
 
 
         fig = go.Figure()
