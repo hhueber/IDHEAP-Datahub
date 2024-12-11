@@ -207,28 +207,13 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
 
     dash_app.layout = layout_full
 
-    # Callback to update options, map figure, and slider properties based on survey selection and year
     @dash_app.callback(
         Output("questions-list", "children"),
         Output("slider-container", "style"),
-        Output("map-graph", "figure"),
-        Output("slider", "marks"),
-        Output("slider", "value"),
         Input("survey-dropdown", "value"),
-        Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
-        Input("slider", "value"),
-        Input("data-dropdown", "value"),
     )
-    def update_dropdown_and_map(selected_survey, list_group_items, selected_year, selected_data):
-        # Identifier la variable sélectionnée
-        if any(list_group_items):
-            selected_variable = ctx.triggered_id.index
-        else:
-            selected_variable = None
-
-        selected_language = "en"  # Langue pour afficher les labels des questions
-
-        # Préparer les options du menu des questions
+    def update_question_list(selected_survey):
+        selected_language = "en"
         if selected_survey == "global_question":
             codes = top_10_question_globales[
                 top_10_question_globales["code_first_question"].isin(df_commune_responses_combined.columns)
@@ -243,7 +228,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 for _, row in codes.iterrows()
             ]
             slider_style = {"display": "block"}
-        else:  # Cas "survey"
+        else:  
             options = [
                 dbc.ListGroupItem(
                     row[f"text_{selected_language}"],
@@ -255,16 +240,35 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             ]
             slider_style = {"display": "none"}
 
+        return options, slider_style
+
+    # Callback to update options, map figure, and slider properties based on survey selection and year
+    @dash_app.callback(
+        Output("map-graph", "figure"),
+        Output("slider", "marks"),
+        Output("slider", "value"),
+        Input("survey-dropdown", "value"),
+        Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
+        Input("slider", "value"),
+        Input("data-dropdown", "value"),
+    )
+    def update_dropdown_and_map(selected_survey, list_group_items, selected_year, selected_data):
+
+        if any(list_group_items):
+            selected_variable = ctx.triggered_id.index
+        else:
+            selected_variable = None
+
+        selected_language = "en" 
+
+
         if selected_data == "Topography":
-            # Vérifier si une question est sélectionnée
             if selected_variable and selected_variable in df_commune_responses_combined.columns:
-                # Préparer les données pour la carte 2D
                 filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
                 communes = filtered_responses["GSB23_Q100"].dropna().astype(int).tolist()
                 responses = filtered_responses[selected_variable].tolist()
                 response_dict = dict(zip(communes, responses))
 
-                # Préparer les coordonnées (latitude, longitude) et les réponses
                 latitudes = []
                 longitudes = []
 
@@ -282,11 +286,11 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
 
-                # Créer la couche 2D (projection plate en 3D avec z=0)
+                # 2D layer (flat projection in 3D with z=0)
                 fig_2d = go.Scatter3d(
                     x=longitudes,
                     y=latitudes,
-                    z=[0] * len(latitudes),  # Hauteur constante pour la couche 2D
+                    z=[0] * len(latitudes),  
                     mode="markers",
                     marker=dict(
                         size=5,
@@ -297,30 +301,24 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     name="Survey Responses (2D)",
                 )
 
-                # Générer la carte 3D des densités
                 fig_3d = create_3d_map_with_topography(df_commune_responses_combined, MUNICIPALITIES_DATA)
 
-                # Ajouter la couche 2D à la figure 3D
                 fig_3d.add_trace(fig_2d)
 
                 # Retourner les résultats avec la figure combinée
-                return options, slider_style, fig_3d, {}, None
+                return fig_3d, {}, None
 
             # Si aucune question n'est sélectionnée, afficher uniquement la carte 3D
-            return options, slider_style, create_3d_map_with_topography(df_commune_responses_combined, MUNICIPALITIES_DATA), {}, None
+            return create_3d_map_with_topography(df_commune_responses_combined, MUNICIPALITIES_DATA), {}, None
 
         
-        # Si "Density" est sélectionné
         if selected_data == "Density":
-            # Vérifier si une question est sélectionnée
             if selected_variable and selected_variable in df_commune_responses_combined.columns:
-                # Préparer les données pour la carte 2D
                 filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
                 communes = filtered_responses["GSB23_Q100"].dropna().astype(int).tolist()
                 responses = filtered_responses[selected_variable].tolist()
                 response_dict = dict(zip(communes, responses))
 
-                # Préparer les coordonnées (latitude, longitude) et les réponses
                 latitudes = []
                 longitudes = []
 
@@ -338,11 +336,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
 
-                # Créer la couche 2D (projection plate en 3D avec z=0)
                 fig_2d = go.Scatter3d(
                     x=longitudes,
                     y=latitudes,
-                    z=[0] * len(latitudes),  # Hauteur constante pour la couche 2D
+                    z=[0] * len(latitudes),  
                     mode="markers",
                     marker=dict(
                         size=5,
@@ -353,19 +350,15 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     name="Survey Responses (2D)",
                 )
 
-                # Générer la carte 3D des densités
                 fig_3d = create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA)
 
-                # Ajouter la couche 2D à la figure 3D
                 fig_3d.add_trace(fig_2d)
 
-                # Retourner les résultats avec la figure combinée
-                return options, slider_style, fig_3d, {}, None
 
-            # Si aucune question n'est sélectionnée, afficher uniquement la carte 3D
-            return options, slider_style, create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA), {}, None
+                return fig_3d, {}, None
 
-        # Cas 2D simple (par défaut)
+            return create_3d_map_with_boundaries(df_commune_responses_combined, MUNICIPALITIES_DATA), {}, None
+
         if selected_variable and selected_variable in df_commune_responses_combined.columns:
             filtered_responses = df_commune_responses_combined[["GSB23_Q100", selected_variable]].fillna(99)
             communes = filtered_responses["GSB23_Q100"].dropna().astype(int).tolist()
@@ -376,23 +369,20 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
             ]
 
-            # Créer la carte 2D
             return (
-                options,
-                slider_style,
                 create_figure(
                     aggregated_responses,
                     [feature["properties"]["id"] for feature in MUNICIPALITIES_DATA["features"]],
                     labels[selected_variable] if selected_variable in labels else None,
                 ),
-                {},  # Pas de marks pour le slider
-                None,  # Pas de valeur pour le slider
+                {},  
+                None, 
             )
 
-        # Retourner une carte vide si aucune condition n'est remplie
-        return options, slider_style, fig_switzerland_empty(), {}, None
 
-    # Function to create the map figure based on survey responses
+        return fig_switzerland_empty(), {}, None
+
+
     def create_figure(variable_values, communes, labels=None):
         # Count unique non-NaN values
         unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
@@ -488,25 +478,22 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 continue
             for poly in polygons:
                 coords = list(poly.exterior.coords)
-                
-                # Ajout des lignes pour les bords en 3D
+           
                 for i in range(len(coords) - 1):
                     x_start, y_start = coords[i]
                     x_end, y_end = coords[i + 1]
-                    # Ajouter la ligne en bas (z=0)
+
                     line_x.extend([x_start, x_end, None])
                     line_y.extend([y_start, y_end, None])
                     line_z.extend([0, 0, None])
-                    # Ajouter la ligne en haut (z=density)
+        
                     line_x.extend([x_start, x_end, None])
                     line_y.extend([y_start, y_end, None])
-                    line_z.extend([density, density, None])
-                    # Ajouter les colonnes reliant haut et bas
+                    line_z.extend([density, density, None])    
                     line_x.extend([x_start, x_start, None])
                     line_y.extend([y_start, y_start, None])
                     line_z.extend([0, density, None])
         fig = go.Figure()
-        # Ajouter les bordures extrudées
         fig.add_trace(go.Scatter3d(
             x=line_x,
             y=line_y,
@@ -578,25 +565,21 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                 continue
             for poly in polygons:
                 coords = list(poly.exterior.coords)
-                
-                # Ajout des lignes pour les bords en 3D
+  
                 for i in range(len(coords) - 1):
                     x_start, y_start = coords[i]
                     x_end, y_end = coords[i + 1]
-                    # Ajouter la ligne en bas (z=0)
+
                     line_x.extend([x_start, x_end, None])
                     line_y.extend([y_start, y_end, None])
                     line_z.extend([0, 0, None])
-                    # Ajouter la ligne en haut (z=density)
                     line_x.extend([x_start, x_end, None])
                     line_y.extend([y_start, y_end, None])
                     line_z.extend([altitudes, altitudes, None])
-                    # Ajouter les colonnes reliant haut et bas
                     line_x.extend([x_start, x_start, None])
                     line_y.extend([y_start, y_start, None])
                     line_z.extend([0, altitudes, None])
         fig = go.Figure()
-        # Ajouter les bordures extrudées
         fig.add_trace(go.Scatter3d(
             x=line_x,
             y=line_y,
