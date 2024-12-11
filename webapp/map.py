@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from shapely.geometry import shape, Polygon, MultiPolygon
 import os 
+import matplotlib.tri as mtri
 import geopandas as gpd
 
 
@@ -383,6 +384,7 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         return fig_switzerland_empty(), {}, None
 
 
+
     def create_figure(variable_values, communes, labels=None):
         # Count unique non-NaN values
         unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
@@ -460,7 +462,6 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
             )
 
         return fig
-
 
 
     # Function to create the 3D density plot
@@ -550,12 +551,26 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         )
         return fig
 
+    # Function to create the 3D topography plot
     def create_3d_map_with_topography(df, geojson_rectangles):
         line_x, line_y, line_z = [], [], []
+
+        scale_factor = 0.001
+
+        if '_mean' in df.columns:
+            df['_mean'] = df['_mean'] - df['_mean'].min()
+            df['_mean'] = np.log1p(df['_mean'])
+            df['_mean'] = (df['_mean'] ** 0.5) 
+            df['_mean'] = df['_mean'] - df['_mean'].min()
+
         for feature in geojson_rectangles["features"]:
             gemid = feature["properties"]["id"]
-            df['_mean'] = df['_mean'] - df['_mean'].min()
-            altitudes = df.loc[gemid, "_mean"] if gemid in df.index else 0
+            if gemid in df.index and '_mean' in df.columns and not pd.isna(df.loc[gemid, '_mean']):
+                altitudes = df.loc[gemid, '_mean']
+            else:
+                altitudes = 0
+
+
             polygon = shape(feature["geometry"])
             if polygon.geom_type == "Polygon":
                 polygons = [polygon]
@@ -575,10 +590,10 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
                     line_z.extend([0, 0, None])
                     line_x.extend([x_start, x_end, None])
                     line_y.extend([y_start, y_end, None])
-                    line_z.extend([altitudes, altitudes, None])
+                    line_z.extend([altitudes*scale_factor, altitudes*scale_factor, None])
                     line_x.extend([x_start, x_start, None])
                     line_y.extend([y_start, y_start, None])
-                    line_z.extend([0, altitudes, None])
+                    line_z.extend([0, altitudes*scale_factor, None])
         fig = go.Figure()
         fig.add_trace(go.Scatter3d(
             x=line_x,
@@ -636,6 +651,27 @@ def create_dash_app(flask_server: Flask, url_path="/map/"):
         )
         return fig
 
+    def triangulate_polygon(polygon: Polygon, altitude=0):
+        x_coords, y_coords = polygon.exterior.xy
+        points = np.column_stack((x_coords, y_coords))
+        points = points[:-1]  
+
+        tri = mtri.Triangulation(points[:,0], points[:,1])
+
+        mask = []
+        for ia, ib, ic in tri.triangles:
+            x_t = (points[ia,0] + points[ib,0] + points[ic,0]) / 3.0
+            y_t = (points[ia,1] + points[ib,1] + points[ic,1]) / 3.0
+            mask.append(not polygon.contains(shape({"type": "Point", "coordinates": (x_t, y_t)})))
+        tri.set_mask(np.array(mask))
+
+        x = tri.x
+        y = tri.y
+        z = np.full_like(x, altitude)
+        i = tri.triangles[:,0]
+        j = tri.triangles[:,1]
+        k = tri.triangles[:,2]
+        return x, y, z, i, j, k
     
 
 
