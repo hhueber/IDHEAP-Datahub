@@ -1,9 +1,9 @@
-from webapp import app
-from webapp.config import SERVER_HOST, SERVER_PORT
+from webapp import create_app
+from webapp.config import Config
 
 
-application = app
+application = create_app()
 
 # Default port:
 if __name__ == "__main__":
-    application.run(host=SERVER_HOST, port=SERVER_PORT)
+    application.run(host=Config.SERVER_HOST, port=Config.SERVER_PORT)
