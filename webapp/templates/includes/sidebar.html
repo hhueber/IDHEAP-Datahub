@@ -2,86 +2,86 @@
   <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
     <div class="sb-sidenav-menu">
       <div class="nav">
-        <a class="nav-link" href="{{url_for('dashboard')}}">
+        <a class="nav-link" href="{{ url_for('admin.dashboard') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-house"></i></div>
-          {{_("Dashboard")}}
+          {{ _("Dashboard") }}
         </a>
 
-        <div class="sb-sidenav-menu-heading">{{_("Visualizations")}}</div>
-        <a class="nav-link" href="{{url_for('map')}}">
+        <div class="sb-sidenav-menu-heading">{{ _("Visualizations") }}</div>
+        <a class="nav-link" href="{{ url_for('main.map') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-location-crosshairs"></i></div>
-          {{_("Map")}}{{_(" (public)")}}
+          {{ _("Map") }}{{ _(" (public)") }}
         </a>
-        <a class="nav-link" href="{{url_for('map')}}">
+        <a class="nav-link" href="{{ url_for('main.map') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-chart-column"></i></div>
-          {{_("Statistics")}}{{_(" (public)")}}
+          {{ _("Statistics") }}{{ _(" (public)") }}
         </a>
 
 
         <div class="sb-sidenav-menu-heading">Enquêtes</div>
-        <a class="nav-link" href="{{url_for('survey_new')}}">
+        <a class="nav-link" href="{{ url_for('survey_new') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-upload"></i></div>
-          {{_("New survey")}}
+          {{ _("New survey") }}
         </a>
-        <a class="nav-link" href="{{url_for('survey_list')}}">
+        <a class="nav-link" href="{{ url_for('survey_list') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-square-poll-vertical"></i></div>
-          {{_("Previous surveys")}}
+          {{ _("Previous surveys") }}
         </a>
 
-        <div class="sb-sidenav-menu-heading">{{_("Questions and answers")}}</div>
+        <div class="sb-sidenav-menu-heading">{{ _("Questions and answers") }}</div>
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseQuestions"
            aria-expanded="false" aria-controls="collapseQuestions">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-clipboard-question"></i></div>
-          {{_("Questions")}}
+          {{ _("Questions") }}
           <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
         </a>
         <div class="collapse" id="collapseQuestions" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
           <nav class="sb-sidenav-menu-nested nav">
-            <a class="nav-link" href="{{url_for('map')}}">
+            <a class="nav-link" href="{{ url_for('map') }}">
               <div class="sb-nav-link-icon"><i class="fas fa-fw fa-clipboard"></i></div>
-              {{_("Categories")}}
+              {{ _("Categories") }}
             </a>
-            <a class="nav-link" href="{{url_for('qg_list')}}">
+            <a class="nav-link" href="{{ url_for('qg_list') }}">
               <div class="sb-nav-link-icon"><i class="fas fa-fw fa-clipboard-list"></i></div>
-              {{_("Global questions")}}
+              {{ _("Global questions") }}
             </a>
-            <a class="nav-link" href="{{url_for('qps_list')}}">
+            <a class="nav-link" href="{{ url_for('qps_list') }}">
               <div class="sb-nav-link-icon"><i class="fas fa-fw fa-paste"></i></div>
-              {{_("Survey questions")}}
+              {{ _("Survey questions") }}
             </a>
           </nav>
         </div>
-        <a class="nav-link" href="{{url_for('map')}}">
+        <a class="nav-link" href="{{ url_for('map') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-comment"></i></div>
-          {{_("Answers")}}
+          {{ _("Answers") }}
         </a>
 
-        <div class="sb-sidenav-menu-heading">{{_("Parameters")}}</div>
+        <div class="sb-sidenav-menu-heading">{{ _("Parameters") }}</div>
         <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseSettings"
            aria-expanded="false" aria-controls="collapseSettings">
           <div class="sb-nav-link-icon"><i class="fas fa-mountain-city"></i></div>
-          {{_("Places")}}
+          {{ _("Places") }}
           <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
         </a>
         <div class="collapse" id="collapseSettings" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
           <nav class="sb-sidenav-menu-nested nav">
-            <a class="nav-link" href="{{url_for('canton_list')}}">
+            <a class="nav-link" href="{{ url_for('canton_list') }}">
               <div class="sb-nav-link-icon"><i class="fas fa-fw fa-map"></i></div>
-              {{_("Cantons")}}
+              {{ _("Cantons") }}
             </a>
-            <a class="nav-link" href="{{url_for('district_list')}}">
+            <a class="nav-link" href="{{ url_for('district_list') }}">
               <div class="sb-nav-link-icon"><i class="fas fa-fw fa-map-location-dot"></i></div>
-              {{_("Districts")}}
+              {{ _("Districts") }}
             </a>
-            <a class="nav-link" href="{{url_for('commune_list')}}">
+            <a class="nav-link" href="{{ url_for('commune_list') }}">
               <div class="sb-nav-link-icon"><i class="fas fa-fw fa-location-dot"></i></div>
-              {{_("Municipalities")}}
+              {{ _("Municipalities") }}
             </a>
           </nav>
         </div>
-        <a class="nav-link" href="{{url_for('map')}}">
+        <a class="nav-link" href="{{ url_for('map') }}">
           <div class="sb-nav-link-icon"><i class="fas fa-fw fa-gears"></i></div>
-          {{_("Configuration")}}
+          {{ _("Configuration") }}
         </a>
       </div>
     </div>

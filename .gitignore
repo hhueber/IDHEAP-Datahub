@@ -2,6 +2,7 @@ config.py
 *.db*
 data/
 !webapp/data/
+webapp/data/private_data/*
 webapp/data/private_data/*.*
 !webapp/data/private_data/.gitkeep
 gunicorn.py

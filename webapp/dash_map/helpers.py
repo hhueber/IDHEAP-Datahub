@@ -2,16 +2,15 @@ import json
 import os
 
 
+import pandas as pd
 import plotly.graph_objects as go
 
 
-# L'endroit où t'as tes geojson en gros
-try:
-    from webapp.config import BASEDIR, DB_URI
+from webapp.config import BASEDIR
 
-    BASE_PATH = os.path.join(BASEDIR, "data", "geojson")
-except:
-    BASE_PATH = os.path.join("data", "geojson")
+
+# L'endroit où t'as tes geojson en gros
+BASE_PATH = os.path.join(BASEDIR, "data", "geojson")
 
 # Geojson
 with open(os.path.join(BASE_PATH, "country.json"), encoding="utf-8") as f:
@@ -53,18 +52,9 @@ COLOR_SCALE_10 = [
     "#6a3d9a",
 ]
 COLOR_SCALE_10 = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_10]
-COLOR_SCALE_SPECIAL = [
-    "#FFFFFF",  
-    "#C0C0C0",  
-    "#BEBEBE",  
-    "#BEBEBE"   
-]
+COLOR_SCALE_SPECIAL = ["#FFFFFF", "#C0C0C0", "#BEBEBE", "#BEBEBE"]
 COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
-MAIN_CITIES = [
-        "Zurich", "Genève", "Bâle", "Lausanne",
-        "Berne", "Winterthour", "Lucerne",
-        "Saint-Gall", "Lugano"
-    ]
+MAIN_CITIES = ["Zurich", "Genève", "Bâle", "Lausanne", "Berne", "Winterthour", "Lucerne", "Saint-Gall", "Lugano"]
 CITIES_DATA = {
     "features": [
         {"properties": {"name": "Zurich", "latitude": 47.3769, "longitude": 8.5417}},
@@ -123,32 +113,41 @@ def fig_switzerland_empty():
             geojson=LAKES_DATA,
             locations=[feature["properties"]["id"] for feature in LAKES_DATA["features"]],
             z=[1] * len(LAKES_DATA["features"]),
-            colorscale=[[0, '#4DA6FF'], [1, '#4DA6FF']],  # ArcGIS-like blue color
+            colorscale=[[0, "#4DA6FF"], [1, "#4DA6FF"]],  # ArcGIS-like blue color
             featureidkey="properties.id",
             hoverinfo="none",
             showscale=False,
-            marker=dict(opacity=0.6)
+            marker=dict(opacity=0.6),
         )
     )
 
     fig.add_trace(
-            go.Scattermapbox(
-                name="Main Cities",
-                lat=[feature["properties"]["latitude"] for feature in CITIES_DATA["features"]
-                    if feature["properties"]["name"] in MAIN_CITIES ],
-                lon=[feature["properties"]["longitude"] for feature in CITIES_DATA["features"]
-                    if feature["properties"]["name"] in MAIN_CITIES ],
-                text=[feature["properties"]["name"] for feature in CITIES_DATA["features"]
-                    if feature["properties"]["name"] in MAIN_CITIES ],
-                mode="markers+text",
-                textposition="top center",
-                marker=dict(size=15, color='black'),
-                hoverinfo="none",
-                textfont=dict(
-                size=20, 
-                color='black',
-                )
-            )
+        go.Scattermapbox(
+            name="Main Cities",
+            lat=[
+                feature["properties"]["latitude"]
+                for feature in CITIES_DATA["features"]
+                if feature["properties"]["name"] in MAIN_CITIES
+            ],
+            lon=[
+                feature["properties"]["longitude"]
+                for feature in CITIES_DATA["features"]
+                if feature["properties"]["name"] in MAIN_CITIES
+            ],
+            text=[
+                feature["properties"]["name"]
+                for feature in CITIES_DATA["features"]
+                if feature["properties"]["name"] in MAIN_CITIES
+            ],
+            mode="markers+text",
+            textposition="top center",
+            marker=dict(size=15, color="black"),
+            hoverinfo="none",
+            textfont=dict(
+                size=20,
+                color="black",
+            ),
+        )
     )
 
     # Map layout configuration for an empty view
@@ -256,5 +255,79 @@ def fig_map_with_data(df, chosen_question):
         hoverinfo="text",
         text=[f"{name}: (no data)" for name in MUNICIPALITIES.values()],
     )
+
+    return fig
+
+
+# Function to create the map figure based on survey responses
+def create_figure(variable_values, communes, labels=None):
+    # Count unique non-NaN values
+    unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
+    num_unique_values = len(unique_values)
+
+    # We remove the special values
+    keep_special_values = set()
+    for value in SPECIAL_ANSWERS.keys():
+        try:
+            unique_values.remove(value)
+            keep_special_values.add(value)
+        except KeyError:
+            pass
+
+    fig = fig_switzerland_empty()
+
+    if num_unique_values > len(COLOR_SCALE_10):
+        fig.add_trace(
+            go.Choroplethmapbox(
+                geojson=MUNICIPALITIES_DATA,
+                locations=communes,
+                z=variable_values,
+                colorscale="Blues",
+                featureidkey="properties.id",
+                hoverinfo="text",
+                text=[
+                    f"{feature['properties']['name']}: "
+                    f"{'No Data' if value == -1 else ('Voluntary no response' if value == -99 else ('No opinion' if value == 99 else value))}"
+                    for value, feature in zip(variable_values, MUNICIPALITIES_DATA["features"])
+                ],
+                showscale=True,
+            )
+        )
+    else:
+        for i, value in enumerate(unique_values):
+            temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
+            fig.add_trace(
+                go.Choroplethmapbox(
+                    geojson=MUNICIPALITIES_DATA,
+                    locations=[x[0] for x in temp_answers],
+                    z=[i] * len(temp_answers),
+                    featureidkey="properties.id",
+                    showlegend=True,
+                    name=labels[str(int(value))] if labels else value,
+                    colorscale=COLOR_SCALE_10[i],
+                    hoverinfo="text",
+                    text=[f"{MUNICIPALITIES[temp_name]}: {temp_value}" for (temp_name, temp_value) in temp_answers],
+                    showscale=False,  # Hidding the scale
+                )
+            )
+
+    # Add special values back
+    for i, value in enumerate(keep_special_values):
+        temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
+        text_answer = SPECIAL_ANSWERS[value]
+        fig.add_trace(
+            go.Choroplethmapbox(
+                geojson=MUNICIPALITIES_DATA,
+                locations=[x[0] for x in temp_answers],
+                z=[i] * len(temp_answers),
+                featureidkey="properties.id",
+                showlegend=True,
+                name=text_answer,
+                colorscale=COLOR_SCALE_SPECIAL[i],
+                hoverinfo="text",
+                text=[f"{MUNICIPALITIES[temp_name]}: {text_answer}" for (temp_name, temp_value) in temp_answers],
+                showscale=False,  # Hidding the scale
+            )
+        )
 
     return fig
