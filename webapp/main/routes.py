@@ -1,7 +1,7 @@
 from flask import redirect, render_template
 
 
-from webapp import get_locale
+from webapp.extensions import get_locale
 from webapp.main import bp
 
 
