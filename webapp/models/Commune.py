@@ -17,6 +17,7 @@ class Commune(Base):
 
     code: Mapped[str] = mapped_column(unique=True)
     name: Mapped[str] = mapped_column(unique=True)
+    year: Mapped[int] = mapped_column(default=2023)
 
     name_de: Mapped[str]
     name_fr: Mapped[str]
