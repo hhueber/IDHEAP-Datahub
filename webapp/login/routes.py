@@ -1,5 +1,5 @@
 from flask import flash, redirect, render_template, request, url_for
-from flask_babel import _
+from flask_babel import _ # Translatable string helper
 from flask_login import login_required, login_user, logout_user
 
 
@@ -10,6 +10,12 @@ from webapp.models.User import User
 
 @bp.route("/login", methods=("GET", "POST"))
 def login():
+    """
+    Display and process the login form.
+    - On GET: render the login page.
+    - On POST: validate credentials, log the user in if successful,
+      flash a message, and redirect appropriately.
+    """
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
@@ -29,5 +35,10 @@ def login():
 @bp.route("/logout")
 @login_required
 def logout():
+    """
+    Log out the current user.
+    - Requires the user to be logged in.
+    - Redirects to the home page afterwards.
+    """
     logout_user()
     return redirect(url_for("home"))

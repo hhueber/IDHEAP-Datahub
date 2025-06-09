@@ -1,12 +1,10 @@
 # Not a blueprint!
 import os
 
-
 from dash import ALL, ctx, Dash, Input, Output
 from flask import Flask, render_template_string
 import dash_bootstrap_components as dbc
 import pandas as pd
-
 
 from webapp.config import BASEDIR
 from webapp.dash_map.helpers import create_figure, fig_switzerland_empty, MUNICIPALITIES_DATA, SPECIAL_ANSWERS
@@ -15,7 +13,12 @@ from webapp.dash_map.preprocessing import df_combined, df_commune_responses_comb
 
 
 def create_dash_map(flask_server: Flask, url_path="/map/"):
-    # Create a Dash app instance with Bootstrap styling
+    """
+    Initialize and configure the Dash map application.
+    - Integrates with the given Flask server
+    - Uses Bootstrap for styling
+    - Mounts at the specified URL path
+    """
     dash_app = Dash(
         __name__,
         external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -23,7 +26,7 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
         url_base_pathname=url_path,
     )
 
-    # Set layout
+    # Apply the predefined full-page layout
     dash_app.layout = layout_full
 
     # Callback to update options, map figure, and slider properties based on survey selection and year
@@ -37,13 +40,21 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
         Input({"type": "list-group-item", "index": ALL}, "n_clicks"),
         Input("slider", "value"),
     )
+
     def update_dropdown_and_map(selected_survey, list_group_items, selected_year):
+        """
+        Update the question list, slider display, and map figure based on:
+        - The selected survey type (global vs. individual)
+        - Which list item was clicked
+        - The chosen year on the slider (for global questions)
+        """
+        # Determine which question/code was clicked, if any
         if any(list_group_items):
             selected_variable = ctx.triggered_id.index
         else:
             selected_variable = None
 
-        selected_language = "en"  # get_locale()
+        selected_language = "en"  # Placeholder for dynamic locale detection
 
         # Reindex to ensure 'year' and 'quest_glob' are accessible as rows
         if "year" not in df_commune_responses_combined.index:
@@ -51,9 +62,11 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
 
         # Handle global questions selection
         if selected_survey == "global_question":
+            # Filter for top 10 global questions present in our data
             codes = top_10_question_globales[
                 top_10_question_globales["code_first_question"].isin(df_commune_responses_combined.columns)
             ]
+            # Build clickable list items for each global question
             options = [
                 dbc.ListGroupItem(
                     row[f"text_{selected_language}"],
@@ -65,7 +78,7 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
             ]
 
             if selected_variable:
-                # Find associated survey questions and years for the selected global question
+                # Map global question to its specific survey columns & years
                 if "quest_glob" in df_commune_responses_combined.index:
                     survey_columns = df_commune_responses_combined.columns[
                         df_commune_responses_combined.loc["quest_glob"] == selected_variable
@@ -85,6 +98,7 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
                         else associated_years[0] if associated_years else None
                     )
                 else:
+                    # Safety fallback if expected row is missing
                     print("Error: 'quest_glob' row not found in df_commune_responses_combined.")
                     slider_marks, slider_value = {}, None
             else:
@@ -94,6 +108,7 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
 
         # Handle individual survey question selection
         else:  # selected_survey == "survey"
+            # Create list items for each question in the combined DataFrame
             options = [
                 dbc.ListGroupItem(
                     row[f"text_{selected_language}"],
@@ -115,7 +130,7 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
                 responses = filtered_responses[selected_variable].tolist()
                 response_dict = dict(zip(communes, responses))
 
-                # assign a default value (99) to communes without data
+                # Assign a default value (99) to communes without data
                 aggregated_responses = [
                     response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
                 ]
@@ -148,7 +163,7 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
                 # No data for the selected year; return an empty map
                 return options, slider_style, fig_switzerland_empty(), slider_marks, slider_value
 
-            # assign a default value (99) to communes without data
+            # Assign a default value (99) to communes without data
             aggregated_responses = [
                 response_dict.get(feature["properties"]["id"], -99) for feature in MUNICIPALITIES_DATA["features"]
             ]
@@ -170,12 +185,13 @@ def create_dash_map(flask_server: Flask, url_path="/map/"):
 
     # Integrate dash app into Flask app
     with flask_server.app_context(), flask_server.test_request_context():
+        # Load the base HTML template
         with open(os.path.join(BASEDIR, "templates", "public", "map.html"), "r") as f:
             html_body = render_template_string(f.read())
-
+        # Replace placeholder comments with Jinja blocks for Dash rendering
         for comment in ["app_entry", "config", "scripts", "renderer"]:
             html_body = html_body.replace(f"<!-- {comment} -->", "{%" + comment + "%}")
 
         dash_app.index_string = html_body
-
+    # Return the Flask server with Dash app mounted
     return dash_app.server
