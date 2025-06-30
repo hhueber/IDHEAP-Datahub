@@ -28,3 +28,7 @@ Projet de visualisation de données géographiques longitudinales.
 ## Crédits
 
 - Matthieu Jacques
+
+## AI Disclosure: 
+
+Une partie des commentaires de codes des fonctions a été faite en utilisant Github Copilot. 
