@@ -12,7 +12,7 @@ Steps:
    - **Why:** Establishes a unified dataset as the foundation for all subsequent processing and ensures consistent handling of question codes and translations.
 
 2. **Geospatial & Multilingual Enrichment (`data_treatment_bis.ipynb`)**  
-   - **What:** Matched each respondent’s commune ID to GeoJSON boundaries; cleaned and translated question labels (German → English → French → Italian), marking Romanian as unavailable.  
+   - **What:** Matched each respondent’s commune ID to GeoJSON boundaries; cleaned and translated question labels (German → English → French → Italian), marking Romanche as unavailable.  
    - **Why:** Enables the creation of interactive maps and supports reporting in multiple languages, increasing the accessibility and visual impact of our survey results.
 
 3. **Longitudinal Linking (`global_question_longitudinality.ipynb`)**  
@@ -38,7 +38,7 @@ Steps:
   - A robust translation cascade delivering high-quality English, French, and Italian labels.
 
 - **Challenges:**  
-  - Romanian translations remain missing (no reliable model/API locally).  
+  - Romanche translations remain missing (no reliable model/API locally).  
   - API-based translation (LibreTranslate) was inaccessible, requiring fallback to offline models.  
   - Tuning DBSCAN parameters for NLP clustering took several iterations to balance over- and under-clustering.  
   - Extracting exact first-appearance years from code strings required custom parsing logic.
@@ -47,8 +47,8 @@ Steps:
 
 ### Next Steps
 
-1. **Finalize Romanian Translations**  
-   Identify or train a reliable translation model for Romanian, or source human-validated labels.
+1. **Finalize Romanche Translations**  
+   Identify or train a reliable translation model for Romanche, or source human-validated labels.
 
 2. **Automate Pipeline Execution**  
    Wrap notebooks into scheduled scripts or Airflow jobs to regenerate datasets after each new survey wave.
