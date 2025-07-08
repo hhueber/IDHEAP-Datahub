@@ -11,6 +11,16 @@ from webapp.models.QuestionPerSurvey import QuestionPerSurvey
 
 
 class QuestionGlobal(Base):
+    """
+    Represents a high-level, thematic survey question that spans multiple survey waves.
+    
+    Attributes:
+        uid                     – Primary key for the global question record.
+        label                   – Core label or code identifying this global theme.
+        question_category       – (Optional) Foreign key link to a QuestionCategory defining answer options.
+        text_de/.../text_en     – Optional translations of the global question label.
+        questions_linked        – All QuestionPerSurvey instances mapped to this global theme.
+    """
     __tablename__ = "question_global"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
@@ -31,7 +41,13 @@ class QuestionGlobal(Base):
 
     @property
     def linked_surveys(self):
+        """
+        Return a unique list of survey identifiers in which this global question appears.
+        """
         return list(set([question.survey for question in self.questions_linked]))
 
     def __repr__(self):
+        """
+        Show the global question UID and label.
+        """
         return f"Question Global #{self.uid}"

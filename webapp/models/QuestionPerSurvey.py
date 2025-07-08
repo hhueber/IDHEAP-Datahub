@@ -14,6 +14,19 @@ from webapp.models.Survey import Survey
 
 
 class QuestionPerSurvey(Base):
+    """
+    Represents an individual survey question instance tied to a specific survey wave.
+
+    Attributes:
+        uid                     – Primary key for this question record.
+        code                    – Unique question code (e.g., 'GSB23_Q100').
+        label                   – Core text label for this question.
+        question_category       – (Optional) Link to a shared answer category.
+        text_de/.../text_en     – Optional translations of the question label.
+        survey                  – Relationship to the Survey this question belongs to.
+        question_global         – (Optional) Link to a global thematic question.
+        answers                 – Collection of Answer objects for this question.
+    """
     __tablename__ = "question_per_survey"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
@@ -41,9 +54,19 @@ class QuestionPerSurvey(Base):
 
     @property
     def num_answers(self):
+        """
+        Return the number of answers recorded for this question,
+        or None if there are no answers.
+        """
         return len(self.answers) or None
 
     def __lt__(self, other):
+        """
+        Define a sorting order based on the question code structure:
+        1. Compare survey identifiers.
+        2. Split question suffix into parts and compare numeric segments as integers
+           and text segments lexicographically to ensure Q2 comes before Q10.
+        """
         study_name_left, question_left = self.code.split("_", 1)
         study_name_right, question_right = other.code.split("_", 1)
 
@@ -82,4 +105,7 @@ class QuestionPerSurvey(Base):
                     return l2 < r2
 
     def __repr__(self):
+        """
+        Show the question code and associated survey UID.
+        """
         return f"Question #{self.code} from survey #{self.survey_uid}"

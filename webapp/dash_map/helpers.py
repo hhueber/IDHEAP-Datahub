@@ -1,18 +1,13 @@
 import json
 import os
-
-
 import pandas as pd
 import plotly.graph_objects as go
-
-
 from webapp.config import BASEDIR
 
-
-# L'endroit où t'as tes geojson en gros
+# Define where all our GeoJSON files live
 BASE_PATH = os.path.join(BASEDIR, "data", "geojson")
 
-# Geojson
+# Load geographic boundaries for Switzerland, its lakes, and municipalities
 with open(os.path.join(BASE_PATH, "country.json"), encoding="utf-8") as f:
     COUNTRY_DATA = json.load(f)
 
@@ -22,13 +17,13 @@ with open(os.path.join(BASE_PATH, "lakes.json"), encoding="utf-8") as f:
 with open(os.path.join(BASE_PATH, "municipalities.json"), encoding="utf-8") as f:
     MUNICIPALITIES_DATA = json.load(f)
 
-# Data en plus sur les communes
+# Build a lookup from municipality ID to its human-readable name
 MUNICIPALITIES = {
     feature["properties"]["id"]: feature["properties"]["name"] for feature in MUNICIPALITIES_DATA["features"]
 }
 MUNICIPALITIES_IDS = list(MUNICIPALITIES.keys())
 
-# Réponses spéciales à extraire
+# Define special answer codes and their display labels
 SPECIAL_ANSWERS = {
     -1.0: "(no data)",
     -99.0: "(did not answer)",
@@ -38,7 +33,8 @@ SPECIAL_ANSWERS = {
     99: "(no opinion)",
 }
 
-# Color scale
+# Prepare color scales for up to 10 distinct answer categories
+# and a separate scale for special values
 COLOR_SCALE_10 = [
     "#66c2a5",
     "#1f78b4",
@@ -51,9 +47,13 @@ COLOR_SCALE_10 = [
     "#cab2d6",
     "#6a3d9a",
 ]
+
+# Convert each hex color into a Plotly-compatible scale
 COLOR_SCALE_10 = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_10]
 COLOR_SCALE_SPECIAL = ["#FFFFFF", "#C0C0C0", "#BEBEBE", "#BEBEBE"]
 COLOR_SCALE_SPECIAL = [((0.0, color), (1.0, color)) for color in COLOR_SCALE_SPECIAL]
+
+# Define a small set of major Swiss cities for map annotations
 MAIN_CITIES = ["Zurich", "Genève", "Bâle", "Lausanne", "Berne", "Winterthour", "Lucerne", "Saint-Gall", "Lugano"]
 CITIES_DATA = {
     "features": [
@@ -72,9 +72,11 @@ CITIES_DATA = {
 
 def fig_switzerland_empty():
     """
-    Function to create an empty map figure when no data is available.
-
-    :return:
+    Create a blank map of Switzerland:
+    - White base layers for country and municipalities
+    - Blue overlay for lakes
+    - Markers for main cities
+    Returns a Plotly Figure ready for further data traces.
     """
     fig = go.Figure()
 
@@ -106,7 +108,7 @@ def fig_switzerland_empty():
         )
     )
 
-    # Add lakes layer in blue
+    # Add lakes layer in light blue
     fig.add_trace(
         go.Choroplethmapbox(
             name="base_lakes",
@@ -121,6 +123,7 @@ def fig_switzerland_empty():
         )
     )
 
+    # Add city markers and labels
     fig.add_trace(
         go.Scattermapbox(
             name="Main Cities",
@@ -165,30 +168,33 @@ def fig_switzerland_empty():
 
 
 def fig_map_with_data(df, chosen_question):
-    # Values
+    """
+    Build a map by adding data layers for a specific survey question:
+    - Handles discrete, continuous, and special-coded answers
+    - Applies appropriate color scales and legend settings
+    """
+    # Extract only the column of interest
     df_int = df[[chosen_question]]
 
     # Generate empty basic map
     fig = fig_switzerland_empty()  # In a future version, we can refactor so that we generate that one only once
 
-    # Now for the fun partS!
-
-    # We take the chose questions, and extract their unique answers
+    # Determine which answers are present (excluding special codes)
     answers_unique = list(df_int[chosen_question].unique())
 
-    # We remove the special values
+    # Remove special values
     for value in SPECIAL_ANSWERS.keys():
         try:
             answers_unique.remove(value)
         except ValueError:
             pass
 
-    # Continuous or too many different answers
+    # Continuous data or too many categories: single-layer choropleth
     if len(answers_unique) > len(COLOR_SCALE_10):
-        # We take only the answers which are not special answers
+        # Take only the answers that are not special answers
         dfp = df_int[~df_int[chosen_question].isin(SPECIAL_ANSWERS.keys())]
 
-        # And we add the layer
+        # Add the layer
         fig.add_choroplethmapbox(
             geojson=MUNICIPALITIES_DATA,
             locations=dfp.index,
@@ -197,17 +203,17 @@ def fig_map_with_data(df, chosen_question):
             hoverinfo="text",
             text=[f"{name}: {value}" for name, value in zip(MUNICIPALITIES.values(), dfp[chosen_question])],
         )
-    # Discrete or few answers
+    # Discrete data: one layer per unique answer
     else:
-        # For each unique answer, we create a layer for the map, and assign it a value
+        # For each unique answer, create a layer for the map, and assign it a value
         for i, value in enumerate(answers_unique):
             # We extract the rows that have that value
             dfp = df_int[df_int[chosen_question] == value]
 
-            # We create the text
+            # Create the text
             text_answer = value
 
-            # And we add the layer
+            # Add the layer
             fig.add_choroplethmapbox(
                 geojson=MUNICIPALITIES_DATA,
                 locations=dfp.index,
@@ -221,15 +227,15 @@ def fig_map_with_data(df, chosen_question):
                 text=[f"{name}: {text_answer}" for name in MUNICIPALITIES.values()],
             )
 
-    # And FINALLY, we add the special values!
+    # Finally, add layers for any special answer codes
     for i, value in enumerate(SPECIAL_ANSWERS):
-        # We extract the rows that have that value
+        # Extract the rows that have that value
         dfp = df_int[df_int[chosen_question] == value]
 
-        # We create the text
+        # Create the text
         text_answer = SPECIAL_ANSWERS[value]
 
-        # And we add the layer
+        # Add the layer
         fig.add_choroplethmapbox(
             geojson=MUNICIPALITIES_DATA,
             locations=dfp.index,
@@ -258,14 +264,18 @@ def fig_map_with_data(df, chosen_question):
 
     return fig
 
-
-# Function to create the map figure based on survey responses
 def create_figure(variable_values, communes, labels=None):
-    # Count unique non-NaN values
+    """
+    Generate a final choropleth map from raw variable values:
+    - Chooses between a continuous color scale or discrete categories
+    - Integrates special answer codes with their own colors
+    - Optionally applies human-readable labels for each category
+    """
+    # Identify unique numeric values, excluding NaN
     unique_values = set([v for v in variable_values if isinstance(v, (int, float)) and not pd.isna(v)])
     num_unique_values = len(unique_values)
 
-    # We remove the special values
+    # Pull out special codes so we can add them later
     keep_special_values = set()
     for value in SPECIAL_ANSWERS.keys():
         try:
@@ -274,8 +284,10 @@ def create_figure(variable_values, communes, labels=None):
         except KeyError:
             pass
 
+    # Base map
     fig = fig_switzerland_empty()
 
+    # Continuous or too many discrete categories
     if num_unique_values > len(COLOR_SCALE_10):
         fig.add_trace(
             go.Choroplethmapbox(
@@ -293,6 +305,7 @@ def create_figure(variable_values, communes, labels=None):
                 showscale=True,
             )
         )
+    # Discrete categories: one layer per unique value
     else:
         for i, value in enumerate(unique_values):
             temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
@@ -311,7 +324,7 @@ def create_figure(variable_values, communes, labels=None):
                 )
             )
 
-    # Add special values back
+    # Add back the special codes as their own layers
     for i, value in enumerate(keep_special_values):
         temp_answers = [x for x in zip(communes, variable_values) if x[1] == value]
         text_answer = SPECIAL_ANSWERS[value]

@@ -1,3 +1,4 @@
+# Canton names in multiple languages in dictionary format.
 CANTONS = {
     "CH-AG": {"de": "Aargau", "en": "Aargau", "fr": "Argovie", "it": "Argovia", "ro": "Argovia"},
     "CH-AI": {

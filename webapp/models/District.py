@@ -11,6 +11,17 @@ from webapp.models.Commune import Commune
 
 
 class District(Base):
+    """
+    Represents an administrative district within a Swiss canton.
+
+    Attributes:
+        uid           – Primary key identifier for this district.
+        code          – Unique short code for the district.
+        name          – Official district name.
+        name_de/...   – Translated district names in German, French, Italian, Romansh, and English.
+        canton        – Relationship to the parent Canton.
+        communes      – Collection of Commune objects within this district.
+    """    
     __tablename__ = "district"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
@@ -31,7 +42,13 @@ class District(Base):
 
     @property
     def num_communes(self):
+        """
+        Return the total number of communes in this district.
+        """        
         return len(self.communes)
 
     def __repr__(self):
+        """
+        Show the district’s name and code.
+        """
         return f"{self.name} ({self.code})"

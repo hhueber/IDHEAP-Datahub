@@ -9,6 +9,16 @@ from webapp.models.District import District
 
 
 class Canton(Base):
+    """
+    Represents a Swiss canton (state) in our database.
+
+    Attributes:
+        uid           – Primary key for the canton.
+        code          – Unique short code identifying the canton.
+        name          – Official canton name.
+        name_de/fr/it/ro/en – Translated names in German, French, Italian, Romansh, and English.
+        districts     – Collection of District objects belonging to this canton.
+    """
     __tablename__ = "canton"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
@@ -26,11 +36,20 @@ class Canton(Base):
 
     @property
     def num_districts(self):
+        """
+        Return the number of districts in this canton.
+        """
         return len(self.districts)
 
     @property
     def num_communes(self):
+        """
+        Sum up the total number of communes across all districts in this canton.
+        """
         return sum(district.num_communes for district in self.districts)
 
     def __repr__(self):
+        """
+        Show the canton’s name and code.
+        """
         return f"{self.name} ({self.code})"
