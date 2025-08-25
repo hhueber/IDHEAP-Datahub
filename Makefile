@@ -1,6 +1,7 @@
 COMPOSE = docker compose
 DB_SERVICE = db
-INIT_SERVICE = initdb
+INIT_SERVICE = schema_db_init
+API_SERVICE = api
 PYTHON = python
 VENV = .venv
 
@@ -19,10 +20,11 @@ local_fclean: ## Deletes the venv (.venv) and cleans up the local environment.
 	@echo "Virtual environment deleted and local environment cleaned up."
 
 
-docker: ## Run DB (db) + initdb, then display the Postgres logs.
-	$(COMPOSE) up -d --build $(DB_SERVICE) $(INIT_SERVICE)
+docker: ## build service DB (db) + initdb and api, then display the Postgres logs.
+	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
+	$(COMPOSE) up -d --build $(INIT_SERVICE)
 	@echo "✅ Services started."
-	$(COMPOSE) logs -f $(DB_SERVICE)
+	$(COMPOSE) logs -f $(API_SERVICE)
 
 
 docker_clean: ## Stop the project's Docker services and delete the containers + volumes

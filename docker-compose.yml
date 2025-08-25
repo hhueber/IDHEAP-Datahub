@@ -1,32 +1,52 @@
 version: "3.9"
+
 services:
   db:
     image: postgres:16
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: idheapp
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5432:5432"
+      - "5432:5432"  # only for dev
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d idheapp"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME} -h ${DB_HOST} -p ${DB_PORT}"]
       interval: 5s
       timeout: 3s
-      retries: 10 
-    # here because of the initdb service to be replaced later
+      retries: 10
 
-  initdb:
+  api:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/backend/Dockerfile
+    env_file:
+      - .env
+    # depends_on:
+    #   db:
+    #     condition: service_healthy   # commenter si depends voulue ou pas entre les service api et db
+    ports:
+      - "8000:8000" # only for dev
+    volumes:
+      - ./backend:/app
+    restart: "always"
+
+  schema_db_init:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    env_file:
+      - .env
     depends_on:
       db:
         condition: service_healthy
-    env_file:
-      - .env
-    # This service launches the db init script and nothing else should disappear for the rest of the process, which is used to test the db with docker.
+    command: ["python", "-m", "app.script.init_db_async"]
+    volumes:
+      - ./backend:/app
+    restart: "no"
 
 volumes:
   pgdata:

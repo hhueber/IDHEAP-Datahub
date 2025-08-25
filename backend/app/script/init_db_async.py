@@ -1,9 +1,9 @@
 import asyncio
 
 
-from backend.app import models
-from backend.app.db import engine
-from backend.app.models import Base
+from app import models
+from app.db import engine
+from app.models import Base
 
 
 async def create_schema() -> None:
