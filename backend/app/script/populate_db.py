@@ -2,7 +2,8 @@ from sqlalchemy import select
 import pandas as pd
 
 
-from backend.app.db import engine, SessionLocal
+from backend.app.data.cantons import CANTONS
+from backend.app.db import SessionLocal
 from backend.app.models.answer import Answer
 from backend.app.models.canton import Canton
 from backend.app.models.commune import Commune
@@ -10,7 +11,6 @@ from backend.app.models.district import District
 from backend.app.models.question_category import QuestionCategory
 from backend.app.models.question_per_survey import QuestionPerSurvey
 from backend.app.models.survey import Survey
-from Data.cantons import CANTONS
 
 
 """"
@@ -23,6 +23,7 @@ All the data will be from the folder ./Data
 async def populate_db() -> None:
     async with SessionLocal() as session:
 
+        # Add canton
         async with session.begin():
             index = 1
             total_item = len(CANTONS)
@@ -45,7 +46,7 @@ async def populate_db() -> None:
         row_number = 0
         async with session.begin():
 
-            communes = pd.read_excel("../data/EtatCommunes.xlsx", index_col=4, header=0)
+            communes = pd.read_excel("./backend/app/data/EtatCommunes.xlsx", index_col=4, header=0)
             communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
             communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
 
@@ -103,7 +104,7 @@ async def populate_db() -> None:
                 print(f">> Inserting survey {year}")
 
                 gsb = pd.read_excel(
-                    "../data/CodeBook_Cleaned.xlsx",
+                    "./backend/app/data/CodeBook_Cleaned.xlsx",
                     sheet_name=str(year),
                     index_col=1,
                     header=0,
@@ -125,7 +126,7 @@ async def populate_db() -> None:
 
         # Global question and categories
         async with session.begin():
-            gbd = pd.read_csv("../data/QuestionsGlobales.csv", index_col=None, header=0)
+            gbd = pd.read_csv("./backend/app/data/QuestionsGlobales.csv", index_col=None, header=0)
 
             for index, row in gbd.iterrows():
                 if not pd.isnull(row["category_label"]):
@@ -144,7 +145,7 @@ async def populate_db() -> None:
 
         # Answer
         async with session.begin():
-            crc = pd.read_csv("../data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
+            crc = pd.read_csv("./backend/app/data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
 
             for index, row in crc.iterrows():
 
@@ -187,8 +188,9 @@ async def populate_db() -> None:
 
                 print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
 
+        # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv("../data/GSB_2023.csv", index_col=0, header=1, sep=";")
+            GSB_2023 = pd.read_csv("./backend/app/data/GSB_2023.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
                 if pd.isna(row["gemid"]):

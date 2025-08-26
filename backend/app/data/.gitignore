@@ -4,3 +4,4 @@
 
 # ... except for this one.
 !/.gitignore
+!./cantons.py
