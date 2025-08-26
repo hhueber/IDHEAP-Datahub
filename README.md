@@ -16,10 +16,11 @@ Projet de visualisation de données géographiques longitudinales.
 
 ## Setup database manually
 
-1. Having a PostgresSQL who runs
+1. Having a PostgresSQL who is running
 2. Modify the `.env` file with the credential for connecting the db
 3. Be sure you have the requirements install
    - `pip install -Ur requirements.txt`
 4. Make sure you have all the data file into the data folder in `backend/app/data`
 5. Execute the script
+
    - `python -m backend.app.script.init_db_async`
