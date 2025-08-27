@@ -33,6 +33,23 @@ services:
     volumes:
       - ./backend:/app
     restart: "always"
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/frontend/Dockerfile
+      args:
+        # Pass the backend API URL as a build argument for React
+        - REACT_APP_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      # Ensure backend starts before frontend
+      - api
+    restart: "always"
 
   schema_db_init:
     build:
