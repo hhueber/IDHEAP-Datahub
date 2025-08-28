@@ -22,5 +22,7 @@ Projet de visualisation de données géographiques longitudinales.
    - `pip install -Ur requirements.txt`
 4. Make sure you have all the data file into the data folder in `backend/app/data`
 5. Execute the script
-
-   - `python -m backend.app.script.init_db_async`
+```bash
+cd backend
+python -m app.script.init_db_async
+```
