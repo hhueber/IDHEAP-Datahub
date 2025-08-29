@@ -1,0 +1,15 @@
+{
+  "nav": { 
+    "language": "Language", 
+    "data": "Data",
+    "home": "Home", 
+    "dataSoon": "Coming soon." },
+  "home": {
+    "heroTitle": "GeoJSON Map Demo",
+    "heroSubtitle": "Public page with a map and a sticky navbar."
+  },
+  "login": {
+    "title": "Login",
+    "subtitle": "Placeholder for the future auth."
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "app": { "title": "Index da vulnerabilitad da clima", "getStarted": "Cumenzar", "learnMore": "Emprender dapli" },
+  "nav": { "language": "Lingua", "data": "Datas", "home": "Chasa", "dataSoon": "Prest disponibel." },
+  "home": { "heroTitle": "Demo da carta GeoJSON", "heroSubtitle": "Pagina publica cun ina carta e navbar fixa." },
+  "login": { "title": "S'annunziar", "subtitle": "Reservà per tia futura autentificaziun." }
+}
