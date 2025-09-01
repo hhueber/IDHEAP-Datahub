@@ -36,21 +36,23 @@ export default function Home() {
 
       {/*  Mobile / Tablet  */}
 
-      {/* Backdrop au-dessus de la carte (assombrit + ferme au clic) */}
-      <div
-        onClick={() => setPanelOpen(false)}
-        className={`
-          lg:hidden fixed inset-x-0 top-16 bottom-0 z-[2000]
-          transition-opacity duration-300
-          ${panelOpen ? "opacity-100 bg-black/20" : "pointer-events-none opacity-0"}
-        `}
-      />
+      {/* Backdrop  */}
+      {panelOpen && (
+        <div
+          onClick={() => setPanelOpen(false)}
+          className="
+            lg:hidden fixed inset-x-0 top-16 bottom-0 z-[3000]
+            bg-black/20 transition-opacity duration-300
+            opacity-100
+          "
+        />
+      )}
 
-      {/* Bouton flottant du menu */}
+      {/* Bouton flottant */}
       <button
-        onClick={() => setPanelOpen((v) => !v)}
+        onClick={() => setPanelOpen(v => !v)}
         className="
-          lg:hidden fixed bottom-4 z-[4000]
+          lg:hidden fixed bottom-4 z-[3600]
           h-12 w-12 rounded-full ring-1 ring-indigo-200 bg-indigo-600 text-white
           shadow-lg hover:bg-indigo-500 active:translate-y-px
           grid place-items-center
@@ -58,41 +60,31 @@ export default function Home() {
         "
         style={{
           right: "max(env(safe-area-inset-right), 1rem)",
-          // quand ouvert, décale le bouton
           transform: panelOpen ? "translateX(calc(-1 * min(90vw, 24rem)))" : "translateX(0)",
         }}
         aria-label={panelOpen ? t("home.close", "Close") : t("home.openPanel", "Open panel")}
       >
         {!panelOpen ? (
-          // Hamburger
           <div className="relative w-6 h-6">
             <span className="absolute left-0 right-0 top-[4px] h-0.5 bg-current rounded-sm" />
             <span className="absolute left-0 right-0 top-[10px] h-0.5 bg-current rounded-sm" />
             <span className="absolute left-0 right-0 top-[16px] h-0.5 bg-current rounded-sm" />
           </div>
         ) : (
-          // Flèche (replier)
           <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
-            <path
-              d="M15 6l-6 6 6 6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
+            <path d="M15 6l-6 6 6 6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         )}
       </button>
 
-      {/* Drawer mobile */}
-      <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-[2200]">
+      {/* Drawer : pointer-events seulement quand ouvert */}
+      <div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-[3500] pointer-events-none">
         <div
           className={`
             absolute right-0 top-0 h-full w-[min(90vw,24rem)]
             bg-white/95 backdrop-blur shadow-2xl ring-1 ring-black/10
             transform transition-transform duration-300 ease-out
-            ${panelOpen ? "translate-x-0" : "translate-x-full"}
+            ${panelOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}
             overflow-y-auto
           `}
           role="dialog"
@@ -105,7 +97,6 @@ export default function Home() {
               </h1>
               <p className="mt-2 text-gray-600">{t("home.heroSubtitle")}</p>
             </div>
-            {/* plus tard les contrôles / filtres */}
           </div>
         </div>
       </div>

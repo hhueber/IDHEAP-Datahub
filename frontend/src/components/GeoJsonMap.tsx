@@ -1,15 +1,49 @@
-import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
-import { useEffect, useMemo, useState } from "react";
+import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
+import ResetSwissControl from "@/components/map/ResetSwissControl";
 
 type AnyGeoJson = GeoJSON.FeatureCollection | GeoJSON.Feature | null;
 
-export default function GeoJsonMap({ className = "w-full h-full" }: { className?: string }) {
-  const [data, setData] = useState<AnyGeoJson>(null);
+// Leaflet recalcule la taille
+function MapSizeFixer({ host }: { host: HTMLElement | null }) {
+  const map = useMap();
+
+  useLayoutEffect(() => {
+    map.invalidateSize(false);
+  }, [map]);
 
   useEffect(() => {
+    const bump = () => map.invalidateSize(false);
+    const raf = requestAnimationFrame(bump);
+    const t = setTimeout(bump, 200);
+
+    let ro: ResizeObserver | null = null;
+    if (host && "ResizeObserver" in window) {
+      ro = new ResizeObserver(bump);
+      ro.observe(host);
+    }
+    window.addEventListener("resize", bump);
+
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+      window.removeEventListener("resize", bump);
+      if (ro && host) ro.unobserve(host);
+    };
+  }, [map, host]);
+
+  return null;
+}
+
+export default function GeoJsonMap({ className = "absolute inset-0" }: { className?: string }) {
+  const [data, setData] = useState<AnyGeoJson>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    // Note: pour un build prod, mettre fichier GeoJson temporaire dans "/data/sample.geojson"
     fetch("/src/data/sample.geojson")
       .then((r) => r.json())
-      .then((json) => setData(json))
+      .then(setData)
       .catch((e) => console.error("Failed to load GeoJSON:", e));
   }, []);
 
@@ -19,17 +53,23 @@ export default function GeoJsonMap({ className = "w-full h-full" }: { className?
   );
 
   return (
-    <div className={`${className} overflow-hidden`}>
+    <div ref={hostRef} className={`${className} overflow-hidden`}>
       <MapContainer
-        center={[46.8182, 8.2275]}
+        center={[46.8182, 8.2275]} // centre CH
         zoom={7}
         className="w-full h-full"
         scrollWheelZoom
       >
+        <MapSizeFixer host={hostRef.current} />
+
+        {/* bouton "Suisse", sous +/− */}
+        <ResetSwissControl position="topleft" />
+
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+
         {data && <GeoJSON data={data as any} style={() => style} />}
       </MapContainer>
     </div>
