@@ -5,6 +5,7 @@ from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
+from . import Answer, Canton, District
 from .base import Base
 
 
@@ -23,6 +24,9 @@ class Commune(Base):
 
     district_uid: Mapped[int] = mapped_column(ForeignKey("district.uid", ondelete="CASCADE"))
     district: Mapped["District"] = relationship("District", back_populates="communes")
+
+    commune_map_uid: Mapped[int] = mapped_column(ForeignKey("commune_map.uid", ondelete="CASCADE"))
+    commune_map: Mapped["CommuneMap"] = relationship("CommuneMap", back_populates="communes")
 
     @property
     def canton(self) -> "Canton":

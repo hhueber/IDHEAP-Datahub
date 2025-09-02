@@ -1,8 +1,11 @@
 from typing import List, Optional
 
 
-from sqlalchemy import String
+from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+
+from backend.app.models.canton_map import CantonMap
 
 
 from .base import Base
@@ -24,6 +27,9 @@ class Canton(Base):
     districts: Mapped[List["District"]] = relationship(
         "District", back_populates="canton", cascade="all, delete-orphan"
     )
+
+    canton_map_uid: Mapped[int] = mapped_column(ForeignKey("canton_map.uid", ondelete="CASCADE"))
+    canton_map: Mapped["CantonMap"] = relationship("CantonMap", back_populates="canton")
 
     @property
     def communes(self) -> List["Commune"]:
