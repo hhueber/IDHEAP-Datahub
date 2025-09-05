@@ -29,7 +29,7 @@ class Canton(Base):
     )
 
     canton_map_uid: Mapped[int] = mapped_column(ForeignKey("canton_map.uid", ondelete="CASCADE"))
-    canton_map: Mapped["CantonMap"] = relationship("CantonMap", back_populates="canton")
+    canton_map: Mapped[List["CantonMap"]] = relationship("CantonMap", back_populates="canton")
 
     @property
     def communes(self) -> List["Commune"]:

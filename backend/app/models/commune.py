@@ -26,7 +26,7 @@ class Commune(Base):
     district: Mapped["District"] = relationship("District", back_populates="communes")
 
     commune_map_uid: Mapped[int] = mapped_column(ForeignKey("commune_map.uid", ondelete="CASCADE"))
-    commune_map: Mapped["CommuneMap"] = relationship("CommuneMap", back_populates="communes")
+    commune_map: Mapped[List["CommuneMap"]] = relationship("CommuneMap", back_populates="communes")
 
     @property
     def canton(self) -> "Canton":

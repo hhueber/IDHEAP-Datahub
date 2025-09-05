@@ -1,4 +1,5 @@
 from geoalchemy2 import Geometry
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 from tomlkit.items import Integer
@@ -13,6 +14,8 @@ class CantonMap(Base):
 
     uid: Mapped[int] = mapped_column(primary_key=True)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    type: Mapped[str] = mapped_column(String, nullable=False)
 
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 

@@ -25,6 +25,6 @@ class District(Base):
     canton: Mapped["Canton"] = relationship("Canton", back_populates="districts")
 
     district_map_uid: Mapped[int] = mapped_column(ForeignKey("district_map.uid", ondelete="CASCADE"))
-    district_map: Mapped["DistrictMap"] = relationship("DistrictMap", back_populates="district")
+    district_map: Mapped[List["DistrictMap"]] = relationship("DistrictMap", back_populates="district")
 
     communes: Mapped[List["Commune"]] = relationship("Commune", back_populates="district", cascade="all, delete-orphan")
