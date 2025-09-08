@@ -1,7 +1,7 @@
 from geoalchemy2 import Geometry
+from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
-from tomlkit.items import Integer, String
 
 
 from . import Commune

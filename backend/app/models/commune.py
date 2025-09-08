@@ -1,11 +1,10 @@
-from typing import Optional
+from typing import List, Optional
 
 
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
-from . import Answer, Canton, District
 from .base import Base
 
 
@@ -25,8 +24,8 @@ class Commune(Base):
     district_uid: Mapped[int] = mapped_column(ForeignKey("district.uid", ondelete="CASCADE"))
     district: Mapped["District"] = relationship("District", back_populates="communes")
 
-    commune_map_uid: Mapped[int] = mapped_column(ForeignKey("commune_map.uid", ondelete="CASCADE"))
-    commune_map: Mapped[List["CommuneMap"]] = relationship("CommuneMap", back_populates="communes")
+    commune_map_uid: Mapped[int] = mapped_column(ForeignKey("commune_map.uid", ondelete="CASCADE"), nullable=True)
+    commune_map: Mapped[List["CommuneMap"]] = relationship("CommuneMap", back_populates="commune")
 
     @property
     def canton(self) -> "Canton":

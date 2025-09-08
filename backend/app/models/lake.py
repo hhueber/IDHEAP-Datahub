@@ -9,7 +9,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 
-class District(Base):
+class Lake(Base):
     __tablename__ = "lake"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
