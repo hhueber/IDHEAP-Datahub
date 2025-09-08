@@ -4,6 +4,7 @@ import pandas as pd
 
 from backend.app.data.cantons import CANTONS
 from backend.app.db import SessionLocal
+from backend.app.models import QuestionGlobal
 from backend.app.models.answer import Answer
 from backend.app.models.canton import Canton
 from backend.app.models.commune import Commune
@@ -143,6 +144,19 @@ async def populate_db() -> None:
                     await session.flush()
                     print(f">>> INSERTING QUESTION CATEGORY {row["category_label"]}")
 
+                db_question_global = QuestionGlobal(
+                    label=row["label"],
+                    text_de=row["text_de"],
+                    text_en=row["text_en"],
+                    text_fr=row["text_fr"],
+                    text_it=row["text_it"],
+                    text_ro=row["text_ro"],
+                )
+
+                session.add(db_question_global)
+                await session.flush()
+                print(f">>> INSERTING QUESTION GLOBAL {row["label"]}")
+
         # Answer
         async with session.begin():
             crc = pd.read_csv("./backend/app/data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
@@ -190,9 +204,10 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv("./backend/app/data/GSB_2023.csv", index_col=0, header=1, sep=";")
+            GSB_2023 = pd.read_csv("./backend/app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
+
                 if pd.isna(row["gemid"]):
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
