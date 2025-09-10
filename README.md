@@ -18,9 +18,9 @@ Projet de visualisation de données géographiques longitudinales.
 
 Voici quelques captures d’écran du frontend pour une premiere impression:
 
-![Accueil](img/page d'acceuille.png)
+![Accueil](img/page-dacceuille.png)
 ![Menu](img/menu.png)
-![Menu_avec_infos](img/menu avec date.png)
-![Mobile](img/version mobile.png)
-![Navbar_mobile](img/navbar mobile.png)
-![Mobile_tout_ouvert](img/format mobile tout ouvert.png)
+![Menu_avec_infos](img/menu-avec-date.png)
+![Mobile](img/version-mobile.png)
+![Navbar_mobile](img/navbar-mobile.png)
+![Mobile_tout_ouvert](img/format-mobile-tout-ouvert.png)
