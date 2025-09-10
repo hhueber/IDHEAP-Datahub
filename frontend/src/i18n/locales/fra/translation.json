@@ -5,11 +5,23 @@
     "home": "Accueil", 
     "dataSoon": "Bientôt disponible." },
   "home": {
-    "heroTitle": "Carte de démonstration GeoJSON",
-    "heroSubtitle": "Page publique avec une carte et une navbar persistante."
+    "heroTitle": "IDHEAP Data Explorer",
+    "heroSubtitle": "Ce site, réalisé par l’IDHEAP, permet d’explorer les données des communes suisses. Vous pouvez visualiser l’évolution dans le temps : choisissez d’abord une année de questionnaire, puis la question que vous souhaitez voir représentée. Certaines questions globales couvrent plusieurs années ; vous pouvez les sélectionner directement, puis choisir l’année d’affichage.",
+    "openPanel": "Ouvrir le panneau",
+    "close": "Fermer",
+    "sectionDates": "Dates",
+    "sectionQuestions": "Questions",
+    "chooseYear": "Choisir une année",
+    "globalOption": "Global",
+    "noGlobalQuestions": "Pas de questions globales disponibles.",
+    "noQuestionsForSelection": "Pas de questions pour cette sélection."
   },
   "login": {
     "title": "Connexion",
     "subtitle": "Espace réservé pour la future auth."
+  },
+  "common": {
+    "loading": "Chargement…",
+    "error": "Erreur"
   }
 }
