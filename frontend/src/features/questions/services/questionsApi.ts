@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiFetch";
+import { apiFetch } from "@/shared/apiFetch";
 import type { QuestionMeta } from "@/features/home/services/homeApi";
 
 export const questionsApi = {

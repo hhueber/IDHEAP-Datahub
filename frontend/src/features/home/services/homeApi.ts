@@ -1,4 +1,4 @@
-import { apiFetch } from "@/lib/apiFetch";
+import { apiFetch } from "@/shared/apiFetch";
 
 export type SurveyLite = { uid: number; year: number };
 export type QuestionMeta = { uid: number; code: string; label: string };
