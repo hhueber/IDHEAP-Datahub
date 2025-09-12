@@ -1,13 +1,23 @@
 import { apiFetch } from "@/shared/apiFetch";
 
-export type SurveyLite = { uid: number; year: number };
-export type QuestionMeta = { uid: number; code: string; label: string };
+export type SurveyBrief = { uid: number; year: number };
+
+export type QuestionItem = {
+  uid: number;
+  label: string; // libellé canonique
+  text: string;  // texte localisé (ou label si le texte est absent côté serveur)
+};
+
+export type QuestionList = {
+  items: QuestionItem[];
+  count?: number;
+};
 
 export type HomeBootstrap = {
   message: string;
-  surveys: SurveyLite[];
+  surveys: SurveyBrief[];
   stats?: { surveys: number };
-  globals: { items: QuestionMeta[]; count?: number };
+  globals: QuestionList;
 };
 
 export const homeApi = {
@@ -16,7 +26,7 @@ export const homeApi = {
       method: "GET",
       signal,
       headers: {
-        "Accept-Language": lang ?? "en", // forcer le header
+        "Accept-Language": lang ?? "en",
       },
     }),
 };

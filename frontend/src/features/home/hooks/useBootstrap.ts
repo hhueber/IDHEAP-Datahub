@@ -25,7 +25,8 @@ export function useBootstrap() {
     setLoading(true);
     setError(null);
 
-    homeApi.getBootstrap(c.signal, lang)
+    homeApi
+      .getBootstrap(c.signal, lang)
       .then((d) => {
         cacheByLang.set(lang, d);
         setData(d);

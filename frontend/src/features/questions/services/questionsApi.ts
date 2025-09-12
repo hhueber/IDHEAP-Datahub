@@ -1,16 +1,12 @@
 import { apiFetch } from "@/shared/apiFetch";
-import type { QuestionMeta } from "@/features/home/services/homeApi";
+import type { QuestionItem } from "@/features/home/services/homeApi";
 
 export const questionsApi = {
-  getBySurvey: (
-    surveyUid: number,
-    signal?: AbortSignal,
-    lang?: string
-  ) =>
-    apiFetch<{ survey: { uid: number }; items: QuestionMeta[] }>("questions", {
+  getBySurvey: (surveyUid: number, signal?: AbortSignal, lang?: string) =>
+    apiFetch<{ survey: { uid: number }; items: QuestionItem[] }>("questions", {
       method: "GET",
       signal,
       query: { scope: "per_survey", survey_uid: surveyUid },
-      acceptLanguage: lang, // forcer le header
+      headers: { "Accept-Language": lang ?? "en" }, // on passe la langue
     }),
 };

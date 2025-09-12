@@ -43,9 +43,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
       {/* État global */}
       {(loading || error) && (
         <section className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm shadow-gray-200 p-3">
-          {loading && (
-            <p className="text-gray-500">{t("common.loading")}</p>
-          )}
+          {loading && <p className="text-gray-500">{t("common.loading")}</p>}
           {error && (
             <p className="text-red-600">
               {t("common.error")}: {error.message}
@@ -81,7 +79,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
             !loading && !error && (
               data?.globals?.items?.length ? (
                 data.globals.items.map((q) => (
-                  <QuestionCard key={q.uid} code={q.code} label={q.label} />
+                  <QuestionCard key={q.uid} primary={q.text || q.label} />
                 ))
               ) : (
                 <EmptyHint text={t("home.noGlobalQuestions")} />
@@ -89,9 +87,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
             )
           ) : (
             <>
-              {loadingS && (
-                <p className="text-gray-500">{t("common.loading")}</p>
-              )}
+              {loadingS && <p className="text-gray-500">{t("common.loading")}</p>}
               {errorS && (
                 <p className="text-red-600">
                   {t("common.error")}: {errorS.message}
@@ -100,7 +96,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
               {!loadingS && !errorS && (
                 bySurvey?.length ? (
                   bySurvey.map((q) => (
-                    <QuestionCard key={q.uid} code={q.code} label={q.label} />
+                    <QuestionCard key={q.uid} primary={q.text || q.label} />
                   ))
                 ) : (
                   <EmptyHint text={t("home.noQuestionsForSelection")} />
@@ -114,7 +110,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
   );
 }
 
-function QuestionCard({ code, label }: { code: string; label: string }) {
+function QuestionCard({ primary, secondary }: { primary: string; secondary?: string }) {
   return (
     <button
       type="button"
@@ -128,11 +124,9 @@ function QuestionCard({ code, label }: { code: string; label: string }) {
         transition
       "
     >
-      <div className="text-[13px] font-semibold text-indigo-700 tracking-tight">
-        {code}
-      </div>
-      <div className="text-sm text-gray-700">
-        {label}
+      {/* Texte localisé (ou label si fallback déjà fait côté API) */}
+      <div className="text-sm text-gray-800 font-medium">
+        {primary}
       </div>
     </button>
   );

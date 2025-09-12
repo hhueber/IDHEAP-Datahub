@@ -4,22 +4,17 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-# TODO: modifier quand data obtenue QuestionMeta enlever code et label -> question dans la langue demandée
-class QuestionMeta(BaseModel):
+class QuestionItem(BaseModel):
     uid: int
-    code: str
     label: str
-    group: Optional[str] = None
-
+    text: str
 
 class QuestionList(BaseModel):
-    items: List[QuestionMeta]
-
+    items: List[QuestionItem]
 
 class SurveyBrief(BaseModel):
     uid: int
     year: int
-
 
 class HomeBootstrap(BaseModel):
     message: str
