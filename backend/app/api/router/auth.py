@@ -1,16 +1,18 @@
-from app.db import get_db, AsyncSessionLocal
-from fastapi import APIRouter, Depends, HTTPException, status, Response
 from datetime import timedelta
+
+
 from app.api.dependencies import get_current_user
-from sqlalchemy import update
-from app.models.user import User as UserModel
-from app.schemas.user import User
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.schemas.auth import UserLogin, Token
 from app.core.config import settings
 from app.core.security import create_access_token
+from app.db import AsyncSessionLocal, get_db
+from app.models.user import User as UserModel
 from app.repositories.user_repo import authenticate_user, mark_token_created
-from app.services.auth_service import set_auth_cookie, clear_auth_cookie
+from app.schemas.auth import Token, UserLogin
+from app.schemas.user import User
+from app.services.auth_service import clear_auth_cookie, set_auth_cookie
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 router = APIRouter()
@@ -45,6 +47,7 @@ async def login(user_credentials: UserLogin, response: Response, db: AsyncSessio
 
     return {"access_token": access_token, "token_type": "bearer", "refresh_in": refresh_in}
 
+
 @router.post("/logout")
 async def logout(
     response: Response,
@@ -57,22 +60,19 @@ async def logout(
     - deletes the “access_token” cookie
     """
     # Invalider le token courant en changeant last_token_created_at
-    await db.execute(
-        update(UserModel)
-        .where(UserModel.id == current_user.id)
-        .values(last_token_created_at=None)
-    )
+    await db.execute(update(UserModel).where(UserModel.id == current_user.id).values(last_token_created_at=None))
     await db.commit()
 
     clear_auth_cookie(response)
 
     return {"ok": True}
 
+
 @router.post("/refresh", status_code=status.HTTP_200_OK)
 async def refresh_access_token(
     response: Response,
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     """
     Refreshes the access token:
