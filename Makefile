@@ -36,7 +36,7 @@ docker: ## build service DB (db) and api and front + initdb, then display the Po
 	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
 	$(COMPOSE) up -d --build $(INIT_SERVICE) $(FRONT_SERVICE)
 	@echo "✅ Services started."
-	$(COMPOSE) logs -f $(API_SERVICE) $(FRONT_SERVICE)
+	$(COMPOSE) logs -f $(INIT_SERVICE) $(API_SERVICE) $(FRONT_SERVICE)
 
 
 docker_clean: ## Stop the project's Docker services and delete the containers + volumes
