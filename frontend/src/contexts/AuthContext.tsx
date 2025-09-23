@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { authService, User, getNextRefreshTs, clearNextRefresh } from "@/services/auth";
+import { useLocation } from "react-router-dom";
 
 type Ctx = {
   user: User | null;
@@ -19,6 +20,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshTimer = useRef<number | null>(null);
   const refreshPending = useRef(false); // évite les refresh concurrents
   const navigate = useNavigate();
+  const location = useLocation();
+  const PRIVATE_PREFIXES = ["/dashboard", "/admin"];
 
   const clearRefreshTimer = () => {
     if (refreshTimer.current) {
@@ -61,7 +64,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     authService.me()
       .then(u => { setUser(u); authService.cacheUser(u); })
-      .catch(() => { navigate("/login", { replace: true }); })
+      //   .catch(() => { navigate("/login", { replace: true }); })
+      .catch(() => {})
       .finally(() => setReady(true));
   }, [navigate]);
 
@@ -90,11 +94,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       clearRefreshTimer();
       clearNextRefresh();
-      navigate("/login", { replace: true });
+    //   navigate("/login", { replace: true });
+      if (PRIVATE_PREFIXES.some(p => location.pathname.startsWith(p))) {
+        navigate("/login", { replace: true });
+      } else {
+      }
     };
     window.addEventListener("auth:unauthorized", onUnauthorized);
     return () => window.removeEventListener("auth:unauthorized", onUnauthorized);
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   // Watchdog: toutes les 15s, si on a dépassé l’échéance → refresh maintenant
   useEffect(() => {

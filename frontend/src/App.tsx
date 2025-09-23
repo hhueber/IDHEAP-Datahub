@@ -1,5 +1,4 @@
-import { Outlet, Route, Routes } from "react-router-dom";
-import Navbar from "@/components/Navbar";
+import { Route, Routes } from "react-router-dom";
 import Home from "@/features/home/Home";
 import Login from "@/features/login/Login";
 import NotFound from "@/pages/NotFound";
@@ -7,41 +6,38 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import Dashboard from "@/features/dashboard/Dashboard";
 import RequireAuth from "@/components/RequireAuth";
 import RequireRole from "@/components/RequireRole";
+import PrivateLayout from "@/components/PrivateLayout";
+import PublicLayout from "@/components/PublicLayout";
+import AddMemberPage from "@/features/admin/AddMemberPage";
+import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
+import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
 
-//exemple admin page rapide
+// Démo admin déjà fournie
 function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs</div>; }
-
-function Layout() {
-  return (
-    <div className="h-screen overflow-hidden bg-white">
-      <Navbar />
-      <main className="h-[calc(100vh-4rem)] overflow-auto">
-        <Outlet />
-      </main>
-    </div>
-  );
-}
 
 export default function App() {
   return (
     <AuthProvider>
       <Routes>
-        <Route element={<Layout />}>
-          {/* Public */}
+        {/* Public */}
+        <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
 
-          {/* Privé (auth requis) */}
-          <Route
-            path="/dashboard"
-            element={
-              <RequireAuth>
-                <Dashboard />
-              </RequireAuth>
-            }
-          />
+        {/* Privé (auth requis) */}
+        <Route
+          element={
+            <RequireAuth>
+              <PrivateLayout />
+            </RequireAuth>
+          }
+        >
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard/password" element={<ChangePasswordPage />} />
 
-          {/* Admin only */}
+          {/* Admin only dans le layout privé */}
           <Route
             path="/admin/users"
             element={
@@ -50,9 +46,15 @@ export default function App() {
               </RequireRole>
             }
           />
-
-          {/* 404 */}
-          <Route path="*" element={<NotFound />} />
+          <Route
+            path="/admin/users/new"
+            element={
+              <RequireRole roles={["ADMIN"]}>
+                <AddMemberPage />
+              </RequireRole>
+            }
+          />
+          <Route path="/admin/users/delete" element={<RequireRole roles={["ADMIN"]}><DeleteMemberPage /></RequireRole>} />
         </Route>
       </Routes>
     </AuthProvider>

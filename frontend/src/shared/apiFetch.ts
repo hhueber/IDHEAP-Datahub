@@ -137,8 +137,8 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
       res.statusText ||
       `HTTP ${res.status}`;
 
-    if (res.status === 401 && typeof window !== "undefined") {
-      // broadcast global pour AuthProvider
+    if (res.status === 401 && wantsAuth && typeof window !== "undefined") {
+      // 401 uniquement sur une route marquée auth:true → on broadcast
       window.dispatchEvent(new CustomEvent("auth:unauthorized"));
     }
     throw new ApiError(msg, res.status, url, data);

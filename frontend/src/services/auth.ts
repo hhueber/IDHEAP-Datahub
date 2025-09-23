@@ -1,28 +1,3 @@
-// import { apiFetch, tokenStore } from "@/shared/apiFetch";
-
-// export type AuthToken = { access_token: string; token_type: "bearer"; expires_in: number };
-// export type User = { id: string; email: string; full_name: string; role: "ADMIN" | "MEMBER" };
-
-// export const authService = {
-//   async login(email: string, password: string): Promise<AuthToken> {
-//     const res = await apiFetch<AuthToken>("/auth/login", { method: "POST", body: { email, password } });
-//     tokenStore.set(res.access_token);
-//     return res;
-//   },
-//   async me(): Promise<User> {
-//     return apiFetch<User>("/user/me", { method: "GET", auth: true });
-//   },
-//   logout() {
-//     tokenStore.clear();
-//     localStorage.removeItem("user_data");
-//   },
-//   cacheUser(u: User) { localStorage.setItem("user_data", JSON.stringify(u)); },
-//   getCachedUser(): User | null {
-//     const v = localStorage.getItem("user_data"); return v ? JSON.parse(v) : null;
-//   },
-//   isAuthenticated(): boolean { return !!tokenStore.get(); },
-// };
-
 import { apiFetch } from "@/shared/apiFetch";
 
 export type User = { id: string; email: string; full_name: string; role: "ADMIN" | "MEMBER" };
