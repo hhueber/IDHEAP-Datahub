@@ -1,5 +1,5 @@
 from geoalchemy2 import Geometry
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 
@@ -19,3 +19,4 @@ class CantonMap(Base):
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 
     canton: Mapped[Canton] = relationship("Canton", back_populates="canton_map")
+    canton_uid: Mapped[int] = mapped_column(ForeignKey("canton.uid"), nullable=False)
