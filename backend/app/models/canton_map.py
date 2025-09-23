@@ -19,4 +19,4 @@ class CantonMap(Base):
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 
     canton: Mapped[Canton] = relationship("Canton", back_populates="canton_map")
-    canton_uid: Mapped[int] = mapped_column(ForeignKey("canton.uid"), nullable=False)
+    canton_uid: Mapped[int] = mapped_column(ForeignKey("canton.uid", ondelete="CASCADE"), nullable=False)

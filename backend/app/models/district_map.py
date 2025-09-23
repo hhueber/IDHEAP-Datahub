@@ -13,7 +13,7 @@ class DistrictMap(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    district_id: Mapped[int] = mapped_column(ForeignKey("district.uid"), nullable=False)
+    district_id: Mapped[int] = mapped_column(ForeignKey("district.uid", ondelete="CASCADE"), nullable=False)
 
     type: Mapped[str] = mapped_column(String, nullable=False)
 

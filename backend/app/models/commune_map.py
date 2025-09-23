@@ -19,4 +19,4 @@ class CommuneMap(Base):
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 
     commune: Mapped["Commune"] = relationship("Commune", back_populates="commune_map")
-    commune_uid: Mapped[int] = mapped_column(ForeignKey("commune.uid"), nullable=False)
+    commune_uid: Mapped[int] = mapped_column(ForeignKey("commune.uid", ondelete="CASCADE"), nullable=False)
