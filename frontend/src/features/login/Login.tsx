@@ -23,7 +23,7 @@ export default function Login() {
     setErr(null);
     setLoading(true);
     try {
-      await login(email, password);   // le back pose le cookie
+      await login(email, password);
       navigate(from, { replace: true });
     } catch (e: any) {
       setErr(e?.message || "Login failed");
