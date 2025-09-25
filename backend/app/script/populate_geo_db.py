@@ -65,6 +65,7 @@ async def populate_async_geo() -> None:
                                 func = lambda geom: shapely.wkb.loads(shapely.wkb.dumps(geom, output_dimension=2))
                                 feature["geometry"] = feature["geometry"].apply(func)
                                 multi = shape(feature["geometry"])
+                                multi = transform(lambda x, y, z=None: (x, y), multi)
                                 db_commune_map = CommuneMap(
                                     year=year,
                                     commune=db_commune,
@@ -98,21 +99,23 @@ async def populate_async_geo() -> None:
                         if "bezirk" in layer or "District" in layer:
                             # The bfs number isnt the same the geopackage
                             for feature in src:
+                                # print(feature["properties"])
                                 if year < 2016:
                                     canton_number = feature["properties"]["KTNR"]
                                     bfs_number = feature["properties"]["BEZNR"]
                                     name = feature["properties"]["BEZNAME"]
                                 else:
-                                    canton_number = feature["properties"]["KTNR"]
-                                    name = feature["properties"]["BEZNAME"]
-                                    bfs_number = feature["properties"]["BEZNR"]
+                                    canton_number = feature["properties"]["kantonsnummer"]
+                                    name = feature["properties"]["name"]
+                                    bfs_number = feature["properties"]["bezirksnummer"]
 
-                                print(bfs_number)
                                 result = await session.execute(select(District).filter_by(code="B" + str(bfs_number)))
                                 db_district = result.scalar_one_or_none()
                                 multi = shapely.geometry.shape(feature["geometry"])
+                                multi = transform(lambda x, y, z=None: (x, y), multi)
                                 # If district not in db
                                 if db_district is None:
+                                    continue
                                     result = await session.execute(select(Canton).filter_by(ofs_id=canton_number))
                                     db_canton = result.scalar_one_or_none()
                                     db_district = District(
