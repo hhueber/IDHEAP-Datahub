@@ -31,7 +31,7 @@ async def populate_db() -> None:
             for code, lang in CANTONS.items():
                 db_canton = Canton(
                     code=code,
-                    ofs_id=lang['ofs_id'],
+                    ofs_id=lang["ofs_id"],
                     name=lang["en"],
                     name_de=lang["de"],
                     name_en=lang["en"],
@@ -43,6 +43,13 @@ async def populate_db() -> None:
                 index += 1
 
                 session.add(db_canton)
+                await session.flush()
+
+                # Creating fake district for commune who dont have any district
+                # They can be recognised with their code being the canton code
+                db_district = District(code=code, name=code, canton=db_canton)
+                session.add(db_district)
+                await session.flush()
 
         # District and commune
         row_number = 0
