@@ -53,17 +53,21 @@ async def populate_async_geo() -> None:
                             has_country_populated = True
 
                         # Insertion of commune data
-                        if "tlm_hoheitsgebiet" in layer and "Communes" in layer:
+                        if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
                             for feature in src:
                                 if year < 2016:
+                                    continue
+                                    print(feature["properties"])
+                                    district_number = feature["properties"]["BEZNR"]
+                                    name = feature["properties"]["GDENAME"]
                                     bfs_number = feature["properties"]["GDENR"]
+                                    continue
                                 else:
+                                    print(feature["properties"])
                                     bfs_number = feature["properties"]["bfs_nummer"]
                                 print(str(bfs_number))
                                 result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
                                 db_commune = result.scalar_one_or_none()
-                                func = lambda geom: shapely.wkb.loads(shapely.wkb.dumps(geom, output_dimension=2))
-                                feature["geometry"] = feature["geometry"].apply(func)
                                 multi = shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 db_commune_map = CommuneMap(
@@ -96,7 +100,7 @@ async def populate_async_geo() -> None:
                                 print(f">>> INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
                                 session.add(db_canton_map)
                                 await session.flush()
-                        if "bezirk" in layer or "District" in layer:
+                        if "bezirk" in layer and "District" in layer:
                             # The bfs number isnt the same the geopackage
                             for feature in src:
                                 # print(feature["properties"])
