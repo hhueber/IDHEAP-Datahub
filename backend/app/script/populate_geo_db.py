@@ -49,23 +49,28 @@ async def populate_async_geo() -> None:
                             db_country = Country(
                                 geometry=from_shape(multi, srid=2056),
                             )
-                            print(">>> INSERTING country shape")
+                            print(f">>>[{year}] INSERTING country shape")
                             has_country_populated = True
 
                         # Insertion of commune data
                         if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
                             for feature in src:
                                 if year < 2016:
-                                    continue
-                                    print(feature["properties"])
-                                    district_number = feature["properties"]["BEZNR"]
-                                    name = feature["properties"]["GDENAME"]
+                                    if (
+                                        feature["properties"]["GDENR"] == 253
+                                        or feature["properties"]["GARTE"] != 11
+                                        or feature["properties"]["CODE_ISO"] != "CH"
+                                    ):
+                                        continue
                                     bfs_number = feature["properties"]["GDENR"]
-                                    continue
                                 else:
-                                    print(feature["properties"])
+                                    # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
+                                    if (
+                                        feature["properties"]["objektart"] != "Gemeindegebiet"
+                                        or feature["properties"]["icc"] != "CH"
+                                    ):
+                                        continue
                                     bfs_number = feature["properties"]["bfs_nummer"]
-                                print(str(bfs_number))
                                 result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
                                 db_commune = result.scalar_one_or_none()
                                 multi = shape(feature["geometry"])
@@ -76,11 +81,11 @@ async def populate_async_geo() -> None:
                                     type=feature["geometry"]["type"],
                                     geometry=from_shape(multi, srid=2056),
                                 )
-                                print(f">>> INSERTING GEOMETRY DATA FOR {db_commune.name}")
+                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
                                 session.add(db_commune_map)
                                 await session.flush()
 
-                        if "kanton" in layer and "Canton" in layer:
+                        if "kanton" in layer or "Canton" in layer:
                             for feature in src:
                                 # Well beacuse in the pre 2016 dataset and post 2016 we dont have the same info we must do a little trick
                                 if year < 2016:
@@ -97,13 +102,13 @@ async def populate_async_geo() -> None:
                                     geometry=from_shape(multi, srid=2056),
                                     canton=db_canton,
                                 )
-                                print(f">>> INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
+                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
                                 session.add(db_canton_map)
                                 await session.flush()
-                        if "bezirk" in layer and "District" in layer:
+
+                        if "bezirk" in layer or "District" in layer:
                             # The bfs number isnt the same the geopackage
                             for feature in src:
-                                # print(feature["properties"])
                                 if year < 2016:
                                     canton_number = feature["properties"]["KTNR"]
                                     bfs_number = feature["properties"]["BEZNR"]
@@ -119,7 +124,6 @@ async def populate_async_geo() -> None:
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 # If district not in db
                                 if db_district is None:
-                                    continue
                                     result = await session.execute(select(Canton).filter_by(ofs_id=canton_number))
                                     db_canton = result.scalar_one_or_none()
                                     db_district = District(
@@ -142,7 +146,7 @@ async def populate_async_geo() -> None:
                                     type=feature["geometry"]["type"],
                                     district=db_district,
                                 )
-                                print(f">>> INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}")
+                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}")
                                 session.add(db_district_map)
                                 await session.flush()
 
