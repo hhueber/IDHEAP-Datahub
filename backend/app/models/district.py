@@ -13,7 +13,7 @@ class District(Base):
 
     uid: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
-    name: Mapped[str] = mapped_column(String, unique=True)
+    name: Mapped[str] = mapped_column(String)
 
     name_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -24,4 +24,4 @@ class District(Base):
     canton_uid: Mapped[int] = mapped_column(ForeignKey("canton.uid", ondelete="CASCADE"))
     canton: Mapped["Canton"] = relationship("Canton", back_populates="districts")
 
-    communes: Mapped[List["Commune"]] = relationship("Commune", back_populates="district", cascade="all, delete-orphan")
+    communes: Mapped[List["Commune"]] = relationship("Commune", back_populates="district")
