@@ -1,9 +1,6 @@
-from sqlalchemy import select
-import pandas as pd
-
-
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
+from app.models import QuestionGlobal
 from app.models.answer import Answer
 from app.models.canton import Canton
 from app.models.commune import Commune
@@ -11,6 +8,8 @@ from app.models.district import District
 from app.models.question_category import QuestionCategory
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
+from sqlalchemy import select
+import pandas as pd
 
 
 """"
@@ -30,6 +29,7 @@ async def populate_db() -> None:
             for code, lang in CANTONS.items():
                 db_canton = Canton(
                     code=code,
+                    ofs_id=lang["ofs_id"],
                     name=lang["en"],
                     name_de=lang["de"],
                     name_en=lang["en"],
@@ -41,6 +41,13 @@ async def populate_db() -> None:
                 index += 1
 
                 session.add(db_canton)
+                await session.flush()
+
+                # Creating fake district for commune who dont have any district
+                # They can be recognised with their code being the canton code
+                db_district = District(code=code, name=code, canton=db_canton)
+                session.add(db_district)
+                await session.flush()
 
         # District and commune
         row_number = 0
@@ -143,6 +150,19 @@ async def populate_db() -> None:
                     await session.flush()
                     print(f">>> INSERTING QUESTION CATEGORY {row['category_label']}")
 
+                db_question_global = QuestionGlobal(
+                    label=row["label"],
+                    text_de=row["text_de"],
+                    text_en=row["text_en"],
+                    text_fr=row["text_fr"],
+                    text_it=row["text_it"],
+                    text_ro=row["text_ro"],
+                )
+
+                session.add(db_question_global)
+                await session.flush()
+                print(f">>> INSERTING QUESTION GLOBAL {row['label']}")
+
         # Answer
         async with session.begin():
             crc = pd.read_csv("./app/data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
@@ -193,6 +213,7 @@ async def populate_db() -> None:
             GSB_2023 = pd.read_csv("./app/data/GSB_2023.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
+
                 if pd.isna(row["gemid"]):
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
