@@ -51,6 +51,7 @@ export default function GeoJsonMap({ className = "absolute inset-0" }: { classNa
         <TileLayer
           attribution="&copy; OpenStreetMap contributors"
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          crossOrigin="anonymous"
         />
         {data && <GeoJSON data={data as any} style={() => style} />}
       </MapContainer>
