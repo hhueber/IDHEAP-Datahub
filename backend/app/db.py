@@ -7,7 +7,9 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_asyn
 
 engine = create_async_engine(
     settings.DATABASE_URL,
+    echo=False,
     pool_pre_ping=True,
+    plugins=["geoalchemy2"],
 )
 
 AsyncSessionLocal = async_sessionmaker(
@@ -19,6 +21,7 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 SessionLocal = AsyncSessionLocal
+
 
 async def get_db():
     async with AsyncSessionLocal() as session:

@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 
-from sqlalchemy import String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -14,6 +14,7 @@ class Canton(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
     name: Mapped[str] = mapped_column(String)
+    ofs_id: Mapped[int] = mapped_column(Integer)
 
     name_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -24,6 +25,7 @@ class Canton(Base):
     districts: Mapped[List["District"]] = relationship(
         "District", back_populates="canton", cascade="all, delete-orphan"
     )
+    canton_map: Mapped[List["CantonMap"]] = relationship("CantonMap", back_populates="canton")
 
     @property
     def communes(self) -> List["Commune"]:

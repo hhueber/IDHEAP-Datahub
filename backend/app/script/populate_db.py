@@ -1,7 +1,3 @@
-from sqlalchemy import select
-import pandas as pd
-
-
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
 from app.models import QuestionGlobal
@@ -12,6 +8,8 @@ from app.models.district import District
 from app.models.question_category import QuestionCategory
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
+from sqlalchemy import select
+import pandas as pd
 
 
 """"
@@ -31,6 +29,7 @@ async def populate_db() -> None:
             for code, lang in CANTONS.items():
                 db_canton = Canton(
                     code=code,
+                    ofs_id=lang["ofs_id"],
                     name=lang["en"],
                     name_de=lang["de"],
                     name_en=lang["en"],
@@ -42,6 +41,13 @@ async def populate_db() -> None:
                 index += 1
 
                 session.add(db_canton)
+                await session.flush()
+
+                # Creating fake district for commune who dont have any district
+                # They can be recognised with their code being the canton code
+                db_district = District(code=code, name=code, canton=db_canton)
+                session.add(db_district)
+                await session.flush()
 
         # District and commune
         row_number = 0
@@ -208,20 +214,21 @@ async def populate_db() -> None:
 
         #     for index, row in GSB_2023.iterrows():
 
-        #         if pd.isna(row["gemid"]):
+        #         if pd.isna(row["BFS_2023"]):
+
         #             continue
-        #         result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
+        #         result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
         #         db_commune = result.scalar_one_or_none()
 
         #         if db_commune is None:
         #             db_commune = Commune(
-        #                 code=str(row("gemid")),
-        #                 name=row["gemidname"],
-        #                 name_fr=row["gemidname"],
-        #                 name_it=row["gemidname"],
-        #                 name_ro=row["gemidname"],
-        #                 name_en=row["gemidname"],
-        #                 name_de=row["gemidname"],
+        #                 code=str(row("BFS_2023")),
+        #                 name=row["Gemeinde_2023"],
+        #                 name_fr=row["Gemeinde_2023"],
+        #                 name_it=row["Gemeinde_2023"],
+        #                 name_ro=row["Gemeinde_2023"],
+        #                 name_en=row["Gemeinde_2023"],
+        #                 name_de=row["Gemeinde_2023"],
         #             )
         #             session.add(db_commune)
         #             await session.flush()
