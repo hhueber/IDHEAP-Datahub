@@ -9,7 +9,7 @@ engine = create_async_engine(
     settings.DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
-    plugins=["geoalchemy2"],
+    # plugins=["geoalchemy2"],
 )
 
 AsyncSessionLocal = async_sessionmaker(
