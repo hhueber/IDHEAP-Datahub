@@ -1,5 +1,4 @@
 import { useState } from "react";
-import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 
 function downloadDataUrl(filename: string, dataUrl: string) {
@@ -11,16 +10,24 @@ function downloadDataUrl(filename: string, dataUrl: string) {
   a.remove();
 }
 
-async function captureMapCanvas(): Promise<HTMLCanvasElement> {
-  const el = document.querySelector<HTMLElement>("[data-map-root] .leaflet-container");
-  if (!el) throw new Error("Carte introuvable.");
-  const canvas = await html2canvas(el, {
-    useCORS: true,
-    backgroundColor: "#ffffff",
-    scale: window.devicePixelRatio || 1,
-    logging: false,
-  });
-  return canvas;
+async function captureMapBlob(): Promise<Blob> {
+  const map = (window as any).__leafletMap;
+  if (!map) throw new Error("Carte indisponible.");
+
+  // instancier (une seule fois)
+  if (!map.__screenshoter) {
+    // @ts-ignore – types manquent côté plugin
+    map.__screenshoter = L.simpleMapScreenshoter({
+      // régler la qualité de sortie ici si besoin
+      // domtoimageOptions: { quality: 1 }, // PNG par défaut
+      // hideElementsWithSelectors: ['.leaflet-control-container'], // si cacher les contrôles Leaflet
+    }).addTo(map);
+  }
+
+  const screenshoter = map.__screenshoter;
+  // "blob" = le plus pratique pour PNG/PDF ensuite
+  const blob: Blob = await screenshoter.takeScreen("blob");
+  return blob;
 }
 
 export default function MapExportButtons() {
@@ -29,11 +36,11 @@ export default function MapExportButtons() {
   const exportPNG = async () => {
     try {
       setBusy("png");
-      const canvas = await captureMapCanvas();
-      const dataUrl = canvas.toDataURL("image/png", 1.0);
+      const blob = await captureMapBlob();
+      const dataUrl = await blobToDataURL(blob);
       downloadDataUrl(`carte-${new Date().toISOString().slice(0, 10)}.png`, dataUrl);
     } catch (e: any) {
-      alert(e?.message || "Export PNG impossible (CORS ?).");
+      alert(e?.message || "Export PNG impossible.");
     } finally {
       setBusy(null);
     }
@@ -42,12 +49,14 @@ export default function MapExportButtons() {
   const exportPDF = async () => {
     try {
       setBusy("pdf");
-      const canvas = await captureMapCanvas();
-      const imgData = canvas.toDataURL("image/png", 1.0);
+      const blob = await captureMapBlob();
+      const imgData = await blobToDataURL(blob);
 
-      const imgW = canvas.width, imgH = canvas.height;
+      // connaître la taille de l’image (pour garder les proportions)
+      const { width, height } = await getImageSize(imgData);
+
       const pdf = new jsPDF({
-        orientation: imgW >= imgH ? "landscape" : "portrait",
+        orientation: width >= height ? "landscape" : "portrait",
         unit: "pt",
         format: "a4",
       });
@@ -57,18 +66,38 @@ export default function MapExportButtons() {
       const margin = 24;
       const maxW = pageW - margin * 2;
       const maxH = pageH - margin * 2;
-      const ratio = Math.min(maxW / imgW, maxH / imgH);
-      const w = imgW * ratio, h = imgH * ratio;
-      const x = (pageW - w) / 2, y = (pageH - h) / 2;
+      const ratio = Math.min(maxW / width, maxH / height);
+      const w = width * ratio;
+      const h = height * ratio;
+      const x = (pageW - w) / 2;
+      const y = (pageH - h) / 2;
 
       pdf.addImage(imgData, "PNG", x, y, w, h);
       pdf.save(`carte-${new Date().toISOString().slice(0, 10)}.pdf`);
     } catch (e: any) {
-      alert(e?.message || "Export PDF impossible (CORS ?).");
+      alert(e?.message || "Export PDF impossible.");
     } finally {
       setBusy(null);
     }
   };
+
+  // helpers
+  function blobToDataURL(blob: Blob): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => resolve(reader.result as string);
+      reader.readAsDataURL(blob);
+    });
+  }
+  function getImageSize(dataUrl: string): Promise<{ width: number; height: number }> {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
+      img.onerror = reject;
+      img.src = dataUrl;
+    });
+}
 
   const btn =
     "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium " +

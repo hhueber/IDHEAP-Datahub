@@ -1,9 +1,13 @@
-import { MapContainer, TileLayer, GeoJSON, useMap } from "react-leaflet";
+import { MapContainer, GeoJSON, Pane, ImageOverlay, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
-import ResetSwissControl from "@/components/map/ResetSwissControl";
+import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
+import { geoApi, GeoBundle } from "@/features/geo/geoApi";
+import { onEachCanton } from "@/components/map/admLabels";
+import CityMarkers from "@/components/map/CityMarkers";
+import "leaflet-simple-map-screenshoter";
+import InstallScreenshoter from "./map/screenShoter";
 
-type AnyGeoJson = GeoJSON.FeatureCollection | GeoJSON.Feature | null;
-
+// TODO: patch le abort
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
   const map = useMap();
   useLayoutEffect(() => { map.invalidateSize(false); }, [map]);
@@ -19,25 +23,85 @@ function MapSizeFixer({ host }: { host: HTMLElement | null }) {
   return null;
 }
 
-export default function GeoJsonMap({ className = "absolute inset-0" }: { className?: string }) {
-  const [data, setData] = useState<AnyGeoJson>(null);
+function ExposeMapOnWindow() {
+  const map = useMap();
+  useEffect(() => {
+    (window as any).__leafletMap = map; // exposé global simple
+  }, [map]);
+  return null;
+}
+
+type Props = {
+  className?: string;
+  /** Optionnel : URL d’un PNG/JPEG géoréférencé (couvrant SWISS_BOUNDS) à mettre en fond */
+  baseImageUrl?: string;
+  baseImageOpacity?: number; // 0..1
+};
+
+export default function GeoJsonMap({
+  className = "absolute inset-0",
+  baseImageUrl,
+  baseImageOpacity = 1,
+}: Props) {
+  const [bundle, setBundle] = useState<GeoBundle | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetch("/src/data/sample.geojson")
-      .then((r) => r.json())
-      .then(setData)
-      .catch((e) => console.error("Failed to load GeoJSON:", e));
+    const ctrl = new AbortController();
+    const currentYear = new Date().getFullYear(); // défaut
+    geoApi.getByYear(currentYear, ctrl.signal)
+      .then(setBundle)
+      .catch((e) => {
+        console.error("Failed to fetch Geo bundle:", e);
+        setError(e?.message || "Failed to load geometry");
+      });
+    return () => ctrl.abort();
   }, []);
 
-  const style = useMemo(() => ({ color: "#4f46e5", weight: 1, fillColor: "#f43f5e", fillOpacity: 0.3 }), []);
+  // Styles
+  const countryStyle = useMemo(() => ({
+  color: "#000000",      // frontière pays en noir
+  weight: 1,
+  fillColor: "#ffffff",  // fond blanc
+  fillOpacity: 1,
+}), []);
+const lakesStyle = useMemo(() => ({
+  color: "#3b82f6",      // bleu (tailwind blue-500)
+  weight: 1.2,
+  // si préfère uniquement le contour mettre fillOpacity: 0
+  fillColor: "#3b82f6",
+  fillOpacity: 0.85,
+}), []);
+const cantonsStyle = useMemo(() => ({
+  color: "#ef4444",      // rouge (tailwind red-500)
+  weight: 1.2,
+  fillOpacity: 0,
+}), []);
+const districtsStyle = useMemo(() => ({
+  color: "#7c3aed",      // violet (tailwind violet-600)
+  weight: 0.9,
+  fillOpacity: 0,
+}), []);
+  // const communesStyle = useMemo(() => ({
+  //   color: "#16a34a",       // green-600
+  //   weight: 0.6,
+  //   fillColor: "#dcfce7",   // green-100
+  //   fillOpacity: 0.15,
+  // }), []);
+
+  const country   = bundle?.country   ?? null;
+  const lakes     = bundle?.lakes     ?? null;
+  const cantons   = bundle?.cantons   ?? null;
+  const districts = bundle?.districts ?? null;
+  // const communes  = (bundle as any)?.communes ?? null; // si/qd tu ajoutes la couche
 
   return (
     <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
-      {/* Décale les contrôles juste sous le bouton flottant */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
+        [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
       `}</style>
 
       <MapContainer
@@ -46,15 +110,48 @@ export default function GeoJsonMap({ className = "absolute inset-0" }: { classNa
         className="w-full h-full"
         scrollWheelZoom
       >
+        <ExposeMapOnWindow />
+        <InstallScreenshoter showButton={true} />
         <MapSizeFixer host={hostRef.current} />
         <ResetSwissControl position="topleft" />
-        <TileLayer
-          attribution="&copy; OpenStreetMap contributors"
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          crossOrigin="anonymous"
-        />
-        {data && <GeoJSON data={data as any} style={() => style} />}
+
+        {/* Pane raster tout en bas */}
+        <Pane name="pane-raster" style={{ zIndex: 100 }}>
+          {baseImageUrl && (
+            <ImageOverlay
+              url={baseImageUrl}
+              bounds={SWISS_BOUNDS}
+              opacity={baseImageOpacity}
+              // crossOrigin="anonymous"  // important pour l’export html2canvas
+            />
+          )}
+        </Pane>
+
+        {/* Ordre: pays → lacs → cantons → districts → communes */}
+        <Pane name="pane-country"  style={{ zIndex: 200 }}>
+          {country   && <GeoJSON data={country as any}   style={() => countryStyle} pane="pane-country"  />}
+        </Pane>
+        <Pane name="pane-lakes"    style={{ zIndex: 300 }}>
+          {lakes     && <GeoJSON data={lakes as any}     style={() => lakesStyle} pane="pane-lakes"    />}
+        </Pane>
+        <Pane name="pane-districts" style={{ zIndex: 400 }}>
+          {districts && <GeoJSON data={districts as any} style={() => districtsStyle} pane="pane-districts" />}
+        </Pane>
+        <Pane name="pane-cantons"  style={{ zIndex: 500 }}>
+          {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
+        </Pane>
+        {/* <Pane name="pane-communes" style={{ zIndex: 600 }}>
+          {communes  && <GeoJSON data={communes as any}  style={() => communesStyle}  pane="pane-communes" />}
+        </Pane> */}
+        {/* Points villes et labels */}
+        <CityMarkers />
       </MapContainer>
+
+      {error && (
+        <div className="absolute top-2 left-2 z-[4000] rounded bg-red-600 text-white px-3 py-1 text-sm shadow">
+          {error}
+        </div>
+      )}
     </div>
   );
 }

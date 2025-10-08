@@ -51,37 +51,37 @@ async def populate_async_geo() -> None:
                             has_country_populated = True
 
                         # Insertion of commune data
-                        if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
-                            for feature in src:
-                                if year < 2016:
-                                    if (
-                                        feature["properties"]["GDENR"] == 253
-                                        or feature["properties"]["GARTE"] != 11
-                                        or feature["properties"]["CODE_ISO"] != "CH"
-                                    ):
-                                        continue
-                                    bfs_number = feature["properties"]["GDENR"]
-                                else:
-                                    # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
-                                    if (
-                                        feature["properties"]["objektart"] != "Gemeindegebiet"
-                                        or feature["properties"]["icc"] != "CH"
-                                    ):
-                                        continue
-                                    bfs_number = feature["properties"]["bfs_nummer"]
-                                result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
-                                db_commune = result.scalar_one_or_none()
-                                multi = shape(feature["geometry"])
-                                multi = transform(lambda x, y, z=None: (x, y), multi)
-                                db_commune_map = CommuneMap(
-                                    year=year,
-                                    commune=db_commune,
-                                    type=feature["geometry"]["type"],
-                                    geometry=from_shape(multi, srid=2056),
-                                )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
-                                session.add(db_commune_map)
-                                await session.flush()
+                        # if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
+                        #     for feature in src:
+                        #         if year < 2016:
+                        #             if (
+                        #                 feature["properties"]["GDENR"] == 253
+                        #                 or feature["properties"]["GARTE"] != 11
+                        #                 or feature["properties"]["CODE_ISO"] != "CH"
+                        #             ):
+                        #                 continue
+                        #             bfs_number = feature["properties"]["GDENR"]
+                        #         else:
+                        #             # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
+                        #             if (
+                        #                 feature["properties"]["objektart"] != "Gemeindegebiet"
+                        #                 or feature["properties"]["icc"] != "CH"
+                        #             ):
+                        #                 continue
+                        #             bfs_number = feature["properties"]["bfs_nummer"]
+                        #         result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
+                        #         db_commune = result.scalar_one_or_none()
+                        #         multi = shape(feature["geometry"])
+                        #         multi = transform(lambda x, y, z=None: (x, y), multi)
+                        #         db_commune_map = CommuneMap(
+                        #             year=year,
+                        #             commune=db_commune,
+                        #             type=feature["geometry"]["type"],
+                        #             geometry=from_shape(multi, srid=2056),
+                        #         )
+                        #         print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
+                        #         session.add(db_commune_map)
+                        #         await session.flush()
 
                         if "kanton" in layer or "Canton" in layer:
                             for feature in src:
