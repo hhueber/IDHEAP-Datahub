@@ -17,7 +17,7 @@ from backend.app.models.survey import Survey
 """"
 Script for populate the database.
 
-All the data will be from the folder ./Data
+All the data will be from the folder ./data
 """
 
 
@@ -54,7 +54,6 @@ async def populate_db() -> None:
         # District and commune
         row_number = 0
         async with session.begin():
-
             communes = pd.read_excel("./backend/app/data/EtatCommunes.xlsx", index_col=4, header=0)
             communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
             communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
