@@ -211,13 +211,13 @@ async def populate_db() -> None:
                 print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
 
         # Answer for 2023 data (separate file)
+        # For this file, the name of the header is different from other year so we need to adapt the name of column
         async with session.begin():
             GSB_2023 = pd.read_csv("./backend/app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
 
                 if pd.isna(row["BFS_2023"]):
-
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
                 db_commune = result.scalar_one_or_none()
