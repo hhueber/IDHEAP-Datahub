@@ -18,14 +18,15 @@ Projet de visualisation de données géographiques longitudinales.
 
 ### Prerequisites
 
-1. Having a database running locally or online with postgres and the postgis extension activated
-2. Copy the `.env_copy` file and rename it in `.env`
+1. Having a database running locally or online with [PostgreSQL](https://www.postgresql.org/) and the [PostGIS](https://postgis.net/) extension enabled.
+2. Copy the `.env.dist` file and rename it in `.env`.
 
 ### Populate
 
-1. Modify the `.env` file with the credential for connecting the db
-2. Be sure you have the requirements install
+1. Modify the `.env` file with the credential for connecting the database.
+2. Be sure you have the requirements installed.
    - `pip install -Ur requirements.txt`
-3. Make sure you have all the data file into the data folder in `backend/app/data`
-4. Execute the script
+3. Make sure you have all the data file into the data folder in `backend/app/data`.
+  - _TODO How to find the data_
+4. Execute the script.
    - `python -m backend.app.script.init_db_async`
