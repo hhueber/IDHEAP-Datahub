@@ -9,7 +9,7 @@ Projet de visualisation de données géographiques longitudinales.
 2. Create a [virtual environment](https://docs.python.org/3/library/venv.html), and activate it.
    - `python -m venv ./venv; source ./venv/bin/activate`
 3. Install requirements.
-   - `pip install -Ur requirements.txt`
+   - `pip install -r requirements.txt`
 4. Activate [`pre-commit`](https://pre-commit.com/).
    - `pre-commit install`
 5. _Tada_
