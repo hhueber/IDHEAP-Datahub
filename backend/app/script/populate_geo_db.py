@@ -14,17 +14,24 @@ import shapely.wkb
 
 
 from backend.app.db import SessionLocal
-from backend.app.models import Canton, CantonMap, Commune, CommuneMap, Country, District, DistrictMap
+from backend.app.models import Canton, CantonMap, Commune, CommuneMap, Country, District, DistrictMap, Lake, LakeMap
+
+
+YEARS = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
+
+# The year where swisstopo changed their way to access data
+THRESHOLD_YEAR = 2016
 
 
 async def populate_async_geo() -> None:
     has_country_populated = False
     async with SessionLocal() as session:
-        for year in [1988, 1994, 1998, 2005, 2009, 2017, 2023]:
-            if year < 2016:
+        for year in YEARS:
+            if year < THRESHOLD_YEAR:
                 year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
-                url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g0/historisierte-administrative_grenzen_g0_{year}-01-01/historisierte-administrative_grenzen_g0_{year}-01-01_2056.gpkg"
+                url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
             else:
+                continue
                 zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".")
                 url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
                 response = requests.get(url)
@@ -40,7 +47,6 @@ async def populate_async_geo() -> None:
             async with session.begin():
 
                 for layer in layers:
-
                     with fiona.open(url, layer=layer) as src:
                         # Insertion of country boarderies
                         if "Country" in layer and not has_country_populated:
@@ -149,6 +155,30 @@ async def populate_async_geo() -> None:
                                 print(f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}")
                                 session.add(db_district_map)
                                 await session.flush()
+
+                        if "Lac" in layer:
+
+                            result = await session.execute(select(Lake).filter_by(code=["properties"]["SEENR"]))
+                            db_lake = result.scalar_one_or_none()
+                            if db_lake is None:
+                                db_lake = Lake(
+                                    code=feature["properties"]["SEENR"], name=feature["properties"]["SEENAME"]
+                                )
+                                session.add(db_lake)
+                                await session.flush()
+                                print(f">>> INSERTING LAKE {db_lake.name}")
+                            multi = shapely.geometry.shape(feature["geometry"])
+                            multi = transform(lambda x, y, z=None: (x, y), multi)
+                            db_lake_map = LakeMap(
+                                year=year,
+                                geometry=from_shape(multi, srid=2056),
+                                type=feature["geometry"]["type"],
+                                lake=db_lake,
+                            )
+                            session.add(db_lake_map)
+                            await session.flush()
+
+            os.remove(url)
 
 
 if __name__ == "__main__":
