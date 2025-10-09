@@ -15,7 +15,7 @@ class DistrictMap(Base):
 
     district_id: Mapped[int] = mapped_column(ForeignKey("district.uid", ondelete="CASCADE"), nullable=False)
 
-    type: Mapped[str] = mapped_column(String, nullable=False)
+    geo_data_type: Mapped[str] = mapped_column(String, nullable=False)
 
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 
