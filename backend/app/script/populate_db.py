@@ -217,8 +217,6 @@ async def populate_db() -> None:
 
             for index, row in GSB_2023.iterrows():
 
-                if pd.isna(row["BFS_2023"]):
-                    continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
                 db_commune = result.scalar_one_or_none()
 
