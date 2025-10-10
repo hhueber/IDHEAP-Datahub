@@ -35,6 +35,7 @@ async def list_tables(db: AsyncSession = Depends(get_db)):
     rows = (await db.execute(q)).scalars().all()
     return {"tables": rows}
 
+
 @router.get("/db/table/{table_name}")
 async def read_table(
     table_name: str,
@@ -64,11 +65,15 @@ async def read_table(
 
     """
     # Whitelist: we validate that the table exists in 'public'
-    res = await db.execute(text("""
+    res = await db.execute(
+        text(
+            """
         SELECT table_name
         FROM information_schema.tables
         WHERE table_schema='public' AND table_type='BASE TABLE'
-    """))
+    """
+        )
+    )
     allowed = set(res.scalars().all())
     if table_name not in allowed:
         raise HTTPException(status_code=404, detail=f"Table '{table_name}' not found")
