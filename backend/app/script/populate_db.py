@@ -63,7 +63,7 @@ async def populate_db() -> None:
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
-                    RuntimeError("Canton not found, good luck")
+                    RuntimeError("Canton not found")
 
                 result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
                 db_district = result.scalar_one_or_none()
