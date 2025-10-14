@@ -1,28 +1,42 @@
 COMPOSE = docker compose
 DB_SERVICE = db
-INIT_SERVICE = initdb
-PYTHON = python
+FRONT_SERVICE = frontend
+INIT_SERVICE = schema_db_init
+API_SERVICE = api
+PYTHON = python3
 VENV = .venv
+PYBIN   := $(VENV)/bin/python
+PIP     := $(VENV)/bin/pip
 
-.PHONY: docker local local_fclean docker_clean docker_fclean help
+.PHONY: docker local local_fclean docker_clean docker_fclean local_api local_front help
 
-local: $(VENV)/bin/activate ## Create the venv, install the deps, and initialise the DB locally.
-	$(VENV)/bin/pip install -r requirements.txt
-	$(VENV)/bin/$(PYTHON) -m backend.app.script.init_db_async
+$(PYBIN): ## Creates the virtual environment .venv (if it doesn't exist)
+	@echo "Using interpreter: $(PYTHON)"
+	@$(PYTHON) -m venv $(VENV)
+	@echo "Virtual environment created in $(VENV)."
 
-$(VENV)/bin/activate: ## Creates the virtual environment .venv (if it doesn't exist)
-	python3 -m venv $(VENV)
-	@echo "Virtual environment created in $(VENV). Activate it with: source $(VENV)/bin/activate"
+local_db: $(PYBIN) ## Create the venv, install the deps, and initialise the DB locally.
+	@$(PIP) install -r requirements.txt
+	@PYTHONPATH=backend $(VENV)/bin/$(PYTHON) -m app.script.init_db_async
+
+local_front:  ## Local startup only of the front end on port 3000
+	@npm --prefix frontend run dev -- --host 0.0.0.0 --port 3000
+
+local_api:  $(PYBIN) ## Start the FastAPI API locally on port 8000
+	@$(PIP) install -r requirements.txt
+	@PYTHONPATH=backend $(VENV)/bin/$(PYTHON) -m uvicorn app.main:app \
+		--host 0.0.0.0 --port 8000 --reload --env-file .env
 
 local_fclean: ## Deletes the venv (.venv) and cleans up the local environment.
 	rm -rf $(VENV)
 	@echo "Virtual environment deleted and local environment cleaned up."
 
 
-docker: ## Run DB (db) + initdb, then display the Postgres logs.
-	$(COMPOSE) up -d --build $(DB_SERVICE) $(INIT_SERVICE)
+docker: ## build service DB (db) and api and front + initdb, then display the Postgres logs.
+	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
+	$(COMPOSE) up -d --build $(INIT_SERVICE) $(FRONT_SERVICE)
 	@echo "✅ Services started."
-	$(COMPOSE) logs -f $(DB_SERVICE)
+	$(COMPOSE) logs -f $(API_SERVICE) $(FRONT_SERVICE)
 
 
 docker_clean: ## Stop the project's Docker services and delete the containers + volumes

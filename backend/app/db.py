@@ -1,8 +1,8 @@
 # engine + session async
+from app.core.config import DATABASE_URL
+from app.models import Base
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
-
-
-from backend.app.core.config import DATABASE_URL
 
 
 engine = create_async_engine(
@@ -11,9 +11,20 @@ engine = create_async_engine(
     pool_pre_ping=True,
 )
 
-SessionLocal = async_sessionmaker(
-    bind=engine,
-    expire_on_commit=False,
+AsyncSessionLocal = async_sessionmaker(
+    engine,
     class_=AsyncSession,
+    expire_on_commit=False,
     autoflush=False,
+    autocommit=False,
 )
+
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+async def ping_db():
+    async with engine.connect() as conn:
+        await conn.execute(text("SELECT 1"))

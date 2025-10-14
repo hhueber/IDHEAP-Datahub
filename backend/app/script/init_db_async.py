@@ -2,11 +2,11 @@ import asyncio
 import logging
 
 
-from backend.app import models
-from backend.app.core.logging_config import configure_logging
-from backend.app.db import engine
-from backend.app.models import Base
-from backend.app.script.populate_db import populate_db
+from app import models
+from app.core.logging_config import configure_logging
+from app.db import engine
+from app.models import Base
+from app.script.populate_db import populate_db
 
 
 logger = logging.getLogger(__name__)
