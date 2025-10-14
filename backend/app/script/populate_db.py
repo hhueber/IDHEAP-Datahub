@@ -15,7 +15,7 @@ import pandas as pd
 """"
 Script for populate the database.
 
-All the data will be from the folder ./Data
+All the data will be from the folder ./data
 """
 
 
@@ -62,7 +62,7 @@ async def populate_db() -> None:
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
-                    RuntimeError("Canton not found, good luck")
+                    RuntimeError("Canton not found")
 
                 result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
                 db_district = result.scalar_one_or_none()
@@ -210,7 +210,7 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv("./app/data/GSB_2023.csv", index_col=0, header=1, sep=";")
+            GSB_2023 = pd.read_csv("./app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
 
