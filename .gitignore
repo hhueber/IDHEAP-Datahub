@@ -6,6 +6,7 @@
 
 # temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
+*.gpkg
 
 # KDE directory preferences
 .directory
@@ -346,8 +347,5 @@ $RECYCLE.BIN/
 
 # Windows shortcuts
 *.lnk
-
-# fill GeoJson
-*.gpkg
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,linux,pycharm+all,python,venv
