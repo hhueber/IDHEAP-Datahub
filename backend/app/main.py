@@ -1,6 +1,5 @@
 from app.core.middleware import setup_middlewares
 from app.db import get_db
-from app.router import test
 from fastapi import Depends, FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession
 
