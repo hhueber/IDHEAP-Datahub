@@ -19,6 +19,8 @@ AsyncSessionLocal = async_sessionmaker(
     autocommit=False,
 )
 
+SessionLocal = AsyncSessionLocal
+
 
 async def get_db():
     async with AsyncSessionLocal() as session:

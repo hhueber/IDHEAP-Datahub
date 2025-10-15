@@ -1,0 +1,6 @@
+{
+  "app": { "title": "Klima-Verwundbarkeitsindex", "getStarted": "Loslegen", "learnMore": "Mehr erfahren" },
+  "nav": { "language": "Sprache", "data": "Daten", "home": "Startseite", "dataSoon": "Kommt bald." },
+  "home": { "heroTitle": "GeoJSON Karten-Demo", "heroSubtitle": "Öffentliche Seite mit Karte und fester Navbar." },
+  "login": { "title": "Anmelden", "subtitle": "Platzhalter für die zukünftige Auth." }
+}

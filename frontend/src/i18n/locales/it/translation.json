@@ -1,0 +1,16 @@
+{
+  "nav": { 
+    "language": "Lingua", 
+    "data": "Dati",
+    "home": "Home", 
+    "dataSoon": "Disponibile presto."
+  },
+  "home": {
+    "heroTitle": "Mappa dimostrativa GeoJSON",
+    "heroSubtitle": "Pagina pubblica con una mappa e una barra di navigazione persistente."
+  },
+  "login": {
+    "title": "Accesso",
+    "subtitle": "Spazio riservato per la futura autenticazione."
+  }
+}

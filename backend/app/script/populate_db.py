@@ -96,7 +96,7 @@ async def populate_db() -> None:
                 session.add(db_commune)
                 await session.flush()
                 row_number += 1
-                print(f">>> INSERTING COMMUNE {rows["Nom de la commune"]} {row_number}/{len(communes)} ")
+                print(f">>> INSERTING COMMUNE {rows['Nom de la commune']} {row_number}/{len(communes)} ")
 
         # Survey and question per survey
         async with session.begin():
@@ -148,7 +148,7 @@ async def populate_db() -> None:
 
                     session.add(db_question_category)
                     await session.flush()
-                    print(f">>> INSERTING QUESTION CATEGORY {row["category_label"]}")
+                    print(f">>> INSERTING QUESTION CATEGORY {row['category_label']}")
 
                 db_question_global = QuestionGlobal(
                     label=row["label"],
@@ -161,7 +161,7 @@ async def populate_db() -> None:
 
                 session.add(db_question_global)
                 await session.flush()
-                print(f">>> INSERTING QUESTION GLOBAL {row["label"]}")
+                print(f">>> INSERTING QUESTION GLOBAL {row['label']}")
 
         # Answer
         async with session.begin():
@@ -175,7 +175,7 @@ async def populate_db() -> None:
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
-                    print(f">>> INSERTING COMMUNE {row["gemidname"]}")
+                    print(f">>> INSERTING COMMUNE {row['gemidname']}")
                     db_commune = Commune(
                         code=str(row["gemid"]),
                         name=row["gemidname"],
