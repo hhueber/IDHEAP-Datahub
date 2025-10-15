@@ -9,7 +9,7 @@ import it from "./locales/it/translation.json";
 import rm from "./locales/rm/translation.json";
 
 i18n
-  .use(LanguageDetector)       // <— ajoute le détecteur
+  .use(LanguageDetector) // <— ajoute le détecteur
   .use(initReactI18next)
   .init({
     resources: { en: { translation: en }, fr: { translation: fr }, de: { translation: de }, it: { translation: it }, rm: { translation: rm } },
