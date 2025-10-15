@@ -15,6 +15,7 @@ async def list_questions(
     db: AsyncSession = Depends(get_db),
     accept_language: str | None = Header(None, alias="Accept-Language"),
 ):
+    """Liste les questions selon le scope demandé."""
     if scope == "per_survey":
         if survey_uid is None:
             raise HTTPException(status_code=400, detail="survey_uid is required for scope=per_survey")

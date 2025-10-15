@@ -1,6 +1,9 @@
 from typing import List
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
 from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     # DB components depuis .env
@@ -17,7 +20,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:3000"  # CSV dans .env
+    CORS_ORIGINS: str
+
     @field_validator("CORS_ORIGINS")
     @classmethod
     def _ensure_origins(cls, v: str) -> str:
@@ -38,5 +42,6 @@ class Settings(BaseSettings):
     @property
     def CORS_ORIGINS_LIST(self) -> List[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+
 
 settings = Settings()

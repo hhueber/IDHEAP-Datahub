@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         armRefreshIn(refresh_in);
       } catch (e) {
         console.warn("[auth] refresh failed", e);
-        // 401 → évènement global déclenché dans apiFetch
+        // 401 -> évènement global déclenché dans apiFetch
       } finally {
         refreshPending.current = false;
       }
@@ -60,11 +60,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (seconds > 0) armRefreshIn(seconds);
   };
 
-  // Boot : récupérer le user; si 401 → /login
+  // Boot : récupérer le user; si 401 -> /login
   useEffect(() => {
     authService.me()
       .then(u => { setUser(u); authService.cacheUser(u); })
-      //   .catch(() => { navigate("/login", { replace: true }); })
       .catch(() => {})
       .finally(() => setReady(true));
   }, [navigate]);
@@ -94,7 +93,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(null);
       clearRefreshTimer();
       clearNextRefresh();
-    //   navigate("/login", { replace: true });
       if (PRIVATE_PREFIXES.some(p => location.pathname.startsWith(p))) {
         navigate("/login", { replace: true });
       } else {
@@ -104,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.removeEventListener("auth:unauthorized", onUnauthorized);
   }, [navigate, location.pathname]);
 
-  // Watchdog: toutes les 15s, si on a dépassé l’échéance → refresh maintenant
+  // Watchdog: toutes les 15s, si on a dépassé l’échéance refresh maintenant
   useEffect(() => {
     if (!user) return;
     const id = window.setInterval(() => {

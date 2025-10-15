@@ -27,7 +27,6 @@ async def create_user(db: AsyncSession, email: str, password: str, full_name: st
         password_hash=get_password_hash(password),
         full_name=full_name,
         role=role,
-        # is_active=True
     )
     db.add(user)
     await db.commit()
@@ -47,15 +46,7 @@ async def authenticate_user(db: AsyncSession, email: str, password: str) -> Opti
         return None
     if not verify_password(password, user.password_hash):
         return None
-    # if not user.is_active:
-    #     return None
     return user
-
-
-# async def update_last_login(db: AsyncSession, user_id: str) -> None:
-#     q = update(User).where(User.id == user_id).values(last_login_at=datetime.utcnow())
-#     await db.execute(q)
-#     await db.commit()
 
 
 async def mark_token_created(db: AsyncSession, user_id: str) -> datetime:

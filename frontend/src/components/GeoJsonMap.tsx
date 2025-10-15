@@ -40,7 +40,6 @@ export default function GeoJsonMap({ className = "absolute inset-0" }: { classNa
   const hostRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Note: pour un build prod, mettre fichier GeoJson temporaire dans "/data/sample.geojson"
     fetch("/src/data/sample.geojson")
       .then((r) => r.json())
       .then(setData)
