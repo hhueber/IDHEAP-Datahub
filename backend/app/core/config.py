@@ -1,18 +1,41 @@
-import os
+from typing import List
 
 
-from dotenv import load_dotenv
+from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-load_dotenv()
+class Settings(BaseSettings):
+    # DB components depuis .env
+    DB_NAME: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_PORT: int
 
-DB_NAME = os.getenv("DB_NAME")
-DB_USER = os.getenv("DB_USER")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
+    # Sécurité / API
+    API_SECRET: str
+    SECRET_KEY: str
+    ALGORITHM: str = "HS256"
 
-DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # CORS
+    CORS_ORIGINS: str
 
-API_SECRET = os.getenv("API_SECRET")
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS").split(",") if o.strip()]
+    @field_validator("CORS_ORIGINS")
+    @classmethod
+    def _ensure_origins(cls, v: str) -> str:
+        # stocke brut, on donnera la version list dans property ci-dessous
+        return v
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+
+    @property
+    def DATABASE_URL(self) -> str:
+        return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def CORS_ORIGINS_LIST(self) -> List[str]:
+        return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+
+
+settings = Settings()

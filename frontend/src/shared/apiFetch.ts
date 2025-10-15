@@ -3,16 +3,17 @@ export type ApiFetchOptions = {
   method?: HttpMethod;
   query?: Record<string, string | number | boolean | null | undefined>;
   headers?: Record<string, string>;
-  body?: unknown;
-  auth?: boolean;
-  token?: string | null;
-  signal?: AbortSignal | null;
-  timeoutMs?: number;
-  withCredentials?: boolean;
-  responseType?: "json" | "text" | "blob" | "arrayBuffer";
-  acceptLanguage?: string;
+  body?: unknown;                   // objet → JSON auto, sinon passé tel quel (FormData, Blob, etc.)
+  auth?: boolean;                   // route protégée (envoie cookies ou Authorization)
+  token?: string | null;            // token explicite (si pas via cookie)
+  signal?: AbortSignal | null;      // annulation externe
+  timeoutMs?: number;               // annulation auto via timeout
+  withCredentials?: boolean;        // forcer l’envoi des cookies
+  responseType?: "json" | "text" | "blob" | "arrayBuffer"; // type de parsing
+  acceptLanguage?: string;          // langue à forcer (sinon i18next/localStorage)
 };
 
+// Erreur homogène côté client pour les appels API
 export class ApiError extends Error {
   status: number;
   url: string;
@@ -26,10 +27,10 @@ export class ApiError extends Error {
   }
 }
 
-// on passe en cookie HttpOnly pour les appels auth
+// Auth via cookie HttpOnly (sinon on utilise Authorization: Bearer)
 const AUTH_VIA_COOKIE = true;
 
-/** Où récupérer la base URL TODO: a modifier */
+/** Base URL de l’API ne pas laisser "http://localhost:8000" en dur (Issues cree) */
 function resolveBaseUrl(): string {
   const im = (import.meta as any)?.env ?? {};
   return (
@@ -41,12 +42,14 @@ function resolveBaseUrl(): string {
 }
 const BASE_URL = resolveBaseUrl();
 
+// Stockage minimal du token si on n’utilise pas les cookies
 export const tokenStore = {
   get: () => localStorage.getItem("auth_token"),
   set: (t: string) => localStorage.setItem("auth_token", t),
   clear: () => localStorage.removeItem("auth_token"),
 };
 
+// Construit une URL complète + querystring
 function buildUrl(path: string, query?: ApiFetchOptions["query"]) {
   const base = BASE_URL.endsWith("/") ? BASE_URL : BASE_URL + "/";
   const url = new URL(path.replace(/^\//, ""), base);
@@ -58,6 +61,7 @@ function buildUrl(path: string, query?: ApiFetchOptions["query"]) {
   return url.toString();
 }
 
+// Détermine si le body doit être sérialisé en JSON
 function isJsonBody(body: unknown) {
   if (!body) return false;
   if (typeof body === "string") return false;
@@ -68,6 +72,7 @@ function isJsonBody(body: unknown) {
   return true; // objet -> JSON
 }
 
+// Parsing de la réponse selon le type attendu (json par défaut)
 async function parseByType(res: Response, type: ApiFetchOptions["responseType"]) {
   if (type === "text") return res.text();
   if (type === "blob") return res.blob();
@@ -77,6 +82,7 @@ async function parseByType(res: Response, type: ApiFetchOptions["responseType"])
   try { return JSON.parse(txt); } catch { return txt; }
 }
 
+// Appel API principal
 export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {}): Promise<T> {
   const controller = new AbortController();
   const timeoutId =
@@ -87,11 +93,13 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
   const signal = opts.signal ?? controller.signal;
   const url = buildUrl(route, opts.query);
 
+  // En-têtes de base (JSON) + merge custom
   const headers: Record<string, string> = {
     Accept: "application/json",
     ...(opts.headers || {}),
   };
 
+  // Langue (Accept-Language) : option, i18next, ou localStorage
   const lang =
     opts.acceptLanguage ||
     (typeof window !== "undefined"
@@ -106,13 +114,14 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  // Body
+  // Body de requête : JSON auto si objet
   let bodyToSend: any = opts.body ?? undefined;
   if (isJsonBody(bodyToSend)) {
     headers["Content-Type"] = headers["Content-Type"] ?? "application/json";
     bodyToSend = JSON.stringify(bodyToSend);
   }
 
+  // Requête réseau
   let res: Response;
   try {
     res = await fetch(url, {
@@ -130,6 +139,7 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
     if (timeoutId) clearTimeout(timeoutId);
   }
 
+  // Parsing & gestion d’erreur HTTP
   const data = await parseByType(res, opts.responseType ?? "json");
   if (!res.ok) {
     const msg =
@@ -146,6 +156,7 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
   return data as T;
 }
 
+// Variante proteger “safe” : gère 401 globalement (clear token + redirect)
 export async function safeApi<T = any>(...args: Parameters<typeof apiFetch<T>>): Promise<T> {
   try {
     return await apiFetch<T>(...args);

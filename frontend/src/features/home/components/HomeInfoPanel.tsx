@@ -11,7 +11,7 @@ type Props = {
   loading: boolean;
   error: Error | null;
 };
-
+//** paneau de controle pour choix des question... */
 export default function HomeInfoPanel({ data, loading, error }: Props) {
   const { t } = useTranslation();
   const [selectedUid, setSelectedUid] = useState<number>(GLOBAL_UID);
