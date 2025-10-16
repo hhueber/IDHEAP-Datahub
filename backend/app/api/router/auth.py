@@ -20,9 +20,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=Token)
 async def login(user_credentials: UserLogin, response: Response, db: AsyncSession = Depends(get_db)):
-    """
-    Authenticate user by email and return access token.
-    """
+    """Authenticate user by email and return access token."""
     user = await authenticate_user(db, user_credentials.email, user_credentials.password)
     if not user:
         raise HTTPException(
