@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 
 
+// Layout de la zone privée : sidebar fixe + contenu principal scrollable
 export default function PrivateLayout() {
   return (
     <div className="min-h-screen bg-white">

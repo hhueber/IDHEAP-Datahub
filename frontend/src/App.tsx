@@ -1,3 +1,4 @@
+// Configuration des routes : zones publique/privée, protections d’accès et layouts
 import { Route, Routes } from "react-router-dom";
 import Home from "@/features/home/Home";
 import Login from "@/features/login/Login";
@@ -17,6 +18,7 @@ function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs<
 
 export default function App() {
   return (
+    // Contexte d’auth global (disponible partout)
     <AuthProvider>
       <Routes>
         {/* Public */}
@@ -26,7 +28,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Route>
 
-        {/* Privé (auth requis) */}
+        {/* Zone privée (auth requise) : layout + protections */}
         <Route
           element={
             <RequireAuth>
@@ -34,10 +36,11 @@ export default function App() {
             </RequireAuth>
           }
         >
+          {/* Pages privées accessibles aux membres connectés */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/password" element={<ChangePasswordPage />} />
 
-          {/* Admin only dans le layout privé */}
+          {/* Pages admin (rôle ADMIN uniquement) */}
           <Route
             path="/admin/users"
             element={

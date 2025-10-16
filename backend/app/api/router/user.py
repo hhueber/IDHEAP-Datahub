@@ -35,6 +35,18 @@ async def create_user(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Create a new user (admin-only operation).
+        - Requires the caller to be an administrator.
+        - Fails with 409 if the email already exists.
+        - Hashes the provided password and persists the user.
+
+    Args:
+        payload (UserCreate): New user's data (email, full_name, role, password).
+        db (AsyncSession): Database session (dependency injection).
+        current_user (UserModel): Guarantees that User has a valid cookie (auth required) and
+        the User mask guarantees that the information returned is in accordance with the User schema.
+
+    """
     ensure_admin(current_user)
 
     exists = await db.scalar(select(UserModel.id).where(UserModel.email == payload.email))
@@ -62,6 +74,20 @@ async def delete_user(
     db: AsyncSession = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
+    """Deletes a user (operation reserved for administrators).
+        - Verifies that the caller is an administrator.
+        - Searches for the user by email.
+        - Validates the identity (standardised full_name + role) before deletion.
+        - Prevents the deletion of their own account.
+
+    Args:
+        payload (UserDeleteIn): Identification data of the user to be deleted
+            (email, full_name, role).
+        db (AsyncSession): Database session (dependency injection).
+        current_user (UserModel): Guarantees that User has a valid cookie (auth required) and
+        the UserModel mask guarantees that the information returned is in accordance with the UserModel schema.
+
+    """
     ensure_admin(current_user)
 
     result = await db.execute(select(UserModel).where(UserModel.email == payload.email))
@@ -69,6 +95,7 @@ async def delete_user(
     if not target:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
+    # permet de normaliser la string pour comparer les informations
     norm = lambda s: " ".join(s.split()).strip().lower()
     if norm(target.full_name) != norm(payload.full_name) or target.role != payload.role:
         raise HTTPException(
@@ -76,7 +103,7 @@ async def delete_user(
             detail="Les informations fournies ne correspondent pas à l'utilisateur",
         )
 
-    # Optionnel : empêcher l'admin de se supprimer lui-même
+    # empêcher l'admin de se supprimer lui-même
     if target.id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Impossible de supprimer votre propre compte"
@@ -93,6 +120,18 @@ async def change_password(
     db: AsyncSession = Depends(get_db),
     current_user: UserModel = Depends(get_current_user),
 ):
+    """Changes the password of the authenticated user.
+        - Verifies the old password.
+        - Rejects if the new password is identical to the old one.
+        - Updates the password hash in the database.
+
+    Args:
+        payload (PasswordChangeIn): Old and new passwords.
+        db (AsyncSession): DB session (dependency injection).
+        current_user (UserModel): Guarantees that User has a valid cookie (auth required) and
+        the UserModel mask guarantees that the information returned is in accordance with the UserModel schema..
+
+    """
     # On charge l'utilisateur courant
     user = await db.get(UserModel, current_user.id)
     if not user:
@@ -102,7 +141,7 @@ async def change_password(
     if not verify_password(payload.old_password, user.password_hash):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ancien mot de passe incorrect")
 
-    # Optionnel: empêcher la réutilisation du même mot de passe
+    # empêcher la réutilisation du même mot de passe
     if verify_password(payload.new_password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Le nouveau mot de passe doit être différent"

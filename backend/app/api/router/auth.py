@@ -43,6 +43,7 @@ async def login(user_credentials: UserLogin, response: Response, db: AsyncSessio
     set_auth_cookie(response, access_token)
 
     total_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    # request to refresh this token in 55 minutes
     refresh_in = total_seconds - (5 * 60)
 
     return {"access_token": access_token, "token_type": "bearer", "refresh_in": refresh_in}
@@ -56,8 +57,8 @@ async def logout(
 ):
     """
     logout:
-    - invalidates the current token by modifying last_token_created_at
-    - deletes the “access_token” cookie
+        - invalidates the current token by modifying last_token_created_at
+        - deletes the “access_token” cookie
     """
     # Invalider le token courant en changeant last_token_created_at
     await db.execute(update(UserModel).where(UserModel.id == current_user.id).values(last_token_created_at=None))
@@ -76,10 +77,11 @@ async def refresh_access_token(
 ):
     """
     Refreshes the access token:
-    - requires a valid token (get_current_user)
-    - updates last_token_created_at
-    - issues a new JWT and replaces the cookie
-    - immediately invalidates the old token (thanks to the new iat in DB)
+        - requires a valid token (get_current_user)
+        - updates last_token_created_at
+        - issues a new JWT and replaces the cookie
+        - immediately invalidates the old token (thanks to the new iat in DB)
+        - request to refresh this token in 55 minutes
     """
     iat_dt = await mark_token_created(db, current_user.id)
 
@@ -93,6 +95,7 @@ async def refresh_access_token(
     set_auth_cookie(response, access_token)
 
     total_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    # request to refresh this token in 55 minutes
     refresh_in = total_seconds - (5 * 60)
 
     return {

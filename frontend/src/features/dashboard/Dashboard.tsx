@@ -1,3 +1,4 @@
+// Tableau de bord (zone privée) : affiche l’utilisateur connecté et pour l'instant un bouton de déconnexion
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function Dashboard() {

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { authService, User, getNextRefreshTs, clearNextRefresh } from "@/services/auth";
 import { useLocation } from "react-router-dom";
 
+// Contexte d’authentification : stocke l’utilisateur, expose login/logout/refresh et contrôle des rôles
 type Ctx = {
   user: User | null;
   isAuthenticated: boolean;
@@ -15,6 +16,7 @@ type Ctx = {
 const Ctx = createContext<Ctx | null>(null);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // État utilisateur (pré-rempli depuis le cache local si dispo)
   const [user, setUser] = useState<User | null>(() => authService.getCachedUser());
   const [ready, setReady] = useState(false);
   const refreshTimer = useRef<number | null>(null);
@@ -30,6 +32,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Programme un refresh du token dans N secondes
   const armRefreshIn = (seconds: number) => {
     clearRefreshTimer();
     const capped = Math.min(seconds, Math.floor(2147483647 / 1000));
@@ -53,6 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }, delayMs);
   };
 
+  // Si un “next refresh” est stocké, on reprogramme à partir de là
   const armFromStoredTsIfAny = () => {
     const ts = getNextRefreshTs();
     if (!ts) return;
@@ -60,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (seconds > 0) armRefreshIn(seconds);
   };
 
-  // Boot : récupérer le user; si 401 -> /login
+  // Boot : tente de récupérer le user ; échec silencieux (restera non-auth)
   useEffect(() => {
     authService.me()
       .then(u => { setUser(u); authService.cacheUser(u); })
@@ -68,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       .finally(() => setReady(true));
   }, [navigate]);
 
-  // (Ré)armer depuis le localStorage dès qu’on a un user
+  // Armer/désarmer le refresh selon présence d’un user
   useEffect(() => {
     if (user) {
       armFromStoredTsIfAny();
@@ -121,7 +125,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => window.clearInterval(id);
   }, [user]);
 
-  // Re-sync quand l’onglet redevient actif
+  // re-synchroniser quand l’onglet redevient actif
   useEffect(() => {
     const onWake = () => {
       const ts = getNextRefreshTs();
@@ -146,6 +150,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  // Login : récupère refresh_in, charge le profil, arme le timer
   const login = async (email: string, password: string) => {
     const { refresh_in } = await authService.login(email, password);
     const me = await authService.me();
@@ -153,6 +158,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     armRefreshIn(refresh_in);
   };
 
+  // Logout : purge session + timers + redirection
   const logout = async () => {
     try { await authService.logout(); }
     finally {
@@ -163,6 +169,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Relecture du profil (cache + état)
   const refreshUser = async () => {
     const me = await authService.me(); setUser(me); authService.cacheUser(me);
   };
@@ -177,6 +184,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
+// Hook d’accès au contexte d’auth
 export const useAuth = () => {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("useAuth must be used within <AuthProvider>");

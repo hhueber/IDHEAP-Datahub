@@ -7,6 +7,8 @@ from pydantic import AfterValidator
 
 _NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ0-9 .,'\-]+$")
 
+# securiter pour eviter l'injection
+
 
 def _validate_full_name(v: str) -> str:
     v = " ".join(v.split()).strip()

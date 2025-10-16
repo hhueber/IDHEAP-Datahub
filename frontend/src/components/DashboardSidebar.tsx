@@ -1,3 +1,4 @@
+// Sidebar (navbar) de l’espace privé : menu arborescent avec contrôle par rôles
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -6,14 +7,16 @@ type Role = "ADMIN" | "MEMBER";
 type MenuItem = {
   key: string;
   label: string;
-  to?: string;
-  roles?: Role[];
+  to?: string; // route (si absent -> nœud parent)
+  roles?: Role[]; // rôles autorisés
   children?: MenuItem[];
 };
 
+// autorisation d’affichage par rôle
 const canSee = (role: Role | undefined, item?: MenuItem) =>
   !item?.roles || (role ? item.roles.includes(role) : false);
 
+// actif si chemin exact ou sous-chemin
 const isPathActive = (path: string, current: string) =>
   current === path || current.startsWith(path + "/");
 
@@ -34,6 +37,7 @@ function ItemLink({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
+// élément de l’arbre
 function TreeItem({
   item,
   depth = 0,
@@ -61,6 +65,7 @@ function TreeItem({
     );
   const active = activeHere || !!activeChild;
 
+  // feuille simple -> lien direct
   if (!hasChildren && item.to) {
     return (
       <div style={{ paddingLeft: padding }}>
@@ -71,6 +76,7 @@ function TreeItem({
     );
   }
 
+  // nœud parent -> bouton pliable + enfants
   return (
     <div className="select-none">
       <button
@@ -114,6 +120,7 @@ export default function DashboardSidebar() {
   const location = useLocation();
 
   // 5 sections top-level (Dashboard en premier)
+  // définition du menu (contrôlé par rôle)
   const menu: MenuItem[] = [
     { key: "dashboard", label: "Dashboard", to: "/dashboard", roles: ["ADMIN", "MEMBER"] },
     {
@@ -238,6 +245,7 @@ export default function DashboardSidebar() {
 
   const [open, setOpen] = React.useState<Record<string, boolean>>({});
 
+  // ouvre automatiquement les parents du chemin actif
   React.useEffect(() => {
     const next = { ...open };
     const visit = (items: MenuItem[], parents: string[]) => {
@@ -252,15 +260,18 @@ export default function DashboardSidebar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
+  // helpers d’état d’ouverture
   const isOpen = (k: string) => !!open[k];
   const onToggle = (k: string) => setOpen((s) => ({ ...s, [k]: !s[k] }));
 
   return (
     <aside className="fixed inset-y-0 left-0 w-64 border-r bg-white">
+      {/* en-tête */}
       <div className="h-16 border-b px-4 flex items-center">
         <span className="text-lg font-semibold">Espace privé</span>
       </div>
 
+      {/* contenu + menu */}
       <div className="h-[calc(100vh-4rem)] flex flex-col">
         <nav className="px-3 py-4 space-y-1 overflow-auto">
           {menu
@@ -277,6 +288,7 @@ export default function DashboardSidebar() {
             ))}
         </nav>
 
+        {/* pied : infos utilisateur + logout */}
         <div className="mt-auto border-t p-4">
           <div className="mb-3 text-sm">
             <div className="font-medium">{user?.full_name}</div>
