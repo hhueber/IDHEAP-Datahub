@@ -28,12 +28,9 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-    print("get_current_user")
     token = credentials.credentials if credentials else access_token
     if not token:
-        print("no token")
         raise credentials_exception
-    print("get_current_user2")
     verified = verify_token(token)
     if not verified:
         raise credentials_exception
@@ -46,7 +43,7 @@ async def get_current_user(
 
     db_iat = int(user.last_token_created_at.timestamp())
     if int(iat) != db_iat:
-        # token issued before the last known iat → invalid
+        # token issued before the last known iat -> invalid
         raise credentials_exception
 
     return user

@@ -35,7 +35,7 @@ async def create_schema() -> None:
                 admin = await create_user(
                     db, settings.ROOT_EMAIL, settings.ROOT_PASSWORD, settings.ROOT_NAME, role="ADMIN"
                 )
-                logger.info("Root admin created:", admin.email)
+                logger.info("Root admin created:")
             else:
                 logger.info("Admin user(s) already exist; skipping root seed.")
     else:
