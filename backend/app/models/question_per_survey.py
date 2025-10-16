@@ -15,6 +15,8 @@ class QuestionPerSurvey(Base):
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
     label: Mapped[str] = mapped_column(String)
 
+    private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
     question_category_uid: Mapped[Optional[int]] = mapped_column(ForeignKey("question_category.uid"), nullable=True)
     question_category: Mapped[Optional["QuestionCategory"]] = relationship(
         "QuestionCategory", back_populates="questions_per_survey"
