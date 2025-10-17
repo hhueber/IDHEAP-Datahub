@@ -1,3 +1,4 @@
+// Service d’authentification (client) : login/refresh/logout + cache local
 import { apiFetch } from "@/shared/apiFetch";
 
 export type User = { id: string; email: string; full_name: string; role: "ADMIN" | "MEMBER" };

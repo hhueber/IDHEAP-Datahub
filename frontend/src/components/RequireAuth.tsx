@@ -2,6 +2,7 @@ import { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
+// Garde d’authentification : protège une route et redirige vers /login si non connecté
 type Props = { children: ReactNode };
 
 export default function RequireAuth({ children }: Props) {

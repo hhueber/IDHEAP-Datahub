@@ -5,8 +5,6 @@ import json
 
 from app.models.canton import Canton
 from app.models.canton_map import CantonMap
-
-# tes modèles (adapte les chemins si besoin)
 from app.models.country import Country
 from app.models.district import District
 from app.models.district_map import DistrictMap
@@ -39,11 +37,11 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
     # Année par défaut = année courante
     y_req = int(requested_year or date.today().year)
 
-    # Country / Lake n'ont pas "year" dans les modèles fournis → None
+    # Country / Lake n'ont pas "year" dans les modèles fournis -> None
     y_cantons = await _max_year_leq(session, CantonMap, y_req)
     y_districts = await _max_year_leq(session, DistrictMap, y_req)
 
-    # COUNTRY
+    # Country - meme chose que cantons pour Leaflet
     country_fc = await _features_from_stmt(
         session,
         select(
@@ -53,7 +51,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
         ("uid",),
     )
 
-    # LAKES
+    # Lakes - meme chose que cantons pour Leaflet
     lakes_fc = await _features_from_stmt(
         session,
         select(
@@ -65,7 +63,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
         ("uid", "name", "code"),
     )
 
-    # CANTONS — si une année <= demandée existe
+    # Cantons — si une année <= demandée existe
     cantons_fc = None
     if y_cantons is not None:
         cantons_fc = await _features_from_stmt(
@@ -84,7 +82,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
             ("uid", "code", "name"),
         )
 
-    # DISTRICTS — idem
+    # Districts — meme chose que cantons pour Leaflet
     districts_fc = None
     if y_districts is not None:
         has_code = hasattr(District, "code")

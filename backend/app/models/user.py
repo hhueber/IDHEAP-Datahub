@@ -1,9 +1,12 @@
 import uuid
-from sqlalchemy import Column, String, DateTime, Text, Boolean
+
+
+from sqlalchemy import Boolean, Column, DateTime, String, Text
 from sqlalchemy.sql import func
+
+
 from .base import Base
 
-# Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
@@ -12,6 +15,5 @@ class User(Base):
     password_hash = Column(Text, nullable=False)
     full_name = Column(String, nullable=False)
     role = Column(String, nullable=False, default="MEMBER")  # ADMIN | MEMBER ...
-    # is_active = Column(Boolean, nullable=False, default=True) # on surveille?
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_token_created_at = Column(DateTime(timezone=True), nullable=True)

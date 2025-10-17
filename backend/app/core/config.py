@@ -1,6 +1,9 @@
 from typing import List
-from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
 from pydantic import field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     # DB components depuis .env
@@ -17,11 +20,14 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:3000"  # CSV dans .env
+    CORS_ORIGINS: str
+
     @field_validator("CORS_ORIGINS")
     @classmethod
     def _ensure_origins(cls, v: str) -> str:
-        # stocke brut, on donnera la version list dans property ci-dessous
+        # On conserve la chaîne telle quelle (ex: "https://a.com, https://b.com").
+        # La conversion en liste propre (["https://a.com", "https://b.com"])
+        # est faite plus bas dans la propriété `CORS_ORIGINS_LIST`.
         return v
 
     # Root seed
@@ -29,7 +35,9 @@ class Settings(BaseSettings):
     ROOT_PASSWORD: str | None = None
     ROOT_NAME: str | None = "Admin Root"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=False  # env_fill utile que en dev, case_sensitive passer a True en prod
+    )
 
     @property
     def DATABASE_URL(self) -> str:
@@ -38,5 +46,6 @@ class Settings(BaseSettings):
     @property
     def CORS_ORIGINS_LIST(self) -> List[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
+
 
 settings = Settings()

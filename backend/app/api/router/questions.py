@@ -15,9 +15,10 @@ async def list_questions(
     db: AsyncSession = Depends(get_db),
     accept_language: str | None = Header(None, alias="Accept-Language"),
 ):
+    # List the questions according to the requested scope.
     if scope == "per_survey":
         if survey_uid is None:
             raise HTTPException(status_code=400, detail="survey_uid is required for scope=per_survey")
         return await get_questions_by_survey(db, survey_uid, accept_language)
-    # scope=global est géré par /home/bootstrap pour éviter un 2ᵉ call initial
+    # scope=global est géré par /home/bootstrap pour éviter un 2eme call initial
     raise HTTPException(status_code=400, detail="scope=global: use /home/bootstrap")

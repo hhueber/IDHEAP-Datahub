@@ -1,3 +1,9 @@
+"""Pydantic schemas exposed by the API.
+
+Conventions:
+- Precise types (Optional, List, Dict, etc.)
+"""
+
 from typing import Dict, List, Optional
 
 
@@ -10,6 +16,8 @@ class SurveyLite(BaseModel):
 
 
 class HomeInfo(BaseModel):
+    """Host payload."""
+
     message: str
     surveys: List[SurveyLite]
     stats: Optional[Dict[str, int]] = None

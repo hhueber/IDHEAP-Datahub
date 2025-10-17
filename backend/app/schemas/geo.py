@@ -1,3 +1,9 @@
+"""Pydantic schemas exposed by the API.
+
+Conventions:
+- Precise types (Optional, List, Dict, etc.)
+"""
+
 from typing import Any, Dict, List, Optional
 
 

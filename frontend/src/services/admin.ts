@@ -1,3 +1,4 @@
+// Services d’administration : création et suppression de membres via l’API
 import { apiFetch } from "@/shared/apiFetch";
 import { normalizeFullName, normalizeEmail } from "@/utils/normalize";
 

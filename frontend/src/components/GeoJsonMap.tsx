@@ -33,7 +33,6 @@ function ExposeMapOnWindow() {
 
 type Props = {
   className?: string;
-  /** Optionnel : URL d’un PNG/JPEG géoréférencé (couvrant SWISS_BOUNDS) à mettre en fond */
   baseImageUrl?: string;
   baseImageOpacity?: number; // 0..1
 };
@@ -67,34 +66,33 @@ export default function GeoJsonMap({
   fillOpacity: 1,
 }), []);
 const lakesStyle = useMemo(() => ({
-  color: "#3b82f6",      // bleu (tailwind blue-500)
+  color: "#3b82f6",      // bleu
   weight: 1.2,
   // si préfère uniquement le contour mettre fillOpacity: 0
   fillColor: "#3b82f6",
   fillOpacity: 0.85,
 }), []);
 const cantonsStyle = useMemo(() => ({
-  color: "#ef4444",      // rouge (tailwind red-500)
+  color: "#ef4444",      // rouge
   weight: 1.2,
   fillOpacity: 0,
 }), []);
 const districtsStyle = useMemo(() => ({
-  color: "#7c3aed",      // violet (tailwind violet-600)
+  color: "#7c3aed",      // violet bleuter
   weight: 0.9,
   fillOpacity: 0,
 }), []);
-  // const communesStyle = useMemo(() => ({
-  //   color: "#16a34a",       // green-600
-  //   weight: 0.6,
-  //   fillColor: "#dcfce7",   // green-100
-  //   fillOpacity: 0.15,
-  // }), []);
+// const communesStyle = useMemo(() => ({
+//   color: "#16a34a",       // green
+//   weight: 0.6,
+//   fillOpacity: 0,
+// }), []);
 
   const country   = bundle?.country   ?? null;
   const lakes     = bundle?.lakes     ?? null;
   const cantons   = bundle?.cantons   ?? null;
   const districts = bundle?.districts ?? null;
-  // const communes  = (bundle as any)?.communes ?? null; // si/qd tu ajoutes la couche
+  // const communes  = (bundle as any)?.communes ?? null;
 
   return (
     <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
@@ -122,27 +120,26 @@ const districtsStyle = useMemo(() => ({
               url={baseImageUrl}
               bounds={SWISS_BOUNDS}
               opacity={baseImageOpacity}
-              // crossOrigin="anonymous"  // important pour l’export html2canvas
             />
           )}
         </Pane>
 
-        {/* Ordre: pays → lacs → cantons → districts → communes */}
+        {/* Ordre: pays -> lacs -> communes -> districts -> cantons*/}
         <Pane name="pane-country"  style={{ zIndex: 200 }}>
           {country   && <GeoJSON data={country as any}   style={() => countryStyle} pane="pane-country"  />}
         </Pane>
         <Pane name="pane-lakes"    style={{ zIndex: 300 }}>
           {lakes     && <GeoJSON data={lakes as any}     style={() => lakesStyle} pane="pane-lakes"    />}
         </Pane>
-        <Pane name="pane-districts" style={{ zIndex: 400 }}>
-          {districts && <GeoJSON data={districts as any} style={() => districtsStyle} pane="pane-districts" />}
-        </Pane>
-        <Pane name="pane-cantons"  style={{ zIndex: 500 }}>
-          {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
-        </Pane>
-        {/* <Pane name="pane-communes" style={{ zIndex: 600 }}>
+        {/* <Pane name="pane-communes" style={{ zIndex: 400 }}>
           {communes  && <GeoJSON data={communes as any}  style={() => communesStyle}  pane="pane-communes" />}
         </Pane> */}
+        <Pane name="pane-districts" style={{ zIndex: 500 }}>
+          {districts && <GeoJSON data={districts as any} style={() => districtsStyle} pane="pane-districts" />}
+        </Pane>
+        <Pane name="pane-cantons"  style={{ zIndex: 600 }}>
+          {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
+        </Pane>
         {/* Points villes et labels */}
         <CityMarkers />
       </MapContainer>

@@ -1,3 +1,4 @@
+// Page de connexion : authentifie l’utilisateur puis redirige vers le dashboard
 import { FormEvent, useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -13,11 +14,12 @@ export default function Login() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Si déjà connecté (cookie valide), on redirige
+  // Déjà connecté (ex: cookie valide) -> redirection immédiate
   useEffect(() => {
     if (isAuthenticated) navigate(from, { replace: true });
   }, [isAuthenticated, from, navigate]);
 
+  // Soumission du formulaire -> appel login + redirection
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setErr(null);
@@ -37,6 +39,7 @@ export default function Login() {
       <h2 className="text-2xl font-bold text-gray-900">Connexion</h2>
       <p className="text-gray-600 mt-2">Accès réservé.</p>
 
+      {/* Message d’erreur éventuel */}
       {err && <div className="mt-4 text-red-600">{err}</div>}
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>

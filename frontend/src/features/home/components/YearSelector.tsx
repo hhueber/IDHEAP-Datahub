@@ -20,7 +20,7 @@ export default function YearSelector({
 }: Props) {
   const { t } = useTranslation();
 
-  // défauts traduits si non fournis par le parent
+  // libellés par défaut (traduits) si non fournis par le parent
   const ph = placeholder ?? t("home.chooseYear");
   const gl = globalLabel ?? t("home.globalOption");
 
@@ -30,6 +30,7 @@ export default function YearSelector({
 
   const selected = valueUid != null ? surveys.find(s => s.uid === valueUid) ?? null : null;
 
+  // fermeture au clic extérieur ou ESC
   useEffect(() => {
     if (!open) return;
     const onClick = (e: MouseEvent) => {
@@ -46,6 +47,7 @@ export default function YearSelector({
     };
   }, [open]);
 
+  // sélectionner puis fermer
   const handleSelect = (s: SurveyLite) => { onChange?.(s); setOpen(false); };
 
   const list = [...surveys].sort((a, b) => {
@@ -55,6 +57,7 @@ export default function YearSelector({
     return (a.year || 0) - (b.year || 0);
   });
 
+  // étiquette d’affichage: “global” si NaN, sinon l’année
   const labelFor = (s: SurveyLite) => Number.isNaN(s.year) ? gl : String(s.year);
 
   return (
@@ -75,6 +78,7 @@ export default function YearSelector({
         </svg>
       </button>
 
+      {/* Liste déroulante */}
       {open && (
         <div
           ref={popRef}

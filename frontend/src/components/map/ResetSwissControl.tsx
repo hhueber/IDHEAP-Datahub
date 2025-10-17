@@ -19,6 +19,7 @@ export default function ResetSwissControl({
 }: Props) {
   const map = useMap();
 
+  // Control container + button
   useEffect(() => {
     const container = L.DomUtil.create("div", "leaflet-bar");
 
@@ -34,17 +35,20 @@ export default function ResetSwissControl({
     (btn as HTMLElement).style.alignItems = "center";
     (btn as HTMLElement).style.justifyContent = "center";
 
+    // Conteneur de contrôle + bouton
     L.DomEvent.disableClickPropagation(container);
     L.DomEvent.on(btn, "click", (e) => {
         L.DomEvent.preventDefault(e);
         map.fitBounds(bounds as any, { padding: [20, 20] });
     });
 
+    // Contrôle minimal du wrapper Leaflet
     const ResetControl = L.Control.extend({
         onAdd: () => container,
         onRemove: () => {},
     });
 
+    // Contrôle du montage, puis nettoyage lors du démontage/des modifications
     const ctrl = new ResetControl({ position });
     ctrl.addTo(map);
 

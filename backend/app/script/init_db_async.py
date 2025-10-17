@@ -1,8 +1,10 @@
 import asyncio
+import logging
 
 
 from app import models
 from app.core.config import settings
+from app.core.logging_config import configure_logging
 from app.db import AsyncSessionLocal, engine
 from app.models import Base
 from app.repositories.user_repo import any_admin_exists, create_user
@@ -10,20 +12,25 @@ from app.script.populate_db import populate_db
 from app.script.populate_geo_db import populate_async_geo
 
 
+logger = logging.getLogger(__name__)
+
+
 async def create_schema() -> None:
     async with engine.begin() as conn:
         # Drop toute les tables pour repartir de 0
+        logger.warning("Dropping all tables (destructive operation).")
         await conn.run_sync(Base.metadata.drop_all)
         # Cree les tables dans la base de données
+        logger.info("Creating all tables…")
         await conn.run_sync(Base.metadata.create_all)
-    print("All Database schema created.")
+    logger.info("Database schema created.")
 
     # Populate la base de donnée
     await populate_db()
-    print("Database Populated with sucess")
+    logger.info("Database populated successfully.")
 
     await populate_async_geo()
-    print("GeoJSON data populated with success")
+    logger.info("GeoJSON data populated with success")
 
     if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
         async with AsyncSessionLocal() as db:
@@ -32,12 +39,13 @@ async def create_schema() -> None:
                 admin = await create_user(
                     db, settings.ROOT_EMAIL, settings.ROOT_PASSWORD, settings.ROOT_NAME, role="ADMIN"
                 )
-                print("Root admin created:", admin.email)
+                logger.info("Root admin created:")
             else:
-                print("Admin user(s) already exist; skipping root seed.")
+                logger.info("Admin user(s) already exist; skipping root seed.")
     else:
-        print("ROOT_EMAIL or ROOT_PASSWORD not set; no root created.")
+        logger.info("ROOT_EMAIL or ROOT_PASSWORD not set; no root created.")
 
 
 if __name__ == "__main__":
+    configure_logging()
     asyncio.run(create_schema())

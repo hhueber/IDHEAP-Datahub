@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import type { JSX } from "react";
 
+// Garde d’accès par rôle : autorise l’accès seulement si l’utilisateur possède l’un des rôles requis
 export default function RequireRole({
   roles,
   children,

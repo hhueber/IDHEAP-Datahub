@@ -1,3 +1,4 @@
+// Formulaire de changement de mot de passe (utilisateur) avec validation simple et retours UI
 import React, { useState } from "react";
 import { changePassword } from "@/services/user";
 import { ApiError } from "@/shared/apiFetch";
@@ -8,18 +9,21 @@ export default function ChangePasswordPage() {
   const [msg, setMsg] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
 
+  // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setForm(f => ({ ...f, [name]: value }));
     setErr(null); setMsg(null);
   };
 
+  // Validation minimale côté client
   const validate = () => {
     if (form.new_password !== form.confirm) { setErr("La confirmation ne correspond pas"); return false; }
     if (form.new_password.length < 10) { setErr("Mot de passe trop court (min. 10 caractères)"); return false; }
     return true;
   };
 
+  // Soumission -> appel API + gestion des retours
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -52,8 +56,10 @@ export default function ChangePasswordPage() {
         <div><label className="block text-sm font-medium mb-1">Confirmation</label>
           <input name="confirm" type="password" value={form.confirm} onChange={onChange} className="w-full rounded-lg border px-3 py-2" />
         </div>
+        {/* Messages de succès / erreur */}
         {msg && <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-green-700 text-sm">{msg}</div>}
         {err && <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm">{err}</div>}
+        {/* Action */}
         <button type="submit" disabled={submitting} className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60">
           {submitting ? "Modification..." : "Modifier"}
         </button>

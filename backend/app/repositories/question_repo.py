@@ -3,7 +3,7 @@ from typing import Optional, Sequence
 
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
-from sqlalchemy import select, func, case
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -17,6 +17,7 @@ LANG_COL = {
     "en": "text_en",
 }
 
+
 def normalize_lang(lang_header: Optional[str]) -> str:
     if not lang_header:
         return "en"
@@ -24,9 +25,9 @@ def normalize_lang(lang_header: Optional[str]) -> str:
     base = code.split("-")[0] if "-" in code else code
     return base
 
+
 def _clean_lang_col(lang_col: ColumnElement) -> ColumnElement:
-    """
-    Nettoie la colonne de langue :
+    """Nettoie la colonne de langue :
     - NULL / '' / 'nan' (insensible à la casse) / 'Not available for the moment' -> ''
     - sinon TRIM(valeur)
     Pas de fallback vers label ici.
@@ -34,44 +35,45 @@ def _clean_lang_col(lang_col: ColumnElement) -> ColumnElement:
     trimmed = func.trim(lang_col)
     lower_trimmed = func.lower(trimmed)
     return case(
-        (trimmed.is_(None), ''),                         # NULL -> ''
-        (trimmed == '', ''),                             # vide -> ''
-        (lower_trimmed == 'nan', ''),                    # 'nan' -> ''
-        (lower_trimmed == 'not available for the moment', ''),  # phrase spéciale -> ''
-        else_=trimmed
+        (trimmed.is_(None), ""),  # NULL -> ''
+        (trimmed == "", ""),  # vide -> ''
+        (lower_trimmed == "nan", ""),  # 'nan' -> ''
+        (lower_trimmed == "not available for the moment", ""),  # phrase spéciale -> ''
+        else_=trimmed,
     )
 
-# GLOBALS
+
+# Globals
 async def list_global_questions(db: AsyncSession, lang: str) -> Sequence[tuple[int, str, str]]:
     """Récupère les questions globales.
-    et retourne [(uid, label, text), ...] dans la langue demandée (ou '' si pas dispo pour le text).
+
+    :return: [(uid, label, text), ...] dans la langue demandée (ou '' si pas dispo pour le text).
     """
     col_name = LANG_COL.get(lang)
     if not col_name:
-        text_expr = literal('', type_=QuestionGlobal.text_en.type).label("text")
+        text_expr = literal("", type_=QuestionGlobal.text_en.type).label("text")
     else:
         lang_col = getattr(QuestionGlobal, col_name)
         text_expr = _clean_lang_col(lang_col).label("text")
 
-    stmt = (
-        select(
-            QuestionGlobal.uid,
-            QuestionGlobal.label,
-            text_expr,
-        )
-        .order_by(QuestionGlobal.uid.asc())
-    )
+    stmt = select(
+        QuestionGlobal.uid,
+        QuestionGlobal.label,
+        text_expr,
+    ).order_by(QuestionGlobal.uid.asc())
     res = await db.execute(stmt)
     return res.all()  # (uid, label, text)
 
-# PER SURVEY
+
+# Per `Survey`
 async def list_questions_by_survey(db: AsyncSession, survey_uid: int, lang: str) -> Sequence[tuple[int, str, str]]:
     """Récupère les questions d'un sondage spécifique.
-    et retourne [(uid, label, text), ...] dans la langue demandée (ou '' si pas dispo pour le text).
+
+    :return: [(uid, label, text), ...] dans la langue demandée (ou '' si pas dispo pour le text).
     """
     col_name = LANG_COL.get(lang)
     if not col_name:
-        text_expr = literal('', type_=QuestionPerSurvey.text_en.type).label("text")
+        text_expr = literal("", type_=QuestionPerSurvey.text_en.type).label("text")
     else:
         lang_col = getattr(QuestionPerSurvey, col_name)
         text_expr = _clean_lang_col(lang_col).label("text")

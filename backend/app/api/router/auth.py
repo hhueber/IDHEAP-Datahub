@@ -20,9 +20,7 @@ router = APIRouter()
 
 @router.post("/login", response_model=Token)
 async def login(user_credentials: UserLogin, response: Response, db: AsyncSession = Depends(get_db)):
-    """
-    Authenticate user by email and return access token.
-    """
+    """Authenticate user by email and return access token."""
     user = await authenticate_user(db, user_credentials.email, user_credentials.password)
     if not user:
         raise HTTPException(
@@ -43,6 +41,7 @@ async def login(user_credentials: UserLogin, response: Response, db: AsyncSessio
     set_auth_cookie(response, access_token)
 
     total_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    # request to refresh this token in 55 minutes
     refresh_in = total_seconds - (5 * 60)
 
     return {"access_token": access_token, "token_type": "bearer", "refresh_in": refresh_in}
@@ -54,8 +53,7 @@ async def logout(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    logout:
+    """logout:
     - invalidates the current token by modifying last_token_created_at
     - deletes the “access_token” cookie
     """
@@ -74,12 +72,12 @@ async def refresh_access_token(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    """
-    Refreshes the access token:
+    """Refreshes the access token:
     - requires a valid token (get_current_user)
     - updates last_token_created_at
     - issues a new JWT and replaces the cookie
     - immediately invalidates the old token (thanks to the new iat in DB)
+    - request to refresh this token in 55 minutes
     """
     iat_dt = await mark_token_created(db, current_user.id)
 
@@ -93,6 +91,7 @@ async def refresh_access_token(
     set_auth_cookie(response, access_token)
 
     total_seconds = settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    # request to refresh this token in 55 minutes
     refresh_in = total_seconds - (5 * 60)
 
     return {

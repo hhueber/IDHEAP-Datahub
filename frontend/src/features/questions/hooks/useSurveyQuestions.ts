@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { questionsApi } from "@/features/questions/services/questionsApi";
 import type { QuestionItem } from "@/features/home/services/homeApi";
 
+/** Charge les questions d'un survey (réactif à l'ID et à la langue) */
 export function useSurveyQuestions(surveyUid: number | null) {
   const { i18n } = useTranslation();
   const lang = i18n.resolvedLanguage || i18n.language || "en";
@@ -31,7 +32,7 @@ export function useSurveyQuestions(surveyUid: number | null) {
       .finally(() => setLoading(false));
 
     return () => c.abort();
-  }, [surveyUid, lang]);
+  }, [surveyUid, lang]); // relance si l'ID ou la langue change
 
   return { data, loading, error };
 }
