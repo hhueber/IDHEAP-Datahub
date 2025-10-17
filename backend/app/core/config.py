@@ -24,7 +24,9 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS")
     @classmethod
     def _ensure_origins(cls, v: str) -> str:
-        # stocke brut, on donnera la version list dans property ci-dessous
+        # On conserve la chaîne telle quelle (ex: "https://a.com, https://b.com").
+        # La conversion en liste propre (["https://a.com", "https://b.com"])
+        # est faite plus bas dans la propriété `CORS_ORIGINS_LIST`.
         return v
 
     model_config = SettingsConfigDict(

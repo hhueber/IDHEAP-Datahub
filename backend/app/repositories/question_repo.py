@@ -27,8 +27,7 @@ def normalize_lang(lang_header: Optional[str]) -> str:
 
 
 def _clean_lang_col(lang_col: ColumnElement) -> ColumnElement:
-    """
-    Nettoie la colonne de langue :
+    """Nettoie la colonne de langue :
     - NULL / '' / 'nan' (insensible à la casse) / 'Not available for the moment' -> ''
     - sinon TRIM(valeur)
     Pas de fallback vers label ici.

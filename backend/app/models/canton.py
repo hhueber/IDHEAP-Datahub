@@ -14,7 +14,7 @@ class Canton(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
     name: Mapped[str] = mapped_column(String)
-    # ofs_id: Mapped[int] = mapped_column(Integer) # dans la version actuelle si on laisse cette ligne on a un crash mais cecis est corriger plus tard
+    # ofs_id: Mapped[int] = mapped_column(Integer) # TODO: la version actuelle si on laisse cette ligne on a un crash mais cecis est corriger plus tard
 
     name_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
