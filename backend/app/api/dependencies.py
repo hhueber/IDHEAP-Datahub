@@ -18,10 +18,9 @@ async def get_current_user(
     access_token: Optional[str] = Cookie(default=None, alias="access_token"),
     db: AsyncSession = Depends(get_db),
 ) -> UserModel:
-    """
-    - Verify the JWT (signature/exp) and retrieve (sub, iat).
-    - Reload the user by sub (id).
-    - Verify iat == users.last_token_created_at (int(timestamp)).
+    """Verify the JWT (signature/exp) and retrieve (sub, iat).
+    Reload the user by sub (id).
+    Verify iat == users.last_token_created_at (int(timestamp)).
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,

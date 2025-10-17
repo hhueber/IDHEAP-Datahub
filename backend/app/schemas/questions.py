@@ -1,11 +1,13 @@
+"""Pydantic schemas exposed by the API.
+
+Conventions:
+- Precise types (Optional, List, Dict, etc.)
+"""
+
 from typing import List, Optional
 
 
 from pydantic import BaseModel
-
-
-# Modèles Pydantic (schémas de données) utilisés par l'API FastAPI.
-# Ils décrivent la forme des objets échangés entre backend et frontend.
 
 
 class QuestionItem(BaseModel):
@@ -24,7 +26,7 @@ class SurveyBrief(BaseModel):
 
 
 class HomeBootstrap(BaseModel):
-    """Payload initial renvoyé par l'API pour la page d'accueil."""
+    """Initial payload returned by the API for the home page."""
 
     message: str
     surveys: List[SurveyBrief]

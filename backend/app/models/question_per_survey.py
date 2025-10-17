@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 
-from sqlalchemy import ForeignKey, Integer, String
+from sqlalchemy import Boolean, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -14,6 +14,8 @@ class QuestionPerSurvey(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String, unique=True, index=True)
     label: Mapped[str] = mapped_column(String)
+
+    private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     question_category_uid: Mapped[Optional[int]] = mapped_column(ForeignKey("question_category.uid"), nullable=True)
     question_category: Mapped[Optional["QuestionCategory"]] = relationship(

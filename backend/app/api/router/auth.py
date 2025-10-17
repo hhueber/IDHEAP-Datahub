@@ -53,10 +53,9 @@ async def logout(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    logout:
-        - invalidates the current token by modifying last_token_created_at
-        - deletes the “access_token” cookie
+    """logout:
+    - invalidates the current token by modifying last_token_created_at
+    - deletes the “access_token” cookie
     """
     # Invalider le token courant en changeant last_token_created_at
     await db.execute(update(UserModel).where(UserModel.id == current_user.id).values(last_token_created_at=None))
@@ -73,13 +72,12 @@ async def refresh_access_token(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    """
-    Refreshes the access token:
-        - requires a valid token (get_current_user)
-        - updates last_token_created_at
-        - issues a new JWT and replaces the cookie
-        - immediately invalidates the old token (thanks to the new iat in DB)
-        - request to refresh this token in 55 minutes
+    """Refreshes the access token:
+    - requires a valid token (get_current_user)
+    - updates last_token_created_at
+    - issues a new JWT and replaces the cookie
+    - immediately invalidates the old token (thanks to the new iat in DB)
+    - request to refresh this token in 55 minutes
     """
     iat_dt = await mark_token_created(db, current_user.id)
 

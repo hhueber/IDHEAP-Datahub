@@ -25,7 +25,9 @@ class Settings(BaseSettings):
     @field_validator("CORS_ORIGINS")
     @classmethod
     def _ensure_origins(cls, v: str) -> str:
-        # stocke brut, on donnera la version list dans property ci-dessous
+        # On conserve la chaîne telle quelle (ex: "https://a.com, https://b.com").
+        # La conversion en liste propre (["https://a.com", "https://b.com"])
+        # est faite plus bas dans la propriété `CORS_ORIGINS_LIST`.
         return v
 
     # Root seed
@@ -33,7 +35,9 @@ class Settings(BaseSettings):
     ROOT_PASSWORD: str | None = None
     ROOT_NAME: str | None = "Admin Root"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=False  # env_fill utile que en dev, case_sensitive passer a True en prod
+    )
 
     @property
     def DATABASE_URL(self) -> str:

@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def list_surveys_uid_year(db: AsyncSession) -> Sequence[tuple[int, int]]:
-    """Retourne [(uid, year), ...] trié par année."""
+    """Returns [(uid, year), ...] sorted by year."""
     stmt = select(Survey.uid, Survey.year).order_by(Survey.year.asc())
     res = await db.execute(stmt)
     return res.all()

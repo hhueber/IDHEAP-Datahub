@@ -1,3 +1,9 @@
+"""Pydantic schemas exposed by the API.
+
+Conventions:
+- Precise types (Optional, List, Dict, etc.)
+"""
+
 from typing import Literal, Optional
 
 
@@ -5,11 +11,8 @@ from app.schemas.validators import FullNameStr, PasswordStr
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 
-# pour les entrée API on garantie que les data on le format demander
-
-
 class UserCreate(BaseModel):
-    """Payload d'inscription/creation d'utilisateur (entrée API)."""
+    """User registration/creation payload (API input)."""
 
     email: EmailStr
     password: PasswordStr
@@ -18,7 +21,7 @@ class UserCreate(BaseModel):
 
 
 class UserBase(BaseModel):
-    """Données communes d'un utilisateur (base pour d'autres schémas)."""
+    """Common user data (basis for other schemas)."""
 
     email: EmailStr
     full_name: str
@@ -26,7 +29,7 @@ class UserBase(BaseModel):
 
 
 class User(UserBase):
-    """Représentation d'un utilisateur côté lecture (depuis le modèle DB)."""
+    """Representation of a read-side user (from the DB model)."""
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -34,13 +37,13 @@ class User(UserBase):
 
 
 class UserPublic(BaseModel):
-    """Vue publique minimale d'un utilisateur (exposition restreinte pour frontend)."""
+    """Minimum public view of a user (restricted exposure for frontend)."""
 
     role: str
 
 
 class UserDeleteIn(BaseModel):
-    """Payload pour demander la suppression d'un utilisateur (entrée API)."""
+    """Payload to request the deletion of a user (API entry)."""
 
     email: EmailStr
     full_name: FullNameStr
@@ -48,7 +51,7 @@ class UserDeleteIn(BaseModel):
 
 
 class PasswordChangeIn(BaseModel):
-    """Payload de changement de mot de passe (entrée API)."""
+    """Password change payload (API input)."""
 
     old_password: str
     new_password: PasswordStr
@@ -56,7 +59,7 @@ class PasswordChangeIn(BaseModel):
 
     @model_validator(mode="after")
     def _confirm_matches(self):
-        """Valide que `confirm` correspond à `new_password` si `confirm` est fourni."""
+        # Valide que `confirm` correspond à `new_password` si `confirm` est fourni.
         if self.confirm is not None and self.new_password != self.confirm:
             raise ValueError("La confirmation du mot de passe ne correspond pas")
         return self
