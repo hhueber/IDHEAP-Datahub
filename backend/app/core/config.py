@@ -27,7 +27,9 @@ class Settings(BaseSettings):
         # stocke brut, on donnera la version list dans property ci-dessous
         return v
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", case_sensitive=False)
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=False  # env_fill utile que en dev, case_sensitive passer a True en prod
+    )
 
     @property
     def DATABASE_URL(self) -> str:
