@@ -16,7 +16,7 @@ const langs: Lang[] = [
   { code: "fr", label: "FR", countryCode: "FR" },
   { code: "de", label: "DE", countryCode: "DE" },
   { code: "it", label: "IT", countryCode: "IT" },
-  { code: "rm", label: "RM", countryCode: "CH" }, // pas sur de cela (test)
+  { code: "rm", label: "RM", countryCode: "CH" },
 ];
 
 export default function Navbar() {
@@ -112,7 +112,7 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* PANNEAU MOBILE */}
+              {/* Panneau mobile */}
               {mobileOpen && (
                 <div
                   role="menu"
@@ -190,7 +190,7 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Liens visibles à partir de md */}
+            {/* Affiché uniquement quand la fenêtre fait au moins 768 px de large ; caché sur mobile */}
             <nav className="hidden md:flex items-center gap-1">
               <NavLinks />
             </nav>
