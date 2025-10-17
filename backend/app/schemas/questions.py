@@ -24,7 +24,7 @@ class SurveyBrief(BaseModel):
 
 
 class HomeBootstrap(BaseModel):
-    """Payload initial renvoyé par l'API pour la page d'accueil."""
+    """Initial payload returned by the API for the home page."""
 
     message: str
     surveys: List[SurveyBrief]

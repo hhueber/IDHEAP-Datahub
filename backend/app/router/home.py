@@ -10,6 +10,6 @@ router = APIRouter()
 
 @router.get("/bootstrap", response_model=HomeBootstrap)
 async def home_bootstrap(request: Request, db: AsyncSession = Depends(get_db)):
-    """Renvoie le payload initial de la page d’accueil (surveys + questions globales)."""
+    """Returns the initial payload of the home page (surveys + general questions)."""
     lang = request.headers.get("accept-language")
     return await get_home_bootstrap(db, lang)
