@@ -21,3 +21,4 @@ asyncpg==0.30.0
 # Configuration & security
 python-dotenv==1.0.1
 itsdangerous==2.1.2
+pydantic-settings==2.4.0

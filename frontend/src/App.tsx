@@ -1,7 +1,7 @@
 import { Outlet, Route, Routes } from "react-router-dom";
 import Navbar from "@/components/Navbar";
-import Home from "@/pages/Home";
-import Login from "@/pages/Login";
+import Home from "@/features/home/Home";
+import Login from "@/features/login/Login";
 import NotFound from "@/pages/NotFound";
 
 function Layout() {

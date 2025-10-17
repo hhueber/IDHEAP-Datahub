@@ -1,12 +1,12 @@
 # engine + session async
-from app.core.config import DATABASE_URL
+from app.core.config import settings
 from app.models import Base
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
 
 
 engine = create_async_engine(
-    DATABASE_URL,
+    settings.DATABASE_URL,
     echo=False,
     pool_pre_ping=True,
 )

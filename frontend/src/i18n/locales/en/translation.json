@@ -5,11 +5,23 @@
     "home": "Home", 
     "dataSoon": "Coming soon." },
   "home": {
-    "heroTitle": "GeoJSON Map Demo",
-    "heroSubtitle": "Public page with a map and a sticky navbar."
+    "heroTitle": "IDHEAP Data Explorer",
+    "heroSubtitle": "This site, developed by IDHEAP, allows you to explore data from Swiss municipalities. You can visualize changes over time: first choose a survey year, then the question you want to display. Some global questions cover several years; you can select them directly, then choose the display year.",
+    "openPanel": "Open panel",
+    "close": "Close",
+    "sectionDates": "Dates",
+    "sectionQuestions": "Questions",
+    "chooseYear": "Choose a year",
+    "globalOption": "Global",
+    "noGlobalQuestions": "No global questions available.",
+    "noQuestionsForSelection": "No questions for this selection."
   },
   "login": {
     "title": "Login",
     "subtitle": "Placeholder for the future auth."
+  },
+  "common": {
+    "loading": "Loading…",
+    "error": "Error"
   }
 }
