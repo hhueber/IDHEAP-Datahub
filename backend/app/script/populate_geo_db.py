@@ -50,7 +50,7 @@ async def populate_async_geo() -> None:
                             print(f">>>[{year}] INSERTING country shape")
                             has_country_populated = True
 
-                        # il y a quelque chose qui provoque une erreur doit etre regler dans Feat add geodata
+                        # TODO: il y a quelque chose qui provoque une erreur doit etre regler
                         # Insertion of commune data
                         # if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
                         #     for feature in src:
