@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 router = APIRouter()
 
 
-# TODO: ameliorer le temps de traitement (actuellement ~3s)
+# TODO: ameliorer le temps de traitement dans service/geo_service.py (actuellement ~5s)
 # Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056 (peut etre transformer dans script)
 @router.get("/by_year", response_model=GeoBundle)
 async def geo_by_year(

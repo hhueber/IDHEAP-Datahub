@@ -1,6 +1,8 @@
+// Boutons d’export de la carte Leaflet en PNG/PDF (capture de l’état visuel courant)
 import { useState } from "react";
 import { jsPDF } from "jspdf";
 
+// Déclenche un téléchargement à partir d’une DataURL (PNG ou autre)
 function downloadDataUrl(filename: string, dataUrl: string) {
   const a = document.createElement("a");
   a.href = dataUrl;
@@ -10,11 +12,12 @@ function downloadDataUrl(filename: string, dataUrl: string) {
   a.remove();
 }
 
+// Capture la carte Leaflet en image via le plugin simpleMapScreenshoter
 async function captureMapBlob(): Promise<Blob> {
   const map = (window as any).__leafletMap;
   if (!map) throw new Error("Carte indisponible.");
 
-  // instancier (une seule fois)
+  // Instancie le screenshoter une seule fois
   if (!map.__screenshoter) {
     // @ts-ignore – types manquent côté plugin
     map.__screenshoter = L.simpleMapScreenshoter({
@@ -24,8 +27,8 @@ async function captureMapBlob(): Promise<Blob> {
     }).addTo(map);
   }
 
+  // Retourne un Blob (pratique pour convertir ensuite en DataURL / PDF)
   const screenshoter = map.__screenshoter;
-  // "blob" = le plus pratique pour PNG/PDF ensuite
   const blob: Blob = await screenshoter.takeScreen("blob");
   return blob;
 }
@@ -33,6 +36,7 @@ async function captureMapBlob(): Promise<Blob> {
 export default function MapExportButtons() {
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
+  // Export PNG : capture -> Blob -> DataURL -> téléchargement
   const exportPNG = async () => {
     try {
       setBusy("png");
@@ -46,13 +50,14 @@ export default function MapExportButtons() {
     }
   };
 
+  // Export PDF : capture -> mesure image -> mise à l’échelle dans une page A4 -> save
   const exportPDF = async () => {
     try {
       setBusy("pdf");
       const blob = await captureMapBlob();
       const imgData = await blobToDataURL(blob);
 
-      // connaître la taille de l’image (pour garder les proportions)
+      // On mesure l’image source pour conserver les proportions
       const { width, height } = await getImageSize(imgData);
 
       const pdf = new jsPDF({
@@ -61,6 +66,7 @@ export default function MapExportButtons() {
         format: "a4",
       });
 
+      // Calcule le placement avec marges
       const pageW = pdf.internal.pageSize.getWidth();
       const pageH = pdf.internal.pageSize.getHeight();
       const margin = 24;
@@ -81,7 +87,7 @@ export default function MapExportButtons() {
     }
   };
 
-  // helpers
+  // Helpers de conversion
   function blobToDataURL(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -90,6 +96,7 @@ export default function MapExportButtons() {
       reader.readAsDataURL(blob);
     });
   }
+  // Récupère la taille intrinsèque d’une image (DataURL)
   function getImageSize(dataUrl: string): Promise<{ width: number; height: number }> {
     return new Promise((resolve, reject) => {
       const img = new Image();
@@ -99,6 +106,7 @@ export default function MapExportButtons() {
     });
 }
 
+  // Classes utilitaires pour les boutons
   const btn =
     "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium " +
     "bg-white ring-1 ring-indigo-200 text-indigo-700 " +
@@ -106,6 +114,7 @@ export default function MapExportButtons() {
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 " +
     "disabled:opacity-60 disabled:cursor-not-allowed transition";
 
+  // Icône spinner pendant l’export
   const spinner = (
     <svg className="h-4 w-4 animate-spin text-indigo-700" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" className="opacity-25" />
@@ -116,6 +125,7 @@ export default function MapExportButtons() {
   return (
     <section className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm shadow-gray-200 p-4">
       <h2 className="text-sm font-semibold text-gray-700 mb-2">Export</h2>
+      {/* Actions PNG / PDF */}
       <div className="flex flex-wrap gap-2">
         <button onClick={exportPNG} disabled={busy !== null} className={btn} title="Exporter en PNG">
           <svg viewBox="0 0 24 24" className="h-4 w-4 text-indigo-700" aria-hidden="true">
@@ -136,10 +146,13 @@ export default function MapExportButtons() {
         </button>
       </div>
 
+      {/* Note d’usage */}
+      {/* TODO: enlever le text hardcodé */}
       <p className="text-xs text-gray-500 mt-2">
         La capture reprend exactement la vue actuelle (zoom/déplacement) sans le menu.
       </p>
 
+      {/* Annonce ARIA de l’état d’export */}
       <div className="sr-only" aria-live="polite">
         {busy === "png" ? "Export PNG en cours" : busy === "pdf" ? "Export PDF en cours" : ""}
       </div>

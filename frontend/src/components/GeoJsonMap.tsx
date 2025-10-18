@@ -1,3 +1,5 @@
+// Carte GeoJSON Suisse : couches pays/lacs/communes/districts/cantons + marqueurs de villes,
+// contrôles utilitaires (reset zoom Suisse, capture écran).
 import { MapContainer, GeoJSON, Pane, ImageOverlay, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
@@ -7,7 +9,7 @@ import CityMarkers from "@/components/map/CityMarkers";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 
-// TODO: patch le abort
+/** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
   const map = useMap();
   useLayoutEffect(() => { map.invalidateSize(false); }, [map]);
@@ -23,6 +25,7 @@ function MapSizeFixer({ host }: { host: HTMLElement | null }) {
   return null;
 }
 
+/** Expose la carte Leaflet globalement (window.__leafletMap) pour d’autres modules (export…) */
 function ExposeMapOnWindow() {
   const map = useMap();
   useEffect(() => {
@@ -46,19 +49,36 @@ export default function GeoJsonMap({
   const [error, setError] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
+  /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
     const ctrl = new AbortController();
-    const currentYear = new Date().getFullYear(); // défaut
-    geoApi.getByYear(currentYear, ctrl.signal)
-      .then(setBundle)
-      .catch((e) => {
-        console.error("Failed to fetch Geo bundle:", e);
+    let alive = true; // évite setState après unmount
+
+    const currentYear = new Date().getFullYear();
+
+    geoApi
+      .getByYear(currentYear, ctrl.signal)
+      .then((b) => {
+        if (!alive) return;
+        setBundle(b);
+      })
+      .catch((e: any) => {
+        if (!alive) return;
+        // ignorer les annulations
+        const name = e?.name || "";
+        const msg = (e?.message || "").toLowerCase();
+        if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+
         setError(e?.message || "Failed to load geometry");
       });
-    return () => ctrl.abort();
+
+    return () => {
+      alive = false;
+      ctrl.abort();
+    };
   }, []);
 
-  // Styles
+  // Styles (couleurs/épaisseurs/fill) des différentes couches
   const countryStyle = useMemo(() => ({
   color: "#000000",      // frontière pays en noir
   weight: 1,
@@ -82,20 +102,22 @@ const districtsStyle = useMemo(() => ({
   weight: 0.9,
   fillOpacity: 0,
 }), []);
-// const communesStyle = useMemo(() => ({
-//   color: "#16a34a",       // green
-//   weight: 0.6,
-//   fillOpacity: 0,
-// }), []);
+const communesStyle = useMemo(() => ({
+  color: "#16a34a",       // green
+  weight: 0.6,
+  fillOpacity: 0,
+}), []);
 
+  // Alias pratiques
   const country   = bundle?.country   ?? null;
   const lakes     = bundle?.lakes     ?? null;
   const cantons   = bundle?.cantons   ?? null;
   const districts = bundle?.districts ?? null;
-  // const communes  = (bundle as any)?.communes ?? null;
+  const communes  = (bundle as any)?.communes ?? null;
 
   return (
     <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
+      {/* Ajustements UI Leaflet */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
@@ -108,12 +130,13 @@ const districtsStyle = useMemo(() => ({
         className="w-full h-full"
         scrollWheelZoom
       >
+        {/* Utilitaires : export écran, resize, bouton recadrage Suisse */}
         <ExposeMapOnWindow />
         <InstallScreenshoter showButton={true} />
         <MapSizeFixer host={hostRef.current} />
         <ResetSwissControl position="topleft" />
 
-        {/* Pane raster tout en bas */}
+        {/* Raster en fond (zIndex le plus bas) */}
         <Pane name="pane-raster" style={{ zIndex: 100 }}>
           {baseImageUrl && (
             <ImageOverlay
@@ -124,16 +147,16 @@ const districtsStyle = useMemo(() => ({
           )}
         </Pane>
 
-        {/* Ordre: pays -> lacs -> communes -> districts -> cantons*/}
+        {/* Ordre de superposition : pays -> lacs -> communes -> districts -> cantons*/}
         <Pane name="pane-country"  style={{ zIndex: 200 }}>
           {country   && <GeoJSON data={country as any}   style={() => countryStyle} pane="pane-country"  />}
         </Pane>
         <Pane name="pane-lakes"    style={{ zIndex: 300 }}>
           {lakes     && <GeoJSON data={lakes as any}     style={() => lakesStyle} pane="pane-lakes"    />}
         </Pane>
-        {/* <Pane name="pane-communes" style={{ zIndex: 400 }}>
+        <Pane name="pane-communes" style={{ zIndex: 400 }}>
           {communes  && <GeoJSON data={communes as any}  style={() => communesStyle}  pane="pane-communes" />}
-        </Pane> */}
+        </Pane>
         <Pane name="pane-districts" style={{ zIndex: 500 }}>
           {districts && <GeoJSON data={districts as any} style={() => districtsStyle} pane="pane-districts" />}
         </Pane>
@@ -144,6 +167,7 @@ const districtsStyle = useMemo(() => ({
         <CityMarkers />
       </MapContainer>
 
+      {/* Alerte d’erreur de chargement géo */}
       {error && (
         <div className="absolute top-2 left-2 z-[4000] rounded bg-red-600 text-white px-3 py-1 text-sm shadow">
           {error}

@@ -7,7 +7,7 @@ import { useBootstrap } from "@/features/home/hooks/useBootstrap";
 export default function Home() {
   const { t } = useTranslation();
 
-  // OUVERT PAR DÉFAUT
+  // Menu ouvert par défaut
   const [panelOpen, setPanelOpen] = useState(true);
 
   // appel bootstrap
@@ -20,14 +20,6 @@ export default function Home() {
       <div className="absolute inset-0">
         <GeoJsonMap className="absolute inset-0" />
       </div>
-
-      {/* PAS D’OVERLAY / BACKDROP : on a supprimé le click qui fermait */}
-      {/* {panelOpen && (
-        <div
-          onClick={() => setPanelOpen(false)}
-          className="fixed inset-0 z-[3000] bg-black/20"
-        />
-      )} */}
 
       {/* Bouton flottant (ouvre/ferme uniquement) */}
       <button

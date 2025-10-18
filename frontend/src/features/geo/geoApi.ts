@@ -1,7 +1,10 @@
+// Types utilitaires pour manipuler des données GeoJSON + appel API geo/by_year
 import { apiFetch } from "@/shared/apiFetch";
 
+// Coordonnée [longitude, latitude]
 export type Position = [number, number];
 
+// Géométrie GeoJSON (types courants)
 export type Geometry =
   | { type: "Polygon"; coordinates: Position[][] }
   | { type: "MultiPolygon"; coordinates: Position[][][] }
@@ -10,17 +13,20 @@ export type Geometry =
   | { type: "Point"; coordinates: Position }
   | { type: "MultiPoint"; coordinates: Position[] };
 
+// Entité GeoJSON générique (avec propriétés typées)
 export type Feature<P = Record<string, any>> = {
   type: "Feature";
   geometry: Geometry;
   properties: P;
 };
 
+// Collection GeoJSON
 export type FeatureCollection<P = Record<string, any>> = {
   type: "FeatureCollection";
   features: Feature<P>[];
 };
 
+// Métadonnées de l’année demandée (compteurs par couche)
 export type YearMeta = {
   requested: number;
   country?: number | null;
@@ -29,6 +35,7 @@ export type YearMeta = {
   districts?: number | null;
 };
 
+// Regroupe toutes les couches géo pour une année
 export type GeoBundle = {
   year: YearMeta;
   country?: FeatureCollection<{ uid: number }>;
@@ -37,8 +44,9 @@ export type GeoBundle = {
   districts?: FeatureCollection<{ uid: number; name: string; code?: string }>;
 };
 
+// Client API : récupère les couches géo pour une année donnée
 export const geoApi = {
-  // année courante par défaut (si non fournie)
+  // Si `year` est omise, le backend peut renvoyer l’année par défaut (courante)
   getByYear: (year?: number, signal?: AbortSignal) =>
     apiFetch<GeoBundle>("geo/by_year", {
       method: "GET",

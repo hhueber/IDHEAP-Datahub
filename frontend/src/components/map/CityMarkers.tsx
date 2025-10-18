@@ -1,3 +1,5 @@
+// Marqueurs des villes repères : place quelques grandes villes suisses
+// et affiche leur nom au survol (ou au clic sur mobile/tactile).
 import { CircleMarker, Tooltip, Pane } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 

@@ -1,9 +1,10 @@
+// Prépare la capture d’écran de la carte (utilisée ensuite pour exporter en PNG/PDF).
 import { useEffect } from "react";
 import { useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet-simple-map-screenshoter";
 
-// TS helper (optionnel)
+// TS helper (optionnel), on étend Window et Map avec nos refs internes
 declare global {
   interface Window { __leafletMap?: any }
 }

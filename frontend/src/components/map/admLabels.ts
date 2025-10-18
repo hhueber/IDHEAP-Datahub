@@ -1,3 +1,4 @@
+// Affiche une infobulle (étiquette) avec le nom du canton au survol
 import type { Feature, Geometry } from "geojson";
 import type { Layer } from "leaflet";
 

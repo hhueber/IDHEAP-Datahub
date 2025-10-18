@@ -45,6 +45,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
     country_fc = await _features_from_stmt(
         session,
         select(
+            # TODO: Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056
             geofunc.ST_AsGeoJSON(geofunc.ST_Transform(Country.geometry, 4326)).label("geojson"),
             Country.uid.label("uid"),
         ),
@@ -55,6 +56,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
     lakes_fc = await _features_from_stmt(
         session,
         select(
+            # TODO: Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056
             geofunc.ST_AsGeoJSON(geofunc.ST_Transform(Lake.geometry, 4326)).label("geojson"),
             Lake.uid.label("uid"),
             Lake.name.label("name"),
@@ -69,6 +71,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
         cantons_fc = await _features_from_stmt(
             session,
             select(
+                # TODO:
                 # Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056 (peut etre transformer dans script)
                 # si ok faire cela:
                 # geofunc.ST_AsGeoJSON(Country.geometry).label("geojson"),
@@ -90,6 +93,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
         districts_fc = await _features_from_stmt(
             session,
             select(
+                # TODO: Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056
                 geofunc.ST_AsGeoJSON(geofunc.ST_Transform(DistrictMap.geometry, 4326)).label("geojson"),
                 District.uid.label("uid"),
                 District.name.label("name"),
