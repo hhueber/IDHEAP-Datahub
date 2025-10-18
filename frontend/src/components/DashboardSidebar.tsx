@@ -76,7 +76,7 @@ function TreeItem({
     );
   }
 
-  // nœud parent -> bouton pliable + enfants
+  // noeud parent -> bouton pliable + enfants
   return (
     <div className="select-none">
       <button

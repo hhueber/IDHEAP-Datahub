@@ -10,6 +10,7 @@ export default function Dashboard() {
       <p className="text-gray-600">Bienvenue {user?.full_name} ({user?.role})</p>
 
       <button
+        type="button"
         onClick={logout}
         className="rounded bg-black text-white px-4 py-2 hover:opacity-90"
       >
