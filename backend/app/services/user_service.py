@@ -1,4 +1,7 @@
-from app.repositorie import user_repo
+import re
+
+
+from app.repositories import user_repo
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -7,3 +10,10 @@ async def ensure_root_exists(db: AsyncSession, root_email: str, root_password: s
         user = await user_repo.create_user(db, root_email, root_password, root_name, role="ADMIN")
         return user
     return None
+
+
+def normalize_name(s: str) -> str:
+    # - supprime espaces en trop (tout type d’espace)
+    # - trim
+    # - casse insensible (casefold > lower pour l’Unicode)
+    return re.sub(r"\s+", " ", s).strip().casefold()

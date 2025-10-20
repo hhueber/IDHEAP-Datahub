@@ -1,7 +1,7 @@
 import uuid
 
 
-from sqlalchemy import Boolean, Column, DateTime, Enum, String, Text
+from sqlalchemy import Column, DateTime, Enum, String, Text
 from sqlalchemy.sql import func
 
 
