@@ -51,7 +51,9 @@ export default function ChangePasswordPage() {
         </div>
         <div><label className="block text-sm font-medium mb-1">Nouveau mot de passe</label>
           <input name="new_password" type="password" value={form.new_password} onChange={onChange} className="w-full rounded-lg border px-3 py-2" />
-          <p className="text-xs text-gray-500 mt-1">≥10 caractères, 1 maj, 1 min, 1 chiffre, 1 spécial</p>
+          <p className="text-xs text-gray-500 mt-1">
+            Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).
+          </p>
         </div>
         <div><label className="block text-sm font-medium mb-1">Confirmation</label>
           <input name="confirm" type="password" value={form.confirm} onChange={onChange} className="w-full rounded-lg border px-3 py-2" />

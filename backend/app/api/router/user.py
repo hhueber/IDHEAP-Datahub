@@ -3,10 +3,10 @@ from app.core.security import get_password_hash, verify_password
 from app.db import get_db
 from app.models.user import User as UserModel
 from app.repositories.user_repo import create_user_record, delete_user_by_instance, update_user_password_hash
-from app.schemas.user import PasswordChangeIn, User, UserCreate, UserDeleteIn, UserPublic
+from app.schemas.user import PasswordChangeIn, Role, User, UserCreate, UserDeleteIn, UserPublic
+from app.services.user_service import normalize_name
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -24,7 +24,7 @@ def get_current_user_profile(current_user: UserModel = Depends(get_current_user)
 
 
 def ensure_admin(u: UserPublic):
-    if u.role != "ADMIN":
+    if u.role != Role.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
 
 
@@ -95,8 +95,7 @@ async def delete_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # permet de normaliser la string pour comparer les informations
-    norm = lambda s: " ".join(s.split()).strip().lower()
-    if norm(target.full_name) != norm(payload.full_name) or target.role != payload.role:
+    if normalize_name(target.full_name) != normalize_name(payload.full_name) or target.role != payload.role:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Les informations fournies ne correspondent pas à l'utilisateur",

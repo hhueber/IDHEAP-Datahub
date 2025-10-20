@@ -5,7 +5,6 @@ from typing import Optional
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User
 from sqlalchemy import select, update
-from sqlalchemy.exc import NoResultFound
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
