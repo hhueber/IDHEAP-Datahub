@@ -90,7 +90,7 @@ function TreeItem({
         aria-expanded={isOpen(item.key)}
       >
         <span className="flex items-center gap-2">{item.label}</span>
-        <span aria-hidden>{isOpen(item.key) ? "▾" : "▸"}</span>
+        <span aria-hidden>{isOpen(item.key) ? "\u25BE" : "\u25B8"}</span>
       </button>
 
       {isOpen(item.key) && hasChildren && (
@@ -126,66 +126,66 @@ export default function DashboardSidebar() {
     {
       key: "survey",
       label: "Survey",
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "MEMBER"],
       children: [
-        { key: "survey-all", label: "All", to: "/admin/surveys", roles: ["ADMIN"] },
-        { key: "survey-edit", label: "New / Edit", to: "/admin/surveys/new", roles: ["ADMIN"] },
-        { key: "survey-show", label: "Show", to: "/admin/surveys/show", roles: ["ADMIN"] },
+        { key: "survey-all", label: "All", to: "/admin/surveys", roles: ["ADMIN", "MEMBER"] },
+        { key: "survey-edit", label: "New / Edit", to: "/admin/surveys/new", roles: ["ADMIN", "MEMBER"] },
+        { key: "survey-show", label: "Show", to: "/admin/surveys/show", roles: ["ADMIN", "MEMBER"] },
       ],
     },
     {
       key: "qa",
       label: "Questions & Answers",
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "MEMBER"],
       children: [
         {
           key: "qps",
           label: "QuestionPerSurvey",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "qps-all", label: "All", to: "/admin/qps", roles: ["ADMIN"] },
-            { key: "qps-edit", label: "New / Edit", to: "/admin/qps/new", roles: ["ADMIN"] },
-            { key: "qps-show", label: "Show", to: "/admin/qps/show", roles: ["ADMIN"] },
+            { key: "qps-all", label: "All", to: "/admin/qps", roles: ["ADMIN", "MEMBER"] },
+            { key: "qps-edit", label: "New / Edit", to: "/admin/qps/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "qps-show", label: "Show", to: "/admin/qps/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "qglobal",
           label: "QuestionGlobal",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "qglobal-all", label: "All", to: "/admin/qglobal", roles: ["ADMIN"] },
-            { key: "qglobal-edit", label: "New / Edit", to: "/admin/qglobal/new", roles: ["ADMIN"] },
-            { key: "qglobal-show", label: "Show", to: "/admin/qglobal/show", roles: ["ADMIN"] },
+            { key: "qglobal-all", label: "All", to: "/admin/qglobal", roles: ["ADMIN", "MEMBER"] },
+            { key: "qglobal-edit", label: "New / Edit", to: "/admin/qglobal/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "qglobal-show", label: "Show", to: "/admin/qglobal/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "qcat",
           label: "QuestionCategory",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "qcat-all", label: "All", to: "/admin/qcat", roles: ["ADMIN"] },
-            { key: "qcat-edit", label: "New / Edit", to: "/admin/qcat/new", roles: ["ADMIN"] },
-            { key: "qcat-show", label: "Show", to: "/admin/qcat/show", roles: ["ADMIN"] },
+            { key: "qcat-all", label: "All", to: "/admin/qcat", roles: ["ADMIN", "MEMBER"] },
+            { key: "qcat-edit", label: "New / Edit", to: "/admin/qcat/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "qcat-show", label: "Show", to: "/admin/qcat/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "answer",
           label: "Answer",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "answer-all", label: "All", to: "/admin/answers", roles: ["ADMIN"] },
-            { key: "answer-edit", label: "New / Edit", to: "/admin/answers/new", roles: ["ADMIN"] },
-            { key: "answer-show", label: "Show", to: "/admin/answers/show", roles: ["ADMIN"] },
+            { key: "answer-all", label: "All", to: "/admin/answers", roles: ["ADMIN", "MEMBER"] },
+            { key: "answer-edit", label: "New / Edit", to: "/admin/answers/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "answer-show", label: "Show", to: "/admin/answers/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "option",
           label: "Option",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "option-all", label: "All", to: "/admin/options", roles: ["ADMIN"] },
-            { key: "option-edit", label: "New / Edit", to: "/admin/options/new", roles: ["ADMIN"] },
-            { key: "option-show", label: "Show", to: "/admin/options/show", roles: ["ADMIN"] },
+            { key: "option-all", label: "All", to: "/admin/options", roles: ["ADMIN", "MEMBER"] },
+            { key: "option-edit", label: "New / Edit", to: "/admin/options/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "option-show", label: "Show", to: "/admin/options/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
       ],
@@ -193,33 +193,33 @@ export default function DashboardSidebar() {
     {
       key: "places",
       label: "Places",
-      roles: ["ADMIN"],
+      roles: ["ADMIN", "MEMBER"],
       children: [
         {
           key: "commune",
           label: "Commune",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "commune-all", label: "All", to: "/admin/places/communes", roles: ["ADMIN"] },
-            { key: "commune-show", label: "Show", to: "/admin/places/communes/show", roles: ["ADMIN"] },
+            { key: "commune-all", label: "All", to: "/admin/places/communes", roles: ["ADMIN", "MEMBER"] },
+            { key: "commune-show", label: "Show", to: "/admin/places/communes/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "district",
           label: "District",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "district-all", label: "All", to: "/admin/places/districts", roles: ["ADMIN"] },
-            { key: "district-show", label: "Show", to: "/admin/places/districts/show", roles: ["ADMIN"] },
+            { key: "district-all", label: "All", to: "/admin/places/districts", roles: ["ADMIN", "MEMBER"] },
+            { key: "district-show", label: "Show", to: "/admin/places/districts/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "canton",
           label: "Canton",
-          roles: ["ADMIN"],
+          roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "canton-all", label: "All", to: "/admin/places/cantons", roles: ["ADMIN"] },
-            { key: "canton-show", label: "Show", to: "/admin/places/cantons/show", roles: ["ADMIN"] },
+            { key: "canton-all", label: "All", to: "/admin/places/cantons", roles: ["ADMIN", "MEMBER"] },
+            { key: "canton-show", label: "Show", to: "/admin/places/cantons/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
       ],
