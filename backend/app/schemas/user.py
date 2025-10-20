@@ -4,11 +4,17 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
+from enum import Enum
 from typing import Literal, Optional
 
 
 from app.schemas.validators import FullNameStr, PasswordStr
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
+
+
+class Role(str, Enum):
+    ADMIN = "ADMIN"
+    MEMBER = "MEMBER"
 
 
 class UserCreate(BaseModel):
@@ -17,7 +23,7 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: PasswordStr
     full_name: FullNameStr
-    role: Literal["ADMIN", "MEMBER"] = "MEMBER"
+    role: Role = Role.MEMBER
 
 
 class UserBase(BaseModel):
@@ -33,13 +39,13 @@ class User(UserBase):
 
     model_config = ConfigDict(from_attributes=True)
 
-    role: str  # ADMIN | MEMBER ...
+    role: Role  # ADMIN | MEMBER ...
 
 
 class UserPublic(BaseModel):
     """Minimum public view of a user (restricted exposure for frontend)."""
 
-    role: str
+    role: Role
 
 
 class UserDeleteIn(BaseModel):
