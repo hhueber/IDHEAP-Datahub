@@ -14,7 +14,7 @@ export default function Home() {
   const { data, loading, error } = useBootstrap();
 
   return (
-    // plein écran (le parent <main> est en absolute inset-0 via le layout)
+    // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
     <section className="absolute inset-0">
       {/* Carte en plein écran */}
       <div className="absolute inset-0">
@@ -33,31 +33,26 @@ export default function Home() {
         "
         style={{
           right: "max(env(safe-area-inset-right), 1rem)",
-          // le bouton se décale à gauche de la largeur du drawer quand ouvert
+          // se décale à gauche de la largeur du drawer quand ouvert
           transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
         }}
         aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
       >
-        {!panelOpen ? (
-          // hamburger
-          <div className="relative w-6 h-6">
-            <span className="absolute left-0 right-0 top-[4px] h-0.5 bg-current rounded-sm" />
-            <span className="absolute left-0 right-0 top-[10px] h-0.5 bg-current rounded-sm" />
-            <span className="absolute left-0 right-0 top-[16px] h-0.5 bg-current rounded-sm" />
-          </div>
-        ) : (
-          // flèche
-          <svg viewBox="0 0 24 24" className="w-6 h-6" aria-hidden="true">
-            <path
-              d="M15 6l-6 6 6 6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          className={`w-6 h-6 transition-transform duration-200 ease-out ${panelOpen ? "" : "-scale-x-100"}`}
+        >
+          {/* chevron "gauche" de base ; on le flippe à droite quand panelOpen === false */}
+          <path
+            d="M9 6l6 6-6 6" // si on veux inverser la fleche changer en "M15 6l-6 6 6 6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
       </button>
 
       {/* Drawer (ouvert/fermé seulement via le bouton) */}

@@ -44,7 +44,7 @@ export default function Navbar() {
 
   return (
     <>
-      {/* BOUTON FLOTTANT (logo) */}
+      {/* Bouton flottant (c'est le logo) */}
       <button
         ref={btnRef}
         type="button"
@@ -71,7 +71,7 @@ export default function Navbar() {
         )}
       </button>
 
-      {/* DRAWER + OVERLAY (au-dessus du reste) */}
+      {/* Drawer + Overlay (au-dessus du reste de la map) */}
       {open && (
         <div className="fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} aria-hidden />
@@ -83,7 +83,7 @@ export default function Navbar() {
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
                        bg-white/95 backdrop-blur p-3"
           >
-            {/* LANGUES */}
+            {/* Langues */}
             <div className="p-2 mb-2 rounded-xl bg-white/80">
               <div className="flex items-center gap-2 px-1 py-1">
                 <ReactCountryFlag countryCode={current.countryCode} svg style={{ width: "1.2em", height: "1.2em" }} />
@@ -110,7 +110,7 @@ export default function Navbar() {
               </div>
             </div>
 
-            {/* LIENS */}
+            {/* Liens */}
             <div className="space-y-1">
               <Link
                 to="/"

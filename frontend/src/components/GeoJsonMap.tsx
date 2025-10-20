@@ -123,7 +123,6 @@ const communesStyle = useMemo(() => ({
         [data-map-root] .leaflet-left { left: 12px; }
         [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
       `}</style>
-
       <MapContainer
         center={[46.8182, 8.2275]}
         zoom={7}
