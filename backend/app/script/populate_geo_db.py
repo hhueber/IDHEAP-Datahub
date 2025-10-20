@@ -78,7 +78,7 @@ async def populate_async_geo() -> None:
                                 db_commune_map = CommuneMap(
                                     year=year,
                                     commune=db_commune,
-                                    type=feature["geometry"]["type"],
+                                    geo_data_type=feature["geometry"]["type"],
                                     geometry=from_shape(multi, srid=2056),
                                 )
                                 print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
@@ -98,7 +98,7 @@ async def populate_async_geo() -> None:
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 db_canton_map = CantonMap(
                                     year=year,
-                                    type=feature["geometry"]["type"],
+                                    geo_data_type=feature["geometry"]["type"],
                                     geometry=from_shape(multi, srid=2056),
                                     canton=db_canton,
                                 )
@@ -143,7 +143,7 @@ async def populate_async_geo() -> None:
                                 db_district_map = DistrictMap(
                                     year=year,
                                     geometry=from_shape(multi, srid=2056),
-                                    type=feature["geometry"]["type"],
+                                    geo_data_type=feature["geometry"]["type"],
                                     district=db_district,
                                 )
                                 print(f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}")
