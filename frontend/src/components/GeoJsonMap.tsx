@@ -52,7 +52,14 @@ export default function GeoJsonMap({ className = "absolute inset-0" }: { classNa
   );
 
   return (
-    <div ref={hostRef} className={`${className} overflow-hidden`}>
+    <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
+      {/* Ajustements UI Leaflet */}
+      <style>{`
+        [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
+        [data-map-root] .leaflet-left { left: 12px; }
+        [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
+      `}</style>
+      
       <MapContainer
         center={[46.8182, 8.2275]} // centre CH
         zoom={7}
