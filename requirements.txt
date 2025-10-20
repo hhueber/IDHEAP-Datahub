@@ -21,6 +21,7 @@ GeoAlchemy2==0.18.0
 fiona==1.10.1
 shapely==2.1.1
 requests==2.32.5
+pyproj==3.7.2
 
 # Configuration & security
 python-dotenv==1.0.1
