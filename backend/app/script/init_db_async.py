@@ -15,6 +15,9 @@ from app.script.populate_geo_db import populate_async_geo
 logger = logging.getLogger(__name__)
 
 
+logger = logging.getLogger(__name__)
+
+
 async def create_schema() -> None:
     async with engine.begin() as conn:
         # Drop toute les tables pour repartir de 0
