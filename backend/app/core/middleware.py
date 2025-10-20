@@ -6,6 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware
 def setup_middlewares(app):
     app.add_middleware(SessionMiddleware, secret_key=settings.API_SECRET)
 
+    # Politique CORS (origines autorisées, envoi de cookies, toutes méthodes/headers)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.CORS_ORIGINS_LIST,

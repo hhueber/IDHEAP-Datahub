@@ -3,9 +3,11 @@ import logging
 
 
 from app import models
+from app.core.config import settings
 from app.core.logging_config import configure_logging
-from app.db import engine
+from app.db import AsyncSessionLocal, engine
 from app.models import Base
+from app.repositories.user_repo import any_admin_exists, create_user
 from app.script.populate_db import populate_db
 
 
@@ -25,6 +27,19 @@ async def create_schema() -> None:
     # Populate la base de donnée
     await populate_db()
     logger.info("Database populated successfully.")
+
+    if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
+        async with AsyncSessionLocal() as db:
+            admin_exists = await any_admin_exists(db)
+            if not admin_exists:
+                admin = await create_user(
+                    db, settings.ROOT_EMAIL, settings.ROOT_PASSWORD, settings.ROOT_NAME, role="ADMIN"
+                )
+                logger.info("Root admin created:")
+            else:
+                logger.info("Admin user(s) already exist; skipping root seed.")
+    else:
+        logger.info("ROOT_EMAIL or ROOT_PASSWORD not set; no root created.")
 
 
 if __name__ == "__main__":

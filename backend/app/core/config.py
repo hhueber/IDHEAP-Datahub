@@ -1,8 +1,11 @@
-from typing import List
+from typing import List, Literal
 
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+SameSite = Literal["lax", "strict", "none"]
 
 
 class Settings(BaseSettings):
@@ -17,6 +20,11 @@ class Settings(BaseSettings):
     API_SECRET: str
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    # Cookie auth
+    COOKIE_SECURE: bool = False  # True en prod (HTTPS)
+    COOKIE_SAMESITE: SameSite = "lax"
 
     # CORS
     CORS_ORIGINS: str
@@ -28,6 +36,11 @@ class Settings(BaseSettings):
         # La conversion en liste propre (["https://a.com", "https://b.com"])
         # est faite plus bas dans la propriété `CORS_ORIGINS_LIST`.
         return v
+
+    # Root seed
+    ROOT_EMAIL: str | None = None
+    ROOT_PASSWORD: str | None = None
+    ROOT_NAME: str | None = "Admin Root"
 
     model_config = SettingsConfigDict(
         env_file=".env", case_sensitive=False  # env_fill utile que en dev, case_sensitive passer a True en prod
