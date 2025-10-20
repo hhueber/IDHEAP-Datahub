@@ -9,6 +9,10 @@ from app.db import AsyncSessionLocal, engine
 from app.models import Base
 from app.repositories.user_repo import any_admin_exists, create_user
 from app.script.populate_db import populate_db
+from app.script.populate_geo_db import populate_async_geo
+
+
+logger = logging.getLogger(__name__)
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +31,9 @@ async def create_schema() -> None:
     # Populate la base de donnée
     await populate_db()
     logger.info("Database populated successfully.")
+
+    await populate_async_geo()
+    logger.info("Database populated successfully with geo data.")
 
     if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
         async with AsyncSessionLocal() as db:
