@@ -30,6 +30,7 @@ async def populate_db() -> None:
                 db_canton = Canton(
                     code=code,
                     name=lang["en"],
+                    ofs_id=lang["ofs_id"],
                     name_de=lang["de"],
                     name_en=lang["en"],
                     name_fr=lang["fr"],
