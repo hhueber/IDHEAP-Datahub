@@ -46,7 +46,7 @@ async def populate_db() -> None:
         row_number = 0
         async with session.begin():
 
-            communes = pd.read_excel("./app/data/EtatCommunes.xlsx", index_col=4, header=0)
+            communes = pd.read_excel("../data/EtatCommunes.xlsx", index_col=4, header=0)
             communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
             communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
 
@@ -104,7 +104,7 @@ async def populate_db() -> None:
                 print(f">> Inserting survey {year}")
 
                 gsb = pd.read_excel(
-                    "./app/data/CodeBook_Cleaned.xlsx",
+                    "../data/CodeBook_Cleaned.xlsx",
                     sheet_name=str(year),
                     index_col=1,
                     header=0,
@@ -126,7 +126,7 @@ async def populate_db() -> None:
 
         # Global question and categories
         async with session.begin():
-            gbd = pd.read_csv("./app/data/QuestionsGlobales.csv", index_col=None, header=0)
+            gbd = pd.read_csv("../data/QuestionsGlobales.csv", index_col=None, header=0)
 
             for index, row in gbd.iterrows():
                 if not pd.isnull(row["category_label"]):
@@ -158,7 +158,7 @@ async def populate_db() -> None:
 
         # Answer
         async with session.begin():
-            crc = pd.read_csv("./app/data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
+            crc = pd.read_csv("../data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
 
             for index, row in crc.iterrows():
 
@@ -203,7 +203,7 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv("./app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
+            GSB_2023 = pd.read_csv("../data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
 
