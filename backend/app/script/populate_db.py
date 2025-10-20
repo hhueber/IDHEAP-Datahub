@@ -1,3 +1,6 @@
+import os
+
+
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
 from app.models import QuestionGlobal
@@ -17,6 +20,8 @@ Script for populate the database.
 
 All the data will be from the folder ./data
 """
+
+BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
 
 
 async def populate_db() -> None:
@@ -45,8 +50,7 @@ async def populate_db() -> None:
         # District and commune
         row_number = 0
         async with session.begin():
-
-            communes = pd.read_excel("../data/EtatCommunes.xlsx", index_col=4, header=0)
+            communes = pd.read_excel(os.path.join(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
             communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
             communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
 
@@ -104,7 +108,7 @@ async def populate_db() -> None:
                 print(f">> Inserting survey {year}")
 
                 gsb = pd.read_excel(
-                    "../data/CodeBook_Cleaned.xlsx",
+                    os.path.join(BASE_DIR, "data", "CodeBook_Cleaned.xlsx"),
                     sheet_name=str(year),
                     index_col=1,
                     header=0,
@@ -126,7 +130,7 @@ async def populate_db() -> None:
 
         # Global question and categories
         async with session.begin():
-            gbd = pd.read_csv("../data/QuestionsGlobales.csv", index_col=None, header=0)
+            gbd = pd.read_csv(os.path.join(BASE_DIR, "data", "QuestionsGlobales.csv"), index_col=None, header=0)
 
             for index, row in gbd.iterrows():
                 if not pd.isnull(row["category_label"]):
@@ -158,7 +162,7 @@ async def populate_db() -> None:
 
         # Answer
         async with session.begin():
-            crc = pd.read_csv("../data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
+            crc = pd.read_csv(os.path.join(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
 
             for index, row in crc.iterrows():
 
@@ -203,7 +207,7 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv("../data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
+            GSB_2023 = pd.read_csv(os.path.join(BASE_DIR, "data", "GSB 2023_V1.csv"), index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
 
