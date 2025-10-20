@@ -1,8 +1,11 @@
-from typing import List
+from typing import List, Literal
 
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+SameSite = Literal["lax", "strict", "none"]
 
 
 class Settings(BaseSettings):
@@ -18,6 +21,10 @@ class Settings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
+
+    # Cookie auth
+    COOKIE_SECURE: bool = False  # True en prod (HTTPS)
+    COOKIE_SAMESITE: SameSite = "lax"
 
     # CORS
     CORS_ORIGINS: str

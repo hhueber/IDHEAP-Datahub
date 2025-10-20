@@ -1,4 +1,4 @@
-# securiter pour eviter l'injection
+# Sécurité pour éviter l'injection
 from typing import Annotated
 import re
 
