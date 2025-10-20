@@ -13,7 +13,11 @@ class Lake(Base):
     __tablename__ = "lake"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String, unique=True, index=True)
-    name: Mapped[str] = mapped_column(String, unique=True)
+    code: Mapped[str] = mapped_column(String)
+    name: Mapped[str] = mapped_column(String)
 
-    geometry: Mapped[Geometry] = mapped_column(Geometry)
+    lake_map: Mapped[List["LakeMap"]] = relationship(
+        "LakeMap",
+        back_populates="lake",
+        cascade="all, delete-orphan",
+    )

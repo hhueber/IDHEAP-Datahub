@@ -4,6 +4,8 @@ import os
 import tempfile as tf
 
 
+from app.db import SessionLocal
+from app.models import Canton, CantonMap, Commune, CommuneMap, Country, District, DistrictMap
 from geoalchemy2.shape import from_shape
 from shapely.geometry import shape
 from shapely.ops import transform
@@ -11,10 +13,6 @@ from sqlalchemy import select
 import fiona
 import requests
 import shapely.wkb
-
-
-from backend.app.db import SessionLocal
-from backend.app.models import Canton, CantonMap, Commune, CommuneMap, Country, District, DistrictMap
 
 
 async def populate_async_geo() -> None:
