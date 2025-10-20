@@ -1,5 +1,5 @@
 # Only for launching the database; serves no other purpose.
-FROM python:3.11-slim
+FROM python:3.12-slim
 
 WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1

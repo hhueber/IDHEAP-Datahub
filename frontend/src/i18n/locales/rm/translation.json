@@ -1,0 +1,17 @@
+{
+  "nav": { "language": "Lingua", "data": "Datas", "home": "Chasa", "dataSoon": "Prest disponibel." },
+  "home": {
+    "heroTitle": "IDHEAP Data Explorer",
+    "heroSubtitle": "Quest sit, sviluppà da l’IDHEAP, pussibilitescha da explorar las datas da las vischnancas svizras. Ins po visualizar l’evoluziun en il temp: tschernai l’emprim in onn da questiunari e lura la dumonda che vus vulais vesair. Intginas dumondas globalas cumpiglian plirs onns; quellas pon ins tscherner directamain ed inditgar lura l’onn da visualisaziun.",
+    "openPanel": "Avrir il panel",
+    "close": "Serrar",
+    "sectionDates": "Onns",
+    "sectionQuestions": "Dumondas",
+    "chooseYear": "Tscherner in onn",
+    "globalOption": "Global",
+    "noGlobalQuestions": "Naginas dumondas globalas disponiblas.",
+    "noQuestionsForSelection": "Naginas dumondas per questa selecziun."
+  },
+  "login": { "title": "S'annunziar", "subtitle": "Reservà per tia futura autentificaziun." },
+  "common": { "loading": "Chargi…", "error": "Sbagl" }
+}

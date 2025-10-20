@@ -1,0 +1,25 @@
+{
+  "nav": { 
+    "language": "Lingua", 
+    "data": "Dati",
+    "home": "Home", 
+    "dataSoon": "Disponibile presto."
+  },
+  "home": {
+    "heroTitle": "IDHEAP Data Explorer",
+    "heroSubtitle": "Questo sito, realizzato dall’IDHEAP, consente di esplorare i dati dei comuni svizzeri. È possibile visualizzare l’evoluzione nel tempo: scegliete prima un anno di questionario e poi la domanda che desiderate visualizzare. Alcune domande globali coprono più anni; potete selezionarle direttamente e poi scegliere l’anno di visualizzazione.",
+    "openPanel": "Apri pannello",
+    "close": "Chiudi",
+    "sectionDates": "Anni",
+    "sectionQuestions": "Domande",
+    "chooseYear": "Scegli un anno",
+    "globalOption": "Globale",
+    "noGlobalQuestions": "Nessuna domanda globale disponibile.",
+    "noQuestionsForSelection": "Nessuna domanda per questa selezione."
+  },
+  "login": {
+    "title": "Accesso",
+    "subtitle": "Spazio riservato per la futura autenticazione."
+  },
+  "common": { "loading": "Caricamento…", "error": "Errore" }
+}

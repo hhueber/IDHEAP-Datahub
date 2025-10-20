@@ -1,0 +1,17 @@
+{
+  "nav": { "language": "Sprache", "data": "Daten", "home": "Startseite", "dataSoon": "Kommt bald." },
+  "home": {
+    "heroTitle": "IDHEAP Data Explorer",
+    "heroSubtitle": "Diese Seite, entwickelt vom IDHEAP, ermöglicht es, Daten der Schweizer Gemeinden zu erkunden. Sie können die Entwicklung im Zeitverlauf visualisieren: Wählen Sie zuerst ein Fragebogenjahr und dann die gewünschte Frage. Einige globale Fragen decken mehrere Jahre ab; Sie können diese direkt auswählen und anschließend das Anzeigjahr bestimmen.",
+    "openPanel": "Panel öffnen",
+    "close": "Schließen",
+    "sectionDates": "Jahre",
+    "sectionQuestions": "Fragen",
+    "chooseYear": "Jahr wählen",
+    "globalOption": "Global",
+    "noGlobalQuestions": "Keine globalen Fragen verfügbar.",
+    "noQuestionsForSelection": "Keine Fragen für diese Auswahl."
+  },
+  "login": { "title": "Anmelden", "subtitle": "Platzhalter für die zukünftige Auth." },
+  "common": { "loading": "Laden…", "error": "Fehler" }
+}

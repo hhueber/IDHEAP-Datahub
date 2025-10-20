@@ -1,15 +1,32 @@
 # engine + session async
+from app.core.config import settings
+from app.models import Base
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
 
 
-from backend.app.core.config import DATABASE_URL
-
-
-engine = create_async_engine(DATABASE_URL, echo=False, pool_pre_ping=True, plugins=["geoalchemy2"])
-
-SessionLocal = async_sessionmaker(
-    bind=engine,
-    expire_on_commit=False,
-    class_=AsyncSession,
-    autoflush=False,
+engine = create_async_engine(
+    settings.DATABASE_URL,
+    echo=False,
+    pool_pre_ping=True,
 )
+
+AsyncSessionLocal = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autoflush=False,
+    autocommit=False,
+)
+
+SessionLocal = AsyncSessionLocal
+
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        yield session
+
+
+async def ping_db():
+    async with engine.connect() as conn:
+        await conn.execute(text("SELECT 1"))

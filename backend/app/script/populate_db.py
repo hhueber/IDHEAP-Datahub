@@ -1,23 +1,21 @@
+from app.data.cantons import CANTONS
+from app.db import SessionLocal
+from app.models import QuestionGlobal
+from app.models.answer import Answer
+from app.models.canton import Canton
+from app.models.commune import Commune
+from app.models.district import District
+from app.models.question_category import QuestionCategory
+from app.models.question_per_survey import QuestionPerSurvey
+from app.models.survey import Survey
 from sqlalchemy import select
 import pandas as pd
-
-
-from backend.app.data.cantons import CANTONS
-from backend.app.db import SessionLocal
-from backend.app.models import QuestionGlobal
-from backend.app.models.answer import Answer
-from backend.app.models.canton import Canton
-from backend.app.models.commune import Commune
-from backend.app.models.district import District
-from backend.app.models.question_category import QuestionCategory
-from backend.app.models.question_per_survey import QuestionPerSurvey
-from backend.app.models.survey import Survey
 
 
 """"
 Script for populate the database.
 
-All the data will be from the folder ./Data
+All the data will be from the folder ./data
 """
 
 
@@ -31,7 +29,6 @@ async def populate_db() -> None:
             for code, lang in CANTONS.items():
                 db_canton = Canton(
                     code=code,
-                    ofs_id=lang["ofs_id"],
                     name=lang["en"],
                     name_de=lang["de"],
                     name_en=lang["en"],
@@ -43,19 +40,12 @@ async def populate_db() -> None:
                 index += 1
 
                 session.add(db_canton)
-                await session.flush()
-
-                # Creating fake district for commune who dont have any district
-                # They can be recognised with their code being the canton code
-                db_district = District(code=code, name=code, canton=db_canton)
-                session.add(db_district)
-                await session.flush()
 
         # District and commune
         row_number = 0
         async with session.begin():
 
-            communes = pd.read_excel("./backend/app/data/EtatCommunes.xlsx", index_col=4, header=0)
+            communes = pd.read_excel("./app/data/EtatCommunes.xlsx", index_col=4, header=0)
             communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
             communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
 
@@ -64,7 +54,7 @@ async def populate_db() -> None:
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
-                    RuntimeError("Canton not found, good luck")
+                    RuntimeError("Canton not found")
 
                 result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
                 db_district = result.scalar_one_or_none()
@@ -98,7 +88,7 @@ async def populate_db() -> None:
                 session.add(db_commune)
                 await session.flush()
                 row_number += 1
-                print(f">>> INSERTING COMMUNE {rows["Nom de la commune"]} {row_number}/{len(communes)} ")
+                print(f">>> INSERTING COMMUNE {rows['Nom de la commune']} {row_number}/{len(communes)} ")
 
         # Survey and question per survey
         async with session.begin():
@@ -113,7 +103,7 @@ async def populate_db() -> None:
                 print(f">> Inserting survey {year}")
 
                 gsb = pd.read_excel(
-                    "./backend/app/data/CodeBook_Cleaned.xlsx",
+                    "./app/data/CodeBook_Cleaned.xlsx",
                     sheet_name=str(year),
                     index_col=1,
                     header=0,
@@ -135,7 +125,7 @@ async def populate_db() -> None:
 
         # Global question and categories
         async with session.begin():
-            gbd = pd.read_csv("./backend/app/data/QuestionsGlobales.csv", index_col=None, header=0)
+            gbd = pd.read_csv("./app/data/QuestionsGlobales.csv", index_col=None, header=0)
 
             for index, row in gbd.iterrows():
                 if not pd.isnull(row["category_label"]):
@@ -150,7 +140,7 @@ async def populate_db() -> None:
 
                     session.add(db_question_category)
                     await session.flush()
-                    print(f">>> INSERTING QUESTION CATEGORY {row["category_label"]}")
+                    print(f">>> INSERTING QUESTION CATEGORY {row['category_label']}")
 
                 db_question_global = QuestionGlobal(
                     label=row["label"],
@@ -163,11 +153,11 @@ async def populate_db() -> None:
 
                 session.add(db_question_global)
                 await session.flush()
-                print(f">>> INSERTING QUESTION GLOBAL {row["label"]}")
+                print(f">>> INSERTING QUESTION GLOBAL {row['label']}")
 
         # Answer
         async with session.begin():
-            crc = pd.read_csv("./backend/app/data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
+            crc = pd.read_csv("./app/data/mon_fichier_indexed.csv", index_col=0, header=0, sep=";")
 
             for index, row in crc.iterrows():
 
@@ -177,7 +167,7 @@ async def populate_db() -> None:
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
-                    print(f">>> INSERTING COMMUNE {row["gemidname"]}")
+                    print(f">>> INSERTING COMMUNE {row['gemidname']}")
                     db_commune = Commune(
                         code=str(row["gemid"]),
                         name=row["gemidname"],
@@ -211,24 +201,25 @@ async def populate_db() -> None:
                 print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
 
         # Answer for 2023 data (separate file)
-        # For this file, the name of the header is different from other year so we need to adapt the name of column
         async with session.begin():
-            GSB_2023 = pd.read_csv("./backend/app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
+            GSB_2023 = pd.read_csv("./app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
 
             for index, row in GSB_2023.iterrows():
 
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+                if pd.isna(row["gemid"]):
+                    continue
+                result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
                     db_commune = Commune(
-                        code=str(row("BFS_2023")),
-                        name=row["Gemeinde_2023"],
-                        name_fr=row["Gemeinde_2023"],
-                        name_it=row["Gemeinde_2023"],
-                        name_ro=row["Gemeinde_2023"],
-                        name_en=row["Gemeinde_2023"],
-                        name_de=row["Gemeinde_2023"],
+                        code=str(row("gemid")),
+                        name=row["gemidname"],
+                        name_fr=row["gemidname"],
+                        name_it=row["gemidname"],
+                        name_ro=row["gemidname"],
+                        name_en=row["gemidname"],
+                        name_de=row["gemidname"],
                     )
                     session.add(db_commune)
                     await session.flush()

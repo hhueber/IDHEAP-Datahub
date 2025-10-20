@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  background: white;
+}
+
+.leaflet-container {
+  touch-action: pan-x pan-y;
+}
+.leaflet-container { z-index: 0; }
+.leaflet-control { z-index: 100 !important; }

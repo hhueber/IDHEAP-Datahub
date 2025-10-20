@@ -1,18 +1,34 @@
+# Developer tools (not required in production)
 black==25.1.0
 isort==6.0.1
 pre-commit==4.3.0
 pylint==3.3.8
 
-SQLAlchemy==2.0
-asyncpg==0.29
-python-dotenv==1.0
-
+# Data processing / Excel / XML
 lxml==6.0.0
 numpy==2.3.2
 pandas==2.3.1
 openpyxl==3.1.5
 
+# Web backend (API)
+fastapi==0.115.0
+uvicorn[standard]==0.30.6
+
+# Database / ORM
+SQLAlchemy==2.0.34
+asyncpg==0.30.0
 GeoAlchemy2==0.18.0
 fiona==1.10.1
 shapely==2.1.1
 requests==2.32.5
+
+# Configuration & security
+python-dotenv==1.0.1
+itsdangerous==2.1.2
+pydantic-settings==2.4.0
+email-validator==2.2.0
+
+# Authentication / Crypto
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.2
+python-jose[cryptography]==3.3.0
