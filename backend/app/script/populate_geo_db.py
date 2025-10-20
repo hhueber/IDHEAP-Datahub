@@ -5,6 +5,7 @@ import tempfile as tf
 
 
 from geoalchemy2.shape import from_shape
+from pandas.core.config_init import colheader_justify_doc
 from shapely.geometry import shape
 from shapely.ops import transform
 from sqlalchemy import select
@@ -22,16 +23,20 @@ YEARS = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
 # The year where swisstopo changed their way to access data
 THRESHOLD_YEAR = 2016
 
+lac_number = 0
+
 
 async def populate_async_geo() -> None:
     has_country_populated = False
     async with SessionLocal() as session:
-        for year in YEARS:
-            if year < THRESHOLD_YEAR:
+        for year in [1988, 1994, 1998, 2005, 2009, 2017, 2023]:
+            lac_number = 0
+            print(f"year: {year}")
+            if year < 2016:
+                continue
                 year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
                 url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
             else:
-                continue
                 zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".")
                 url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
                 response = requests.get(url)
@@ -43,11 +48,23 @@ async def populate_async_geo() -> None:
                 os.remove(zip_file.name)
 
             layers = fiona.listlayers(url)
-
             async with session.begin():
 
                 for layer in layers:
                     with fiona.open(url, layer=layer) as src:
+                        if "tlm_hoheitsgebiet" in layer:
+                            for feature in src:
+                                # if feature["properties"]["bezirksnummer"] is None and feature["properties"]["objektart"] == "Kantonsgebiet":
+                                if "Lac de Joux " in feature["properties"]["name"]:
+                                    print(feature["properties"])
+                                if (
+                                    feature["properties"]["see_flaeche"] > 0.0
+                                    and feature["properties"]["objektart"] == "Kantonsgebiet"
+                                ):
+                                    lac_number += 1
+                                    # print(feature["properties"])
+
+                        continue
                         # Insertion of country boarderies
                         if "Country" in layer and not has_country_populated:
                             feat = src.get(1)
@@ -158,7 +175,7 @@ async def populate_async_geo() -> None:
 
                         if "Lac" in layer:
 
-                            result = await session.execute(select(Lake).filter_by(code=["properties"]["SEENR"]))
+                            result = await session.execute(select(Lake).filter_by(code=feature["properties"]["SEENR"]))
                             db_lake = result.scalar_one_or_none()
                             if db_lake is None:
                                 db_lake = Lake(
@@ -179,6 +196,7 @@ async def populate_async_geo() -> None:
                             await session.flush()
 
             os.remove(url)
+            print(f"lac count: {lac_number}")
 
 
 if __name__ == "__main__":
