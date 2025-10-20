@@ -19,13 +19,11 @@ export default function Home() {
   }, [panelOpen]);
 
   return (
-    <section className="w-full">
-      <div className="grid h-[calc(100vh-4rem)] grid-cols-1 gap-0">
+    <section className="absolute inset-0">
         {/* Carte en plein espace */}
         <div className="relative h-full">
           <GeoJsonMap className="absolute inset-0" />
         </div>
-      </div>
 
       {/* Backdrop */}
       {panelOpen && (
