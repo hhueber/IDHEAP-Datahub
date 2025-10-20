@@ -24,6 +24,7 @@ class Canton(Base):
     districts: Mapped[List["District"]] = relationship(
         "District", back_populates="canton", cascade="all, delete-orphan"
     )
+    canton_map: Mapped[List["CantonMap"]] = relationship("CantonMap", back_populates="canton")
 
     @property
     def communes(self) -> List["Commune"]:

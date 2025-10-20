@@ -1,8 +1,14 @@
 from .answer import Answer
 from .base import Base
 from .canton import Canton
+from .canton_map import CantonMap
 from .commune import Commune
+from .commune_map import CommuneMap
+from .country import Country
 from .district import District
+from .district_map import DistrictMap
+from .lake import Lake
+from .lake_map import LakeMap
 from .option import Option
 from .question_category import QuestionCategory
 from .question_global import QuestionGlobal
@@ -21,4 +27,10 @@ __all__ = [
     "Survey",
     "QuestionPerSurvey",
     "Answer",
+    "Lake",
+    "Country",
+    "CantonMap",
+    "CommuneMap",
+    "DistrictMap",
+    "LakeMap",
 ]
