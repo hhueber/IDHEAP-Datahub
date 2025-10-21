@@ -28,13 +28,6 @@ async def create_schema() -> None:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database schema created.")
 
-    # Populate la base de donnée
-    await populate_db()
-    logger.info("Database populated successfully.")
-
-    await populate_async_geo()
-    logger.info("Database populated successfully with geo data.")
-
     if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
         async with AsyncSessionLocal() as db:
             admin_exists = await any_admin_exists(db)
@@ -47,6 +40,13 @@ async def create_schema() -> None:
                 logger.info("Admin user(s) already exist; skipping root seed.")
     else:
         logger.info("ROOT_EMAIL or ROOT_PASSWORD not set; no root created.")
+
+    # Populate la base de donnée
+    await populate_db()
+    logger.info("Database populated successfully.")
+
+    await populate_async_geo()
+    logger.info("Database populated successfully with geo data.")
 
 
 if __name__ == "__main__":
