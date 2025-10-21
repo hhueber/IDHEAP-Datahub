@@ -30,7 +30,7 @@ async def create_schema() -> None:
     logger.info("Database populated successfully.")
 
     await populate_async_geo()
-    logger.info("GeoJSON data populated with success")
+    logger.info("Database populated successfully with geo data.")
 
     if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
         async with AsyncSessionLocal() as db:

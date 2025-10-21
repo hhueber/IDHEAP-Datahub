@@ -14,7 +14,7 @@ class CommuneMap(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     year: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    type: Mapped[str] = mapped_column(String, nullable=False)
+    geo_data_type: Mapped[str] = mapped_column(String, nullable=False)
 
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 

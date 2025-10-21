@@ -8,6 +8,7 @@ from .country import Country
 from .district import District
 from .district_map import DistrictMap
 from .lake import Lake
+from .lake_map import LakeMap
 from .option import Option
 from .question_category import QuestionCategory
 from .question_global import QuestionGlobal
@@ -31,4 +32,5 @@ __all__ = [
     "CantonMap",
     "CommuneMap",
     "DistrictMap",
+    "LakeMap",
 ]
