@@ -19,14 +19,16 @@ logger = logging.getLogger(__name__)
 
 
 async def create_schema() -> None:
-    async with engine.begin() as conn:
-        # Drop toute les tables pour repartir de 0
-        logger.warning("Dropping all tables (destructive operation).")
-        await conn.run_sync(Base.metadata.drop_all)
-        # Cree les tables dans la base de données
-        logger.info("Creating all tables…")
-        await conn.run_sync(Base.metadata.create_all)
-    logger.info("Database schema created.")
+    confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
+    if confirm.lower() == "y":
+        async with engine.begin() as conn:
+            # Drop toute les tables pour repartir de 0
+            logger.warning("Dropping all tables (destructive operation).")
+            await conn.run_sync(Base.metadata.drop_all)
+            # Cree les tables dans la base de données
+            logger.info("Creating all tables…")
+            await conn.run_sync(Base.metadata.create_all)
+        logger.info("Database schema created.")
 
     if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
         async with AsyncSessionLocal() as db:
