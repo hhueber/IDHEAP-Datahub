@@ -57,7 +57,11 @@ export default function GeoJsonMap({
     const currentYear = new Date().getFullYear();
 
     geoApi
-      .getByYear(currentYear, ctrl.signal)
+      .getByYear(currentYear, ctrl.signal, {
+        layers: ["country", "lakes", "cantons", "districts"],
+        clearOthers: false,
+      }
+      )
       .then((b) => {
         if (!alive) return;
         setBundle(b);

@@ -44,13 +44,22 @@ export type GeoBundle = {
   districts?: FeatureCollection<{ uid: number; name: string; code?: string }>;
 };
 
+type GeoLayer = "country" | "lakes" | "cantons" | "districts" | "communes";
+
 // Client API : récupère les couches géo pour une année donnée
+// Donne le choix des GeoLayer souhaiter
 export const geoApi = {
   // Si `year` est omise, le backend peut renvoyer l’année par défaut (courante)
-  getByYear: (year?: number, signal?: AbortSignal) =>
+  getByYear: (year?: number, signal?: AbortSignal, opts?: { layers?: GeoLayer[]; clearOthers?: boolean }) =>
     apiFetch<GeoBundle>("geo/by_year", {
       method: "GET",
       signal,
-      query: typeof year === "number" ? { year } : undefined,
+      query: {
+        ...(typeof year === "number" ? { year } : {}),
+        ...(opts?.layers?.length ? { layers: opts.layers.join(",") } : {}),
+        ...(typeof opts?.clearOthers === "boolean"
+          ? { clear_others: String(opts.clearOthers) }
+          : {}),
+      },
     }),
 };

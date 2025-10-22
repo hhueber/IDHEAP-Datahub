@@ -34,6 +34,7 @@ class YearMeta(BaseModel):
     lakes: Optional[int] = None
     cantons: Optional[int] = None
     districts: Optional[int] = None
+    communes: Optional[int] = None
 
 
 class GeoBundle(BaseModel):
@@ -42,3 +43,4 @@ class GeoBundle(BaseModel):
     lakes: Optional[FeatureCollection] = None
     cantons: Optional[FeatureCollection] = None
     districts: Optional[FeatureCollection] = None
+    communes: Optional[FeatureCollection] = None
