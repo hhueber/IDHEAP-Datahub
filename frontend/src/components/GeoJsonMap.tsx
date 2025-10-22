@@ -7,7 +7,7 @@ import { geoApi, GeoBundle } from "@/features/geo/geoApi";
 import { onEachCanton } from "@/components/map/admLabels";
 import CityMarkers from "@/components/map/CityMarkers";
 import "leaflet-simple-map-screenshoter";
-import InstallScreenshoter from "./map/screenShoter";
+// import InstallScreenshoter from "./map/screenShoter";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -135,7 +135,7 @@ const communesStyle = useMemo(() => ({
       >
         {/* Utilitaires : export écran, resize, bouton recadrage Suisse */}
         <ExposeMapOnWindow />
-        <InstallScreenshoter showButton={true} />
+        {/* <InstallScreenshoter showButton={true} /> */}
         <MapSizeFixer host={hostRef.current} />
         <ResetSwissControl position="topleft" />
 
