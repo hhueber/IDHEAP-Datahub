@@ -9,6 +9,7 @@ from app.models.country import Country
 from app.models.district import District
 from app.models.district_map import DistrictMap
 from app.models.lake import Lake
+from app.models.lake_map import LakeMap
 from app.schemas.geo import Feature, FeatureCollection, GeoBundle, Geometry, YearMeta
 from geoalchemy2 import functions as geofunc
 from sqlalchemy import func, select
@@ -27,55 +28,54 @@ async def _features_from_stmt(session: AsyncSession, stmt, prop_keys: Tuple[str,
     feats = []
     for row in rows:
         m = row._mapping
-        gj = json.loads(m["geojson"])
+        gj = json.loads(m["geojson"])  # ST_AsGeoJSON -> str -> dict
         props = {k: m[k] for k in prop_keys if k in m}
         feats.append(Feature(geometry=Geometry(**gj), properties=props))
     return FeatureCollection(features=feats)
 
 
 async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) -> GeoBundle:
-    # Année par défaut = année courante
+    # Année demandée (défaut = année courante)
     y_req = int(requested_year or date.today().year)
 
-    # Country / Lake n'ont pas "year" dans les modèles fournis -> None
+    # Recherche des millésimes disponibles (≤ année demandée)
     y_cantons = await _max_year_leq(session, CantonMap, y_req)
     y_districts = await _max_year_leq(session, DistrictMap, y_req)
+    y_lakes = await _max_year_leq(session, LakeMap, y_req)
 
-    # Country - meme chose que cantons pour Leaflet
+    # Country (pas de notion d'année)
     country_fc = await _features_from_stmt(
         session,
         select(
-            # TODO: Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056
-            geofunc.ST_AsGeoJSON(geofunc.ST_Transform(Country.geometry, 4326)).label("geojson"),
+            geofunc.ST_AsGeoJSON(Country.geometry).label("geojson"),
             Country.uid.label("uid"),
         ),
         ("uid",),
     )
 
-    # Lakes - meme chose que cantons pour Leaflet
-    lakes_fc = await _features_from_stmt(
-        session,
-        select(
-            # TODO: Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056
-            geofunc.ST_AsGeoJSON(geofunc.ST_Transform(Lake.geometry, 4326)).label("geojson"),
-            Lake.uid.label("uid"),
-            Lake.name.label("name"),
-            Lake.code.label("code"),
-        ),
-        ("uid", "name", "code"),
-    )
+    # Lakes — désormais version millésimée
+    lakes_fc = None
+    if y_lakes is not None:
+        lakes_fc = await _features_from_stmt(
+            session,
+            select(
+                geofunc.ST_AsGeoJSON(LakeMap.geometry).label("geojson"),
+                Lake.uid.label("uid"),
+                Lake.name.label("name"),
+                Lake.code.label("code"),
+            )
+            .join(LakeMap.lake)
+            .where(LakeMap.year == y_lakes),
+            ("uid", "name", "code"),
+        )
 
-    # Cantons — si une année <= demandée existe
+    # Cantons — millésimé
     cantons_fc = None
     if y_cantons is not None:
         cantons_fc = await _features_from_stmt(
             session,
             select(
-                # TODO:
-                # Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056 (peut etre transformer dans script)
-                # si ok faire cela:
-                # geofunc.ST_AsGeoJSON(Country.geometry).label("geojson"),
-                geofunc.ST_AsGeoJSON(geofunc.ST_Transform(CantonMap.geometry, 4326)).label("geojson"),
+                geofunc.ST_AsGeoJSON(CantonMap.geometry).label("geojson"),
                 Canton.uid.label("uid"),
                 Canton.code.label("code"),
                 Canton.name.label("name"),
@@ -85,7 +85,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
             ("uid", "code", "name"),
         )
 
-    # Districts — meme chose que cantons pour Leaflet
+    # Districts — millésimé
     districts_fc = None
     if y_districts is not None:
         has_code = hasattr(District, "code")
@@ -93,8 +93,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
         districts_fc = await _features_from_stmt(
             session,
             select(
-                # TODO: Leaflet attend du GeoJSON en WGS84 (EPSG:4326), pas de l’EWKB 2056
-                geofunc.ST_AsGeoJSON(geofunc.ST_Transform(DistrictMap.geometry, 4326)).label("geojson"),
+                geofunc.ST_AsGeoJSON(DistrictMap.geometry).label("geojson"),
                 District.uid.label("uid"),
                 District.name.label("name"),
                 code_col.label("code"),
@@ -108,7 +107,7 @@ async def get_geo_by_year(session: AsyncSession, requested_year: Optional[int]) 
         year=YearMeta(
             requested=y_req,
             country=None,
-            lakes=None,
+            lakes=y_lakes,
             cantons=y_cantons,
             districts=y_districts,
         ),
