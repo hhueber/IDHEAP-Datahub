@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import YearSelector from "@/features/home/components/YearSelector";
 import type { HomeBootstrap } from "@/features/home/services/homeApi";
 import { useSurveyQuestions } from "@/features/questions/hooks/useSurveyQuestions";
+import MapExportButtons from "@/features/home/components/MapExportButtons";
 
 const GLOBAL_UID = -1;
 
@@ -106,6 +107,8 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
           )}
         </div>
       </section>
+      {/* Carte export */}
+      <MapExportButtons />
     </div>
   );
 }
