@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     BACKEND_HOST: str
     BACKEND_PORT: int
 
-    # Fronend
+    # Frontend
     FRONTEND_HOST: str
     FRONTEND_PORT: int
 
