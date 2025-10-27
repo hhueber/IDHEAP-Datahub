@@ -23,7 +23,8 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Cookie auth
-    COOKIE_SECURE: bool = False  # True en prod (HTTPS)
+    # True en prod (HTTPS)
+    COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: SameSite = "lax"
 
     # CORS
