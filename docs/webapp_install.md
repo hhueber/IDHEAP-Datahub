@@ -24,6 +24,7 @@ Then, edit `.env`, with the following information:
 - FRONTEND_PORT: frontend's port; default `3210`.
 - API_SECRET: key used for CORS access; NO DEFAULT CHANGE THE KEY.
 - CORS_ORIGINS: [Cross-origin resource sharing](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) link; default `http://localhost:3210`.
+    - Should be `http(s)://FRONTEND_HOST:FRONTEND_PORT`!
 - SECRET_KEY: key used to generate the cookies; NO DEFAULT CHANGE THE KEY.
 - ALGORITHM: algorithm used for JWS verification, see https://datatracker.ietf.org/doc/html/rfc7518#section-3; default `HS256`.
 - ACCESS_TOKEN_EXPIRE_MINUTES: ; default `60`.
@@ -31,7 +32,9 @@ Then, edit `.env`, with the following information:
 - ROOT_PASSWORD: Instance super admin account password; NO DEFAULT CHANGE THE KEY.
 - ROOT_NAME: Instance super admin account name; default `Admin Root`.
 - COOKIE_SECURE: Boolean, enforce HTTPS; default `False`.
+    - Should be `True` in prod!
 - COOKIE_SAMESITE: Forbid sending cookies via cross-origin requests, can be `lax`, `strict`, `none`; default `lax`.
+    - Should be `strict` in prod!
 
 ## Use
 
