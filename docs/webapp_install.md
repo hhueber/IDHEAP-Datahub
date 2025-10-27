@@ -1,4 +1,4 @@
-# Webapp install
+# Webapp installation
 
 ## Setup
 

@@ -1,4 +1,4 @@
-# Debian Install
+# Debian installation
 
 ## Setup Debian WSL
 

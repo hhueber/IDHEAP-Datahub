@@ -1,3 +1,3 @@
-# Makefile install
+# Makefile installation
 
-_TODO_
+_TODO_: Peer-review + test
