@@ -36,12 +36,18 @@ Then, edit `.env`, with the following information:
 - COOKIE_SAMESITE: Forbid sending cookies via cross-origin requests, can be `lax`, `strict`, `none`; default `lax`.
     - Should be `strict` in prod!
 
-## Use
+## Quick start
 
 You need two separate terminal, one for the backend, the other for the frontend.
 
-First, make sure the .venv is activated: `source ./venv/bin/activate`. Then, in the root folder:
-- Backend: `PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --host 0.0.0.0 --port 8642 --reload --env-file .env`.
-- Frontend: `npm --prefix frontend run dev -- --host 0.0.0.0 --port 3210`.
+For each terminal:
+1. Make sure the `.venv/` is activated.
+    - `source ./venv/bin/activate`
+2. Export the `.env`.
+    - `source .env`
+
+Then, in the root folder:
+- Backend: `PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env`
+- Frontend: `npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT`
 
 Use Ctrl+C to kill if needed.
