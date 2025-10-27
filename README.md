@@ -1,5 +1,5 @@
 <p align="center">
-   <img src="./docs/img/idheap-dh.png" alt="idheap-dh.png" />
+   <img src="./docs/img/idheap-dh.png" alt="idheap-dh.png" width="33%" />
 </p>
 
 # IDHEAP DataHub
