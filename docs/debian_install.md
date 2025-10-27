@@ -98,6 +98,3 @@ SELECT * FROM pgr_version();
 # Exit
 \q
 ```
-
-### Install app
-
