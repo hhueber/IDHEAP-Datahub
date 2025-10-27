@@ -68,7 +68,6 @@ export default function GeoJsonMap({
       })
       .catch((e: any) => {
         if (!alive) return;
-        // ignorer les annulations
         const name = e?.name || "";
         const msg = (e?.message || "").toLowerCase();
         if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;

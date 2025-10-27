@@ -26,7 +26,9 @@ def _parse_layers(layers_csv: Optional[str]) -> Set[str]:
 async def geo_by_year(
     year: int | None = Query(None, description="Année demandée; défaut = année courante"),
     layers: str | None = Query(None, description="Les couches demandées: country,lakes,cantons,districts,communes"),
-    clear_others: bool = Query(False, description="Si vrai, met à null les couches non demandées"),
+    clear_others: bool = Query(
+        False, description="Si vrai, met à null les couches non demandées donc si null = modifier dans front"
+    ),
     db: AsyncSession = Depends(get_db),
 ):
     wanted = _parse_layers(layers)
