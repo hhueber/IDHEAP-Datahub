@@ -34,7 +34,7 @@ async def _fc_for_layer(
             if is_optional:
                 col = func.null()
             else:
-                raise AttributeError(f"{EntModel.__name__}.{attr_name} manquant")
+                raise AttributeError(f"{EntModel.__name__}.{attr_name} missing")
         labeled_cols.append(col.label(out_key))
         prop_keys.append(out_key)
 
@@ -151,7 +151,7 @@ async def get_geo_by_year_selective(
             (("uid", "uid", False), ("name", "name", False), ("code", "code", False)),
         )
 
-    # Prépare YearMeta (remplit uniquement ce qui wst demandé)
+    # Prépare YearMeta (remplit uniquement ce qui est demandé)
     year_meta = YearMeta(
         requested=y_req,
         country=(None if "country" in layers else None),  # pas de notion d'année country
