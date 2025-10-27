@@ -47,17 +47,37 @@ Edit `.env`, with the following information:
     - ROOT_PASSWORD: Instance super admin account password; NO DEFAULT CHANGE THE KEY.
     - ROOT_NAME: Instance super admin account name; default `Admin Root`.
 
+## Initial database creation
+
+**_TODO: "Naked" app with no data, cf. [#124](https://github.com/hhueber/IDHEAP-Datahub/issues/124)._**
+
+**⚠️ Warning**: If you already have a database, this step might result in loss of data.
+
+In the root folder:
+1. Make sure the `.venv/` is activated.
+    - `source ./venv/bin/activate`
+2. Export the `.env`.
+    - `source .env`
+3. Put your data files in the `./backend/app/data/` folder. **As of 2025-10-27**:
+    - `CodeBook_Cleaned.xlsx`
+    - `EtatCommunes.xlsx`
+    - `GSB 2023_V1.csv`
+    - `mon_fichier_indexed.csv`
+    - `QuestionsGlobales.csv`
+4. Execute database script.
+    - `PYTHONPATH=backend .venv/bin/python -m app.script.init_db_async`
+
 ## Quick start
 
 You need two separate terminal, one for the backend, the other for the frontend.
 
-For each terminal:
+For each terminal, in the root folder:
 1. Make sure the `.venv/` is activated.
     - `source ./venv/bin/activate`
 2. Export the `.env`.
     - `source .env`
 
-Then, in the root folder:
+Then, separately, still in the root folder:
 - Backend: `PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env`
 - Frontend: `npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT`
 
