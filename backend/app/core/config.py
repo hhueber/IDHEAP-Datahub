@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     FRONTEND_HOST: str
     FRONTEND_PORT: int
 
-    # # Secrets
+    # Secrets
     API_SECRET: str
     SECRET_KEY: str
 
