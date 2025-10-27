@@ -35,7 +35,7 @@ If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and 
 
 ### Academic contributors
 
-<table>
+<table align="center">
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.unil.ch/schoenol/"><img src="https://avatars.githubusercontent.com/u/88168505" width="100px;" alt="schoenol"/><br /><sub><b>schoenol</b></sub></a><br />Project manager</td>
@@ -45,7 +45,7 @@ If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and 
 
 ### Technical contributors
 
-<table>
+<table align="center">
   <tbody>
     <tr>
       <td align="center" valign="top" width="14.28%"><a href="https://github.unil.ch/hhueber/"><img src="https://avatars.githubusercontent.com/u/219822042" width="100px;" alt="hhueber"/><br /><sub><b>hhueber</b></sub></a><br />Lead Developer</td>
