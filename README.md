@@ -1,66 +1,26 @@
-# IDHEAP Datahub
+<p align="center">
+   <img src="frontend/src/img/idheap-dh.png" alt="idheap-dh.png" />
+</p>
 
-Projet de visualisation de données géographiques longitudinales.
+# IDHEAP DataHub
 
-## Setup
+Longitudinal geographic data visualisation project.
 
-1. Clone the repo, go into it.
-   - `git clone git@github.com:hhueber/IDHEAP-Datahub.git; cd IDHEAP-Datahub`
-2. Create a [virtual environment](https://docs.python.org/3/library/venv.html), and activate it.
-   - `python -m venv ./venv; source ./venv/bin/activate`
-3. Install requirements.
-   - `pip install -r requirements.txt`
-4. Activate [`pre-commit`](https://pre-commit.com/).
-   - `pre-commit install`
-5. _Tada_
+## Setup and use
 
-## Populate database manually
+This project requires:
+- [Python](https://www.python.org/) 3.12+ (EOL 2029-10).
+- [Node.js](https://nodejs.org/) v.24.4+ (EOL 2028-04).
+- A working [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) database.
 
-### Prerequisites
+Selected guides are available here:
+- [Debian install](./docs/debian_install.md).
+- [RHEL install](./docs/rhel_install.md).
 
-1. Having a database running locally or online with [PostgreSQL](https://www.postgresql.org/) and the [PostGIS](https://postgis.net/) extension enabled.
-2. Copy the `.env.dist` file and rename it in `.env`.
+Then, you can install and run the actual webapp:
+- Manual: [Webapp install](./docs/webapp_install.md).
+- Automatic: [Makefile install](./docs/makefile_install.md).
+- Docker: [Docker install](./docs/docker_install.md).
 
-### Populate
-
-1. Modify the `.env` file with the credential for connecting the database.
-2. Be sure you have the requirements installed.
-   - `pip install -Ur requirements.txt`
-3. Make sure you have all the data file into the data folder in `backend/app/data`.
-  - _TODO How to find the data_
-4. Execute the script.
-   - `python -m backend.app.script.init_db_async`
-
----
-
-## Run with Docker (one command)
-
-> Prerequisites: [Docker](https://www.docker.com/) installed.
-
-To start the **entire project** (DB + API + Front + DB schema init) **without any local setup** (no venv, no local Node), simply run:
-
-```bash
-make docker
-```
-
-This command will:
-
-- build and start PostgreSQL (with volumes).
-- build and start the FastAPI API.
-- run the database schema initialization (schema_db_init service).
-- build and start the Frontend.
-- then follow the logs of the API and the Front.
-
-### Useful commands
-
-Stop all and remove project containers + volumes:
-
-```bash
-make docker_clean
-```
-
-Full cleanup (containers, images, volumes, cache):
-
-```bash
-make docker_fclean
-```
+If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and don't forger to activate [`pre-commit`](https://pre-commit.com/).
+- `pre-commit install`
