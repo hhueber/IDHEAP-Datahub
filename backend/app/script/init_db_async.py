@@ -15,9 +15,6 @@ from app.script.populate_geo_db import populate_async_geo
 logger = logging.getLogger(__name__)
 
 
-logger = logging.getLogger(__name__)
-
-
 async def create_schema() -> None:
     confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
     if confirm.lower() == "y":

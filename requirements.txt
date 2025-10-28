@@ -18,11 +18,6 @@ uvicorn[standard]==0.30.6
 # Database / ORM
 SQLAlchemy==2.0.34
 asyncpg==0.30.0
-GeoAlchemy2==0.18.0
-fiona==1.10.1
-shapely==2.1.1
-requests==2.32.5
-pyproj==3.7.2
 
 # Configuration & security
 python-dotenv==1.0.1
@@ -34,3 +29,12 @@ email-validator==2.2.0
 passlib[bcrypt]==1.7.4
 bcrypt==3.2.2
 python-jose[cryptography]==3.3.0
+
+# Geospatial / GIS
+geoalchemy2==0.18.0
+shapely==2.1.1
+fiona==1.10.1
+pyproj==3.7.2
+
+# HTTP / Networking
+requests==2.32.5
