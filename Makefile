@@ -1,4 +1,4 @@
-.PHONY:	setup init_database run_backend run_frontend
+.PHONY:	setup init_database run_backend run_frontend run run_background clean
 
 VENV_FOLDER		:= .venv
 PYTHON			:= $(VENV_FOLDER)/bin/python
