@@ -1,3 +1,31 @@
+.PHONY:	all install clean info check
+
+PYTHON_VERSION  := $(shell python --version)
+VENV_FOLDER		:= .venv/
+ENV_FILE		:= .env
+
+$(VENV_FOLDER):
+
+$(ENV_FOLDER):
+	case "$(python --version)" in
+		*"3.12"*)
+			echo yes
+			;;
+		*)
+			echo no
+			;;
+	esac
+
+clean:
+	rm -rf $(VENV)
+	rm -rf $(ENV)
+	rm -rf *.gpkg
+
+
+
+
+
+
 OS := $(shell uname -s)
 BREW_PG ?= postgresql@16
 ENV_FILE := .env
@@ -13,7 +41,8 @@ PIP     := $(VENV)/bin/pip
 
 REQUIRED_ENV_VARS := DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD
 
-.PHONY: docker local local_fclean docker_clean docker_fclean local_api local_front help db_native_up db_native_down db_env_bootstrap _check_env _require_env_vars
+.PHONY:	docker local local_fclean docker_clean docker_fclean local_api local_front help db_native_up db_native_down db_env_bootstrap _check_env _require_env_vars
+
 
 $(PYBIN): ## Creates the virtual environment .venv (if it doesn't exist)
 	@echo "Using interpreter: $(PYTHON)"
