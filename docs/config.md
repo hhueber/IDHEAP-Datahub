@@ -7,7 +7,7 @@ The `.env` file contains the following variables:
     - DB_PORT: database's port; default `5432`.
     - DB_NAME: database name; default `datahub`.
     - DB_USER: database user; default `postgres`.
-    - DB_PASSWORD: PostgreSQL database user's password, NO DEFAULT CHANGE THE PASSWORD.
+    - DB_PASSWORD: PostgreSQL database user's password, default `postgres`.
 - Backend:
     - BACKEND_HOST: backend's IP, or localhost if local; default `localhost`.
     - BACKEND_PORT: backend's port; default `8765`.

@@ -12,7 +12,13 @@ _TODO_: Peer-review + test
 
 ## Config
 
-Edit the `.env` with your configuration. More information in [Config](./config.md).
+Edit the `.env` with your configuration. Please change at least:
+- API_SECRET
+- SECRET_KEY
+- ROOT_EMAIL
+- ROOT_PASSWORD
+
+More information in [Config](./config.md).
 
 ## Initial database creation
 

@@ -2,18 +2,6 @@
 
 ## Setup Debian WSL
 
-As always, start with:
-
-```bash
-sudo apt update && sudo apt upgrade -y
-```
-
-### Install dependencies
-
-```bash
-
-```
-
 ### Create a passwordless user for that project
 
 ```bash
@@ -30,8 +18,6 @@ eval "$(ssh-agent -s)"
 ssh-add ~/.ssh/id_ed25519
 exit
 ```
-
-Then add the private key in the [GitHub Secrets](https://github.unil.ch/ci-dcsr/Corv/settings/secrets/actions), and the public key in the [GitHub Deploy keys](https://github.unil.ch/ci-dcsr/Corv/settings/keys).
 
 ### Install database
 
@@ -52,11 +38,11 @@ sudo systemctl status postgresql
 sudo -u postgres psql
 ```
 
-Then, in psql (replace `<very_secret_db_password>` with a password for your user):
+Then, in psql (replace `postgres` with a password for your user if needed):
 
 ```bash
 # Set postgres password
-ALTER USER postgres PASSWORD '<very_secret_db_password>';
+ALTER USER postgres PASSWORD 'postgres';
 
 # Exit
 \q
