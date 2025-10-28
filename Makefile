@@ -26,6 +26,7 @@ $(ENV_FILE):
 	@cp .env.dist .env
 	@echo "✅  .env file created"
 	@echo "⚠️ Please change default settings before doing anything else!"
+	@echo "⚠️ At least 'API_SECRET', 'SECRET_KEY', 'ROOT_EMAIL', 'ROOT_PASSWORD'."
 
 # Initial database creation
 init_database:
