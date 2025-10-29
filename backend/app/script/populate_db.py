@@ -1,4 +1,4 @@
-import os
+from pathlib import Path
 
 
 from app.data.cantons import CANTONS
@@ -22,7 +22,7 @@ Script for populate the database.
 All the data will be from the folder ./data
 """
 
-BASE_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir)
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 async def populate_db() -> None:
@@ -51,7 +51,7 @@ async def populate_db() -> None:
         # District and commune
         row_number = 0
         async with session.begin():
-            communes = pd.read_excel(os.path.join(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
+            communes = pd.read_excel(Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
             communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
             communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
 
@@ -109,7 +109,7 @@ async def populate_db() -> None:
                 # print(f">> Inserting survey {year}")
 
                 gsb = pd.read_excel(
-                    os.path.join(BASE_DIR, "data", "CodeBook_Cleaned.xlsx"),
+                    Path(BASE_DIR, "data", "CodeBook_Cleaned.xlsx"),
                     sheet_name=str(year),
                     index_col=1,
                     header=0,
@@ -131,7 +131,7 @@ async def populate_db() -> None:
 
         # Global question and categories
         async with session.begin():
-            gbd = pd.read_csv(os.path.join(BASE_DIR, "data", "QuestionsGlobales.csv"), index_col=None, header=0)
+            gbd = pd.read_csv(Path(BASE_DIR, "data", "QuestionsGlobales.csv"), index_col=None, header=0)
 
             for index, row in tqdm(gbd.iterrows(), total=len(gbd), desc="Processing global questions and categories"):
                 if not pd.isnull(row["category_label"]):
@@ -163,7 +163,7 @@ async def populate_db() -> None:
 
         # Answer
         async with session.begin():
-            crc = pd.read_csv(os.path.join(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
+            crc = pd.read_csv(Path(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
 
             for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
                 if pd.isna(row["gemid"]):
@@ -207,7 +207,7 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv(os.path.join(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
+            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
 
             for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
                 if pd.isna(row["BFS_2023"]):
