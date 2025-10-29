@@ -1,7 +1,5 @@
 # Makefile installation
 
-_TODO_: Peer-review + test
-
 ## Setup
 
 1. Clone the repo, go into it.

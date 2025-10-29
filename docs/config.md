@@ -3,16 +3,16 @@
 The `.env` file contains the following variables:
 
 - Database:
-    - `DB_HOST`: database's IP, or localhost if local; default `localhost`.
+    - `DB_HOST`: database's IP, `db` if using Docker, or `localhost` if local; default `localhost`.
     - `DB_PORT`: database's port; default `5432`.
     - `DB_NAME`: database name; default `datahub`.
     - `DB_USER`: database user; default `postgres`.
     - `DB_PASSWORD`: PostgreSQL database user's password, default `postgres`.
 - Backend:
-    - `BACKEND_HOST`: backend's IP, or localhost if local; default `localhost`.
+    - `BACKEND_HOST`: backend's IP, or `localhost` if local; default `localhost`.
     - `BACKEND_PORT`: backend's port; default `8765`.
 - Frontend:
-    - `FRONTEND_HOST`: frontend's IP, or localhost if local; default `localhost`.
+    - `FRONTEND_HOST`: frontend's IP, or `localhost` if local; default `localhost`.
     - `FRONTEND_PORT`: frontend's port; default `3210`.
 - Secrets:
     - `API_SECRET`: key used for CORS access; NO DEFAULT CHANGE THE KEY.
