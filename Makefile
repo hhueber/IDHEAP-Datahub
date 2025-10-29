@@ -1,4 +1,4 @@
-.PHONY:	setup init_database run_backend run_frontend run run_background clean
+.PHONY:	setup init_database run_backend run_frontend run run_background clean docker docker_clean docker_fclean
 
 VENV_FOLDER		:= .venv
 PYTHON			:= $(VENV_FOLDER)/bin/python
@@ -50,3 +50,28 @@ run run_background:
 clean:
 	rm -rf $(VENV_FOLDER)
 	rm -rf $(ENV_FILE)
+
+## Docker
+COMPOSE = docker compose
+DB_SERVICE = db
+FRONT_SERVICE = frontend
+INIT_SERVICE = schema_db_init
+API_SERVICE = api
+
+# build service DB (db) and api and front + initdb, then display the Postgres logs.
+docker:
+	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
+	$(COMPOSE) up -d --build $(INIT_SERVICE) $(FRONT_SERVICE)
+	@echo "✅  Services started"
+	$(COMPOSE) logs -f $(INIT_SERVICE) $(API_SERVICE) $(FRONT_SERVICE)
+
+# Stop the project's Docker services and delete the containers + volumes
+docker_clean:
+	$(COMPOSE) down -v --remove-orphans
+	@echo "✅  All Docker services have been stopped and cleaned up"
+
+# Complete Docker cleanup (services, networks, volumes, images, and caches)
+docker_fclean:
+	$(COMPOSE) down --rmi all --volumes --remove-orphans
+	docker system prune -f
+	@echo "✅  Cleaned all containers, volumes, and images"
