@@ -1,5 +1,7 @@
 .PHONY:	setup init_database run_backend run_frontend run run_background clean docker docker_clean docker_fclean
 
+## Standard
+
 VENV_FOLDER		:= .venv
 PYTHON			:= $(VENV_FOLDER)/bin/python
 ENV_FILE		:= .env
@@ -52,6 +54,7 @@ clean:
 	rm -rf $(ENV_FILE)
 
 ## Docker
+
 COMPOSE = docker compose
 DB_SERVICE = db
 FRONT_SERVICE = frontend
