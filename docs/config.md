@@ -25,8 +25,9 @@ The `.env` file contains the following variables:
         - Should be `True` in prod!
     - `COOKIE_SAMESITE`: Forbid sending cookies via cross-origin requests, can be `lax`, `strict`, `none`; default `lax`.
         - Should be `strict` in prod!
-- CORS:
+- CORS and API:
     - `CORS_ORIGINS`: [Cross-origin resource sharing](https://en.wikipedia.org/wiki/Cross-origin_resource_sharing) link; default `http://$FRONTEND_HOST:$FRONTEND_PORT`.
+    - `API_URL`: Complete link to the backend; default `http://$BACKEND_HOST:$BACKEND_PORT`.
 - Super admin instance account
     - `ROOT_EMAIL`: Instance super admin account login; default `admin@example.com`.
     - `ROOT_PASSWORD`: Instance super admin account password; NO DEFAULT CHANGE THE KEY.

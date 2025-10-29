@@ -37,8 +37,9 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: SameSite = "lax"
 
-    # CORS
+    # CORS and API
     CORS_ORIGINS: str
+    API_URL: str
 
     @field_validator("CORS_ORIGINS")
     @classmethod
