@@ -18,7 +18,7 @@ The `.env` file contains the following variables:
     - `API_SECRET`: key used for CORS access; NO DEFAULT CHANGE THE KEY.
     - `SECRET_KEY`: key used to generate the cookies; NO DEFAULT CHANGE THE KEY.
 - Security / API:
-    - `ALGORITHM`: algorithm used for JWS verification, see https://datatracker.ietf.org/doc/html/rfc7518#section-3; default `HS256`.
+    - `ALGORITHM`: algorithm used for JWS verification, see https://datatracker.ietf.org/doc/html/rfc7518#section-3; default `ES256`.
     - `ACCESS_TOKEN_EXPIRE_MINUTES`: ; default `60`.
 - Cookie auth:
     - `COOKIE_SECURE`: Boolean, enforce HTTPS; default `False`.
