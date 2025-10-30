@@ -38,7 +38,7 @@ If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and 
 <table align="center">
   <tbody>
     <tr>
-      <td align="center" valign="top" width="14.28%"><a href="https://github.unil.ch/schoenol/"><img src="https://avatars.githubusercontent.com/u/88168505" width="100px;" alt="schoenol"/><br /><sub><b>schoenol</b></sub></a><br />Project manager</td>
+      <td align="center" valign="top" width="14.28%"><a href="https://www.unil.ch/idheap/fr/home/menuinst/unitescompetences/Economie-urbaine.html"><img src="https://avatars.githubusercontent.com/u/88168505" width="100px;" alt="schoenol"/><br /><sub><b>Prof. Olivier Schöni</b></sub></a><br />Project manager</td>
     </tr>
   </tbody>
 </table>
@@ -65,3 +65,4 @@ Please refer to our [LICENSE](./LICENSE.md) file.
 ## Contact
 
 Feel free to get in touch by [email](mailto:helpdesk@unil.ch?subject=%5BDCSR%2C%20FDCA%2C%20DataHub%5D%20I%20want%20to%20get%20in%20touch!)!
+
