@@ -3,14 +3,14 @@ export type ApiFetchOptions = {
   method?: HttpMethod;
   query?: Record<string, string | number | boolean | null | undefined>;
   headers?: Record<string, string>;
-  body?: unknown;                   // objet → JSON auto, sinon passé tel quel (FormData, Blob, etc.)
-  auth?: boolean;                   // route protégée (envoie cookies ou Authorization)
-  token?: string | null;            // token explicite (si pas via cookie)
-  signal?: AbortSignal | null;      // annulation externe
-  timeoutMs?: number;               // annulation auto via timeout
-  withCredentials?: boolean;        // forcer l’envoi des cookies
+  body?: unknown; // objet → JSON auto, sinon passé tel quel (FormData, Blob, etc.)
+  auth?: boolean; // route protégée (envoie cookies ou Authorization)
+  token?: string | null; // token explicite (si pas via cookie)
+  signal?: AbortSignal | null; // annulation externe
+  timeoutMs?: number; // annulation auto via timeout
+  withCredentials?: boolean; // forcer l’envoi des cookies
   responseType?: "json" | "text" | "blob" | "arrayBuffer"; // type de parsing
-  acceptLanguage?: string;          // langue à forcer (sinon i18next/localStorage)
+  acceptLanguage?: string; // langue à forcer (sinon i18next/localStorage)
 };
 
 // Erreur homogène côté client pour les appels API
@@ -30,15 +30,9 @@ export class ApiError extends Error {
 // Auth via cookie HttpOnly (sinon on utilise Authorization: Bearer)
 const AUTH_VIA_COOKIE = true;
 
-/** TODO: Base URL de l’API ne pas laisser "http://localhost:8000" en dur */
 function resolveBaseUrl(): string {
   const im = (import.meta as any)?.env ?? {};
-  return (
-    im.VITE_API_BASE_URL ||
-    im.REACT_APP_API_URL ||
-    (window as any).__API_URL__ ||
-    "http://localhost:8000"
-  );
+  return im.VITE_FRONTEND_URL;
 }
 const BASE_URL = resolveBaseUrl();
 
@@ -67,23 +61,35 @@ function isJsonBody(body: unknown) {
   if (typeof body === "string") return false;
   if (typeof FormData !== "undefined" && body instanceof FormData) return false;
   if (typeof Blob !== "undefined" && body instanceof Blob) return false;
-  if (typeof ArrayBuffer !== "undefined" && body instanceof ArrayBuffer) return false;
-  if (typeof ReadableStream !== "undefined" && body instanceof ReadableStream) return false;
+  if (typeof ArrayBuffer !== "undefined" && body instanceof ArrayBuffer)
+    return false;
+  if (typeof ReadableStream !== "undefined" && body instanceof ReadableStream)
+    return false;
   return true; // objet -> JSON
 }
 
 // Parsing de la réponse selon le type attendu (json par défaut)
-async function parseByType(res: Response, type: ApiFetchOptions["responseType"]) {
+async function parseByType(
+  res: Response,
+  type: ApiFetchOptions["responseType"]
+) {
   if (type === "text") return res.text();
   if (type === "blob") return res.blob();
   if (type === "arrayBuffer") return res.arrayBuffer();
   const txt = await res.text();
   if (!txt) return undefined;
-  try { return JSON.parse(txt); } catch { return txt; }
+  try {
+    return JSON.parse(txt);
+  } catch {
+    return txt;
+  }
 }
 
 // Appel API principal
-export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {}): Promise<T> {
+export async function apiFetch<T = any>(
+  route: string,
+  opts: ApiFetchOptions = {}
+): Promise<T> {
   const controller = new AbortController();
   const timeoutId =
     typeof opts.timeoutMs === "number" && opts.timeoutMs > 0
@@ -103,7 +109,9 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
   const lang =
     opts.acceptLanguage ||
     (typeof window !== "undefined"
-      ? (window as any)?.i18next?.language || localStorage.getItem("i18nextLng") || undefined
+      ? (window as any)?.i18next?.language ||
+        localStorage.getItem("i18nextLng") ||
+        undefined
       : undefined);
   if (lang) headers["Accept-Language"] = lang;
 
@@ -129,8 +137,9 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
       headers,
       body: bodyToSend,
       signal,
-      // cookies envoyés automatiquement pour les requêtes 
-      credentials: (opts.withCredentials || opts.auth) ? "include" : "same-origin",
+      // cookies envoyés automatiquement pour les requêtes
+      credentials:
+        opts.withCredentials || opts.auth ? "include" : "same-origin",
     });
   } catch (e: any) {
     if (e?.name === "AbortError") throw e;
@@ -157,7 +166,9 @@ export async function apiFetch<T = any>(route: string, opts: ApiFetchOptions = {
 }
 
 // Variante proteger “safe” : gère 401 globalement (clear token + redirect)
-export async function safeApi<T = any>(...args: Parameters<typeof apiFetch<T>>): Promise<T> {
+export async function safeApi<T = any>(
+  ...args: Parameters<typeof apiFetch<T>>
+): Promise<T> {
   try {
     return await apiFetch<T>(...args);
   } catch (e: any) {
