@@ -183,6 +183,7 @@ async def populate_db() -> None:
                     await session.flush()
 
                 for col in crc:
+                    break
                     if "GSB" in col:
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
@@ -202,44 +203,44 @@ async def populate_db() -> None:
                 print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
 
         # Answer for 2023 data (separate file)
-        async with session.begin():
-            GSB_2023 = pd.read_csv("./app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
+        # async with session.begin():
+        #     GSB_2023 = pd.read_csv("./app/data/GSB 2023_V1.csv", index_col=0, header=1, sep=";")
 
-            for index, row in GSB_2023.iterrows():
+        #     for index, row in GSB_2023.iterrows():
 
-                if pd.isna(row["gemid"]):
-                    continue
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
-                db_commune = result.scalar_one_or_none()
+        #         if pd.isna(row["gemid"]):
+        #             continue
+        #         result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
+        #         db_commune = result.scalar_one_or_none()
 
-                if db_commune is None:
-                    db_commune = Commune(
-                        code=str(row("gemid")),
-                        name=row["gemidname"],
-                        name_fr=row["gemidname"],
-                        name_it=row["gemidname"],
-                        name_ro=row["gemidname"],
-                        name_en=row["gemidname"],
-                        name_de=row["gemidname"],
-                    )
-                    session.add(db_commune)
-                    await session.flush()
+        #         if db_commune is None:
+        #             db_commune = Commune(
+        #                 code=str(row("gemid")),
+        #                 name=row["gemidname"],
+        #                 name_fr=row["gemidname"],
+        #                 name_it=row["gemidname"],
+        #                 name_ro=row["gemidname"],
+        #                 name_en=row["gemidname"],
+        #                 name_de=row["gemidname"],
+        #             )
+        #             session.add(db_commune)
+        #             await session.flush()
 
-                for col in GSB_2023:
-                    if "GSB" in col:
-                        survey = col.split("_")[0]
-                        year = int(survey.replace("GSB", ""))
-                        year = 2000 + year if year < 50 else 1900 + year
+        #         for col in GSB_2023:
+        #             if "GSB" in col:
+        #                 survey = col.split("_")[0]
+        #                 year = int(survey.replace("GSB", ""))
+        #                 year = 2000 + year if year < 50 else 1900 + year
 
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
-                        db_question = result.scalar_one_or_none()
+        #                 result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
+        #                 db_question = result.scalar_one_or_none()
 
-                        if db_question is None:
-                            raise RuntimeError("Question not found")
-                        db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
-                        )
-                        session.add(db_answer)
-                        await session.flush()
+        #                 if db_question is None:
+        #                     raise RuntimeError("Question not found")
+        #                 db_answer = Answer(
+        #                     year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
+        #                 )
+        #                 session.add(db_answer)
+        #                 await session.flush()
 
-                    print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
+        #             print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")

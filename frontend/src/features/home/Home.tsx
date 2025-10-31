@@ -11,7 +11,7 @@ export default function Home() {
   const [panelOpen, setPanelOpen] = useState(true);
 
   // appel bootstrap
-  const { data, loading, error } = useBootstrap();
+  const { data, loading, error, errorKey } = useBootstrap();
 
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
@@ -71,7 +71,7 @@ export default function Home() {
           aria-modal="true"
         >
           <div className="p-5">
-            <HomeInfoPanel data={data} loading={loading} error={error} />
+            <HomeInfoPanel data={data} loading={loading} error={error} errorKey={errorKey} />
           </div>
         </div>
       </div>

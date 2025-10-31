@@ -2,6 +2,7 @@
 // contrôles utilitaires (reset zoom Suisse, capture écran).
 import { MapContainer, GeoJSON, Pane, ImageOverlay, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
+import { useTranslation } from "react-i18next";
 import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
 import { onEachCanton } from "@/components/map/admLabels";
@@ -45,8 +46,10 @@ export default function GeoJsonMap({
   baseImageUrl,
   baseImageOpacity = 1,
 }: Props) {
+  const { t } = useTranslation();
   const [bundle, setBundle] = useState<GeoBundle | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errKey, setErrKey] = useState<string | null>(null);
+  const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
   /** Chargement des couches géo pour l’année courante. */
@@ -72,7 +75,12 @@ export default function GeoJsonMap({
         const msg = (e?.message || "").toLowerCase();
         if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
 
-        setError(e?.message || "Failed to load geometry");
+        if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
+          setErrKey("map.errors.network");
+        } else {
+          setErrKey("map.errors.loadGeometry");
+        }
+        setErrDetail(e?.message || null);
       });
 
     return () => {
@@ -170,10 +178,19 @@ const communesStyle = useMemo(() => ({
       </MapContainer>
 
       {/* Alerte d’erreur de chargement géo */}
-      {error && (
-        <div className="absolute top-2 left-2 z-[4000] rounded bg-red-600 text-white px-3 py-1 text-sm shadow">
-          {error}
-        </div>
+      {errKey && (
+        <>
+          <div
+            className="absolute top-2 left-2 z-[4000] rounded bg-red-600 text-white px-3 py-1 text-sm shadow"
+            role="alert"
+            aria-live="assertive"
+            title={errDetail || undefined}
+          >
+            {t(errKey)}
+          </div>
+          {/* Annonce screen reader dédiée */}
+          <div className="sr-only" aria-live="assertive">{t(errKey)}</div>
+        </>
       )}
     </div>
   );

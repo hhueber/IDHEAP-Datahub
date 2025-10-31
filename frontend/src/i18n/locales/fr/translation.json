@@ -1,9 +1,16 @@
 {
   "nav": { 
-    "language": "Langue", 
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "navigation": "Navigation",
+    "language": "Langue",
+    "switchTo": "Basculer en {{lang}}",
+    "home": "Accueil",
     "data": "Données",
-    "home": "Accueil", 
-    "dataSoon": "Bientôt disponible." },
+    "errors": {
+      "changeLanguage": "Impossible de changer la langue pour le moment."
+    } 
+  },
   "home": {
     "heroTitle": "IDHEAP Data Explorer",
     "heroSubtitle": "Ce site, réalisé par l’IDHEAP, permet d’explorer les données des communes suisses. Vous pouvez visualiser l’évolution dans le temps : choisissez d’abord une année de questionnaire, puis la question que vous souhaitez voir représentée. Certaines questions globales couvrent plusieurs années ; vous pouvez les sélectionner directement, puis choisir l’année d’affichage.",
@@ -14,14 +21,261 @@
     "chooseYear": "Choisir une année",
     "globalOption": "Global",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
-    "noQuestionsForSelection": "Pas de questions pour cette sélection."
+    "noQuestionsForSelection": "Pas de questions pour cette sélection.",
+    "bootstrapError": "Impossible de charger les données initiales."
   },
-  "login": {
-    "title": "Connexion",
-    "subtitle": "Espace réservé pour la future auth."
+  "map": {
+    "cities": {
+      "lausanne": "Lausanne",
+      "bern": "Berne",
+      "basel": "Bâle",
+      "luzern": "Lucerne",
+      "schaffhausen": "Schaffhouse"
+    },
+    "errors": {
+      "loadGeometry": "Impossible de charger les couches géographiques.",
+      "network": "Problème de réseau. Vérifiez votre connexion."
+    }
   },
   "common": {
     "loading": "Chargement…",
     "error": "Erreur"
+  },
+  "notFound": {
+    "message": "Page introuvable.",
+    "numeros": "404"
+  },
+  "questions": {
+    "empty": "Aucune question disponible.",
+    "loadError": "Impossible de charger les questions.",
+    "aborted": "Chargement annulé."
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Espace réservé pour la future auth.",
+
+    "emailLabel": "Email",
+    "emailPlaceholder": "Entrez votre email",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+
+    "submit": "Se connecter",
+    "submitting": "Connexion",
+
+    "errors": {
+      "generic": "Échec de la connexion.",
+      "invalidCredentials": "Identifiants incorrects.",
+      "network": "Problème de connexion réseau.",
+      "locked": "Compte verrouillé.",
+      "rateLimited": "Trop de tentatives. Réessayez plus tard."
+    }
+  },
+  "export": {
+    "title": "Export",
+    "pngLabel": "PNG",
+    "pdfLabel": "PDF",
+    "pngTooltip": "Exporter en PNG",
+    "pdfTooltip": "Exporter en PDF",
+
+    "note": "La capture reprend exactement la vue actuelle (zoom/déplacement) sans le menu.",
+
+    "ariaExportPng": "Export PNG en cours",
+    "ariaExportPdf": "Export PDF en cours",
+
+    "filenamePrefix": "carte",
+
+    "errors": {
+      "mapUnavailable": "Carte indisponible.",
+      "pngFailed": "Export PNG impossible.",
+      "pdfFailed": "Export PDF impossible."
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue {{name}}",
+    "welcomeWithRole": "Bienvenue {{name}} ({{role}})",
+    "anonymous": "Utilisateur",
+    "logout": "Se déconnecter"
+  },
+  "changePassword": {
+    "title": "Changer mon mot de passe",
+
+    "oldPasswordLabel": "Ancien mot de passe",
+    "oldPasswordPlaceholder": "Entrez votre ancien mot de passe",
+
+    "newPasswordLabel": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+
+    "confirmLabel": "Confirmation",
+    "confirmPlaceholder": "Confirmez votre nouveau mot de passe",
+
+    "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+
+    "submit": "Modifier",
+    "submitting": "Modification",
+
+    "success": "Mot de passe modifié.",
+    "successWithDetail": "Mot de passe modifié.",
+
+    "fail": "Échec de la modification du mot de passe.",
+    "failWithDetail": "Échec de la modification du mot de passe.",
+
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+
+    "errors": {
+      "confirmMismatch": "La confirmation ne correspond pas.",
+      "tooShort": "Mot de passe trop court (min. 10 caractères).",
+      "invalidOldPassword": "Ancien mot de passe invalide.",
+      "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+      "generic": "Une erreur est survenue."
+    }
+  },
+  "admin": {
+    "deleteMember": {
+      "title": "Supprimer un membre",
+
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
+
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
+
+      "submit": "Supprimer",
+      "submitting": "Suppression",
+
+      "success": "Utilisateur supprimé.",
+      "fail": "Échec de suppression.",
+
+      "errors": {
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "notFound": "Utilisateur introuvable.",
+        "forbidden": "Action interdite.",
+        "generic": "Une erreur est survenue."
+      }
+    },
+    "addMember": {
+    "title": "Ajouter un membre",
+
+    "firstNameLabel": "Prénom",
+    "firstNamePlaceholder": "Entrez le prénom",
+    "lastNameLabel": "Nom",
+    "lastNamePlaceholder": "Entrez le nom",
+    "emailLabel": "Email",
+    "emailPlaceholder": "Entrez l'email",
+    "roleLabel": "Rôle",
+
+    "roles": {
+      "member": "Membre",
+      "admin": "Admin"
+    },
+
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez le mot de passe",
+    "confirmLabel": "Confirmation",
+    "confirmPlaceholder": "Confirmez le mot de passe",
+    "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+
+    "submit": "Créer le membre",
+    "submitting": "Création",
+
+    "success": "Membre créé.",
+    "fail": "Échec de création.",
+
+    "errors": {
+      "confirmMismatch": "La confirmation ne correspond pas.",
+      "tooShort": "Mot de passe trop court (min. 10 caractères).",
+      "emailExists": "Un membre avec cet email existe déjà.",
+      "forbidden": "Action interdite.",
+      "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+      "generic": "Une erreur est survenue."
+    }
+  }
+  },
+  "dashboardSidebar": {
+    "privateSpace": "Espace privé",
+    "toggleSection": "Basculer la section {{section}}",
+    "rolePrefix": "Rôle :",
+    "logout": "Se déconnecter",
+    "sections": {
+      "dashboard": "Dashboard",
+      "survey": "Survey",
+      "qa": "Questions & Answers",
+      "places": "Places",
+      "administration": "Administration"
+    },
+    "survey": {
+      "all": "Tous",
+      "newEdit": "Nouveau / Éditer",
+      "show": "Afficher"
+    },
+    "qa": {
+      "qps": {
+        "_": "QuestionPerSurvey",
+        "all": "Tous",
+        "newEdit": "Nouveau / Éditer",
+        "show": "Afficher"
+      },
+      "qglobal": {
+        "_": "QuestionGlobal",
+        "all": "Tous",
+        "newEdit": "Nouveau / Éditer",
+        "show": "Afficher"
+      },
+      "qcat": {
+        "_": "QuestionCategory",
+        "all": "Tous",
+        "newEdit": "Nouveau / Éditer",
+        "show": "Afficher"
+      },
+      "answer": {
+        "_": "Answer",
+        "all": "Tous",
+        "newEdit": "Nouveau / Éditer",
+        "show": "Afficher"
+      },
+      "option": {
+        "_": "Option",
+        "all": "Tous",
+        "newEdit": "Nouveau / Éditer",
+        "show": "Afficher"
+      }
+    },
+    "places": {
+      "commune": {
+        "_": "Commune",
+        "all": "Toutes",
+        "show": "Afficher"
+      },
+      "district": {
+        "_": "District",
+        "all": "Tous",
+        "show": "Afficher"
+      },
+      "canton": {
+        "_": "Canton",
+        "all": "Tous",
+        "show": "Afficher"
+      }
+    },
+    "administration": {
+      "changePassword": "Changer mon mot de passe",
+      "users": {
+        "_": "Utilisateurs",
+        "add": "Ajouter un membre",
+        "delete": "Supprimer un membre"
+      }
+    }
+  },
+  "roles": {
+    "admin": "Administrateur",
+    "member": "Membre"
   }
 }
