@@ -9,16 +9,26 @@ SameSite = Literal["lax", "strict", "none"]
 
 
 class Settings(BaseSettings):
-    # DB components depuis .env
+    # Database
+    DB_HOST: str
+    DB_PORT: int
     DB_NAME: str
     DB_USER: str
     DB_PASSWORD: str
-    DB_HOST: str
-    DB_PORT: int
 
-    # Sécurité / API
+    # Backend
+    BACKEND_HOST: str
+    BACKEND_PORT: int
+
+    # Frontend
+    FRONTEND_HOST: str
+    FRONTEND_PORT: int
+
+    # Secrets
     API_SECRET: str
     SECRET_KEY: str
+
+    # Security / API
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
@@ -27,8 +37,9 @@ class Settings(BaseSettings):
     COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: SameSite = "lax"
 
-    # CORS
+    # CORS and API
     CORS_ORIGINS: str
+    API_URL: str
 
     @field_validator("CORS_ORIGINS")
     @classmethod
@@ -38,7 +49,7 @@ class Settings(BaseSettings):
         # est faite plus bas dans la propriété `CORS_ORIGINS_LIST`.
         return v
 
-    # Root seed
+    # Super admin instance account
     ROOT_EMAIL: str | None = None
     ROOT_PASSWORD: str | None = None
     ROOT_NAME: str | None = "Admin Root"

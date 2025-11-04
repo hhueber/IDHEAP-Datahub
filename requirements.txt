@@ -9,6 +9,7 @@ lxml==6.0.0
 numpy==2.3.2
 pandas==2.3.1
 openpyxl==3.1.5
+tqdm==4.67.1
 
 # Web backend (API)
 fastapi==0.115.0
