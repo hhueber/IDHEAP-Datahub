@@ -63,11 +63,7 @@
     "submitting": "Connexion",
 
     "errors": {
-      "generic": "Échec de la connexion.",
-      "invalidCredentials": "Identifiants incorrects.",
-      "network": "Problème de connexion réseau.",
-      "locked": "Compte verrouillé.",
-      "rateLimited": "Trop de tentatives. Réessayez plus tard."
+      "generic": "Échec de la connexion."
     }
   },
   "export": {

@@ -32,18 +32,7 @@ export default function Login() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (e: any) {
-      const code = e?.code || e?.status || e?.response?.status || e?.name;
-      if (code === 401 || e?.message?.toLowerCase?.().includes("invalid")) {
-        setErrKey("login.errors.invalidCredentials");
-      } else if (code === "NetworkError" || code === 0) {
-        setErrKey("login.errors.network");
-      } else if (code === 423 || e?.message?.toLowerCase?.().includes("locked")) {
-        setErrKey("login.errors.locked");
-      } else if (code === 429) {
-        setErrKey("login.errors.rateLimited");
-      } else {
-        setErrKey("login.errors.generic");
-      }
+        setErrKey(e?.message || "login.errors.generic");
     } finally {
       setLoading(false);
     }
