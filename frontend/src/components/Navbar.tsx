@@ -5,8 +5,8 @@ import { Link } from "react-router-dom";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
-  { code: "en", label: "EN"  },
-  { code: "fr", label: "FR"  },
+  { code: "en", label: "EN", },
+  { code: "fr", label: "FR", },
   { code: "de", label: "DE", },
   { code: "it", label: "IT", },
   { code: "rm", label: "RM", },
