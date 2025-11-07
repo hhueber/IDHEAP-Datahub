@@ -62,7 +62,8 @@ export default function Navbar() {
         <img
           src={brand}
           alt="IDHEAP"
-          className="h-12 sm:h-14 w-auto object-contain select-none"
+          className="h-12 sm:h-14 w-auto object-contain select-none
+             rounded-xl ring-1 ring-black/10 shadow-2xl bg-white"
         />
         {!open && (
           <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2 text-indigo-600" aria-hidden="true">
