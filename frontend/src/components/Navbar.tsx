@@ -2,15 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import brand from "@/img/idheap-dh.png";
 import { Link } from "react-router-dom";
-import ReactCountryFlag from "react-country-flag";
 
-type Lang = { code: string; label: string; countryCode: string };
+type Lang = { code: string; label: string };
 const langs: Lang[] = [
-  { code: "en", label: "EN", countryCode: "GB" },
-  { code: "fr", label: "FR", countryCode: "FR" },
-  { code: "de", label: "DE", countryCode: "DE" },
-  { code: "it", label: "IT", countryCode: "IT" },
-  { code: "rm", label: "RM", countryCode: "CH" },
+  { code: "en", label: "EN"  },
+  { code: "fr", label: "FR"  },
+  { code: "de", label: "DE", },
+  { code: "it", label: "IT", },
+  { code: "rm", label: "RM", },
 ];
 
 export default function Navbar() {
@@ -80,34 +79,38 @@ export default function Navbar() {
             ref={panelRef}
             role="menu"
             aria-label="Navigation"
-            className="absolute left-0 top-0 h-full w-[min(22rem,92vw)]
+            className="absolute left-0 top-0 h-full w-[min(10rem,70vw)]
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
                        bg-white/95 backdrop-blur p-3"
           >
             {/* Langues */}
             <div className="p-2 mb-2 rounded-xl bg-white/80">
               <div className="flex items-center gap-2 px-1 py-1">
-                <ReactCountryFlag countryCode={current.countryCode} svg style={{ width: "1.2em", height: "1.2em" }} />
-                <span className="font-semibold text-indigo-800">{t("nav.language")}</span>
+                <span className="font-semibold text-indigo-800">
+                  {t("nav.language")}
+                </span>
               </div>
-              <div className="mt-2 grid grid-cols-5 gap-2">
-                {langs.map(({ code, label, countryCode }) => {
-                  const active = curLang.startsWith(code) || curBase === code;
-                  return (
-                    <button
-                      key={code}
-                      onClick={() => { i18n.changeLanguage(code); setOpen(false); }}
-                      className={`px-2 py-1 rounded-md hover:bg-indigo-50 transition ${
-                        active ? "bg-indigo-600 text-white" : "text-indigo-700"
-                      }`}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        <ReactCountryFlag countryCode={countryCode} svg style={{ width: "1.05em", height: "1.05em" }} />
-                        {label}
-                      </span>
-                    </button>
-                  );
-                })}
+
+              <div className="mt-2">
+                <select
+                  value={current.code}
+                  onChange={(e) => {
+                    const code = e.target.value;
+                    i18n.changeLanguage(code);
+                    setOpen(false); // referme le drawer après changement
+                  }}
+                  className="
+                    w-full rounded-md border border-indigo-200 bg-white
+                    px-3 py-2 text-sm text-indigo-800
+                    focus:outline-none focus:ring-2 focus:ring-indigo-500
+                  "
+                >
+                  {langs.map(({ code, label }) => (
+                    <option key={code} value={code}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 
