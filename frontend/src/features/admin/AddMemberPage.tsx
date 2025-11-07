@@ -61,9 +61,7 @@ export default function AddMemberPage() {
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
-      if (Array.isArray(d)) setErrKey("admin.addMember.errors.serverValidation");
-      else if (ae?.status === 409) setErrKey("admin.addMember.errors.emailExists");
-      else if (ae?.status === 403) setErrKey("admin.addMember.errors.forbidden");
+      if (Array.isArray(d)) setErrKey(d.map((x: any) => x.msg).join(" · "));
       else setErrKey("admin.addMember.errors.generic");
     } finally {
       setSubmitting(false);

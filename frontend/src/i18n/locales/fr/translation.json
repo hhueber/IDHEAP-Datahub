@@ -42,8 +42,7 @@
     "error": "Erreur"
   },
   "notFound": {
-    "message": "Page introuvable.",
-    "numeros": "404"
+    "message": "Page introuvable."
   },
   "questions": {
     "empty": "Aucune question disponible.",
@@ -151,9 +150,6 @@
       "fail": "Échec de suppression.",
 
       "errors": {
-        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
-        "notFound": "Utilisateur introuvable.",
-        "forbidden": "Action interdite.",
         "generic": "Une erreur est survenue."
       }
     },
@@ -188,9 +184,6 @@
     "errors": {
       "confirmMismatch": "La confirmation ne correspond pas.",
       "tooShort": "Mot de passe trop court (min. 10 caractères).",
-      "emailExists": "Un membre avec cet email existe déjà.",
-      "forbidden": "Action interdite.",
-      "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
       "generic": "Une erreur est survenue."
     }
   }

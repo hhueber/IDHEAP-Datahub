@@ -44,9 +44,7 @@ export default function DeleteMemberPage() {
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
-      if (Array.isArray(d)) setErrKey("admin.deleteMember.errors.serverValidation");
-      else if (ae?.status === 404) setErrKey("admin.deleteMember.errors.notFound");
-      else if (ae?.status === 403) setErrKey("admin.deleteMember.errors.forbidden");
+      if (Array.isArray(d)) setErrKey(d.map((x: any) => x.msg).join(" · "));
       else setErrKey("admin.deleteMember.errors.generic");
     } finally {
       setSubmitting(false);
