@@ -12,18 +12,21 @@ export function useBootstrap() {
   const [data, setData] = useState<HomeBootstrap | null>(cacheByLang.get(lang) ?? null);
   const [loading, setLoading] = useState(!cacheByLang.has(lang));
   const [error, setError] = useState<Error | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (cacheByLang.has(lang)) {
       setData(cacheByLang.get(lang)!);
       setLoading(false);
       setError(null);
+      setErrorKey(null);
       return;
     }
 
     const c = new AbortController();
     setLoading(true);
     setError(null);
+    setErrorKey(null);
 
     homeApi
       .getBootstrap(c.signal, lang)
@@ -32,12 +35,16 @@ export function useBootstrap() {
         setData(d);
       })
       .catch((e) => {
-        if ((e as any)?.name !== "AbortError") setError(e as Error);
+        if ((e as any)?.name !== "AbortError") {
+          setError(e as Error);
+          // erreur lors du chargement des datas initiales sur home Pages
+          setErrorKey("home.bootstrapError");
+        }
       })
       .finally(() => setLoading(false));
 
     return () => c.abort();
   }, [lang]);
 
-  return { data, loading, error, lang };
+  return { data, loading, error, errorKey, lang };
 }
