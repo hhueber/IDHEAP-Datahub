@@ -41,11 +41,11 @@ async def create_schema() -> None:
         logger.info("ROOT_EMAIL or ROOT_PASSWORD not set; no root created.")
 
     # Populate la base de donnée
-    await populate_db()
-    logger.info("Database populated successfully.")
-
     await populate_async_geo()
     logger.info("Database populated successfully with geo data.")
+
+    await populate_db()
+    logger.info("Database populated successfully.")
 
 
 if __name__ == "__main__":

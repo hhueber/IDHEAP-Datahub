@@ -50,51 +50,6 @@ async def populate_db() -> None:
 
         # District and commune
         row_number = 0
-        async with session.begin():
-            communes = pd.read_excel(Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
-            communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
-            communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
-
-            for index, rows in tqdm(communes.iterrows(), total=len(communes), desc="Processing districts"):
-                result = await session.execute(select(Canton).filter_by(code=rows["Canton"]))
-                db_canton = result.scalar_one_or_none()
-
-                if db_canton is None:
-                    RuntimeError("Canton not found")
-
-                result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
-                db_district = result.scalar_one_or_none()
-                if db_district is not None:
-                    pass  # print(">>> District already exists")
-                else:
-                    db_district = District(
-                        code=rows["Numéro du district"],
-                        name=rows["Nom du district"],
-                        name_en=rows["Nom du district"],
-                        name_fr=rows["Nom du district"],
-                        name_it=rows["Nom du district"],
-                        name_ro=rows["Nom du district"],
-                        name_de=rows["Nom du district"],
-                        canton=db_canton,
-                    )
-                    # print(f">>> INSERTING DISTRICT {db_district.name}")
-                    session.add(db_district)
-                    await session.flush()
-
-                db_commune = Commune(
-                    code=str(index),
-                    name=rows["Nom de la commune"],
-                    name_en=rows["Nom de la commune"],
-                    name_fr=rows["Nom de la commune"],
-                    name_it=rows["Nom de la commune"],
-                    name_ro=rows["Nom de la commune"],
-                    name_de=rows["Nom de la commune"],
-                    district=db_district,
-                )
-                session.add(db_commune)
-                await session.flush()
-                row_number += 1
-                # print(f">>> INSERTING COMMUNE {rows['Nom de la commune']} {row_number}/{len(communes)} ")
 
         # Survey and question per survey
         async with session.begin():
@@ -171,21 +126,6 @@ async def populate_db() -> None:
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
                 db_commune = result.scalar_one_or_none()
 
-                if db_commune is None:
-                    # print(f">>> INSERTING COMMUNE {row['gemidname']}")
-                    db_commune = Commune(
-                        code=str(row["gemid"]),
-                        name=row["gemidname"],
-                        name_en=row["gemidname"],
-                        name_fr=row["gemidname"],
-                        name_it=row["gemidname"],
-                        name_ro=row["gemidname"],
-                        name_de=row["gemidname"],
-                        district=db_district,
-                    )
-                    session.add(db_commune)
-                    await session.flush()
-
                 for col in crc:
                     if "GSB" in col:
                         survey = col.split("_")[0]
@@ -214,19 +154,6 @@ async def populate_db() -> None:
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
                 db_commune = result.scalar_one_or_none()
-
-                if db_commune is None:
-                    db_commune = Commune(
-                        code=str(row("BFS_2023")),
-                        name=row["Gemeinde_2023"],
-                        name_fr=row["Gemeinde_2023"],
-                        name_it=row["Gemeinde_2023"],
-                        name_ro=row["Gemeinde_2023"],
-                        name_en=row["Gemeinde_2023"],
-                        name_de=row["Gemeinde_2023"],
-                    )
-                    session.add(db_commune)
-                    await session.flush()
 
                 for col in GSB_2023:
                     if "GSB" in col:

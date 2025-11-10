@@ -4,6 +4,7 @@ import os
 import tempfile as tf
 
 
+from app.data.cantons import CANTONS
 from app.db import SessionLocal
 from app.models import Canton, CantonMap, Commune, CommuneMap, Country, District, DistrictMap, Lake, LakeMap
 from geoalchemy2.shape import from_shape
@@ -11,6 +12,7 @@ from pyproj import Transformer
 from shapely.geometry import shape
 from shapely.ops import transform
 from sqlalchemy import select
+from tqdm import tqdm
 import fiona
 import requests
 import shapely.wkb
@@ -22,6 +24,26 @@ transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 async def populate_async_geo() -> None:
     has_country_populated = False
     async with SessionLocal() as session:
+
+        async with session.begin():
+            index = 1
+            total_item = len(CANTONS)
+            for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
+                db_canton = Canton(
+                    code=code,
+                    name=lang["en"],
+                    ofs_id=lang["ofs_id"],
+                    name_de=lang["de"],
+                    name_en=lang["en"],
+                    name_fr=lang["fr"],
+                    name_it=lang["it"],
+                    name_ro=lang["ro"],
+                )
+                # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
+                index += 1
+
+                session.add(db_canton)
+
         for year in [1988, 1994, 1998, 2005, 2009, 2017, 2023]:
             if year < 2016:
                 year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
@@ -38,6 +60,9 @@ async def populate_async_geo() -> None:
                 os.remove(zip_file.name)
 
             layers = fiona.listlayers(url)
+            # To ensure that we taking care of canton then district then commune
+            if year < 2016:
+                layers.reverse()
 
             async with session.begin():
 
@@ -54,64 +79,8 @@ async def populate_async_geo() -> None:
                             print(f">>>[{year}] INSERTING country shape")
                             has_country_populated = True
 
-                        # Insertion of commune data
-                        if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
-                            for feature in src:
-                                if year < 2016:
-                                    if (
-                                        feature["properties"]["GDENR"] == 253
-                                        or feature["properties"]["GARTE"] != 11
-                                        or feature["properties"]["CODE_ISO"] != "CH"
-                                    ):
-                                        continue
-                                    bfs_number = feature["properties"]["GDENR"]
-                                else:
-                                    # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
-                                    if (
-                                        feature["properties"]["objektart"] != "Gemeindegebiet"
-                                        or feature["properties"]["icc"] != "CH"
-                                    ):
-                                        continue
-                                    bfs_number = feature["properties"]["bfs_nummer"]
-                                result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
-                                db_commune = result.scalar_one_or_none()
-                                multi = shape(feature["geometry"])
-                                multi = transform(lambda x, y, z=None: (x, y), multi)
-                                multi = transform(transformer.transform, multi)
-                                db_commune_map = CommuneMap(
-                                    year=year,
-                                    commune=db_commune,
-                                    geo_data_type=feature["geometry"]["type"],
-                                    geometry=from_shape(multi, srid=4326),
-                                )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
-                                session.add(db_commune_map)
-                                await session.flush()
-
-                        if "kanton" in layer or "Canton" in layer:
-                            for feature in src:
-                                # Well beacuse in the pre 2016 dataset and post 2016 we dont have the same info we must do a little trick
-                                if year < 2016:
-                                    bfs_number = feature["properties"]["KTNR"]
-                                else:
-                                    bfs_number = feature["properties"]["kantonsnummer"]
-                                result = await session.execute(select(Canton).filter_by(ofs_id=bfs_number))
-                                db_canton = result.scalar_one_or_none()
-                                multi = shapely.geometry.shape(feature["geometry"])
-                                multi = transform(lambda x, y, z=None: (x, y), multi)
-                                multi = transform(transformer.transform, multi)
-                                db_canton_map = CantonMap(
-                                    year=year,
-                                    geo_data_type=feature["geometry"]["type"],
-                                    geometry=from_shape(multi, srid=4326),
-                                    canton=db_canton,
-                                )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
-                                session.add(db_canton_map)
-                                await session.flush()
-
-                        if "bezirk" in layer or "District" in layer:
-                            # The bfs number isnt the same the geopackage
+                        elif "bezirk" in layer or "District" in layer:
+                            # The bfs number isn't the same the geopackage
                             for feature in src:
                                 if year < 2016:
                                     canton_number = feature["properties"]["KTNR"]
@@ -156,7 +125,82 @@ async def populate_async_geo() -> None:
 
                                 await session.flush()
 
-                        if "Lac" in layer:
+                        # Insertion of commune data
+                        elif "tlm_hoheitsgebiet" in layer or "Communes" in layer:
+                            for feature in src:
+                                if year < 2016:
+                                    if (
+                                        feature["properties"]["GDENR"] == 253
+                                        or feature["properties"]["GARTE"] != 11
+                                        or feature["properties"]["CODE_ISO"] != "CH"
+                                    ):
+                                        continue
+
+                                    bfs_number = feature["properties"]["GDENR"]
+                                    commune_name = feature["properties"]["GDENAME"]
+                                    district_number = feature["properties"]["BEZNR"]
+                                else:
+                                    # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
+                                    if (
+                                        feature["properties"]["objektart"] != "Gemeindegebiet"
+                                        or feature["properties"]["icc"] != "CH"
+                                    ):
+                                        continue
+                                    bfs_number = feature["properties"]["bfs_nummer"]
+                                result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
+                                db_commune = result.scalar_one_or_none()
+                                if db_commune is None:
+                                    result = await session.execute(
+                                        select(District).filter_by(code="B" + str(district_number))
+                                    )
+                                    db_district = result.scalar_one_or_none()
+                                    db_commune = Commune(
+                                        code=str(bfs_number),
+                                        name=commune_name,
+                                        name_fr=commune_name,
+                                        name_en=commune_name,
+                                        name_ro=commune_name,
+                                        name_it=commune_name,
+                                        name_de=commune_name,
+                                        district=db_district,
+                                    )
+                                    session.add(db_commune)
+                                multi = shape(feature["geometry"])
+                                multi = transform(lambda x, y, z=None: (x, y), multi)
+                                multi = transform(transformer.transform, multi)
+                                db_commune_map = CommuneMap(
+                                    year=year,
+                                    commune=db_commune,
+                                    geo_data_type=feature["geometry"]["type"],
+                                    geometry=from_shape(multi, srid=4326),
+                                )
+                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
+                                session.add(db_commune_map)
+                                await session.flush()
+
+                        elif "kanton" in layer or "Canton" in layer:
+                            for feature in src:
+                                # Well beacuse in the pre 2016 dataset and post 2016 we dont have the same info we must do a little trick
+                                if year < 2016:
+                                    bfs_number = feature["properties"]["KTNR"]
+                                else:
+                                    bfs_number = feature["properties"]["kantonsnummer"]
+                                result = await session.execute(select(Canton).filter_by(ofs_id=bfs_number))
+                                db_canton = result.scalar_one_or_none()
+                                multi = shapely.geometry.shape(feature["geometry"])
+                                multi = transform(lambda x, y, z=None: (x, y), multi)
+                                multi = transform(transformer.transform, multi)
+                                db_canton_map = CantonMap(
+                                    year=year,
+                                    geo_data_type=feature["geometry"]["type"],
+                                    geometry=from_shape(multi, srid=4326),
+                                    canton=db_canton,
+                                )
+                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
+                                session.add(db_canton_map)
+                                await session.flush()
+
+                        elif "Lac" in layer:
                             for feature in src:
 
                                 result = await session.execute(
