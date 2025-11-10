@@ -51,6 +51,7 @@ export default function Navbar() {
       await i18n.changeLanguage(code);
       setOpen(false);
     } catch {
+      // erreur lors du changement de langue
       setErrKey("nav.errors.changeLanguage");
     }
   };

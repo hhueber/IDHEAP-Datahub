@@ -38,7 +38,9 @@ export default function AddMemberPage() {
 
   // Validation rapide côté client
   const validate = () => {
+    // les mots de passe ne correspndent pas coté client
     if (form.password !== form.confirm) { setErrKey("admin.addMember.errors.confirmMismatch"); return false; }
+    // mot de passe trop court coté client
     if (form.password.length < 10) { setErrKey("admin.addMember.errors.tooShort"); return false; }
     return true;
   };
@@ -56,14 +58,19 @@ export default function AddMemberPage() {
         setMsgKey("admin.addMember.success");
         setForm({ first_name: "", last_name: "", email: "", role: "MEMBER", password: "", confirm: "" });
       } else {
+        // la creation du membre a échoué coté serveur
         setErrKey("admin.addMember.fail");
       }
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
+      // erreur de validation coté serveur
       if (Array.isArray(d)) setErrKey("admin.addMember.errors.serverValidation");
+      // email déjà utilisé
       else if (ae?.status === 409) setErrKey("admin.addMember.errors.emailExists");
+      // action interdite
       else if (ae?.status === 403) setErrKey("admin.addMember.errors.forbidden");
+      // erreur générique
       else setErrKey("admin.addMember.errors.generic");
     } finally {
       setSubmitting(false);

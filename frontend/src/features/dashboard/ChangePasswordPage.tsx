@@ -24,7 +24,9 @@ export default function ChangePasswordPage() {
 
   // Validation minimale côté client
   const validate = () => {
+    // erreur car les mots de passe ne correspondent pas
     if (form.new_password !== form.confirm) { setErrKey("changePassword.errors.confirmMismatch"); return false; }
+    // erreur car mot de passe trop court
     if (form.new_password.length < 10) { setErrKey("changePassword.errors.tooShort"); return false; }
     return true;
   };
@@ -47,10 +49,13 @@ export default function ChangePasswordPage() {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
       if (Array.isArray(d)) {
+        // erreurs de validation coté serveur
         setErrKey("changePassword.errors.serverValidation");
       } else if (ae?.status === 401 || String(ae?.message || "").toLowerCase().includes("invalid")) {
+        // ancien mot de passe invalide coté serveur
         setErrKey("changePassword.errors.invalidOldPassword");
       } else {
+        // erreur genérique coté serveur
         setErrKey("changePassword.errors.generic");
       }
     } finally {

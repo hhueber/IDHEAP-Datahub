@@ -42,8 +42,7 @@
     "error": "Erreur"
   },
   "notFound": {
-    "message": "Page introuvable.",
-    "numeros": "404"
+    "message": "Page introuvable."
   },
   "questions": {
     "empty": "Aucune question disponible.",

@@ -39,14 +39,19 @@ export default function DeleteMemberPage() {
         setMsgKey("admin.deleteMember.success");
         setForm({ first_name: "", last_name: "", email: "", role: "MEMBER" });
       } else {
+        // la suppression a échoué
         setErrKey("admin.deleteMember.fail");
       }
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
+      // erreur de validation coté serveur
       if (Array.isArray(d)) setErrKey("admin.deleteMember.errors.serverValidation");
+      // membre non trouvé
       else if (ae?.status === 404) setErrKey("admin.deleteMember.errors.notFound");
+      // action interdite
       else if (ae?.status === 403) setErrKey("admin.deleteMember.errors.forbidden");
+      // erreur générique
       else setErrKey("admin.deleteMember.errors.generic");
     } finally {
       setSubmitting(false);

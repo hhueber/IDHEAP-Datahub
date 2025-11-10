@@ -18,6 +18,7 @@ async function captureMapBlob(): Promise<Blob> {
   const map = (window as any).__leafletMap;
   if (!map) {
     const err = new Error("map.unavailable");
+    // echec de recuperation de la map
     err.name = "MapUnavailable";
     throw err;
   }
@@ -47,8 +48,10 @@ export default function MapExportButtons() {
 
   function getErrorKey(e: any, kind: "png" | "pdf"): string {
     if (e?.name === "MapUnavailable" || e?.message === "map.unavailable") {
+      // echec de recuperation de la map
       return "export.errors.mapUnavailable";
     }
+    // erreur lors des export PNG ou PDF
     return kind === "png" ? "export.errors.pngFailed" : "export.errors.pdfFailed";
   }
 

@@ -76,8 +76,10 @@ export default function GeoJsonMap({
         if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
 
         if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
+          // erreur avec la connexion réseau
           setErrKey("map.errors.network");
         } else {
+          // erreur avec les GeoJson
           setErrKey("map.errors.loadGeometry");
         }
         setErrDetail(e?.message || null);
