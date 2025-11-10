@@ -2,11 +2,13 @@
 import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 type Role = "ADMIN" | "MEMBER";
 type MenuItem = {
   key: string;
-  label: string;
+  labelKey?: string; // <- clé i18n
+  label?: string;
   to?: string; // route (si absent -> nœud parent)
   roles?: Role[]; // rôles autorisés
   children?: MenuItem[];
@@ -53,8 +55,10 @@ function TreeItem({
   currentPath: string;
   userRole?: Role;
 }) {
+  const { t } = useTranslation();
   if (!canSee(userRole, item)) return null;
 
+  const label = item.labelKey ? t(item.labelKey) : (item.label ?? "");
   const hasChildren = !!item.children?.some((c) => canSee(userRole, c));
   const padding = 12 + depth * 12;
   const activeHere = item.to ? isPathActive(item.to, currentPath) : false;
@@ -70,7 +74,7 @@ function TreeItem({
     return (
       <div style={{ paddingLeft: padding }}>
         <ItemLink to={item.to}>
-          <span>{item.label}</span>
+          <span>{label}</span>
         </ItemLink>
       </div>
     );
@@ -88,8 +92,9 @@ function TreeItem({
         ].join(" ")}
         style={{ paddingLeft: padding }}
         aria-expanded={isOpen(item.key)}
+        aria-label={t("dashboardSidebar.toggleSection", { section: label })}
       >
-        <span className="flex items-center gap-2">{item.label}</span>
+        <span className="flex items-center gap-2">{label}</span>
         <span aria-hidden>{isOpen(item.key) ? "\u25BE" : "\u25B8"}</span>
       </button>
 
@@ -115,6 +120,7 @@ function TreeItem({
 }
 
 export default function DashboardSidebar() {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const userRole = (user?.role as Role) || undefined;
   const location = useLocation();
@@ -122,121 +128,121 @@ export default function DashboardSidebar() {
   // 5 sections top-level (Dashboard en premier)
   // définition du menu (contrôlé par rôle)
   const menu: MenuItem[] = [
-    { key: "dashboard", label: "Dashboard", to: "/dashboard", roles: ["ADMIN", "MEMBER"] },
+    { key: "dashboard", labelKey: "dashboardSidebar.sections.dashboard", to: "/dashboard", roles: ["ADMIN", "MEMBER"] },
     {
       key: "survey",
-      label: "Survey",
+      labelKey: "dashboardSidebar.sections.survey",
       roles: ["ADMIN", "MEMBER"],
       children: [
-        { key: "survey-all", label: "All", to: "/admin/surveys", roles: ["ADMIN", "MEMBER"] },
-        { key: "survey-edit", label: "New / Edit", to: "/admin/surveys/new", roles: ["ADMIN", "MEMBER"] },
-        { key: "survey-show", label: "Show", to: "/admin/surveys/show", roles: ["ADMIN", "MEMBER"] },
+        { key: "survey-all",  labelKey: "dashboardSidebar.survey.all",     to: "/admin/surveys",     roles: ["ADMIN", "MEMBER"] },
+        { key: "survey-edit", labelKey: "dashboardSidebar.survey.newEdit", to: "/admin/surveys/new", roles: ["ADMIN", "MEMBER"] },
+        { key: "survey-show", labelKey: "dashboardSidebar.survey.show",    to: "/admin/surveys/show",roles: ["ADMIN", "MEMBER"] },
       ],
     },
     {
       key: "qa",
-      label: "Questions & Answers",
+      labelKey: "dashboardSidebar.sections.qa",
       roles: ["ADMIN", "MEMBER"],
       children: [
         {
           key: "qps",
-          label: "QuestionPerSurvey",
+          labelKey: "dashboardSidebar.qa.qps._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "qps-all", label: "All", to: "/admin/qps", roles: ["ADMIN", "MEMBER"] },
-            { key: "qps-edit", label: "New / Edit", to: "/admin/qps/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "qps-show", label: "Show", to: "/admin/qps/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "qps-all",  labelKey: "dashboardSidebar.qa.qps.all",     to: "/admin/qps",     roles: ["ADMIN", "MEMBER"] },
+            { key: "qps-edit", labelKey: "dashboardSidebar.qa.qps.newEdit", to: "/admin/qps/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "qps-show", labelKey: "dashboardSidebar.qa.qps.show",    to: "/admin/qps/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "qglobal",
-          label: "QuestionGlobal",
+          labelKey: "dashboardSidebar.qa.qglobal._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "qglobal-all", label: "All", to: "/admin/qglobal", roles: ["ADMIN", "MEMBER"] },
-            { key: "qglobal-edit", label: "New / Edit", to: "/admin/qglobal/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "qglobal-show", label: "Show", to: "/admin/qglobal/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "qglobal-all",  labelKey: "dashboardSidebar.qa.qglobal.all",     to: "/admin/qglobal",     roles: ["ADMIN", "MEMBER"] },
+            { key: "qglobal-edit", labelKey: "dashboardSidebar.qa.qglobal.newEdit", to: "/admin/qglobal/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "qglobal-show", labelKey: "dashboardSidebar.qa.qglobal.show",    to: "/admin/qglobal/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "qcat",
-          label: "QuestionCategory",
+          labelKey: "dashboardSidebar.qa.qcat._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "qcat-all", label: "All", to: "/admin/qcat", roles: ["ADMIN", "MEMBER"] },
-            { key: "qcat-edit", label: "New / Edit", to: "/admin/qcat/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "qcat-show", label: "Show", to: "/admin/qcat/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "qcat-all",  labelKey: "dashboardSidebar.qa.qcat.all",     to: "/admin/qcat",     roles: ["ADMIN", "MEMBER"] },
+            { key: "qcat-edit", labelKey: "dashboardSidebar.qa.qcat.newEdit", to: "/admin/qcat/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "qcat-show", labelKey: "dashboardSidebar.qa.qcat.show",    to: "/admin/qcat/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "answer",
-          label: "Answer",
+          labelKey: "dashboardSidebar.qa.answer._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "answer-all", label: "All", to: "/admin/answers", roles: ["ADMIN", "MEMBER"] },
-            { key: "answer-edit", label: "New / Edit", to: "/admin/answers/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "answer-show", label: "Show", to: "/admin/answers/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "answer-all",  labelKey: "dashboardSidebar.qa.answer.all",     to: "/admin/answers",     roles: ["ADMIN", "MEMBER"] },
+            { key: "answer-edit", labelKey: "dashboardSidebar.qa.answer.newEdit", to: "/admin/answers/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "answer-show", labelKey: "dashboardSidebar.qa.answer.show",    to: "/admin/answers/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "option",
-          label: "Option",
+          labelKey: "dashboardSidebar.qa.option._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "option-all", label: "All", to: "/admin/options", roles: ["ADMIN", "MEMBER"] },
-            { key: "option-edit", label: "New / Edit", to: "/admin/options/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "option-show", label: "Show", to: "/admin/options/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "option-all",  labelKey: "dashboardSidebar.qa.option.all",     to: "/admin/options",     roles: ["ADMIN", "MEMBER"] },
+            { key: "option-edit", labelKey: "dashboardSidebar.qa.option.newEdit", to: "/admin/options/new", roles: ["ADMIN", "MEMBER"] },
+            { key: "option-show", labelKey: "dashboardSidebar.qa.option.show",    to: "/admin/options/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
       ],
     },
     {
       key: "places",
-      label: "Places",
+      labelKey: "dashboardSidebar.sections.places",
       roles: ["ADMIN", "MEMBER"],
       children: [
         {
           key: "commune",
-          label: "Commune",
+          labelKey: "dashboardSidebar.places.commune._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "commune-all", label: "All", to: "/admin/places/communes", roles: ["ADMIN", "MEMBER"] },
-            { key: "commune-show", label: "Show", to: "/admin/places/communes/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "commune-all",  labelKey: "dashboardSidebar.places.commune.all",  to: "/admin/places/communes",       roles: ["ADMIN", "MEMBER"] },
+            { key: "commune-show", labelKey: "dashboardSidebar.places.commune.show", to: "/admin/places/communes/show",  roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "district",
-          label: "District",
+          labelKey: "dashboardSidebar.places.district._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "district-all", label: "All", to: "/admin/places/districts", roles: ["ADMIN", "MEMBER"] },
-            { key: "district-show", label: "Show", to: "/admin/places/districts/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "district-all",  labelKey: "dashboardSidebar.places.district.all",  to: "/admin/places/districts",      roles: ["ADMIN", "MEMBER"] },
+            { key: "district-show", labelKey: "dashboardSidebar.places.district.show", to: "/admin/places/districts/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
           key: "canton",
-          label: "Canton",
+          labelKey: "dashboardSidebar.places.canton._",
           roles: ["ADMIN", "MEMBER"],
           children: [
-            { key: "canton-all", label: "All", to: "/admin/places/cantons", roles: ["ADMIN", "MEMBER"] },
-            { key: "canton-show", label: "Show", to: "/admin/places/cantons/show", roles: ["ADMIN", "MEMBER"] },
+            { key: "canton-all",  labelKey: "dashboardSidebar.places.canton.all",  to: "/admin/places/cantons",      roles: ["ADMIN", "MEMBER"] },
+            { key: "canton-show", labelKey: "dashboardSidebar.places.canton.show", to: "/admin/places/cantons/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
       ],
     },
     {
       key: "administration",
-      label: "Administration",
+      labelKey: "dashboardSidebar.sections.administration",
       roles: ["ADMIN", "MEMBER"],
       children: [
-        { key: "admin-password", label: "Changer mon mot de passe", to: "/dashboard/password", roles: ["ADMIN", "MEMBER"] },
+        { key: "admin-password", labelKey: "dashboardSidebar.administration.changePassword", to: "/dashboard/password", roles: ["ADMIN", "MEMBER"] },
         {
           key: "admin-users",
-          label: "Utilisateurs",
+          labelKey: "dashboardSidebar.administration.users._",
           roles: ["ADMIN"],
           children: [
-            { key: "admin-users-new", label: "Ajouter un membre", to: "/admin/users/new", roles: ["ADMIN"] },
-            { key: "admin-users-del", label: "Supprimer un membre", to: "/admin/users/delete", roles: ["ADMIN"] },
+            { key: "admin-users-new", labelKey: "dashboardSidebar.administration.users.add",    to: "/admin/users/new",    roles: ["ADMIN"] },
+            { key: "admin-users-del", labelKey: "dashboardSidebar.administration.users.delete", to: "/admin/users/delete", roles: ["ADMIN"] },
           ],
         },
       ],
@@ -264,11 +270,14 @@ export default function DashboardSidebar() {
   const isOpen = (k: string) => !!open[k];
   const onToggle = (k: string) => setOpen((s) => ({ ...s, [k]: !s[k] }));
 
+  const roleKey = `roles.${String(user?.role || "").toLowerCase()}`;
+  const roleLabel = /roles\./.test(roleKey) ? ( (roleKey && roleKey !== "roles.") ? ( ( ( (t as any)(roleKey) !== roleKey ) ? t(roleKey) : (user?.role || "") ) ) : "" ) : "";
+
   return (
     <aside className="fixed inset-y-0 left-0 w-64 border-r bg-white">
       {/* en-tête */}
       <div className="h-16 border-b px-4 flex items-center">
-        <span className="text-lg font-semibold">Espace privé</span>
+        <span className="text-lg font-semibold">{t("dashboardSidebar.privateSpace")}</span>
       </div>
 
       {/* contenu + menu */}
@@ -293,13 +302,15 @@ export default function DashboardSidebar() {
           <div className="mb-3 text-sm">
             <div className="font-medium">{user?.full_name}</div>
             <div className="text-gray-500">{user?.email}</div>
-            <div className="text-xs text-gray-400">Rôle : {user?.role}</div>
+            <div className="text-xs text-gray-400">{t("dashboardSidebar.rolePrefix")} {roleLabel}</div>
           </div>
           <button
             onClick={logout}
             className="w-full rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:opacity-90"
+            aria-label={t("dashboardSidebar.logout")}
+            title={t("dashboardSidebar.logout")}
           >
-            Se déconnecter
+            {t("dashboardSidebar.logout")}
           </button>
         </div>
       </div>
