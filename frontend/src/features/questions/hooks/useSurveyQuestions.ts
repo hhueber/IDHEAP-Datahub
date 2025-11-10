@@ -28,8 +28,10 @@ export function useSurveyQuestions(surveyUid: number | null) {
       .then((result) => setData(result.items))
       .catch((e) => {
         if ((e as any)?.name === "AbortError") {
+          // chargement des question annulé
           setErrorKey("questions.aborted");
         } else {
+          // impossible de charger les questions
           setErrorKey("questions.loadError");
         }
       })

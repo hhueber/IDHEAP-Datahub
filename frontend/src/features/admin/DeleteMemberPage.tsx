@@ -39,12 +39,14 @@ export default function DeleteMemberPage() {
         setMsgKey("admin.deleteMember.success");
         setForm({ first_name: "", last_name: "", email: "", role: "MEMBER" });
       } else {
+        // la suppression a échoué
         setErrKey("admin.deleteMember.fail");
       }
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
       if (Array.isArray(d)) setErrKey(d.map((x: any) => x.msg).join(" · "));
+      // erreur générique coté serveur
       else setErrKey("admin.deleteMember.errors.generic");
     } finally {
       setSubmitting(false);

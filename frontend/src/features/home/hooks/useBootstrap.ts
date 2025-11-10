@@ -37,6 +37,7 @@ export function useBootstrap() {
       .catch((e) => {
         if ((e as any)?.name !== "AbortError") {
           setError(e as Error);
+          // erreur lors du chargement des datas initiales sur home Pages
           setErrorKey("home.bootstrapError");
         }
       })

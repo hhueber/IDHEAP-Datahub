@@ -32,6 +32,7 @@ export default function Login() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (e: any) {
+        // echec de connection, generique
         setErrKey(e?.message || "login.errors.generic");
     } finally {
       setLoading(false);
