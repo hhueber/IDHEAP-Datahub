@@ -27,27 +27,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 async def populate_db() -> None:
     async with SessionLocal() as session:
-
-        # Add canton
-        async with session.begin():
-            index = 1
-            total_item = len(CANTONS)
-            for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
-                db_canton = Canton(
-                    code=code,
-                    name=lang["en"],
-                    ofs_id=lang["ofs_id"],
-                    name_de=lang["de"],
-                    name_en=lang["en"],
-                    name_fr=lang["fr"],
-                    name_it=lang["it"],
-                    name_ro=lang["ro"],
-                )
-                # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
-                index += 1
-
-                session.add(db_canton)
-
         # District and commune
         row_number = 0
 
