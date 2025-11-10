@@ -75,7 +75,7 @@ export default function Navbar() {
       >
         <img
           src={brand}
-          alt={t("nav.navigation")}
+          alt={t("nav.currentLogoName")}
           className="h-12 sm:h-14 w-auto object-contain select-none
              rounded-xl ring-1 ring-black/10 shadow-2xl bg-white"
         />
