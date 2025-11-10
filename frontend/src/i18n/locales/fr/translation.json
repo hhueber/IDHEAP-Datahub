@@ -7,6 +7,7 @@
     "switchTo": "Basculer en {{lang}}",
     "home": "Accueil",
     "data": "Données",
+    "currentLogoName": "IDHEAP",
     "errors": {
       "changeLanguage": "Impossible de changer la langue pour le moment."
     } 
