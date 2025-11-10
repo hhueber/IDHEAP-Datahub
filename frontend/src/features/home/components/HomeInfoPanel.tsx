@@ -11,9 +11,10 @@ type Props = {
   data: HomeBootstrap | null;
   loading: boolean;
   error: Error | null;
+  errorKey?: string | null;
 };
 /** Panneau de contrôle pour choix des question */
-export default function HomeInfoPanel({ data, loading, error }: Props) {
+export default function HomeInfoPanel({ data, loading, error, errorKey }: Props) {
   const { t } = useTranslation();
   const [selectedUid, setSelectedUid] = useState<number>(GLOBAL_UID);
 
@@ -26,7 +27,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
   const {
     data: bySurvey,
     loading: loadingS,
-    error: errorS,
+    errorKey: errorKeyS,
   } = useSurveyQuestions(showGlobals ? null : selectedUid);
 
   return (
@@ -47,7 +48,7 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
           {loading && <p className="text-gray-500">{t("common.loading")}</p>}
           {error && (
             <p className="text-red-600">
-              {t("common.error")}: {error.message}
+              {t(errorKey ?? "home.bootstrapError")}
             </p>
           )}
         </section>
@@ -89,12 +90,12 @@ export default function HomeInfoPanel({ data, loading, error }: Props) {
           ) : (
             <>
               {loadingS && <p className="text-gray-500">{t("common.loading")}</p>}
-              {errorS && (
+              {errorKeyS && (
                 <p className="text-red-600">
-                  {t("common.error")}: {errorS.message}
+                  {t(errorKeyS)}
                 </p>
               )}
-              {!loadingS && !errorS && (
+              {!loadingS && !errorKeyS && (
                 bySurvey?.length ? (
                   bySurvey.map((q) => (
                     <QuestionCard key={q.uid} primary={q.text || q.label} />
