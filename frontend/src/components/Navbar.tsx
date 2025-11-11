@@ -15,6 +15,7 @@ const langs: Lang[] = [
 export default function Navbar() {
   const { t, i18n } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [errKey, setErrKey] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
@@ -41,15 +42,28 @@ export default function Navbar() {
   const curBase = curLang.split("-")[0];
   const current = langs.find(l => curLang.startsWith(l.code) || curBase === l.code) ?? langs[0];
 
+  const toggleMenu = () => setOpen(v => !v);
+
+  const changeLang = async (code: string) => {
+    setErrKey(null);
+    try {
+      await i18n.changeLanguage(code);
+      setOpen(false);
+    } catch {
+      // erreur lors du changement de langue
+      setErrKey("nav.errors.changeLanguage");
+    }
+  };
+
   return (
     <>
       {/* Bouton flottant (c'est le logo) */}
       <button
         ref={btnRef}
         type="button"
-        aria-label="Ouvrir le menu"
+        aria-label={open ? t("nav.closeMenu") : t("nav.openMenu")}
         aria-expanded={open}
-        onClick={() => setOpen(v => !v)}
+        onClick={toggleMenu}
         className={[
           "fixed top-3 left-3 inline-flex items-center justify-center",
           "w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-transparent",
@@ -60,7 +74,6 @@ export default function Navbar() {
       >
         <img
           src={brand}
-          alt="IDHEAP"
           className="h-12 sm:h-14 w-auto object-contain select-none"
         />
         {!open && (
@@ -77,7 +90,7 @@ export default function Navbar() {
           <div
             ref={panelRef}
             role="menu"
-            aria-label="Navigation"
+            aria-label={t("nav.navigation")}
             className="absolute left-0 top-0 h-full w-[min(10rem,70vw)]
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
                        bg-white/95 backdrop-blur p-3"
@@ -112,6 +125,13 @@ export default function Navbar() {
                 </select>
               </div>
             </div>
+
+            {/* Erreur éventuelle (changement de langue) */}
+            {errKey && (
+              <div className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm" role="alert" aria-live="assertive">
+                {t(errKey)}
+              </div>
+            )}
 
             {/* Liens */}
             <div className="space-y-1">
