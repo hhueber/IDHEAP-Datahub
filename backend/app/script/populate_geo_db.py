@@ -110,6 +110,8 @@ async def populate_async_geo() -> None:
 
                                 result = await session.execute(select(District).filter_by(code="B" + str(bfs_number)))
                                 db_district = result.scalar_one_or_none()
+                                if db_district is None:
+                                    continue
                                 multi = shapely.geometry.shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 multi = transform(transformer.transform, multi)
@@ -208,6 +210,8 @@ async def populate_async_geo() -> None:
                                     bfs_number = feature["properties"]["kantonsnummer"]
                                 result = await session.execute(select(Canton).filter_by(ofs_id=bfs_number))
                                 db_canton = result.scalar_one_or_none()
+                                if db_canton is None:
+                                    continue
                                 multi = shapely.geometry.shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 multi = transform(transformer.transform, multi)
