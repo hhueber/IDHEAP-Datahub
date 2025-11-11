@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import brand from "@/img/idheap-dh.png";
 import { Link } from "react-router-dom";
+import { DropdownList } from "@/utils/DropdownList";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
@@ -104,25 +105,16 @@ export default function Navbar() {
               </div>
 
               <div className="mt-2">
-                <select
-                  value={current.code}
-                  onChange={(e) => {
-                    const code = e.target.value;
-                    i18n.changeLanguage(code);
-                    setOpen(false); // referme le drawer après changement
-                  }}
-                  className="
-                    w-full rounded-md border border-indigo-200 bg-white
-                    px-3 py-2 text-sm text-indigo-800
-                    focus:outline-none focus:ring-2 focus:ring-indigo-500
-                  "
-                >
-                  {langs.map(({ code, label }) => (
-                    <option key={code} value={code}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
+                {/* Utilisation du DropdownList/Liste déroulante */}
+                <DropdownList<Lang>
+                  items={langs}
+                  selected={current}
+                  onSelect={(lang) => changeLang(lang.code)}
+                  labelFor={(item) => item.label}
+                  keyFor={(item) => item.code}
+                  isSelected={(item, selected) => item.code === selected?.code}
+                  placeholder="--"
+                />
               </div>
             </div>
 
