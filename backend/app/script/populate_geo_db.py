@@ -20,6 +20,13 @@ import shapely.wkb
 
 transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 
+FAKE_DISTRICTS_BASE = 90000
+
+
+async def get_fake_district_by_canton(canton_number: int, session) -> District:
+    result = await session.execute(select(District).filter_by(code=str(FAKE_DISTRICTS_BASE + canton_number)))
+    return result.scalar_one_or_none()
+
 
 async def populate_async_geo() -> None:
     has_country_populated = False
@@ -41,8 +48,18 @@ async def populate_async_geo() -> None:
                 )
                 # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
                 index += 1
-
+                db_district = District(
+                    code=str(FAKE_DISTRICTS_BASE + int(lang["ofs_id"])),
+                    name=f"Fake {lang['en']}",
+                    name_en=f"Fake {lang['en']}",
+                    name_fr=f"Fake {lang['en']}",
+                    name_it=f"Fake {lang['en']}",
+                    name_ro=f"Fake {lang['en']}",
+                    name_de=f"Fake {lang['en']}",
+                    canton=db_canton,
+                )
                 session.add(db_canton)
+                session.add(db_district)
 
         for year in [1988, 1994, 1998, 2005, 2009, 2017, 2023]:
             if year < 2016:
@@ -139,6 +156,7 @@ async def populate_async_geo() -> None:
                                     bfs_number = feature["properties"]["GDENR"]
                                     commune_name = feature["properties"]["GDENAME"]
                                     district_number = feature["properties"]["BEZNR"]
+                                    canton_number = feature["properties"]["BEZNAME"]
                                 else:
                                     # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
                                     if (
@@ -147,6 +165,7 @@ async def populate_async_geo() -> None:
                                     ):
                                         continue
                                     bfs_number = feature["properties"]["bfs_nummer"]
+                                    canton_number = feature["properties"]["kantonsnummer"]
                                 result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
                                 db_commune = result.scalar_one_or_none()
                                 if db_commune is None:
@@ -154,6 +173,8 @@ async def populate_async_geo() -> None:
                                         select(District).filter_by(code="B" + str(district_number))
                                     )
                                     db_district = result.scalar_one_or_none()
+                                    if db_district is None:
+                                        db_district = get_fake_district_by_canton(canton_number, session)
                                     db_commune = Commune(
                                         code=str(bfs_number),
                                         name=commune_name,
