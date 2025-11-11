@@ -93,7 +93,7 @@
     "title": "Tableau de bord",
     "welcome": "Bienvenue {{name}}",
     "welcomeWithRole": "Bienvenue {{name}} ({{role}})",
-    "anonymous": "Utilisateur",
+    "anonymous": "Utilisateur·trice",
     "logout": "Se déconnecter"
   },
   "changePassword": {
@@ -150,12 +150,12 @@
       "submit": "Supprimer",
       "submitting": "Suppression",
 
-      "success": "Utilisateur supprimé.",
+      "success": "Utilisateur·trice supprimé·e.",
       "fail": "Échec de suppression.",
 
       "errors": {
         "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
-        "notFound": "Utilisateur introuvable.",
+        "notFound": "Utilisateur·trice introuvable.",
         "forbidden": "Action interdite.",
         "generic": "Une erreur est survenue."
       }
@@ -185,13 +185,13 @@
     "submit": "Créer le membre",
     "submitting": "Création",
 
-    "success": "Membre créé.",
+    "success": "Membre créé·e.",
     "fail": "Échec de création.",
 
     "errors": {
       "confirmMismatch": "La confirmation ne correspond pas.",
       "tooShort": "Mot de passe trop court (min. 10 caractères).",
-      "emailExists": "Un membre avec cet email existe déjà.",
+      "emailExists": "Un membre avec ce courriel existe déjà.",
       "forbidden": "Action interdite.",
       "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
       "generic": "Une erreur est survenue."
@@ -267,14 +267,14 @@
     "administration": {
       "changePassword": "Changer mon mot de passe",
       "users": {
-        "_": "Utilisateurs",
-        "add": "Ajouter un membre",
-        "delete": "Supprimer un membre"
+        "_": "Utilisateur·trice·s",
+        "add": "Ajouter un·e membre",
+        "delete": "Supprimer un·e membre"
       }
     }
   },
   "roles": {
-    "admin": "Administrateur",
+    "admin": "Administrateur·rice",
     "member": "Membre"
   }
 }
