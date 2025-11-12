@@ -5,8 +5,9 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
+import type { Role } from "@/config/roles";
 
-type Role = "MEMBER" | "ADMIN";
+// type Role = "MEMBER" | "ADMIN";
 
 export default function AddMemberPage() {
   const { t } = useTranslation();
