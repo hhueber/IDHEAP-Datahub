@@ -1,14 +1,13 @@
 import uuid
 
 
-from sqlalchemy import Column, DateTime, Enum, String, Text
+from sqlalchemy import Column, DateTime, Enum as SAEnum, String, Text
 from sqlalchemy.sql import func
 
 
 from .base import Base
+from app.config.roles import ROLE_VALUES, Role
 
-
-ROLE_VALUES = ("ADMIN", "MEMBER")
 
 
 class User(Base):
@@ -19,7 +18,7 @@ class User(Base):
     password_hash = Column(Text, nullable=False)
     full_name = Column(String, nullable=False)
     role = Column(
-        Enum(*ROLE_VALUES, name="user_role", native_enum=False),
+        SAEnum(*ROLE_VALUES, name="user_role", native_enum=False),
         nullable=False,
         server_default="MEMBER",
     )

@@ -4,17 +4,13 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from enum import Enum
 from typing import Literal, Optional
 
 
 from app.schemas.validators import FullNameStr, PasswordStr
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
+from app.config.roles import Role
 
-
-class Role(str, Enum):
-    ADMIN = "ADMIN"
-    MEMBER = "MEMBER"
 
 
 class UserCreate(BaseModel):
