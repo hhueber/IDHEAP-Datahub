@@ -7,7 +7,6 @@ import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
 import type { Role } from "@/config/roles";
 
-// type Role = "MEMBER" | "ADMIN";
 
 export default function AddMemberPage() {
   const { t } = useTranslation();

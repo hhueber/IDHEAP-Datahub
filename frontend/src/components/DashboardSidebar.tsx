@@ -5,7 +5,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import type { Role } from "@/config/roles";
 
-// type Role = "ADMIN" | "MEMBER";
 type MenuItem = {
   key: string;
   labelKey?: string; // <- clé i18n
