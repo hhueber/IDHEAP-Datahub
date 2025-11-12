@@ -45,8 +45,13 @@ export default function DeleteMemberPage() {
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
-      if (Array.isArray(d)) setErrKey(d.map((x: any) => x.msg).join(" · "));
-      // erreur générique coté serveur
+      // erreur de validation coté serveur
+      if (Array.isArray(d)) setErrKey("admin.deleteMember.errors.serverValidation");
+      // membre non trouvé
+      else if (ae?.status === 404) setErrKey("admin.deleteMember.errors.notFound");
+      // action interdite
+      else if (ae?.status === 403) setErrKey("admin.deleteMember.errors.forbidden");
+      // erreur générique
       else setErrKey("admin.deleteMember.errors.generic");
     } finally {
       setSubmitting(false);
