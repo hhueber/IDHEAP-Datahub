@@ -1,5 +1,6 @@
 from zipfile import ZipFile
 import asyncio
+import logging
 import os
 import tempfile as tf
 
@@ -18,16 +19,32 @@ import requests
 import shapely.wkb
 
 
+logger = logging.getLogger(__name__)
+
 transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 
 
+def extract_geo_package(url: str) -> str:
+    """Extract the geopackage fetched from url
+
+    Args:
+        url (str): url to extract from
+    """
+    zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".")
+    response = requests.get(url)
+    zip_file.write(response.content)
+    zip_file.close()
+    with ZipFile(zip_file.name) as zip:
+        url = zip.namelist()[0]
+        zip.extractall()
+    os.remove(zip_file.name)
+    return url
+
+
 async def populate_async_geo() -> None:
-    has_country_populated = False
     async with SessionLocal() as session:
 
         async with session.begin():
-            index = 1
-            total_item = len(CANTONS)
             for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
                 db_canton = Canton(
                     code=code,
@@ -39,8 +56,8 @@ async def populate_async_geo() -> None:
                     name_it=lang["it"],
                     name_ro=lang["ro"],
                 )
-                # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
-                index += 1
+                logging_message = f">>> CREATING CANTON {db_canton.name}"
+                logger.info(logging_message)
 
                 session.add(db_canton)
 
@@ -49,17 +66,11 @@ async def populate_async_geo() -> None:
                 year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
                 url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
             else:
-                zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".")
                 url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
-                response = requests.get(url)
-                zip_file.write(response.content)
-                zip_file.close()
-                with ZipFile(zip_file.name) as zip:
-                    url = zip.namelist()[0]
-                    zip.extractall()
-                os.remove(zip_file.name)
+                url = extract_geo_package(url)
 
             layers = fiona.listlayers(url)
+
             # To ensure that we taking care of canton then district then commune
             if year < 2016:
                 layers.reverse()
@@ -69,18 +80,7 @@ async def populate_async_geo() -> None:
                 for layer in layers:
 
                     with fiona.open(url, layer=layer) as src:
-                        # Insertion of country boarderies
-                        if "Country" in layer and not has_country_populated:
-                            feat = src.get(1)
-                            multi = shapely.geometry.shape(feat["geometry"])
-                            db_country = Country(
-                                geometry=from_shape(multi, srid=2056),
-                            )
-                            print(f">>>[{year}] INSERTING country shape")
-                            has_country_populated = True
-
-                        elif "bezirk" in layer or "District" in layer:
-                            # The bfs number isn't the same the geopackage
+                        if "bezirk" in layer or "District" in layer:
                             for feature in src:
                                 if year < 2016:
                                     canton_number = feature["properties"]["KTNR"]
@@ -110,7 +110,8 @@ async def populate_async_geo() -> None:
                                         name_it=name,
                                         canton=db_canton,
                                     )
-                                    print(f">>> INSERTING DISTRICT {db_district.name}")
+                                    logging_message = f">>> INSERTING DISTRICT {db_district.name}"
+                                    logger.info(logging_message)
                                     session.add(db_district)
                                     await session.flush()
 
@@ -120,7 +121,8 @@ async def populate_async_geo() -> None:
                                     geo_data_type=feature["geometry"]["type"],
                                     district=db_district,
                                 )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}")
+                                logging_message = f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}"
+                                logger.info(logging_message)
                                 session.add(db_district_map)
 
                                 await session.flush()
@@ -174,13 +176,14 @@ async def populate_async_geo() -> None:
                                     geo_data_type=feature["geometry"]["type"],
                                     geometry=from_shape(multi, srid=4326),
                                 )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
+                                logging_message = f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}"
+                                logger.info(logging_message)
                                 session.add(db_commune_map)
                                 await session.flush()
 
                         elif "kanton" in layer or "Canton" in layer:
                             for feature in src:
-                                # Well beacuse in the pre 2016 dataset and post 2016 we dont have the same info we must do a little trick
+                                # Well because in the pre 2016 dataset and post 2016 we don't have the same info we must do a little trick
                                 if year < 2016:
                                     bfs_number = feature["properties"]["KTNR"]
                                 else:
@@ -196,7 +199,8 @@ async def populate_async_geo() -> None:
                                     geometry=from_shape(multi, srid=4326),
                                     canton=db_canton,
                                 )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
+                                logging_message = f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}"
+                                logger.info(logging_message)
                                 session.add(db_canton_map)
                                 await session.flush()
 
@@ -213,7 +217,8 @@ async def populate_async_geo() -> None:
                                     )
                                     session.add(db_lake)
                                     await session.flush()
-                                    print(f">>> INSERTING LAKE {db_lake.name}")
+                                    logging_message = f">>> INSERTING LAKE {db_lake.name}"
+                                    logger.info(logging_message)
 
                                 multi = shapely.geometry.shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
@@ -226,7 +231,8 @@ async def populate_async_geo() -> None:
                                 )
                                 session.add(db_lake_map)
                                 await session.flush()
-                                print(f">>>[{year}] INSERTING LAKE GEODATA {db_lake.name}")
+                                logging_message = f">>>[{year}] INSERTING LAKE GEODATA {db_lake.name}"
+                                logger.info(logging_message)
 
                                 # We don't have data for years greater than 2016 so we used data from 2009
                                 if year == 2009:
@@ -239,7 +245,8 @@ async def populate_async_geo() -> None:
                                         )
                                         session.add(db_lake_map)
                                         await session.flush()
-                                        print(f">>>[{fake_year}] INSERTING FAKE LAKE GEODATA {db_lake.name}")
+                                        logging_message = f">>>[{fake_year}] INSERTING FAKE LAKE GEODATA {db_lake.name}"
+                                        logger.info(logging_message)
 
 
 if __name__ == "__main__":
