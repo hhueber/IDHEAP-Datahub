@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import GeoJsonMap from "@/components/GeoJsonMap";
 import HomeInfoPanel from "@/features/home/components/HomeInfoPanel";
 import { useBootstrap } from "@/features/home/hooks/useBootstrap";
+import CookieBanner from "@/components/CookieBanner";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -23,7 +24,7 @@ export default function Home() {
 
       {/* Bouton flottant (ouvre/ferme uniquement) */}
       <button
-        onClick={() => setPanelOpen(v => !v)}
+        onClick={() => setPanelOpen((v) => !v)}
         className="
           fixed bottom-4 z-[3600]
           h-12 w-12 rounded-full ring-1 ring-indigo-200 bg-indigo-600 text-white
@@ -34,14 +35,18 @@ export default function Home() {
         style={{
           right: "max(env(safe-area-inset-right), 1rem)",
           // se décale à gauche de la largeur du drawer quand ouvert
-          transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
+          transform: panelOpen
+            ? "translateX(calc(-1 * min(90vw, 28rem)))"
+            : "translateX(0)",
         }}
         aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
       >
         <svg
           viewBox="0 0 24 24"
           aria-hidden="true"
-          className={`w-6 h-6 transition-transform duration-200 ease-out ${panelOpen ? "" : "-scale-x-100"}`}
+          className={`w-6 h-6 transition-transform duration-200 ease-out ${
+            panelOpen ? "" : "-scale-x-100"
+          }`}
         >
           {/* chevron "gauche" de base ; on le flippe à droite quand panelOpen === false */}
           <path
@@ -63,7 +68,11 @@ export default function Home() {
             w-[min(90vw,28rem)]
             bg-white/95 backdrop-blur shadow-2xl ring-1 ring-black/10
             transform transition-transform duration-300 ease-out
-            ${panelOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}
+            ${
+              panelOpen
+                ? "translate-x-0 pointer-events-auto"
+                : "translate-x-full pointer-events-none"
+            }
             overflow-y-auto
             rounded-tl-2xl rounded-bl-2xl
           `}
@@ -71,8 +80,16 @@ export default function Home() {
           aria-modal="true"
         >
           <div className="p-5">
-            <HomeInfoPanel data={data} loading={loading} error={error} errorKey={errorKey} />
+            <HomeInfoPanel
+              data={data}
+              loading={loading}
+              error={error}
+              errorKey={errorKey}
+            />
           </div>
+        </div>
+        <div className="fixed bottom-0 w-96 z-20 left-1/2 p-0 transform -translate-x-1/2 pointer-events-auto">
+          <CookieBanner />
         </div>
       </div>
     </section>

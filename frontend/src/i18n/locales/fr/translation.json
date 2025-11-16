@@ -1,5 +1,5 @@
 {
-  "nav": { 
+  "nav": {
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
     "navigation": "Navigation",
@@ -9,7 +9,7 @@
     "data": "Données",
     "errors": {
       "changeLanguage": "Impossible de changer la langue pour le moment."
-    } 
+    }
   },
   "home": {
     "heroTitle": "IDHEAP Data Explorer",
@@ -23,6 +23,12 @@
     "noGlobalQuestions": "Pas de questions globales disponibles.",
     "noQuestionsForSelection": "Pas de questions pour cette sélection.",
     "bootstrapError": "Impossible de charger les données initiales."
+  },
+  "cookie": {
+    "bannerTitle": "Gestion des cookies",
+    "bannerText": "Nous utilisons des cookies",
+    "acceptButton": "Accepter",
+    "denyButton": "Refuser"
   },
   "map": {
     "cities": {
@@ -154,39 +160,39 @@
       }
     },
     "addMember": {
-    "title": "Ajouter un membre",
+      "title": "Ajouter un membre",
 
-    "firstNameLabel": "Prénom",
-    "firstNamePlaceholder": "Entrez le prénom",
-    "lastNameLabel": "Nom",
-    "lastNamePlaceholder": "Entrez le nom",
-    "emailLabel": "Email",
-    "emailPlaceholder": "Entrez l'email",
-    "roleLabel": "Rôle",
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
 
-    "roles": {
-      "member": "Membre",
-      "admin": "Admin"
-    },
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
 
-    "passwordLabel": "Mot de passe",
-    "passwordPlaceholder": "Entrez le mot de passe",
-    "confirmLabel": "Confirmation",
-    "confirmPlaceholder": "Confirmez le mot de passe",
-    "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "confirmLabel": "Confirmation",
+      "confirmPlaceholder": "Confirmez le mot de passe",
+      "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
 
-    "submit": "Créer le membre",
-    "submitting": "Création",
+      "submit": "Créer le membre",
+      "submitting": "Création",
 
-    "success": "Membre créé.",
-    "fail": "Échec de création.",
+      "success": "Membre créé.",
+      "fail": "Échec de création.",
 
-    "errors": {
-      "confirmMismatch": "La confirmation ne correspond pas.",
-      "tooShort": "Mot de passe trop court (min. 10 caractères).",
-      "generic": "Une erreur est survenue."
+      "errors": {
+        "confirmMismatch": "La confirmation ne correspond pas.",
+        "tooShort": "Mot de passe trop court (min. 10 caractères).",
+        "generic": "Une erreur est survenue."
+      }
     }
-  }
   },
   "dashboardSidebar": {
     "privateSpace": "Espace privé",
