@@ -14,6 +14,7 @@ from .question_category import QuestionCategory
 from .question_global import QuestionGlobal
 from .question_per_survey import QuestionPerSurvey
 from .survey import Survey
+from .city import City
 
 
 __all__ = [
@@ -33,4 +34,5 @@ __all__ = [
     "CommuneMap",
     "DistrictMap",
     "LakeMap",
+    "City",
 ]
