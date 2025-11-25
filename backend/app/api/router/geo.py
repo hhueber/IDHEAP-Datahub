@@ -2,6 +2,8 @@ from typing import Optional, Set
 
 
 from app.db import get_db
+from app.repositories.city_repo import list_cities_for_lang
+from app.schemas.city import CityClientOut
 from app.schemas.geo import GeoBundle
 from app.services.geo_service import ALL_LAYERS, get_geo_by_year_selective
 from fastapi import APIRouter, Depends, Query
@@ -33,3 +35,15 @@ async def geo_by_year(
 ):
     wanted = _parse_layers(layers)
     return await get_geo_by_year_selective(db, year, layers=wanted, clear_others=clear_others)
+
+
+@router.get("/cities", response_model=list[CityClientOut])
+async def get_cities_for_map(
+    lang: str = Query("en", description="ISO code de langue, ex: fr, de, it, ro, en"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retourne la liste des villes actives avec un nom déjà dans la bonne langue.
+    Si aucune ville n'est en DB, renvoie simplement [].
+    """
+    return await list_cities_for_lang(db, lang)

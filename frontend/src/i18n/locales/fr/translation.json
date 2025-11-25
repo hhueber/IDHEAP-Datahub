@@ -27,11 +27,12 @@
   },
   "map": {
     "cities": {
-      "lausanne": "Lausanne",
-      "bern": "Berne",
-      "basel": "Bâle",
-      "luzern": "Lucerne",
-      "schaffhausen": "Schaffhouse"
+      "show": "Afficher les villes",
+      "hide": "Masquer les villes"
+    },
+    "menu": {
+      "global": "Menu global",
+      "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",

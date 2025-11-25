@@ -1,9 +1,21 @@
 from typing import List, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from app.models.city import City
 import re
 import unicodedata
+
+
+from app.models.city import City
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+LANG_FIELD_MAP = {
+    "fr": "name_fr",
+    "de": "name_de",
+    "it": "name_it",
+    "ro": "name_ro",
+    "en": "name_en",
+}
+
 
 def city_to_dict(c: City) -> dict:
     return {
@@ -17,13 +29,16 @@ def city_to_dict(c: City) -> dict:
         "pos": list(c.pos),
     }
 
+
 async def list_cities(db: AsyncSession) -> List[dict]:
     res = await db.execute(select(City).where(City.active == True).order_by(City.default_name.asc()))
     return [city_to_dict(c) for c in res.scalars().all()]
 
+
 async def get_city(db: AsyncSession, code: str) -> Optional[City]:
     res = await db.execute(select(City).where(City.code == code.lower()))
     return res.scalars().first()
+
 
 async def upsert_city(db: AsyncSession, payload: dict) -> None:
     default_name: str = payload["default_name"]
@@ -50,12 +65,14 @@ async def upsert_city(db: AsyncSession, payload: dict) -> None:
         c.set_pos(payload["pos"][0], payload["pos"][1])
         c.active = True
 
+
 async def delete_city(db: AsyncSession, code: str) -> bool:
     c = await get_city(db, code)
     if not c:
         return False
     await db.delete(c)
     return True
+
 
 def slugify(s: str) -> str:
     s = unicodedata.normalize("NFKD", s)
@@ -64,3 +81,30 @@ def slugify(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     s = re.sub(r"-{2,}", "-", s).strip("-")
     return s or "city"
+
+
+def city_to_client_dict(c: City, lang: str) -> dict:
+    # lang peut être "fr-CH", "de-CH"... on garde juste la partie avant le "-"
+    base_lang = (lang or "").split("-")[0].lower() or "en"
+
+    field_name = LANG_FIELD_MAP.get(base_lang)
+    label = None
+    if field_name:
+        label = getattr(c, field_name, None)
+
+    if not label:
+        # fallback propre
+        label = c.default_name
+
+    return {
+        "code": c.code,
+        "name": label,
+        "pos": list(c.pos),
+    }
+
+
+async def list_cities_for_lang(db: AsyncSession, lang: str) -> List[dict]:
+    stmt = select(City).where(City.active == True).order_by(City.default_name.asc())
+    res = await db.execute(stmt)
+    cities = res.scalars().all()
+    return [city_to_client_dict(c, lang) for c in cities]
