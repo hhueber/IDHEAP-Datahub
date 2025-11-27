@@ -27,11 +27,21 @@
   },
   "map": {
     "cities": {
-      "lausanne": "Lausanne",
-      "bern": "Berne",
-      "basel": "Bâle",
-      "luzern": "Lucerne",
-      "schaffhausen": "Schaffhouse"
+      "show": "Afficher les villes",
+      "hide": "Masquer les villes"
+    },
+    "menu": {
+      "global": "Menu global",
+      "instanceCities": "Villes définies",
+      "noInstanceCities": "Aucune ville définie.",
+      "localCities": "Villes supplémentaires",
+      "removeCity": "Supprimer",
+      "addCity": "Ajouter une ville",
+      "addCityPlaceholder": "Tapez au moins 3 lettres…",
+      "loadingSuggestions": "Chargement des suggestions...",
+      "noLocalCities": "Aucune villes supplémentaires définie.",
+
+      "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
@@ -40,7 +50,8 @@
   },
   "common": {
     "loading": "Chargement…",
-    "error": "Erreur"
+    "error": "Erreur",
+    "close": "Fermer"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -162,42 +173,96 @@
       }
     },
     "addMember": {
-    "title": "Ajouter un membre",
+      "title": "Ajouter un membre",
 
-    "firstNameLabel": "Prénom",
-    "firstNamePlaceholder": "Entrez le prénom",
-    "lastNameLabel": "Nom",
-    "lastNamePlaceholder": "Entrez le nom",
-    "emailLabel": "Email",
-    "emailPlaceholder": "Entrez l'email",
-    "roleLabel": "Rôle",
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
 
-    "roles": {
-      "member": "Membre",
-      "admin": "Admin"
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
+
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "confirmLabel": "Confirmation",
+      "confirmPlaceholder": "Confirmez le mot de passe",
+      "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+
+      "submit": "Créer le membre",
+      "submitting": "Création",
+
+      "success": "Membre créé·e.",
+      "fail": "Échec de création.",
+
+      "errors": {
+        "confirmMismatch": "La confirmation ne correspond pas.",
+        "tooShort": "Mot de passe trop court (min. 10 caractères).",
+        "emailExists": "Un membre avec ce courriel existe déjà.",
+        "forbidden": "Action interdite.",
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "generic": "Une erreur est survenue."
+      }
     },
+    "config": {
+        "cityEditor": {
+          "titleCreate": "Ajouter une ville",
+          "titleEdit": "Éditer une ville",
 
-    "passwordLabel": "Mot de passe",
-    "passwordPlaceholder": "Entrez le mot de passe",
-    "confirmLabel": "Confirmation",
-    "confirmPlaceholder": "Confirmez le mot de passe",
-    "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+          "importFromCommunes": "Importer depuis les communes",
+          "searchPlaceholder": "Tapez au moins 3 lettres…",
+          "search": "Recherche",
+          "empty": "Aucun résultat",
 
-    "submit": "Créer le membre",
-    "submitting": "Création",
+          "canonicalLabel": "Nom canonique",
+          "canonicalPlaceholder": "Lausanne, Genève, Zürich…",
 
-    "success": "Membre créé·e.",
-    "fail": "Échec de création.",
+          "labels": {
+            "fr": "Français",
+            "de": "Deutsch",
+            "it": "Italiano",
+            "ro": "Rumantsch",
+            "en": "Anglais",
+            "lat": "Latitude",
+            "lon": "Longitude",
+            "preview": "Aperçu :"
+          },
 
-    "errors": {
-      "confirmMismatch": "La confirmation ne correspond pas.",
-      "tooShort": "Mot de passe trop court (min. 10 caractères).",
-      "emailExists": "Un membre avec ce courriel existe déjà.",
-      "forbidden": "Action interdite.",
-      "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
-      "generic": "Une erreur est survenue."
-    }
-  }
+          "submitCreate": "Créer",
+          "submitEdit": "Enregistrer"
+        },
+        "citiesPage": {
+          "title": "Villes",
+          "addButton": "Ajouter",
+          "columns": {
+            "name": "Nom",
+            "fr": "FR",
+            "de": "DE",
+            "it": "IT",
+            "ro": "RO",
+            "en": "EN",
+            "position": "Position"
+          },
+          "edit": "Éditer",
+          "delete": "Supprimer",
+          "empty": "Aucune ville",
+          "loading": "Chargement",
+          "titleConfirm": "Supprimer la ville",
+          "deleteConfirm": "Voulez-vous vraiment supprimer la ville « {{name}} » ?",
+          "confirmLabel": "Supprimer",
+          "cancelLabel": "Annuler"
+        },
+        "configEditor": {
+          "cancel": "Annuler",
+          "submit": "Enregistrer",
+          "saving": "Enregistrement"
+        }
+      }
   },
   "dashboardSidebar": {
     "privateSpace": "Espace privé",
@@ -271,6 +336,10 @@
         "_": "Utilisateur·trice·s",
         "add": "Ajouter un·e membre",
         "delete": "Supprimer un·e membre"
+      },
+      "config": {
+        "_": "Configuration",
+        "city": "Villes"
       }
     }
   },

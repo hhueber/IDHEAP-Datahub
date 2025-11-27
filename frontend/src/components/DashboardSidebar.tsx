@@ -245,6 +245,14 @@ export default function DashboardSidebar() {
             { key: "admin-users-del", labelKey: "dashboardSidebar.administration.users.delete", to: "/admin/users/delete", roles: ["ADMIN"] },
           ],
         },
+        {
+          key: "admin-config",
+          labelKey: "dashboardSidebar.administration.config._",
+          roles: ["ADMIN"],
+          children: [
+            { key: "admin-config-city", labelKey: "dashboardSidebar.administration.config.city", to: "/admin/config/city", roles: ["ADMIN"], },
+          ],
+        },
       ],
     },
   ];

@@ -63,3 +63,19 @@ export const geoApi = {
       },
     }),
 };
+
+export type CityMapDTO = {
+  code: string;
+  name: string;
+  pos: [number, number];
+};
+
+// Client API pour récupérer la liste des villes affichées sur la carte.
+export const citiesApi = {
+  list: (lang: string, signal?: AbortSignal) =>
+    apiFetch<CityMapDTO[]>("geo/cities", {
+      method: "GET",
+      signal,
+      query: { lang },
+    }),
+};
