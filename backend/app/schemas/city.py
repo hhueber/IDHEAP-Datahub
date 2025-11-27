@@ -1,4 +1,10 @@
-from typing import Optional, Tuple
+"""Pydantic schemas exposed by the API.
+
+Conventions:
+- Precise types (Optional, List, Dict, etc.)
+"""
+
+from typing import List, Optional, Tuple
 
 
 from pydantic import BaseModel, Field, field_validator
@@ -43,3 +49,24 @@ class CityIn(CityBase):
 
 class CityOut(CityBase):
     pass
+
+
+class CitySuggestOut(BaseModel):
+    """
+    Schéma pour la suggest publique :
+    - default_name : nom de la commune
+    - pos          : [lat, lon]
+    """
+
+    default_name: str
+    pos: Tuple[float, float] = Field(..., description="[lat, lon]")
+
+
+class CitySuggestResponse(BaseModel):
+    """
+    Réponse standardisée pour la route publique de suggest.
+    """
+
+    success: bool
+    detail: str
+    data: List[CitySuggestOut]

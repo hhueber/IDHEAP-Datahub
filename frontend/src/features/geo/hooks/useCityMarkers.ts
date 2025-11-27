@@ -13,6 +13,7 @@ export type CityMarker = {
 // Structure de retour du hook useCityMarkers.
 type UseCityMarkersResult = {
   cities: CityMarker[];
+  backendCities: CityMarker[];
   loading: boolean;
   error: string | null;
 
@@ -20,7 +21,7 @@ type UseCityMarkersResult = {
   hideAllBackend: boolean;
   setHideAllBackend: (v: boolean) => void;
 
-  // Permet de masquer certaines villes par code
+  // Permet de masquer certaines villes avec code
   hiddenCodes: Set<string>;
   toggleCityHidden: (code: string) => void;
 
@@ -110,16 +111,22 @@ export function useCityMarkers(lang: string): UseCityMarkersResult {
     setExtraCities((prev) => prev.filter((c) => c.code !== code));
   };
 
-  // Liste finale des villes visibles   
+  // Liste finale des villes visibles enregistrer mais pas dans le stockage local
   const cities = useMemo(() => {
-    const visibleBackend = hideAllBackend
-      ? []
-      : backendCities.filter((c) => !hiddenCodes.has(c.code));
-    return [...visibleBackend, ...extraCities];
+    // Si le toggle global est OFF, on ne montre aucune ville (backend + locales)
+    if (hideAllBackend) {
+        return [];
+    }
+
+    const visibleBackend = backendCities.filter((c) => !hiddenCodes.has(c.code));
+    const visibleExtras  = extraCities.filter((c) => !hiddenCodes.has(c.code));
+
+    return [...visibleBackend, ...visibleExtras];
   }, [backendCities, extraCities, hideAllBackend, hiddenCodes]);
 
   return {
     cities,
+    backendCities,
     loading,
     error,
     hideAllBackend,

@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import CityMarkers from "@/components/map/CityMarkers";
 import { useCityMarkers } from "@/features/geo/hooks/useCityMarkers";
+import CityMenuModal from "@/components/map/CityMenuModal";
 
-const CUSTOM_OFFSET_PX = 160; 
+const CUSTOM_OFFSET_PX = 160;
 
 export default function CityLayer() {
   const { t, i18n } = useTranslation();
@@ -14,8 +15,14 @@ export default function CityLayer() {
 
   const {
     cities,
+    backendCities,
+    extraCities,
     hideAllBackend,
     setHideAllBackend,
+    hiddenCodes,
+    toggleCityHidden,
+    addExtraCity,
+    removeExtraCity,
   } = useCityMarkers(currentLang);
 
   const toggleCities = () => {
@@ -43,7 +50,8 @@ export default function CityLayer() {
             "
             title={t("map.menu.global")}
           >
-            ☰
+            {/* Bouton menu hambourger */}
+            {"\u2630"}
           </button>
 
           {/* Bouton ON/OFF villes */}
@@ -64,42 +72,27 @@ export default function CityLayer() {
                 : t("map.cities.hide")
             }
           >
+            {/* Bouton ON/OFF villes */}
             {hideAllBackend ? "\u29BB" : "\u25CF"}
           </button>
         </div>
       </div>
 
-      {/* Marqueurs de villes */}
+      {/* Marqueurs de villes sur la carte */}
       <CityMarkers cities={cities} />
 
-      {/* Modale menu global */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-[700] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setIsMenuOpen(false)}
-          />
-          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-[90%] p-4 z-[710]">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">
-                {t("map.menu.global")}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100"
-                aria-label={t("common.close", "Close")}
-              >
-                {"\u00D7"}
-              </button>
-            </div>
-
-            <p className="text-sm text-stone-700">
-              {t("map.menu.placeholder")}
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Modale de gestion des villes */}
+      <CityMenuModal
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        backendCities={backendCities}
+        extraCities={extraCities}
+        hideAllBackend={hideAllBackend}
+        hiddenCodes={hiddenCodes}
+        toggleCityHidden={toggleCityHidden}
+        addExtraCity={addExtraCity}
+        removeExtraCity={removeExtraCity}
+      />
     </>
   );
 }

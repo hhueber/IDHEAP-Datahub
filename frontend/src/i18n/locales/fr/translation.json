@@ -32,6 +32,15 @@
     },
     "menu": {
       "global": "Menu global",
+      "instanceCities": "Villes définies",
+      "noInstanceCities": "Aucune ville définie.",
+      "localCities": "Villes supplémentaires",
+      "removeCity": "Supprimer",
+      "addCity": "Ajouter une ville",
+      "addCityPlaceholder": "Tapez au moins 3 lettres…",
+      "loadingSuggestions": "Chargement des suggestions...",
+      "noLocalCities": "Aucune villes supplémentaires définie.",
+
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
     "errors": {
@@ -41,7 +50,8 @@
   },
   "common": {
     "loading": "Chargement…",
-    "error": "Erreur"
+    "error": "Erreur",
+    "close": "Fermer"
   },
   "notFound": {
     "message": "Page introuvable."
