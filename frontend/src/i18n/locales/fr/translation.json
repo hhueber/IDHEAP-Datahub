@@ -250,6 +250,14 @@
           "cancel": "Annuler",
           "submit": "Enregistrer",
           "saving": "Enregistrement"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement.",
+          "saved": "Enregistré.",
+          "saveFailed": "Échec de l'enregistrement.",
+          "deleted": "Supprimé.",
+          "deleteFailed": "Échec de la suppression.",
+          "network": "Problème de réseau."
         }
       }
   },
