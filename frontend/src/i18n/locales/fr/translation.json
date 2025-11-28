@@ -26,7 +26,7 @@
     "bootstrapError": "Impossible de charger les données initiales."
   },
   "map": {
-    "cities": {
+    "placeOfInterest": {
       "lausanne": "Lausanne",
       "bern": "Berne",
       "basel": "Bâle",
@@ -199,7 +199,7 @@
       }
     },
     "config": {
-        "cityEditor": {
+        "placeOfInterestEditor": {
           "titleCreate": "Ajouter une ville",
           "titleEdit": "Éditer une ville",
 
@@ -225,7 +225,7 @@
           "submitCreate": "Créer",
           "submitEdit": "Enregistrer"
         },
-        "citiesPage": {
+        "placeOfInterestPage": {
           "title": "Villes",
           "addButton": "Ajouter",
           "columns": {
@@ -328,7 +328,7 @@
       },
       "config": {
         "_": "Configuration",
-        "city": "Villes"
+        "placeOfInterest": "Villes"
       }
     }
   },

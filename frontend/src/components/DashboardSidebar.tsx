@@ -250,7 +250,7 @@ export default function DashboardSidebar() {
           labelKey: "dashboardSidebar.administration.config._",
           roles: ["ADMIN"],
           children: [
-            { key: "admin-config-city", labelKey: "dashboardSidebar.administration.config.city", to: "/admin/config/city", roles: ["ADMIN"], },
+            { key: "admin-config-placeOfInterest", labelKey: "dashboardSidebar.administration.config.placeOfInterest", to: "/admin/config/placeOfInterest", roles: ["ADMIN"], },
           ],
         },
       ],

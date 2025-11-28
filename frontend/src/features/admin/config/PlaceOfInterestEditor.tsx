@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { CityDTO, CitiesAPI } from "@/services/cities";
+import { PlaceOfInterestDTO, PlaceOfInterestAPI } from "@/services/placeOfInterest";
 import { suggestCommunes, getCommunePoint } from "@/services/communes";
 import { ConfigEditorModal } from "./ConfigEditorModal";
 import AutocompleteField from "../components/AutocompleteField";
@@ -20,18 +20,18 @@ type CommuneSuggestion = {
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 const round4 = (n: number) => Math.round(n * 10000) / 10000;
 
-export default function CityEditor({
+export default function PlaceOfInterestEditor({
   initial,
   onClose,
   onSaved,
 }: {
-  initial: CityDTO | null;
+  initial: PlaceOfInterestDTO | null;
   onClose: () => void;
   onSaved: () => void;
 }) {
   const { t } = useTranslation();
 
-  const [form, setForm] = useState<CityDTO>(
+  const [form, setForm] = useState<PlaceOfInterestDTO>(
     () =>
       initial ?? {
         default_name: "",
@@ -110,7 +110,7 @@ export default function CityEditor({
     e.preventDefault();
     setSaving(true);
     try {
-      await CitiesAPI.upsert(form); // Le backend génère 'code' si absent
+      await PlaceOfInterestAPI.upsert(form); // Le backend génère 'code' si absent
       onSaved();
     } finally {
       setSaving(false);
@@ -119,37 +119,37 @@ export default function CityEditor({
 
   return (
     <ConfigEditorModal
-      title={initial ? t("admin.config.cityEditor.titleEdit") : t("admin.config.cityEditor.titleCreate")}
+      title={initial ? t("admin.config.placeOfInterestEditor.titleEdit") : t("admin.config.placeOfInterestEditor.titleCreate")}
       isSaving={saving}
       onClose={onClose}
       onSubmit={onSubmit}
-      submitLabel={initial ? t("admin.config.cityEditor.submitEdit") : t("admin.config.cityEditor.submitCreate")}
+      submitLabel={initial ? t("admin.config.placeOfInterestEditor.submitEdit") : t("admin.config.placeOfInterestEditor.submitCreate")}
     >
       {/* Auto-complétion Communes : suggestions sous le champ */}
       <div className="p-3 rounded-lg border">
-        <div className="font-medium mb-2">{t("admin.config.cityEditor.importFromCommunes")}</div>
+        <div className="font-medium mb-2">{t("admin.config.placeOfInterestEditor.importFromCommunes")}</div>
         <AutocompleteField<CommuneSuggestion>
           value={search}
           onChange={setSearch}
           minLength={3}
           debounceMs={250}
-          placeholder={t("admin.config.cityEditor.searchPlaceholder")}
+          placeholder={t("admin.config.placeOfInterestEditor.searchPlaceholder")}
           fetchItems={async (q) => {
             const r = await suggestCommunes(q, 10);
             return r.data ?? [];
           }}
           renderItem={(c) => <span className="font-medium">{c.name}</span>}
           onPick={pickCommune}
-          renderLoading={() => <LoadingDots label={t("admin.config.cityEditor.search")} />}
+          renderLoading={() => <LoadingDots label={t("admin.config.placeOfInterestEditor.search")} />}
           renderEmpty={(q) =>
-            q.trim().length >= 3 ? <>{t("admin.config.cityEditor.empty")}</> : null
+            q.trim().length >= 3 ? <>{t("admin.config.placeOfInterestEditor.empty")}</> : null
           }
         />
       </div>
 
       {/* Form principal */}
       <div>
-        <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.canonicalLabel")}</label>
+        <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.canonicalLabel")}</label>
         <input
           name="default_name"
           value={form.default_name}
@@ -163,7 +163,7 @@ export default function CityEditor({
       {/* Traductions éditables */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.fr")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.fr")}</label>
           <input
             name="name_fr"
             value={form.name_fr || ""}
@@ -172,7 +172,7 @@ export default function CityEditor({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.de")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.de")}</label>
           <input
             name="name_de"
             value={form.name_de || ""}
@@ -181,7 +181,7 @@ export default function CityEditor({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.it")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.it")}</label>
           <input
             name="name_it"
             value={form.name_it || ""}
@@ -190,7 +190,7 @@ export default function CityEditor({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.ro")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.ro")}</label>
           <input
             name="name_ro"
             value={form.name_ro || ""}
@@ -199,7 +199,7 @@ export default function CityEditor({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.en")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.en")}</label>
           <input
             name="name_en"
             value={form.name_en || ""}
@@ -212,7 +212,7 @@ export default function CityEditor({
       {/* Position (arrondi visuel à 4 décimales sinon trop long) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.lat")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.lat")}</label>
           <input
             type="number"
             step="0.0001"
@@ -224,11 +224,11 @@ export default function CityEditor({
             required
           />
           <div className="text-xs text-gray-500 mt-1">
-            {t("admin.config.cityEditor.labels.preview")} {fmt4(form.pos[0])}
+            {t("admin.config.placeOfInterestEditor.labels.preview")} {fmt4(form.pos[0])}
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.cityEditor.labels.lon")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.lon")}</label>
           <input
             type="number"
             step="0.0001"
@@ -240,7 +240,7 @@ export default function CityEditor({
             required
           />
           <div className="text-xs text-gray-500 mt-1">
-            {t("admin.config.cityEditor.labels.preview")} {fmt4(form.pos[1])}
+            {t("admin.config.placeOfInterestEditor.labels.preview")} {fmt4(form.pos[1])}
           </div>
         </div>
       </div>

@@ -1,7 +1,10 @@
-from pydantic import BaseModel, Field, field_validator
 from typing import Optional, Tuple
 
-class CityBase(BaseModel):
+
+from pydantic import BaseModel, Field, field_validator
+
+
+class PlaceOfInterestBase(BaseModel):
     code: Optional[str] = None
     default_name: str
     name_fr: Optional[str] = None
@@ -27,8 +30,10 @@ class CityBase(BaseModel):
             raise ValueError("invalid lat/lon")
         return (float(lat), float(lon))
 
-class CityIn(CityBase):
+
+class PlaceOfInterestIn(PlaceOfInterestBase):
     pass
 
-class CityOut(CityBase):
+
+class PlaceOfInterestOut(PlaceOfInterestBase):
     pass
