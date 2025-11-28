@@ -26,7 +26,7 @@
     "bootstrapError": "Impossible de charger les données initiales."
   },
   "map": {
-    "cities": {
+    "placeOfInterest": {
       "show": "Afficher les villes",
       "hide": "Masquer les villes"
     },
@@ -200,7 +200,7 @@
       }
     },
     "config": {
-        "cityEditor": {
+        "placeOfInterestEditor": {
           "titleCreate": "Ajouter une ville",
           "titleEdit": "Éditer une ville",
 
@@ -226,7 +226,7 @@
           "submitCreate": "Créer",
           "submitEdit": "Enregistrer"
         },
-        "citiesPage": {
+        "placeOfInterestPage": {
           "title": "Villes",
           "addButton": "Ajouter",
           "columns": {
@@ -251,6 +251,14 @@
           "cancel": "Annuler",
           "submit": "Enregistrer",
           "saving": "Enregistrement"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement.",
+          "saved": "Enregistré.",
+          "saveFailed": "Échec de l'enregistrement.",
+          "deleted": "Supprimé.",
+          "deleteFailed": "Échec de la suppression.",
+          "network": "Problème de réseau."
         }
       }
   },
@@ -329,7 +337,7 @@
       },
       "config": {
         "_": "Configuration",
-        "city": "Villes"
+        "placeOfInterest": "Villes"
       }
     }
   },

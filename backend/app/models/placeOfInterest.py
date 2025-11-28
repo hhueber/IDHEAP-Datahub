@@ -1,12 +1,17 @@
-from typing import Optional, List, Tuple
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Boolean, UniqueConstraint
+from typing import List, Optional, Tuple
+
+
 from geoalchemy2 import Geometry
+from sqlalchemy import Boolean, String, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+
 from .base import Base
 
-class City(Base):
-    __tablename__ = "city"
-    __table_args__ = (UniqueConstraint("code", name="uq_city_code"),)
+
+class PlaceOfInterest(Base):
+    __tablename__ = "PlaceOfInterest"
+    __table_args__ = (UniqueConstraint("code", name="uq_PlaceOfInterest_code"),)
 
     uid: Mapped[int] = mapped_column(primary_key=True)
     code: Mapped[str] = mapped_column(String, nullable=False, index=True)  # unique, ex: "lausanne"
@@ -27,10 +32,12 @@ class City(Base):
     @property
     def pos(self) -> Tuple[float, float]:
         from geoalchemy2.shape import to_shape
+
         p = to_shape(self.geom)  # shapely Point
         return (float(p.y), float(p.x))  # [lat, lon]
 
     def set_pos(self, lat: float, lon: float):
         from geoalchemy2.shape import from_shape
         from shapely.geometry import Point
+
         self.geom = from_shape(Point(lon, lat), srid=4326)

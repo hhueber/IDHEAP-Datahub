@@ -4,7 +4,7 @@ from typing import Optional, Tuple
 from pydantic import BaseModel, Field, field_validator
 
 
-class CityBase(BaseModel):
+class PlaceOfInterestBase(BaseModel):
     code: Optional[str] = None
     default_name: str
     name_fr: Optional[str] = None
@@ -31,15 +31,15 @@ class CityBase(BaseModel):
         return (float(lat), float(lon))
 
 
-class CityClientOut(BaseModel):
+class PlaceOfInterestClientOut(BaseModel):
     code: str
     name: str
     pos: Tuple[float, float]
 
 
-class CityIn(CityBase):
+class PlaceOfInterestIn(PlaceOfInterestBase):
     pass
 
 
-class CityOut(CityBase):
+class PlaceOfInterestOut(PlaceOfInterestBase):
     pass

@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import CityMarkers from "@/components/map/CityMarkers";
-import { useCityMarkers } from "@/features/geo/hooks/useCityMarkers";
+import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
+import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 
 const CUSTOM_OFFSET_PX = 160; 
 
-export default function CityLayer() {
+export default function PlaceOfInterestLayer() {
   const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -13,12 +13,12 @@ export default function CityLayer() {
     i18n.language || window.localStorage.getItem("i18nextLng") || "en";
 
   const {
-    cities,
+    placeOfInterest,
     hideAllBackend,
     setHideAllBackend,
-  } = useCityMarkers(currentLang);
+  } = usePlaceOfInterestMarkers(currentLang);
 
-  const toggleCities = () => {
+  const togglePlaceOfInterest = () => {
     setHideAllBackend(!hideAllBackend);
   };
 
@@ -49,7 +49,7 @@ export default function CityLayer() {
           {/* Bouton ON/OFF villes */}
           <button
             type="button"
-            onClick={toggleCities}
+            onClick={togglePlaceOfInterest}
             className={`
               w-8 h-8 flex items-center justify-center
               text-base
@@ -60,8 +60,8 @@ export default function CityLayer() {
             `}
             title={
               hideAllBackend
-                ? t("map.cities.show")
-                : t("map.cities.hide")
+                ? t("map.placeOfInterest.show")
+                : t("map.placeOfInterest.hide")
             }
           >
             {hideAllBackend ? "\u29BB" : "\u25CF"}
@@ -70,7 +70,7 @@ export default function CityLayer() {
       </div>
 
       {/* Marqueurs de villes */}
-      <CityMarkers cities={cities} />
+      <PlaceOfInterestMarkers placeOfInterest={placeOfInterest} />
 
       {/* Modale menu global */}
       {isMenuOpen && (
@@ -90,6 +90,7 @@ export default function CityLayer() {
                 className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100"
                 aria-label={t("common.close", "Close")}
               >
+                {/* croix de fermeture */}
                 {"\u00D7"}
               </button>
             </div>

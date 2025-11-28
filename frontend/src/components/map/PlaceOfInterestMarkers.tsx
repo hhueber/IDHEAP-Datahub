@@ -2,17 +2,17 @@
 // et affiche leur nom au survol (ou au clic sur mobile/tactile).
 import { CircleMarker, Tooltip, Pane } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
-import type { CityMarker } from "@/features/geo/hooks/useCityMarkers";
+import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 
 type Props = {
-  cities: CityMarker[];
+  placeOfInterest: PlaceOfInterestMarker[];
 };
 
-export default function CityMarkers({ cities }: Props) {
+export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
   return (
     // zIndex < 650 (tooltipPane) pour que les tooltips passent par-dessus
-    <Pane name="cities" style={{ zIndex: 625 }}>
-      {cities.map((c) => (
+    <Pane name="placeOfInterest" style={{ zIndex: 625 }}>
+      {placeOfInterest.map((c) => (
         <CircleMarker
           key={c.code}
           center={c.pos as LatLngExpression}

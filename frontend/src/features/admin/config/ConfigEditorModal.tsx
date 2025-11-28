@@ -41,6 +41,7 @@ export function ConfigEditorModal({
             onClick={onClose}
             className="text-gray-500 hover:text-black"
           >
+            {/* croix pour fermeture de la modal */}
             {"\u00D7"}
           </button>
         </div>
