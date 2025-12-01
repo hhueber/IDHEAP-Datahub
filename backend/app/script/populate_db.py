@@ -187,7 +187,6 @@ async def populate_db() -> None:
                     await session.flush()
 
                 for col in crc:
-                    break
                     if "GSB" in col:
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
@@ -207,43 +206,43 @@ async def populate_db() -> None:
                 # print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
 
         # Answer for 2023 data (separate file)
-        # async with session.begin():
-        #     GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
+        async with session.begin():
+            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
 
-        #     for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
-        #         if pd.isna(row["BFS_2023"]):
-        #             continue
-        #         result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
-        #         db_commune = result.scalar_one_or_none()
+            for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
+                if pd.isna(row["BFS_2023"]):
+                    continue
+                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+                db_commune = result.scalar_one_or_none()
 
-        #         if db_commune is None:
-        #             db_commune = Commune(
-        #                 code=str(row("BFS_2023")),
-        #                 name=row["Gemeinde_2023"],
-        #                 name_fr=row["Gemeinde_2023"],
-        #                 name_it=row["Gemeinde_2023"],
-        #                 name_ro=row["Gemeinde_2023"],
-        #                 name_en=row["Gemeinde_2023"],
-        #                 name_de=row["Gemeinde_2023"],
-        #             )
-        #             session.add(db_commune)
-        #             await session.flush()
+                if db_commune is None:
+                    db_commune = Commune(
+                        code=str(row("BFS_2023")),
+                        name=row["Gemeinde_2023"],
+                        name_fr=row["Gemeinde_2023"],
+                        name_it=row["Gemeinde_2023"],
+                        name_ro=row["Gemeinde_2023"],
+                        name_en=row["Gemeinde_2023"],
+                        name_de=row["Gemeinde_2023"],
+                    )
+                    session.add(db_commune)
+                    await session.flush()
 
-        #         for col in GSB_2023:
-        #             if "GSB" in col:
-        #                 survey = col.split("_")[0]
-        #                 year = int(survey.replace("GSB", ""))
-        #                 year = 2000 + year if year < 50 else 1900 + year
+                for col in GSB_2023:
+                    if "GSB" in col:
+                        survey = col.split("_")[0]
+                        year = int(survey.replace("GSB", ""))
+                        year = 2000 + year if year < 50 else 1900 + year
 
-        #                 result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
-        #                 db_question = result.scalar_one_or_none()
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
+                        db_question = result.scalar_one_or_none()
 
-        #                 if db_question is None:
-        #                     raise RuntimeError("Question not found")
-        #                 db_answer = Answer(
-        #                     year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
-        #                 )
-        #                 session.add(db_answer)
-        #                 await session.flush()
+                        if db_question is None:
+                            raise RuntimeError("Question not found")
+                        db_answer = Answer(
+                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
 
-        #             # print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
+                    # print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
