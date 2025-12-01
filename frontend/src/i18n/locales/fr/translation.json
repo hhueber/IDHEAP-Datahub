@@ -33,13 +33,13 @@
     "menu": {
       "global": "Menu global",
       "instancePlaceOfInterest": "Lieux d'intérêt définies",
-      "noInstancePlaceOfInterest": "Aucun lieux d'intérêt définie.",
+      "noInstancePlaceOfInterest": "Aucun lieu d'intérêt défini.",
       "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
       "removePlaceOfInterest": "Supprimer",
       "addPlaceOfInterest": "Ajouter un lieu d'intérêt",
       "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
       "loadingSuggestions": "Chargement des suggestions...",
-      "noLocalPlaceOfInterest": "Aucune lieux d'intérêt supplémentaire définie.",
+      "noLocalPlaceOfInterest": "Aucun lieu d'intérêt supplémentaire défini.",
 
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
