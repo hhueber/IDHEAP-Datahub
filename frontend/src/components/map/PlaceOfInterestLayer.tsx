@@ -54,7 +54,7 @@ export default function PlaceOfInterestLayer() {
             {"\u2630"}
           </button>
 
-          {/* Bouton ON/OFF villes */}
+          {/* Bouton masquer/demasquer les places d'intérêt */}
           <button
             type="button"
             onClick={togglePlaceOfInterest}

@@ -32,14 +32,14 @@
     },
     "menu": {
       "global": "Menu global",
-      "instancePlaceOfInterest": "Villes définies",
-      "noInstancePlaceOfInterest": "Aucune ville définie.",
-      "localPlaceOfInterest": "Villes supplémentaires",
+      "instancePlaceOfInterest": "Lieux d'intérêt définies",
+      "noInstancePlaceOfInterest": "Aucun lieux d'intérêt définie.",
+      "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
       "removePlaceOfInterest": "Supprimer",
-      "addPlaceOfInterest": "Ajouter une ville",
+      "addPlaceOfInterest": "Ajouter un lieu d'intérêt",
       "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
       "loadingSuggestions": "Chargement des suggestions...",
-      "noLocalPlaceOfInterest": "Aucune villes supplémentaires définie.",
+      "noLocalPlaceOfInterest": "Aucune lieux d'intérêt supplémentaire définie.",
 
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
