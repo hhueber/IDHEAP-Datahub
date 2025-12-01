@@ -72,7 +72,7 @@ export default function PlaceOfInterestLayer() {
                 : t("map.placeOfInterest.hide")
             }
           >
-            {/* masquer/demasquer les places d'intérêt */}
+            {/* Bouton masquer/demasquer les places d'intérêt */}
             {hideAllBackend ? "\u29BB" : "\u25CF"}
           </button>
         </div>
