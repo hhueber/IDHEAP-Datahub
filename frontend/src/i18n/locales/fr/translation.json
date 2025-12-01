@@ -53,7 +53,8 @@
   "common": {
     "loading": "Chargement…",
     "error": "Erreur",
-    "close": "Fermer"
+    "close": "Fermer",
+    "unknown": "Erreur inconnue"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -327,7 +328,19 @@
       "commune": {
         "_": "Commune",
         "all": "Toutes",
-        "show": "Afficher"
+        "show": "Afficher",
+        "pageAll": {
+          "uid": "UID",
+          "name": "Nom",
+          "code": "Code",
+          "entity": "Entité",
+          "no Data": "pas de données",
+          "asc": "Asc",
+          "desc": "Desc",
+          "error": "Erreur:",
+          "loading": "Chargement",
+          "sort": "Trier par"
+        }
       },
       "district": {
         "_": "District",
@@ -356,5 +369,8 @@
   "roles": {
     "admin": "Administrateur·rice",
     "member": "Membre"
+  },
+  "pagination": {
+    "page": "Page"
   }
 }

@@ -13,6 +13,9 @@ import AddMemberPage from "@/features/admin/AddMemberPage";
 import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
 import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
+import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
+import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
+import CantonAllPage from "@/features/pageAll/CantonAllPage";
 
 // Démo admin déjà fournie
 function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs</div>; }
@@ -40,6 +43,32 @@ export default function App() {
           {/* Pages privées accessibles aux membres connectés */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/password" element={<ChangePasswordPage />} />
+          <Route
+            path="/admin/places/communes"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <CommuneAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/places/districts"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <DistrictAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/places/cantons"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <CantonAllPage />
+              </RequireRole>
+            }
+          />
 
           {/* Pages admin (rôle ADMIN uniquement) */}
           <Route
