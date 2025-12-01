@@ -4,9 +4,9 @@ import { CircleMarker, Tooltip, Pane } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import { useTranslation } from "react-i18next";
 
-type City = { code: string; defaultName: string; pos: LatLngExpression };
+type PlaceOfInterest = { code: string; defaultName: string; pos: LatLngExpression };
 
-const CITIES: City[] = [
+const PlaceOfInterest: PlaceOfInterest[] = [
   { code: "lausanne",     defaultName: "Lausanne",     pos: [46.5197, 6.6323] },
   { code: "bern",         defaultName: "Bern",         pos: [46.9480, 7.4474] },
   { code: "basel",        defaultName: "Basel",        pos: [47.5596, 7.5886] },
@@ -14,14 +14,14 @@ const CITIES: City[] = [
   { code: "schaffhausen", defaultName: "Schaffhausen", pos: [47.6973, 8.6349] },
 ];
 
-export default function CityMarkers() {
+export default function PlaceOfInterestMarkers() {
   const { t } = useTranslation();
 
   return (
     // zIndex < 650 (tooltipPane) pour que les tooltips passent par-dessus
-    <Pane name="cities" style={{ zIndex: 625 }}>
-      {CITIES.map((c) => {
-        const label = t(`map.cities.${c.code}`, { defaultValue: c.defaultName });
+    <Pane name="placeOfInterest" style={{ zIndex: 625 }}>
+      {PlaceOfInterest.map((c) => {
+        const label = t(`map.placeOfInterest.${c.code}`, { defaultValue: c.defaultName });
         return (
           <CircleMarker
             key={c.code}

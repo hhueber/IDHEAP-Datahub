@@ -1,4 +1,4 @@
-from app.api.router import auth, geo, home, questions, user
+from app.api.router import auth, geo, home, questions, user, config, communes
 from app.core.middleware import setup_middlewares
 from app.db import get_db
 from fastapi import Depends, FastAPI
@@ -15,6 +15,8 @@ app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(questions.router, prefix="/questions", tags=["questions"])
 app.include_router(geo.router, prefix="/geo", tags=["geo"])
+app.include_router(config.router, prefix="/config", tags=["config"])
+app.include_router(communes.router, prefix="/communes", tags=["communes"])
 
 
 # backend swagger: url:8000
