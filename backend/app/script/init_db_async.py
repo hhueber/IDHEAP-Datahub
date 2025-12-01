@@ -21,7 +21,8 @@ async def create_schema() -> None:
     except Exception as e:
         logger.warning("Could not ensure extensions (unaccent/postgis): %s", e)
 
-    confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
+    # confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
+    confirm = "y"
     if confirm.lower() == "y":
         async with engine.begin() as conn:
             # Drop toute les tables pour repartir de 0
@@ -29,7 +30,7 @@ async def create_schema() -> None:
             await conn.run_sync(Base.metadata.drop_all)
             await ensure_extensions()
             # Cree les tables dans la base de données
-            logger.info("Creating all tables…")
+            logger.info("Creating all tables...")
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database schema created.")
 

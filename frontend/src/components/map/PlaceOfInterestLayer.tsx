@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import CityMarkers from "@/components/map/CityMarkers";
-import { useCityMarkers } from "@/features/geo/hooks/useCityMarkers";
-import CityMenuModal from "@/components/map/CityMenuModal";
+import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
+import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
+import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 
 const CUSTOM_OFFSET_PX = 160;
 
-export default function CityLayer() {
+export default function PlaceOfInterestLayer() {
   const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -14,18 +14,18 @@ export default function CityLayer() {
     i18n.language || window.localStorage.getItem("i18nextLng") || "en";
 
   const {
-    cities,
-    backendCities,
-    extraCities,
+    placeOfInterest,
+    backendPlaceOfInterest,
+    extraPlaceOfInterest,
     hideAllBackend,
     setHideAllBackend,
     hiddenCodes,
-    toggleCityHidden,
-    addExtraCity,
-    removeExtraCity,
-  } = useCityMarkers(currentLang);
+    togglePlaceOfInterestHidden,
+    addExtraPlaceOfInterest,
+    removeExtraPlaceOfInterest,
+  } = usePlaceOfInterestMarkers(currentLang);
 
-  const toggleCities = () => {
+  const togglePlaceOfInterest = () => {
     setHideAllBackend(!hideAllBackend);
   };
 
@@ -57,7 +57,7 @@ export default function CityLayer() {
           {/* Bouton ON/OFF villes */}
           <button
             type="button"
-            onClick={toggleCities}
+            onClick={togglePlaceOfInterest}
             className={`
               w-8 h-8 flex items-center justify-center
               text-base
@@ -68,8 +68,8 @@ export default function CityLayer() {
             `}
             title={
               hideAllBackend
-                ? t("map.cities.show")
-                : t("map.cities.hide")
+                ? t("map.placeOfInterest.show")
+                : t("map.placeOfInterest.hide")
             }
           >
             {/* Bouton ON/OFF villes */}
@@ -79,19 +79,19 @@ export default function CityLayer() {
       </div>
 
       {/* Marqueurs de villes sur la carte */}
-      <CityMarkers cities={cities} />
+      <PlaceOfInterestMarkers placeOfInterest={placeOfInterest} />
 
       {/* Modale de gestion des villes */}
-      <CityMenuModal
+      <PlaceOfInterestMenuModal
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
-        backendCities={backendCities}
-        extraCities={extraCities}
+        backendPlaceOfInterest={backendPlaceOfInterest}
+        extraPlaceOfInterest={extraPlaceOfInterest}
         hideAllBackend={hideAllBackend}
         hiddenCodes={hiddenCodes}
-        toggleCityHidden={toggleCityHidden}
-        addExtraCity={addExtraCity}
-        removeExtraCity={removeExtraCity}
+        togglePlaceOfInterestHidden={togglePlaceOfInterestHidden}
+        addExtraPlaceOfInterest={addExtraPlaceOfInterest}
+        removeExtraPlaceOfInterest={removeExtraPlaceOfInterest}
       />
     </>
   );

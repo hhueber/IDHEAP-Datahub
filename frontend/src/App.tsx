@@ -12,7 +12,7 @@ import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
 import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
-import CityConfigPage from "@/features/admin/config/CityConfigPage";
+import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
 
 // Démo admin déjà fournie
 function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs</div>; }
@@ -60,10 +60,10 @@ export default function App() {
           />
           <Route path="/admin/users/delete" element={<RequireRole roles={["ADMIN"]}><DeleteMemberPage /></RequireRole>} />
           <Route
-            path="/admin/config/city"
+            path="/admin/config/placeOfInterest"
             element={
               <RequireRole roles={["ADMIN"]}>
-                <CityConfigPage />
+                <PlaceOfInterestConfigPage />
               </RequireRole>
             }
           />

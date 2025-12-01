@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngExpression } from "leaflet";
-import { citiesApi, CityMapDTO } from "@/features/geo/geoApi";
+import { useTranslation } from "react-i18next";
+import { PlaceOfInterestApi, PlaceOfInterestMapDTO } from "@/features/geo/geoApi";
 
 // Représente une ville à afficher sur la carte.
-export type CityMarker = {
+export type PlaceOfInterestMarker = {
   code: string;
   name: string;
   pos: LatLngExpression;
   source: "backend" | "local";
 };
 
-// Structure de retour du hook useCityMarkers.
-type UseCityMarkersResult = {
-  cities: CityMarker[];
-  backendCities: CityMarker[];
+// Structure de retour du hook usePlaceOfInterestMarkers.
+type UsePlaceOfInterestMarkersResult = {
+  placeOfInterest: PlaceOfInterestMarker[];
+  backendPlaceOfInterest: PlaceOfInterestMarker[];
   loading: boolean;
   error: string | null;
 
@@ -21,21 +22,22 @@ type UseCityMarkersResult = {
   hideAllBackend: boolean;
   setHideAllBackend: (v: boolean) => void;
 
-  // Permet de masquer certaines villes avec code
+  // Permet de masquer certaines villes par code
   hiddenCodes: Set<string>;
-  toggleCityHidden: (code: string) => void;
+  togglePlaceOfInterestHidden: (code: string) => void;
 
-  extraCities: CityMarker[];
-  addExtraCity: (c: Omit<CityMarker, "source">) => void;
-  removeExtraCity: (code: string) => void;
+  extraPlaceOfInterest: PlaceOfInterestMarker[];
+  addExtraPlaceOfInterest: (c: Omit<PlaceOfInterestMarker, "source">) => void;
+  removeExtraPlaceOfInterest: (code: string) => void;
 };
 
 /** Cache en mémoire : évite de re-fetch à chaque fois pour la même langue. */
-const backendCacheByLang: Record<string, CityMarker[]> = {};
+const backendCacheByLang: Record<string, PlaceOfInterestMarker[]> = {};
 
-export function useCityMarkers(lang: string): UseCityMarkersResult {
-  const [backendCities, setBackendCities] = useState<CityMarker[]>([]);
-  const [extraCities, setExtraCities] = useState<CityMarker[]>([]);
+export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarkersResult {
+  const { t } = useTranslation();
+  const [backendPlaceOfInterest, setBackendPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
+  const [extraPlaceOfInterest, setExtraPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
   const [hideAllBackend, setHideAllBackend] = useState(false);
   const [hiddenCodes, setHiddenCodes] = useState<Set<string>>(new Set());
 
@@ -48,7 +50,7 @@ export function useCityMarkers(lang: string): UseCityMarkersResult {
     const normLang = (lang || "en").toLowerCase();
     const cached = backendCacheByLang[normLang];
     if (cached) {
-      setBackendCities(cached);
+      setBackendPlaceOfInterest(cached);
       setError(null);
       setLoading(false);
       return;
@@ -61,21 +63,21 @@ export function useCityMarkers(lang: string): UseCityMarkersResult {
     setLoading(true);
     setError(null);
 
-    citiesApi
+    PlaceOfInterestApi
       .list(normLang, ctrl.signal)
-      .then((raw: CityMapDTO[]) => {
-        const markers: CityMarker[] = raw.map((c) => ({
+      .then((raw: PlaceOfInterestMapDTO[]) => {
+        const markers: PlaceOfInterestMarker[] = raw.map((c) => ({
           code: c.code,
           name: c.name,
           pos: c.pos,
           source: "backend",
         }));
         backendCacheByLang[normLang] = markers;
-        setBackendCities(markers);
+        setBackendPlaceOfInterest(markers);
       })
       .catch((e: any) => {
         if (ctrl.signal.aborted) return;
-        setError(e?.message || "Failed to load cities");
+        setError(e?.message || t("map.errors.failedToLoadPlaceOfInterest"));
       })
       .finally(() => {
         if (!ctrl.signal.aborted) setLoading(false);
@@ -87,7 +89,7 @@ export function useCityMarkers(lang: string): UseCityMarkersResult {
   }, [lang]);
 
   // Masque / démasque une ville spécifique en fonction de son code.   
-  const toggleCityHidden = (code: string) => {
+  const togglePlaceOfInterestHidden = (code: string) => {
     setHiddenCodes((prev) => {
       const next = new Set(prev);
       if (next.has(code)) next.delete(code);
@@ -98,43 +100,43 @@ export function useCityMarkers(lang: string): UseCityMarkersResult {
 
   /**
    * Ajoute une ville "locale" (non persistée en DB, source = "local").
-   * Si une ville avec le même code existe déjà dans extraCities, on ignore.
+   * Si une ville avec le même code existe déjà dans extraplaceOfInterest, on ignore.
    */
-  const addExtraCity = (c: Omit<CityMarker, "source">) => {
-    setExtraCities((prev) => {
+  const addExtraPlaceOfInterest = (c: Omit<PlaceOfInterestMarker, "source">) => {
+    setExtraPlaceOfInterest((prev) => {
       if (prev.some((p) => p.code === c.code)) return prev;
       return [...prev, { ...c, source: "local" }];
     });
   };
 
-  const removeExtraCity = (code: string) => {
-    setExtraCities((prev) => prev.filter((c) => c.code !== code));
+  const removeExtraPlaceOfInterest = (code: string) => {
+    setExtraPlaceOfInterest((prev) => prev.filter((c) => c.code !== code));
   };
 
   // Liste finale des villes visibles enregistrer mais pas dans le stockage local
-  const cities = useMemo(() => {
+  const placeOfInterest = useMemo(() => {
     // Si le toggle global est OFF, on ne montre aucune ville (backend + locales)
     if (hideAllBackend) {
         return [];
     }
 
-    const visibleBackend = backendCities.filter((c) => !hiddenCodes.has(c.code));
-    const visibleExtras  = extraCities.filter((c) => !hiddenCodes.has(c.code));
+    const visibleBackend = backendPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
+    const visibleExtras  = extraPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
 
     return [...visibleBackend, ...visibleExtras];
-  }, [backendCities, extraCities, hideAllBackend, hiddenCodes]);
+  }, [backendPlaceOfInterest, extraPlaceOfInterest, hideAllBackend, hiddenCodes]);
 
   return {
-    cities,
-    backendCities,
+    placeOfInterest,
+    backendPlaceOfInterest,
     loading,
     error,
     hideAllBackend,
     setHideAllBackend,
     hiddenCodes,
-    toggleCityHidden,
-    extraCities,
-    addExtraCity,
-    removeExtraCity,
+    togglePlaceOfInterestHidden,
+    extraPlaceOfInterest,
+    addExtraPlaceOfInterest,
+    removeExtraPlaceOfInterest,
   };
 }

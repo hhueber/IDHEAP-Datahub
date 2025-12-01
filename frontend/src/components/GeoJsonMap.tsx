@@ -8,7 +8,7 @@ import { geoApi, GeoBundle } from "@/features/geo/geoApi";
 import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
-import CityLayer from "@/components/map/CityLayer";
+import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -175,8 +175,8 @@ const communesStyle = useMemo(() => ({
         <Pane name="pane-cantons"  style={{ zIndex: 600 }}>
           {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
         </Pane>
-        {/* Toute la gestion des villes */}
-        <CityLayer />
+        {/* Points villes et labels */}
+        <PlaceOfInterestLayer />
       </MapContainer>
 
       {/* Alerte d’erreur de chargement géo */}

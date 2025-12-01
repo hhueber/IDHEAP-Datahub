@@ -26,26 +26,28 @@
     "bootstrapError": "Impossible de charger les données initiales."
   },
   "map": {
-    "cities": {
+    "placeOfInterest": {
       "show": "Afficher les villes",
       "hide": "Masquer les villes"
     },
     "menu": {
       "global": "Menu global",
-      "instanceCities": "Villes définies",
-      "noInstanceCities": "Aucune ville définie.",
-      "localCities": "Villes supplémentaires",
-      "removeCity": "Supprimer",
-      "addCity": "Ajouter une ville",
-      "addCityPlaceholder": "Tapez au moins 3 lettres…",
+      "instancePlaceOfInterest": "Villes définies",
+      "noInstancePlaceOfInterest": "Aucune ville définie.",
+      "localPlaceOfInterest": "Villes supplémentaires",
+      "removePlaceOfInterest": "Supprimer",
+      "addPlaceOfInterest": "Ajouter une ville",
+      "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
       "loadingSuggestions": "Chargement des suggestions...",
-      "noLocalCities": "Aucune villes supplémentaires définie.",
+      "noLocalPlaceOfInterest": "Aucune villes supplémentaires définie.",
 
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
-      "network": "Problème de réseau. Vérifiez votre connexion."
+      "network": "Problème de réseau. Vérifiez votre connexion.",
+      "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
+      "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
     }
   },
   "common": {
@@ -210,17 +212,17 @@
       }
     },
     "config": {
-        "cityEditor": {
+        "placeOfInterestEditor": {
           "titleCreate": "Ajouter une ville",
           "titleEdit": "Éditer une ville",
 
           "importFromCommunes": "Importer depuis les communes",
-          "searchPlaceholder": "Tapez au moins 3 lettres…",
+          "searchPlaceholder": "Tapez au moins 3 lettres...",
           "search": "Recherche",
           "empty": "Aucun résultat",
 
           "canonicalLabel": "Nom canonique",
-          "canonicalPlaceholder": "Lausanne, Genève, Zürich…",
+          "canonicalPlaceholder": "Lausanne, Genève, Zürich...",
 
           "labels": {
             "fr": "Français",
@@ -236,7 +238,7 @@
           "submitCreate": "Créer",
           "submitEdit": "Enregistrer"
         },
-        "citiesPage": {
+        "placeOfInterestPage": {
           "title": "Villes",
           "addButton": "Ajouter",
           "columns": {
@@ -261,6 +263,14 @@
           "cancel": "Annuler",
           "submit": "Enregistrer",
           "saving": "Enregistrement"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement.",
+          "saved": "Enregistré.",
+          "saveFailed": "Échec de l'enregistrement.",
+          "deleted": "Supprimé.",
+          "deleteFailed": "Échec de la suppression.",
+          "network": "Problème de réseau."
         }
       }
   },
@@ -339,7 +349,7 @@
       },
       "config": {
         "_": "Configuration",
-        "city": "Villes"
+        "placeOfInterest": "Places d'intérêt"
       }
     }
   },

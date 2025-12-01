@@ -1,19 +1,19 @@
 import { apiFetch } from "@/shared/apiFetch";
 
-export type CitySuggestDTO = {
+export type PlaceOfInterestSuggestDTO = {
   default_name: string;
   pos: [number, number]; // [lat, lon]
 };
 
-export type CitySuggestResponse = {
+export type PlaceOfInterestSuggestResponse = {
   success: boolean;
   detail: string;
-  data: CitySuggestDTO[];
+  data: PlaceOfInterestSuggestDTO[];
 };
 
 export const communesApi = {
   suggest: (q: string, signal?: AbortSignal, limit = 10) =>
-    apiFetch<CitySuggestResponse>("communes/suggest/public", {
+    apiFetch<PlaceOfInterestSuggestResponse>("communes/suggest/public", {
       method: "GET",
       signal,
       query: { q, limit },

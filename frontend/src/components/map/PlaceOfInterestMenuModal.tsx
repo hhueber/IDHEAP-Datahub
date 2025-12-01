@@ -1,21 +1,22 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { CityMarker } from "@/features/geo/hooks/useCityMarkers";
-import { communesApi, CitySuggestDTO } from "@/features/geo/communesApi";
+import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
+import { communesApi, PlaceOfInterestSuggestDTO } from "@/features/geo/communesApi";
+
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
 
-  backendCities: CityMarker[];
-  extraCities: CityMarker[];
+  backendPlaceOfInterest: PlaceOfInterestMarker[];
+  extraPlaceOfInterest: PlaceOfInterestMarker[];
 
   hideAllBackend: boolean;
   hiddenCodes: Set<string>;
-  toggleCityHidden: (code: string) => void;
+  togglePlaceOfInterestHidden: (code: string) => void;
 
-  addExtraCity: (c: Omit<CityMarker, "source">) => void;
-  removeExtraCity: (code: string) => void;
+  addExtraPlaceOfInterest: (c: Omit<PlaceOfInterestMarker, "source">) => void;
+  removeExtraPlaceOfInterest: (code: string) => void;
 };
 
 // petite fonction pour générer un code local à partir du nom
@@ -27,25 +28,25 @@ const slugify = (s: string): string => {
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "city"
+      .replace(/^-+|-+$/g, "") || "placeOfInterest"
   );
 };
 
-export default function CityMenuModal({
+export default function PlaceOfInterestMenuModal({
   isOpen,
   onClose,
-  backendCities,
-  extraCities,
+  backendPlaceOfInterest,
+  extraPlaceOfInterest,
   hideAllBackend,
   hiddenCodes,
-  toggleCityHidden,
-  addExtraCity,
-  removeExtraCity,
+  togglePlaceOfInterestHidden,
+  addExtraPlaceOfInterest,
+  removeExtraPlaceOfInterest,
 }: Props) {
   const { t } = useTranslation();
 
   const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<CitySuggestDTO[]>([]);
+  const [suggestions, setSuggestions] = useState<PlaceOfInterestSuggestDTO[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
@@ -85,7 +86,7 @@ export default function CityMenuModal({
       .suggest(value.trim(), ctrl.signal, 10)
       .then((res) => {
         if (!res.success) {
-          setError(res.detail || "Failed to fetch suggestions");
+          setError(res.detail || t("map.errors.failedToFetchSuggestions"));
           setSuggestions([]);
           return;
         }
@@ -93,7 +94,7 @@ export default function CityMenuModal({
       })
       .catch((err: any) => {
         if (ctrl.signal.aborted) return;
-        setError(err?.message || "Failed to fetch suggestions");
+        setError(err?.message || t("map.errors.failedToFetchSuggestions"));
         setSuggestions([]);
       })
       .finally(() => {
@@ -101,13 +102,13 @@ export default function CityMenuModal({
       });
   };
 
-  const handleAddSuggestion = (s: CitySuggestDTO) => {
+  const handleAddSuggestion = (s: PlaceOfInterestSuggestDTO) => {
     const base = slugify(s.default_name);
     const code = `local-${base}-${Math.round(s.pos[0] * 1000)}-${Math.round(
       s.pos[1] * 1000
     )}`;
 
-    addExtraCity({
+    addExtraPlaceOfInterest({
       code,
       name: s.default_name,
       pos: s.pos,
@@ -117,7 +118,7 @@ export default function CityMenuModal({
     setSuggestions([]);
   };
 
-  const isCityVisible = (code: string) => {
+  const isPlaceOfInterestVisible = (code: string) => {
     if (hideAllBackend) return false;
     return !hiddenCodes.has(code);
   };
@@ -153,19 +154,19 @@ export default function CityMenuModal({
         {/* Villes backend */}
         <section className="mb-4">
           <h3 className="text-sm font-semibold mb-1">
-            {t("map.menu.instanceCities")}
+            {t("map.menu.instancePlaceOfInterest")}
           </h3>
-          {backendCities.length === 0 ? (
+          {backendPlaceOfInterest.length === 0 ? (
             <p className="text-xs text-stone-500">
-              {t("map.menu.noInstanceCities")}
+              {t("map.menu.noInstancePlaceOfInterest")}
             </p>
           ) : (
             <ul className="max-h-40 overflow-auto text-sm space-y-1">
-              {backendCities.map((city) => {
-                const visible = isCityVisible(city.code);
+              {backendPlaceOfInterest.map((placeOfInterest) => {
+                const visible = isPlaceOfInterestVisible(placeOfInterest.code);
                 return (
                   <li
-                    key={city.code}
+                    key={placeOfInterest.code}
                     className="flex items-center justify-between gap-2"
                   >
                     <label className="flex items-center gap-2">
@@ -173,9 +174,9 @@ export default function CityMenuModal({
                         type="checkbox"
                         disabled={hideAllBackend}
                         checked={visible}
-                        onChange={() => toggleCityHidden(city.code)}
+                        onChange={() => togglePlaceOfInterestHidden(placeOfInterest.code)}
                       />
-                      <span>{city.name}</span>
+                      <span>{placeOfInterest.name}</span>
                     </label>
                   </li>
                 );
@@ -187,19 +188,19 @@ export default function CityMenuModal({
         {/* Villes locales (frontend only) */}
         <section className="mb-4">
           <h3 className="text-sm font-semibold mb-1">
-              {t("map.menu.localCities")}
+              {t("map.menu.localPlaceOfInterest")}
           </h3>
-          {extraCities.length === 0 ? (
+          {extraPlaceOfInterest.length === 0 ? (
               <p className="text-xs text-stone-500">
-              {t("map.menu.noLocalCities")}
+              {t("map.menu.noLocalPlaceOfInterest")}
               </p>
           ) : (
               <ul className="max-h-32 overflow-auto text-sm space-y-1">
-              {extraCities.map((city) => {
-                  const visible = isCityVisible(city.code);
+              {extraPlaceOfInterest.map((placeOfInterest) => {
+                  const visible = isPlaceOfInterestVisible(placeOfInterest.code);
                   return (
                   <li
-                      key={city.code}
+                      key={placeOfInterest.code}
                       className="flex items-center justify-between gap-2"
                   >
                       <label className="flex items-center gap-2">
@@ -207,16 +208,16 @@ export default function CityMenuModal({
                           type="checkbox"
                           disabled={hideAllBackend}
                           checked={visible}
-                          onChange={() => toggleCityHidden(city.code)}
+                          onChange={() => togglePlaceOfInterestHidden(placeOfInterest.code)}
                       />
-                      <span>{city.name}</span>
+                      <span>{placeOfInterest.name}</span>
                       </label>
                       <button
                       type="button"
-                      onClick={() => removeExtraCity(city.code)}
+                      onClick={() => removeExtraPlaceOfInterest(placeOfInterest.code)}
                       className="text-xs text-red-600 hover:underline"
                       >
-                      {t("map.menu.removeCity")}
+                      {t("map.menu.removePlaceOfInterest")}
                       </button>
                   </li>
                   );
@@ -228,13 +229,13 @@ export default function CityMenuModal({
         {/* Ajout de villes via suggest publique */}
         <section>
           <h3 className="text-sm font-semibold mb-1">
-            {t("map.menu.addCity")}
+            {t("map.menu.addPlaceOfInterest")}
           </h3>
           <input
             type="text"
             value={query}
             onChange={handleSearchChange}
-            placeholder={t("map.menu.addCityPlaceholder")}
+            placeholder={t("map.menu.addPlaceOfInterestPlaceholder")}
             className="w-full border border-stone-300 rounded px-2 py-1 text-sm mb-2"
           />
           {loading && (

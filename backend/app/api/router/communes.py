@@ -2,7 +2,7 @@ from app.api.dependencies import get_current_user
 from app.db import get_db
 from app.repositories.commune_map_repo import get_commune_point
 from app.repositories.commune_repo import suggest_communes_prefix
-from app.schemas.city import CitySuggestOut, CitySuggestResponse
+from app.schemas.placeOfInterest import PlaceOfInterestSuggestOut, PlaceOfInterestSuggestResponse
 from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -31,7 +31,7 @@ async def commune_point(uid: int, db: AsyncSession = Depends(get_db), _user: Use
     return {"success": True, "detail": "OK", "data": {"lat": lat, "lon": lon}}
 
 
-@router.get("/suggest/public", response_model=CitySuggestResponse)
+@router.get("/suggest/public", response_model=PlaceOfInterestSuggestResponse)
 async def suggest_communes_public(
     q: str = Query(..., min_length=3, max_length=100),
     limit: int = Query(10, ge=1, le=50),
@@ -47,7 +47,7 @@ async def suggest_communes_public(
 
     rows = await suggest_communes_prefix(db, q=q, limit=limit)
 
-    cities: list[CitySuggestOut] = []
+    placeOfInterest: list[PlaceOfInterestSuggestOut] = []
 
     for row in rows:
         pos = await get_commune_point(db, row["uid"])
@@ -59,15 +59,15 @@ async def suggest_communes_public(
         if not default_name:
             continue
 
-        cities.append(
-            CitySuggestOut(
+        placeOfInterest.append(
+            PlaceOfInterestSuggestOut(
                 default_name=default_name,
                 pos=(float(pos[0]), float(pos[1])),
             )
         )
 
-    return CitySuggestResponse(
+    return PlaceOfInterestSuggestResponse(
         success=True,
         detail="OK",
-        data=cities,
+        data=placeOfInterest,
     )
