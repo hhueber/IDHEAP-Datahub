@@ -54,7 +54,7 @@ export default function PlaceOfInterestLayer() {
             {"\u2630"}
           </button>
 
-          {/* Bouton masquer/demasquer les places d'intérêt */}
+          {/* Bouton ON/OFF villes */}
           <button
             type="button"
             onClick={togglePlaceOfInterest}
@@ -72,7 +72,7 @@ export default function PlaceOfInterestLayer() {
                 : t("map.placeOfInterest.hide")
             }
           >
-            {/* Bouton ON/OFF villes */}
+            {/* masquer/demasquer les places d'intérêt */}
             {hideAllBackend ? "\u29BB" : "\u25CF"}
           </button>
         </div>
