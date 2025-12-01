@@ -25,7 +25,7 @@ class OrderDirEnum(str, Enum):
 
 class AllItem(BaseModel):
     uid: int
-    code: int
+    code: str
     name: str
     entity: EntityEnum
 
