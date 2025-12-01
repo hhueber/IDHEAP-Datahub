@@ -29,7 +29,7 @@ async def create_schema() -> None:
             await conn.run_sync(Base.metadata.drop_all)
             await ensure_extensions()
             # Cree les tables dans la base de données
-            logger.info("Creating all tables…")
+            logger.info("Creating all tables...")
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database schema created.")
 
