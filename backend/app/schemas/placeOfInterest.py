@@ -31,6 +31,12 @@ class PlaceOfInterestBase(BaseModel):
         return (float(lat), float(lon))
 
 
+class PlaceOfInterestClientOut(BaseModel):
+    code: str
+    name: str
+    pos: Tuple[float, float]
+
+
 class PlaceOfInterestIn(PlaceOfInterestBase):
     pass
 

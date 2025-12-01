@@ -8,6 +8,15 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+LANG_FIELD_MAP = {
+    "fr": "name_fr",
+    "de": "name_de",
+    "it": "name_it",
+    "ro": "name_ro",
+    "en": "name_en",
+}
+
+
 def placeOfInterest_to_dict(c: PlaceOfInterest) -> dict:
     return {
         "code": c.code,
@@ -74,3 +83,30 @@ def slugify(s: str) -> str:
     s = re.sub(r"[^a-z0-9]+", "-", s)
     s = re.sub(r"-{2,}", "-", s).strip("-")
     return s or "placeOfInterest"
+
+
+def placeOfInterest_to_client_dict(c: PlaceOfInterest, lang: str) -> dict:
+    # lang peut être "fr-CH", "de-CH"... on garde juste la partie avant le "-"
+    base_lang = (lang or "").split("-")[0].lower() or "en"
+
+    field_name = LANG_FIELD_MAP.get(base_lang)
+    label = None
+    if field_name:
+        label = getattr(c, field_name, None)
+
+    if not label:
+        # fallback propre
+        label = c.default_name
+
+    return {
+        "code": c.code,
+        "name": label,
+        "pos": list(c.pos),
+    }
+
+
+async def list_placeOfInterest_for_lang(db: AsyncSession, lang: str) -> List[dict]:
+    stmt = select(PlaceOfInterest).where(PlaceOfInterest.active == True).order_by(PlaceOfInterest.default_name.asc())
+    res = await db.execute(stmt)
+    placeOfInterest = res.scalars().all()
+    return [placeOfInterest_to_client_dict(c, lang) for c in placeOfInterest]
