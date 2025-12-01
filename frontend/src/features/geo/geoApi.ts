@@ -71,7 +71,7 @@ export type PlaceOfInterestMapDTO = {
 };
 
 // Client API pour récupérer la liste des villes affichées sur la carte.
-export const placeOfInterestApi = {
+export const PlaceOfInterestApi = {
   list: (lang: string, signal?: AbortSignal) =>
     apiFetch<PlaceOfInterestMapDTO[]>("geo/placeOfInterest", {
       method: "GET",

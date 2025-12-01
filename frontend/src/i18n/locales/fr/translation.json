@@ -205,12 +205,12 @@
           "titleEdit": "Éditer une ville",
 
           "importFromCommunes": "Importer depuis les communes",
-          "searchPlaceholder": "Tapez au moins 3 lettres…",
+          "searchPlaceholder": "Tapez au moins 3 lettres...",
           "search": "Recherche",
           "empty": "Aucun résultat",
 
           "canonicalLabel": "Nom canonique",
-          "canonicalPlaceholder": "Lausanne, Genève, Zürich…",
+          "canonicalPlaceholder": "Lausanne, Genève, Zürich...",
 
           "labels": {
             "fr": "Français",
@@ -337,7 +337,7 @@
       },
       "config": {
         "_": "Configuration",
-        "placeOfInterest": "Villes"
+        "placeOfInterest": "Places d'intérêt"
       }
     }
   },

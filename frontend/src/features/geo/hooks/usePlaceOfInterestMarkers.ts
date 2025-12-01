@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngExpression } from "leaflet";
-import { placeOfInterestApi, PlaceOfInterestMapDTO } from "@/features/geo/geoApi";
+import { PlaceOfInterestApi, PlaceOfInterestMapDTO } from "@/features/geo/geoApi";
 
 // Représente une ville à afficher sur la carte.
 export type PlaceOfInterestMarker = {
@@ -24,7 +24,7 @@ type UsePlaceOfInterestMarkersResult = {
   hiddenCodes: Set<string>;
   togglePlaceOfInterestHidden: (code: string) => void;
 
-  extraplaceOfInterest: PlaceOfInterestMarker[];
+  extraPlaceOfInterest: PlaceOfInterestMarker[];
   addExtraPlaceOfInterest: (c: Omit<PlaceOfInterestMarker, "source">) => void;
   removeExtraPlaceOfInterest: (code: string) => void;
 };
@@ -70,7 +70,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
           source: "backend",
         }));
         backendCacheByLang[normLang] = markers;
-        setBackendplaceOfInterest(markers);
+        setBackendPlaceOfInterest(markers);
       })
       .catch((e: any) => {
         if (ctrl.signal.aborted) return;
@@ -119,7 +119,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
   }, [backendPlaceOfInterest, extraPlaceOfInterest, hideAllBackend, hiddenCodes]);
 
   return {
-    PlaceOfInterest,
+    placeOfInterest,
     loading,
     error,
     hideAllBackend,
