@@ -1,4 +1,4 @@
-from typing import Optional, Tuple
+from typing import List, Optional, Tuple
 
 
 from pydantic import BaseModel, Field, field_validator
@@ -43,3 +43,24 @@ class PlaceOfInterestIn(PlaceOfInterestBase):
 
 class PlaceOfInterestOut(PlaceOfInterestBase):
     pass
+
+
+class PlaceOfInterestSuggestOut(BaseModel):
+    """
+    Schéma pour la suggest publique :
+    - default_name : nom de la commune
+    - pos          : [lat, lon]
+    """
+
+    default_name: str
+    pos: Tuple[float, float] = Field(..., description="[lat, lon]")
+
+
+class PlaceOfInterestSuggestResponse(BaseModel):
+    """
+    Réponse standardisée pour la route publique de suggest.
+    """
+
+    success: bool
+    detail: str
+    data: List[PlaceOfInterestSuggestOut]

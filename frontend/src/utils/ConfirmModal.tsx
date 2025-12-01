@@ -32,6 +32,7 @@ export function ConfirmModal({
             onClick={onCancel}
             className="text-gray-500 hover:text-black"
           >
+            {/* Croix de fermeture */}
             {"\u00D7"}
           </button>
         </div>

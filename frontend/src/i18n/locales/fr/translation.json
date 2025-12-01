@@ -32,17 +32,28 @@
     },
     "menu": {
       "global": "Menu global",
+      "instancePlaceOfInterest": "Lieux d'intérêt définies",
+      "noInstancePlaceOfInterest": "Aucun lieu d'intérêt défini.",
+      "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
+      "removePlaceOfInterest": "Supprimer",
+      "addPlaceOfInterest": "Ajouter un lieu d'intérêt",
+      "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
+      "loadingSuggestions": "Chargement des suggestions...",
+      "noLocalPlaceOfInterest": "Aucun lieu d'intérêt supplémentaire défini.",
+
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
       "network": "Problème de réseau. Vérifiez votre connexion.",
-      "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt"
+      "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
+      "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
     }
   },
   "common": {
     "loading": "Chargement…",
-    "error": "Erreur"
+    "error": "Erreur",
+    "close": "Fermer"
   },
   "notFound": {
     "message": "Page introuvable."

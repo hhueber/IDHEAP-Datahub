@@ -2,8 +2,9 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
 import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
+import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 
-const CUSTOM_OFFSET_PX = 160; 
+const CUSTOM_OFFSET_PX = 160;
 
 export default function PlaceOfInterestLayer() {
   const { t, i18n } = useTranslation();
@@ -14,8 +15,14 @@ export default function PlaceOfInterestLayer() {
 
   const {
     placeOfInterest,
+    backendPlaceOfInterest,
+    extraPlaceOfInterest,
     hideAllBackend,
     setHideAllBackend,
+    hiddenCodes,
+    togglePlaceOfInterestHidden,
+    addExtraPlaceOfInterest,
+    removeExtraPlaceOfInterest,
   } = usePlaceOfInterestMarkers(currentLang);
 
   const togglePlaceOfInterest = () => {
@@ -43,7 +50,8 @@ export default function PlaceOfInterestLayer() {
             "
             title={t("map.menu.global")}
           >
-            ☰
+            {/* Bouton menu hambourger */}
+            {"\u2630"}
           </button>
 
           {/* Bouton ON/OFF villes */}
@@ -70,38 +78,21 @@ export default function PlaceOfInterestLayer() {
         </div>
       </div>
 
-      {/* Marqueurs de villes */}
+      {/* Marqueurs de villes sur la carte */}
       <PlaceOfInterestMarkers placeOfInterest={placeOfInterest} />
 
-      {/* Modale menu global */}
-      {isMenuOpen && (
-        <div className="fixed inset-0 z-[700] flex items-center justify-center">
-          <div
-            className="absolute inset-0 bg-black/40"
-            onClick={() => setIsMenuOpen(false)}
-          />
-          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-[90%] p-4 z-[710]">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-lg font-semibold">
-                {t("map.menu.global")}
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsMenuOpen(false)}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100"
-                aria-label={t("common.close", "Close")}
-              >
-                {/* croix de fermeture */}
-                {"\u00D7"}
-              </button>
-            </div>
-
-            <p className="text-sm text-stone-700">
-              {t("map.menu.placeholder")}
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Modale de gestion des villes */}
+      <PlaceOfInterestMenuModal
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        backendPlaceOfInterest={backendPlaceOfInterest}
+        extraPlaceOfInterest={extraPlaceOfInterest}
+        hideAllBackend={hideAllBackend}
+        hiddenCodes={hiddenCodes}
+        togglePlaceOfInterestHidden={togglePlaceOfInterestHidden}
+        addExtraPlaceOfInterest={addExtraPlaceOfInterest}
+        removeExtraPlaceOfInterest={removeExtraPlaceOfInterest}
+      />
     </>
   );
 }

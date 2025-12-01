@@ -1,7 +1,8 @@
 # calcule le point central des communes
-from sqlalchemy import select, func, desc
-from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.commune_map import CommuneMap
+from sqlalchemy import desc, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 
 async def get_commune_point(db: AsyncSession, commune_uid: int):
     geom_sub = (

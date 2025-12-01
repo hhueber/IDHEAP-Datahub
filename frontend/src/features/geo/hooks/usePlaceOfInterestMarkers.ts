@@ -14,6 +14,7 @@ export type PlaceOfInterestMarker = {
 // Structure de retour du hook usePlaceOfInterestMarkers.
 type UsePlaceOfInterestMarkersResult = {
   placeOfInterest: PlaceOfInterestMarker[];
+  backendPlaceOfInterest: PlaceOfInterestMarker[];
   loading: boolean;
   error: string | null;
 
@@ -76,7 +77,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
       })
       .catch((e: any) => {
         if (ctrl.signal.aborted) return;
-        setError(e?.message || t("map.error.failedToLoadPlaceOfInterest"));
+        setError(e?.message || t("map.errors.failedToLoadPlaceOfInterest"));
       })
       .finally(() => {
         if (!ctrl.signal.aborted) setLoading(false);
@@ -112,16 +113,22 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
     setExtraPlaceOfInterest((prev) => prev.filter((c) => c.code !== code));
   };
 
-  // Liste finale des villes visibles   
+  // Liste finale des villes visibles enregistrer mais pas dans le stockage local
   const placeOfInterest = useMemo(() => {
-    const visibleBackend = hideAllBackend
-      ? []
-      : backendPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
-    return [...visibleBackend, ...extraPlaceOfInterest];
+    // Si le toggle global est OFF, on ne montre aucune ville (backend + locales)
+    if (hideAllBackend) {
+        return [];
+    }
+
+    const visibleBackend = backendPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
+    const visibleExtras  = extraPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
+
+    return [...visibleBackend, ...visibleExtras];
   }, [backendPlaceOfInterest, extraPlaceOfInterest, hideAllBackend, hiddenCodes]);
 
   return {
     placeOfInterest,
+    backendPlaceOfInterest,
     loading,
     error,
     hideAllBackend,
