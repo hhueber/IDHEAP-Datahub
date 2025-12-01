@@ -1,4 +1,4 @@
-from app.api.router import auth, communes, config, geo, home, pageAll, questions, user
+from app.api.router import auth, communes, config, geo, home, pageAll, pageShow, questions, user
 from app.core.middleware import setup_middlewares
 from app.db import get_db
 from fastapi import Depends, FastAPI
@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+print("lol")
 app = FastAPI(title="IDHEAP Data Hub API")
 
 setup_middlewares(app)
@@ -18,6 +19,7 @@ app.include_router(geo.router, prefix="/geo", tags=["geo"])
 app.include_router(config.router, prefix="/config", tags=["config"])
 app.include_router(communes.router, prefix="/communes", tags=["communes"])
 app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
+app.include_router(pageShow.router, prefix="/show", tags=["pageShow"])
 
 
 # backend swagger: url:8000

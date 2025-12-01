@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 
 from app.models.commune import Commune
@@ -39,3 +39,9 @@ async def suggest_communes_prefix(db: AsyncSession, q: str, limit: int = 10) -> 
     )
     res = await db.execute(stmt)
     return [dict(r) for r in res.mappings().all()]
+
+
+async def get_commune_by_ofs(db: AsyncSession, ofs_id: str) -> Optional[Commune]:
+    req = db.select(Commune).where((Commune.code == ofs_id))
+    res = await db.execute(req)
+    return res.scalar_one_or_none()
