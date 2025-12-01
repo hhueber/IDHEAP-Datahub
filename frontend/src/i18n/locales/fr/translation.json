@@ -36,7 +36,8 @@
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
-      "network": "Problème de réseau. Vérifiez votre connexion."
+      "network": "Problème de réseau. Vérifiez votre connexion.",
+      "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt"
     }
   },
   "common": {

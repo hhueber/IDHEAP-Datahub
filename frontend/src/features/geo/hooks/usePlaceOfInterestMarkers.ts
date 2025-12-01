@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngExpression } from "leaflet";
+import { useTranslation } from "react-i18next";
 import { PlaceOfInterestApi, PlaceOfInterestMapDTO } from "@/features/geo/geoApi";
 
 // Représente une ville à afficher sur la carte.
@@ -33,6 +34,7 @@ type UsePlaceOfInterestMarkersResult = {
 const backendCacheByLang: Record<string, PlaceOfInterestMarker[]> = {};
 
 export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarkersResult {
+  const { t } = useTranslation();
   const [backendPlaceOfInterest, setBackendPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
   const [extraPlaceOfInterest, setExtraPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
   const [hideAllBackend, setHideAllBackend] = useState(false);
@@ -74,7 +76,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
       })
       .catch((e: any) => {
         if (ctrl.signal.aborted) return;
-        setError(e?.message || "Failed to load placeOfInterest");
+        setError(e?.message || t("map.error.failedToLoadPlaceOfInterest"));
       })
       .finally(() => {
         if (!ctrl.signal.aborted) setLoading(false);
