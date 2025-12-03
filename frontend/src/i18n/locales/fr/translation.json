@@ -288,6 +288,7 @@
       "administration": "Administration"
     },
     "survey": {
+      "_": "Survey",
       "all": "Tous",
       "newEdit": "Nouveau / Éditer",
       "show": "Afficher"
@@ -328,19 +329,7 @@
       "commune": {
         "_": "Commune",
         "all": "Toutes",
-        "show": "Afficher",
-        "pageAll": {
-          "uid": "UID",
-          "name": "Nom",
-          "code": "Code",
-          "entity": "Entité",
-          "no Data": "pas de données",
-          "asc": "Asc",
-          "desc": "Desc",
-          "error": "Erreur:",
-          "loading": "Chargement",
-          "sort": "Trier par"
-        }
+        "show": "Afficher"
       },
       "district": {
         "_": "District",
@@ -364,6 +353,24 @@
         "_": "Configuration",
         "placeOfInterest": "Places d'intérêt"
       }
+    },
+    "pageAll": {
+      "uid": "UID",
+      "name": "Nom",
+      "code": "Code",
+      "entity": "Entité",
+      "noData": "pas de données",
+      "asc": "Asc",
+      "desc": "Desc",
+      "error": "Erreur:",
+      "loading": "Chargement",
+      "sortBy": "Trier par",
+      "label": "Label",
+      "actions": "Actions",
+      "show": "montrer",
+      "edit": "éditer",
+      "delete": "Supprimer",
+      "value": "Valeur"
     }
   },
   "roles": {

@@ -3,14 +3,14 @@ import { useTranslation } from "react-i18next";
 import PageAll from "@/components/PageAll";
 import type { ColumnConfig, ActionsConfig } from "@/features/pageAll/all_types";
 
-export default function CommuneAllPage() {
+export default function SurveyAllPage() {
   const { t } = useTranslation();
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
       { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.code") },
       { key: "name", label: t("dashboardSidebar.pageAll.name") },
+      { key: "year", label: t("dashboardSidebar.pageAll.year", "Year")},
       { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
     ],
     [t]
@@ -19,14 +19,14 @@ export default function CommuneAllPage() {
   const actions: ActionsConfig = {
     show: true,
     edit: true,
-    delete: false, // On ne supprime pas les communes
+    delete: true,
   };
 
   return (
     <PageAll
-      title={t("dashboardSidebar.places.commune._")}
-      entity="commune"
-      initialPerPage={20}
+      title={t("dashboardSidebar.survey._", "Surveys")}
+      entity="survey"
+      initialPerPage={10}
       columns={columns}
       actions={actions}
     />

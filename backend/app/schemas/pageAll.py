@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Optional
 
 
 from pydantic import BaseModel
@@ -9,7 +9,11 @@ class EntityEnum(str, Enum):
     commune = "commune"
     district = "district"
     canton = "canton"
-    # Rajouter ici des tables plus tard
+    question_per_survey = "question_per_survey"
+    question_global = "question_global"
+    question_category = "question_category"
+    option = "option"
+    survey = "survey"
 
 
 class OrderByEnum(str, Enum):
@@ -25,9 +29,10 @@ class OrderDirEnum(str, Enum):
 
 class AllItem(BaseModel):
     uid: int
-    code: str
+    code: Optional[str] = None
     name: str
     entity: EntityEnum
+    year: Optional[int] = None
 
     class Config:
         orm_mode = True

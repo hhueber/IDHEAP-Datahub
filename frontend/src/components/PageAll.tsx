@@ -1,7 +1,15 @@
 import React from "react";
 import Pagination from "@/utils/Pagination";
 import { apiFetch } from "@/shared/apiFetch";
-import type { AllItem, AllResponse, Entity } from "@/features/pageAll/all_types";
+import type {
+  AllItem,
+  AllResponse,
+  Entity,
+  ColumnConfig,
+  ActionsConfig,
+  SortBy,
+  SortDir,
+} from "@/features/pageAll/all_types";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 
@@ -9,9 +17,17 @@ type PageAllProps = {
   title: string;
   entity: Entity;
   initialPerPage?: number;
+  columns: ColumnConfig[];
+  actions?: ActionsConfig;
 };
 
-export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllProps) {
+export default function PageAll({
+  title,
+  entity,
+  initialPerPage = 20,
+  columns,
+  actions,
+}: PageAllProps) {
   const { t } = useTranslation();
   const [page, setPage] = React.useState(1);
   const [perPage] = React.useState(initialPerPage);
@@ -20,9 +36,9 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // État de tri
-  const [sortBy, setSortBy] = React.useState<"uid" | "name">("uid");
-  const [sortDir, setSortDir] = React.useState<"asc" | "desc">("asc");
+  // État de tri générique (uid / name pour l’instant)
+  const [sortBy, setSortBy] = React.useState<SortBy>("uid");
+  const [sortDir, setSortDir] = React.useState<SortDir>("asc");
 
   const loadPage = React.useCallback(
     async (p: number) => {
@@ -54,7 +70,7 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
         setLoading(false);
       }
     },
-    [entity, perPage, sortBy, sortDir]
+    [entity, perPage, sortBy, sortDir, t]
   );
 
   React.useEffect(() => {
@@ -68,7 +84,7 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
 
   // quand on change le tri, on revient à la page 1
   const handleSortByChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value as "uid" | "name";
+    const value = e.target.value as SortBy;
     setSortBy(value);
     setPage(1);
   };
@@ -78,23 +94,26 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
     setPage(1);
   };
 
+  const hasActions = !!actions && (actions.show || actions.edit || actions.delete);
+
   return (
     <div className="p-6 flex flex-col h-full">
       <h1 className="text-xl font-semibold mb-4">{title}</h1>
 
       {/* barre de tri, responsive (colonne sur mobile, rangée sur desktop) */}
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-        <div className="text-sm text-gray-600">
-        </div>
+        <div className="text-sm text-gray-600" />
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-700">{t("dashboardSidebar.places.commune.pageAll.sort")}</span>
+          <span className="text-sm text-gray-700">
+            {t("dashboardSidebar.pageAll.sortBy")}
+          </span>
           <select
             value={sortBy}
             onChange={handleSortByChange}
             className="h-9 rounded border px-2 text-sm bg-white"
           >
-            <option value="uid">{t("dashboardSidebar.places.commune.pageAll.uid")}</option>
-            <option value="name">{t("dashboardSidebar.places.commune.pageAll.name")}</option>
+            <option value="uid">{t("dashboardSidebar.pageAll.uid")}</option>
+            <option value="name">{t("dashboardSidebar.pageAll.name")}</option>
           </select>
           <button
             type="button"
@@ -103,12 +122,12 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
           >
             {sortDir === "asc" ? (
               <>
-                <span>{t("dashboardSidebar.places.commune.pageAll.asc")}</span>
+                <span>{t("dashboardSidebar.pageAll.asc")}</span>
                 <span aria-hidden>↑</span>
               </>
             ) : (
               <>
-                <span>{t("dashboardSidebar.places.commune.pageAll.desc")}</span>
+                <span>{t("dashboardSidebar.pageAll.desc")}</span>
                 <span aria-hidden>↓</span>
               </>
             )}
@@ -117,10 +136,14 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
       </div>
 
       <div className="flex-1 flex flex-col">
-        {loading && <div className="text-sm text-gray-500 mb-2"><LoadingDots label={t("dashboardSidebar.places.commune.pageAll.loading")}/></div>}
+        {loading && (
+          <div className="text-sm text-gray-500 mb-2">
+            <LoadingDots label={t("dashboardSidebar.pageAll.loading")} />
+          </div>
+        )}
         {error && (
           <div className="text-sm text-red-500 mb-2">
-            {t("dashboardSidebar.places.commune.pageAll.error")} {error}
+            {t("dashboardSidebar.pageAll.error")} {error}
           </div>
         )}
 
@@ -130,29 +153,96 @@ export default function PageAll({ title, entity, initialPerPage = 20 }: PageAllP
             <table className="min-w-max w-full text-sm border-collapse">
               <thead className="bg-gray-100">
                 <tr>
-                  <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap">{t("dashboardSidebar.places.commune.pageAll.uid")}</th>
-                  <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap">{t("dashboardSidebar.places.commune.pageAll.code")}</th>
-                  <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap">{t("dashboardSidebar.places.commune.pageAll.name")}</th>
-                  <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap">{t("dashboardSidebar.places.commune.pageAll.entity")}</th>
+                  {columns.map((col) => (
+                    <th
+                      key={col.key}
+                      className="border-b px-3 py-2 text-left font-medium whitespace-nowrap"
+                    >
+                      {col.label}
+                    </th>
+                  ))}
+                  {hasActions && (
+                    <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap">
+                      {t("dashboardSidebar.pageAll.actions")}
+                    </th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 {items.length === 0 && !loading ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={columns.length + (hasActions ? 1 : 0)}
                       className="px-3 py-4 text-center text-gray-500"
                     >
-                      {t("dashboardSidebar.places.commune.pageAll.noData")}
+                      {t("dashboardSidebar.pageAll.noData")}
                     </td>
                   </tr>
                 ) : (
                   items.map((row) => (
                     <tr key={row.uid} className="hover:bg-gray-50">
-                      <td className="border-b px-3 py-2 whitespace-nowrap">{row.uid}</td>
-                      <td className="border-b px-3 py-2 whitespace-nowrap">{row.code}</td>
-                      <td className="border-b px-3 py-2 whitespace-nowrap">{row.name}</td>
-                      <td className="border-b px-3 py-2 whitespace-nowrap">{row.entity}</td>
+                      {columns.map((col) => {
+                        const value = (row as any)[col.key];
+                        const content = col.render ? col.render(row) : value;
+                        const alignClass =
+                          col.align === "center"
+                            ? "text-center"
+                            : col.align === "right"
+                            ? "text-right"
+                            : "text-left";
+
+                        return (
+                          <td
+                            key={col.key}
+                            className={`border-b px-3 py-2 whitespace-nowrap ${alignClass}`}
+                          >
+                            {content}
+                          </td>
+                        );
+                      })}
+
+                      {hasActions && (
+                        <td className="border-b px-3 py-2 whitespace-nowrap">
+                          <div className="flex flex-wrap gap-1">
+                            {actions?.show && (
+                              <button
+                                type="button"
+                                className="px-2 py-1 text-xs rounded border hover:bg-gray-100"
+                                onClick={() => {
+                                  // TODO: Wiring réel plus tard
+                                  console.log("Show", entity, row.uid);
+                                }}
+                              >
+                                {t("dashboardSidebar.pageAll.show")}
+                              </button>
+                            )}
+                            {actions?.edit && (
+                              <button
+                                type="button"
+                                className="px-2 py-1 text-xs rounded border hover:bg-gray-100"
+                                onClick={() => {
+                                  // TODO: Wiring réel plus tard
+                                  console.log("Edit", entity, row.uid);
+                                }}
+                              >
+                                {t("dashboardSidebar.pageAll.edit")}
+                              </button>
+                            )}
+                            {actions?.delete && (
+                              <button
+                                type="button"
+                                className="px-2 py-1 text-xs rounded border text-red-600 border-red-300 hover:bg-red-50"
+                                onClick={() => {
+                                  // TODO: Wiring réel plus tard
+                                  console.log("Delete", entity, row.uid);
+                                }}
+                              >
+                                {t("dashboardSidebar.pageAll.delete")}
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))
                 )}
