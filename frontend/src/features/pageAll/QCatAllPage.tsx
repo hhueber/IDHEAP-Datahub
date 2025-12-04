@@ -9,7 +9,7 @@ export default function QuestionCategoryAllPage() {
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
       { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      // pas de code → on affiche juste name
+      // pas de code => on affiche juste `name`
       { key: "name", label: t("dashboardSidebar.pageAll.label") },
       { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
     ],
