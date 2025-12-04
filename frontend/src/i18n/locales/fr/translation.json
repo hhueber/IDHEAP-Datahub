@@ -351,7 +351,7 @@
       },
       "config": {
         "_": "Configuration",
-        "placeOfInterest": "Places d'intérêt"
+        "placeOfInterest": "Lieux d'intérêt"
       }
     },
     "pageAll": {
@@ -362,7 +362,7 @@
       "noData": "pas de données",
       "asc": "Asc",
       "desc": "Desc",
-      "error": "Erreur:",
+      "error": "Erreur :",
       "loading": "Chargement",
       "sortBy": "Trier par",
       "label": "Label",
@@ -376,7 +376,8 @@
       "searching": "Recherche",
       "confirmDeleteTitle": "Confirmer la suppression",
       "confirmDeleteMessage": "Etes-vous sûr·e de vouloir supprimer cet élément « {{name}} » ?",
-      "deleting": "Suppression"
+      "deleting": "Suppression",
+      "deleteError": "Erreur de suppression :"
     }
   },
   "roles": {

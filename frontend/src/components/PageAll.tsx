@@ -217,7 +217,7 @@ export default function PageAll({
         )}
         {deleteError && (
           <div className="text-sm text-red-500 mb-2">
-            {t("dashboardSidebar.pageAll.deleteError", "Delete error:")}{" "}
+            {t("dashboardSidebar.pageAll.deleteError")}{" "}
             {deleteError}
           </div>
         )}
