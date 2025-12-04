@@ -18,7 +18,7 @@ export default function CommuneAllPage() {
 
   const actions: ActionsConfig = {
     show: true,
-    edit: true,
+    edit: false,
     delete: false, // On ne supprime pas les communes
   };
 

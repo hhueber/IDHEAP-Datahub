@@ -49,3 +49,27 @@ export type ActionsConfig = {
   edit?: boolean;
   delete?: boolean;
 };
+
+export type SuggestResponse = {
+  success: boolean;
+  detail: string;
+  data: AllItem[];
+};
+
+export type FindPageResponse = {
+  success: boolean;
+  detail: string;
+  data: {
+    page: number;
+  };
+};
+
+export type DeleteResponse = {
+  success: boolean;
+  detail: string;
+};
+
+export type DeleteFilter = {
+  field: string;
+  value: number | string;
+};

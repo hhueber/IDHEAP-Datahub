@@ -8,7 +8,11 @@ type Props = {
 };
 
 export default function Pagination({ page, totalPages, onChange }: Props) {
-  if (totalPages <= 1) return null;
+  // Si une seule page, on ne montre pas de contrôles,
+  // mais on garde un petit espace en bas pour l'esthétique.
+  if (totalPages <= 1) {
+    return <div className="mt-4 mb-8" />;
+  }
 
   // --- logique pour la version "desktop" (>= sm) ---
   const delta = 3; // nb de pages de chaque côté sur grand écran
