@@ -370,7 +370,13 @@
       "show": "montrer",
       "edit": "éditer",
       "delete": "Supprimer",
-      "value": "Valeur"
+      "value": "Valeur",
+      "searchPlaceholder": "Rechercher dans cette Entité...",
+      "clear": "Effacer",
+      "searching": "Recherche",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "confirmDeleteMessage": "Etes-vous sûr·e de vouloir supprimer cet élément « {{name}} » ?",
+      "deleting": "Suppression"
     }
   },
   "roles": {
