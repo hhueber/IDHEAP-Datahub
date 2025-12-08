@@ -371,13 +371,13 @@
       "edit": "éditer",
       "delete": "Supprimer",
       "value": "Valeur",
-      "searchPlaceholder": "Rechercher dans cette Entité...",
+      "searchPlaceholder": "Rechercher dans cette entité...",
       "clear": "Effacer",
       "searching": "Recherche",
       "confirmDeleteTitle": "Confirmer la suppression",
-      "confirmDeleteMessage": "Etes-vous sûr·e de vouloir supprimer cet élément « {{name}} » ?",
+      "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
       "deleting": "Suppression",
-      "deleteError": "Erreur de suppression :"
+      "deleteError": "Erreur de suppression : "
     }
   },
   "roles": {
