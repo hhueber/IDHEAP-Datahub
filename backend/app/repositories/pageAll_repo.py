@@ -289,39 +289,3 @@ async def get_page_for_uid(
 
     page = index // per_page + 1
     return page
-
-
-async def delete_pageAll_items(
-    db: AsyncSession,
-    *,
-    entity: EntityEnum,
-    filters: List[tuple[str, object]],
-) -> int:
-    """
-    Supprime des lignes dans la table de l'entité donnée,
-    en appliquant les filtres fournis.
-    Retourne le nombre de lignes supprimées.
-    """
-    cfg = ENTITY_CONFIG.get(entity)
-    if cfg is None:
-        raise ValueError(f"Unsupported entity: {entity}")
-
-    model = cfg.model
-
-    conditions = []
-    for field, value in filters:
-        col = getattr(model, field, None)
-        if col is None:
-            # Champ inconnu -> on ignore ce filtre
-            continue
-        conditions.append(col == value)
-
-    if not conditions:
-        raise ValueError("No valid filters provided")
-
-    stmt = delete(model).where(and_(*conditions))
-    result = await db.execute(stmt)
-    await db.commit()
-
-    # rowcount peut être None selon le backend
-    return result.rowcount or 0
