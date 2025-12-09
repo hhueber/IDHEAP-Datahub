@@ -128,6 +128,7 @@ async def populate_async_geo() -> None:
                                 await session.flush()
 
                         # Insertion of commune data
+                        # We scan layer by layer so its better to use an else if than consecutive if
                         elif "tlm_hoheitsgebiet" in layer or "Communes" in layer:
                             for feature in src:
                                 if year < 2016:
