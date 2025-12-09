@@ -16,9 +16,12 @@ import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestCo
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
 import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
 import CantonAllPage from "@/features/pageAll/CantonAllPage";
+import CommuneShowPage from "@/features/pageShow/CommuneShowPage";
 
 // Démo admin déjà fournie
-function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs</div>; }
+function AdminUsers() {
+  return <div className="p-6">Admin: gestion utilisateurs</div>;
+}
 
 export default function App() {
   return (
@@ -48,6 +51,14 @@ export default function App() {
             element={
               <RequireRole roles={["ADMIN", "MEMBER"]}>
                 <CommuneAllPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/places/communes/show/:id"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <CommuneShowPage />
               </RequireRole>
             }
           />
@@ -87,7 +98,14 @@ export default function App() {
               </RequireRole>
             }
           />
-          <Route path="/admin/users/delete" element={<RequireRole roles={["ADMIN"]}><DeleteMemberPage /></RequireRole>} />
+          <Route
+            path="/admin/users/delete"
+            element={
+              <RequireRole roles={["ADMIN"]}>
+                <DeleteMemberPage />
+              </RequireRole>
+            }
+          />
           <Route
             path="/admin/config/placeOfInterest"
             element={
