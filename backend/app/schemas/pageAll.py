@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional
 
 
 from pydantic import BaseModel
@@ -66,18 +66,3 @@ class FindPageResponse(BaseModel):
     success: bool
     detail: str
     data: FindPageData
-
-
-class DeleteFilter(BaseModel):
-    field: str
-    value: Union[int, str]
-
-
-class DeleteRequest(BaseModel):
-    entity: EntityEnum
-    filters: List[DeleteFilter]
-
-
-class DeleteResponse(BaseModel):
-    success: bool
-    detail: str

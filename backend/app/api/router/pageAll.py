@@ -1,21 +1,7 @@
 from app.api.dependencies import get_current_user
 from app.db import get_db
-from app.repositories.pageAll_repo import (
-    delete_pageAll_items,
-    get_page_for_uid,
-    get_pageAll_paginated,
-    suggest_pageAll_prefix,
-)
-from app.schemas.pageAll import (
-    AllResponse,
-    DeleteRequest,
-    DeleteResponse,
-    EntityEnum,
-    FindPageResponse,
-    OrderByEnum,
-    OrderDirEnum,
-    SuggestResponse,
-)
+from app.repositories.pageAll_repo import get_page_for_uid, get_pageAll_paginated, suggest_pageAll_prefix
+from app.schemas.pageAll import AllResponse, EntityEnum, FindPageResponse, OrderByEnum, OrderDirEnum, SuggestResponse
 from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -104,40 +90,4 @@ async def find_page(
         "success": True,
         "detail": "OK",
         "data": {"page": page},
-    }
-
-
-@router.delete("/delete", response_model=DeleteResponse)
-async def delete_items(
-    payload: DeleteRequest,
-    db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
-):
-    """
-    Supprime une ou plusieurs lignes génériquement dans l'entité donnée.
-    Exemple payload:
-    {
-      "entity": "commune",
-      "filters": [
-        {"field": "uid", "value": 123}
-      ]
-    }
-    """
-    filters = [(f.field, f.value) for f in payload.filters]
-
-    try:
-        deleted = await delete_pageAll_items(
-            db,
-            entity=payload.entity,
-            filters=filters,
-        )
-    except ValueError as e:
-        return {"success": False, "detail": str(e)}
-
-    if deleted == 0:
-        return {"success": False, "detail": "No rows deleted"}
-
-    return {
-        "success": True,
-        "detail": f"Deleted {deleted} row(s)",
     }
