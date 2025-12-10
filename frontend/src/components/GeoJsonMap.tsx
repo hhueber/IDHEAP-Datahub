@@ -6,9 +6,9 @@ import { useTranslation } from "react-i18next";
 import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
 import { onEachCanton } from "@/components/map/admLabels";
-import CityMarkers from "@/components/map/CityMarkers";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
+import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -176,7 +176,7 @@ const communesStyle = useMemo(() => ({
           {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
         </Pane>
         {/* Points villes et labels */}
-        <CityMarkers />
+        <PlaceOfInterestLayer />
       </MapContainer>
 
       {/* Alerte d’erreur de chargement géo */}

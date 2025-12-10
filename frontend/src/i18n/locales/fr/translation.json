@@ -7,6 +7,7 @@
     "switchTo": "Basculer en {{lang}}",
     "home": "Accueil",
     "data": "Données",
+    "currentLogoName": "IDHEAP",
     "errors": {
       "changeLanguage": "Impossible de changer la langue pour le moment."
     } 
@@ -25,21 +26,35 @@
     "bootstrapError": "Impossible de charger les données initiales."
   },
   "map": {
-    "cities": {
-      "lausanne": "Lausanne",
-      "bern": "Berne",
-      "basel": "Bâle",
-      "luzern": "Lucerne",
-      "schaffhausen": "Schaffhouse"
+    "placeOfInterest": {
+      "show": "Afficher les villes",
+      "hide": "Masquer les villes"
+    },
+    "menu": {
+      "global": "Menu global",
+      "instancePlaceOfInterest": "Lieux d'intérêt définies",
+      "noInstancePlaceOfInterest": "Aucun lieu d'intérêt défini.",
+      "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
+      "removePlaceOfInterest": "Supprimer",
+      "addPlaceOfInterest": "Ajouter un lieu d'intérêt",
+      "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
+      "loadingSuggestions": "Chargement des suggestions...",
+      "noLocalPlaceOfInterest": "Aucun lieu d'intérêt supplémentaire défini.",
+
+      "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
-      "network": "Problème de réseau. Vérifiez votre connexion."
+      "network": "Problème de réseau. Vérifiez votre connexion.",
+      "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
+      "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
     }
   },
   "common": {
     "loading": "Chargement…",
-    "error": "Erreur"
+    "error": "Erreur",
+    "close": "Fermer",
+    "unknown": "Erreur inconnue"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -62,7 +77,11 @@
     "submitting": "Connexion",
 
     "errors": {
-      "generic": "Échec de la connexion."
+      "generic": "Échec de la connexion.",
+      "invalidCredentials": "Identifiants incorrects.",
+      "network": "Problème de connexion réseau.",
+      "locked": "Compte verrouillé.",
+      "rateLimited": "Trop de tentatives. Réessayez plus tard."
     }
   },
   "export": {
@@ -89,7 +108,7 @@
     "title": "Tableau de bord",
     "welcome": "Bienvenue {{name}}",
     "welcomeWithRole": "Bienvenue {{name}} ({{role}})",
-    "anonymous": "Utilisateur",
+    "anonymous": "Utilisateur·trice",
     "logout": "Se déconnecter"
   },
   "changePassword": {
@@ -146,47 +165,115 @@
       "submit": "Supprimer",
       "submitting": "Suppression",
 
-      "success": "Utilisateur supprimé.",
+      "success": "Utilisateur·trice supprimé·e.",
       "fail": "Échec de suppression.",
 
       "errors": {
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "notFound": "Utilisateur·trice introuvable.",
+        "forbidden": "Action interdite.",
         "generic": "Une erreur est survenue."
       }
     },
     "addMember": {
-    "title": "Ajouter un membre",
+      "title": "Ajouter un membre",
 
-    "firstNameLabel": "Prénom",
-    "firstNamePlaceholder": "Entrez le prénom",
-    "lastNameLabel": "Nom",
-    "lastNamePlaceholder": "Entrez le nom",
-    "emailLabel": "Email",
-    "emailPlaceholder": "Entrez l'email",
-    "roleLabel": "Rôle",
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
 
-    "roles": {
-      "member": "Membre",
-      "admin": "Admin"
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
+
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "confirmLabel": "Confirmation",
+      "confirmPlaceholder": "Confirmez le mot de passe",
+      "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+
+      "submit": "Créer le membre",
+      "submitting": "Création",
+
+      "success": "Membre créé·e.",
+      "fail": "Échec de création.",
+
+      "errors": {
+        "confirmMismatch": "La confirmation ne correspond pas.",
+        "tooShort": "Mot de passe trop court (min. 10 caractères).",
+        "emailExists": "Un membre avec ce courriel existe déjà.",
+        "forbidden": "Action interdite.",
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "generic": "Une erreur est survenue."
+      }
     },
+    "config": {
+        "placeOfInterestEditor": {
+          "titleCreate": "Ajouter une ville",
+          "titleEdit": "Éditer une ville",
 
-    "passwordLabel": "Mot de passe",
-    "passwordPlaceholder": "Entrez le mot de passe",
-    "confirmLabel": "Confirmation",
-    "confirmPlaceholder": "Confirmez le mot de passe",
-    "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+          "importFromCommunes": "Importer depuis les communes",
+          "searchPlaceholder": "Tapez au moins 3 lettres...",
+          "search": "Recherche",
+          "empty": "Aucun résultat",
 
-    "submit": "Créer le membre",
-    "submitting": "Création",
+          "canonicalLabel": "Nom canonique",
+          "canonicalPlaceholder": "Lausanne, Genève, Zürich...",
 
-    "success": "Membre créé.",
-    "fail": "Échec de création.",
+          "labels": {
+            "fr": "Français",
+            "de": "Deutsch",
+            "it": "Italiano",
+            "ro": "Rumantsch",
+            "en": "Anglais",
+            "lat": "Latitude",
+            "lon": "Longitude",
+            "preview": "Aperçu :"
+          },
 
-    "errors": {
-      "confirmMismatch": "La confirmation ne correspond pas.",
-      "tooShort": "Mot de passe trop court (min. 10 caractères).",
-      "generic": "Une erreur est survenue."
-    }
-  }
+          "submitCreate": "Créer",
+          "submitEdit": "Enregistrer"
+        },
+        "placeOfInterestPage": {
+          "title": "Villes",
+          "addButton": "Ajouter",
+          "columns": {
+            "name": "Nom",
+            "fr": "FR",
+            "de": "DE",
+            "it": "IT",
+            "ro": "RO",
+            "en": "EN",
+            "position": "Position"
+          },
+          "edit": "Éditer",
+          "delete": "Supprimer",
+          "empty": "Aucune ville",
+          "loading": "Chargement",
+          "titleConfirm": "Supprimer la ville",
+          "deleteConfirm": "Voulez-vous vraiment supprimer la ville « {{name}} » ?",
+          "confirmLabel": "Supprimer",
+          "cancelLabel": "Annuler"
+        },
+        "configEditor": {
+          "cancel": "Annuler",
+          "submit": "Enregistrer",
+          "saving": "Enregistrement"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement.",
+          "saved": "Enregistré.",
+          "saveFailed": "Échec de l'enregistrement.",
+          "deleted": "Supprimé.",
+          "deleteFailed": "Échec de la suppression.",
+          "network": "Problème de réseau."
+        }
+      }
   },
   "dashboardSidebar": {
     "privateSpace": "Espace privé",
@@ -201,6 +288,7 @@
       "administration": "Administration"
     },
     "survey": {
+      "_": "Survey",
       "all": "Tous",
       "newEdit": "Nouveau / Éditer",
       "show": "Afficher"
@@ -257,14 +345,46 @@
     "administration": {
       "changePassword": "Changer mon mot de passe",
       "users": {
-        "_": "Utilisateurs",
-        "add": "Ajouter un membre",
-        "delete": "Supprimer un membre"
+        "_": "Utilisateur·trice·s",
+        "add": "Ajouter un·e membre",
+        "delete": "Supprimer un·e membre"
+      },
+      "config": {
+        "_": "Configuration",
+        "placeOfInterest": "Lieux d'intérêt"
       }
+    },
+    "pageAll": {
+      "uid": "UID",
+      "name": "Nom",
+      "code": "Code",
+      "entity": "Entité",
+      "noData": "pas de données",
+      "asc": "Asc",
+      "desc": "Desc",
+      "error": "Erreur :",
+      "loading": "Chargement",
+      "sortBy": "Trier par",
+      "label": "Label",
+      "actions": "Actions",
+      "show": "montrer",
+      "edit": "éditer",
+      "delete": "Supprimer",
+      "value": "Valeur",
+      "searchPlaceholder": "Rechercher dans cette entité...",
+      "clear": "Effacer",
+      "searching": "Recherche",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
+      "deleting": "Suppression",
+      "deleteError": "Erreur de suppression : "
     }
   },
   "roles": {
-    "admin": "Administrateur",
+    "admin": "Administrateur·rice",
     "member": "Membre"
+  },
+  "pagination": {
+    "page": "Page"
   }
 }

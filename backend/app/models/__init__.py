@@ -10,6 +10,7 @@ from .district_map import DistrictMap
 from .lake import Lake
 from .lake_map import LakeMap
 from .option import Option
+from .placeOfInterest import PlaceOfInterest
 from .question_category import QuestionCategory
 from .question_global import QuestionGlobal
 from .question_per_survey import QuestionPerSurvey
@@ -33,4 +34,5 @@ __all__ = [
     "CommuneMap",
     "DistrictMap",
     "LakeMap",
+    "PlaceOfInterest",
 ]

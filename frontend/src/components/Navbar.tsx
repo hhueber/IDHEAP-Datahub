@@ -2,15 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import brand from "@/img/idheap-dh.png";
 import { Link } from "react-router-dom";
-import ReactCountryFlag from "react-country-flag";
+import { DropdownList } from "@/utils/DropdownList";
 
-type Lang = { code: string; label: string; countryCode: string };
+type Lang = { code: string; label: string };
 const langs: Lang[] = [
-  { code: "en", label: "EN", countryCode: "GB" },
-  { code: "fr", label: "FR", countryCode: "FR" },
-  { code: "de", label: "DE", countryCode: "DE" },
-  { code: "it", label: "IT", countryCode: "IT" },
-  { code: "rm", label: "RM", countryCode: "CH" },
+  { code: "en", label: "EN", },
+  { code: "fr", label: "FR", },
+  { code: "de", label: "DE", },
+  { code: "it", label: "IT", },
+  { code: "rm", label: "RM", },
 ];
 
 export default function Navbar() {
@@ -75,7 +75,9 @@ export default function Navbar() {
       >
         <img
           src={brand}
-          className="h-12 sm:h-14 w-auto object-contain select-none"
+          alt={t("nav.currentLogoName")}
+          className="h-12 sm:h-14 w-auto object-contain select-none
+             rounded-xl ring-1 ring-black/10 shadow-2xl bg-white"
         />
         {!open && (
           <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2 text-indigo-600" aria-hidden="true">
@@ -92,37 +94,29 @@ export default function Navbar() {
             ref={panelRef}
             role="menu"
             aria-label={t("nav.navigation")}
-            className="absolute left-0 top-0 h-full w-[min(22rem,92vw)]
+            className="absolute left-0 top-0 h-full w-[min(10rem,70vw)]
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
                        bg-white/95 backdrop-blur p-3"
           >
             {/* Langues */}
             <div className="p-2 mb-2 rounded-xl bg-white/80">
               <div className="flex items-center gap-2 px-1 py-1">
-                <ReactCountryFlag countryCode={current.countryCode} svg style={{ width: "1.2em", height: "1.2em" }} />
-                <span className="font-semibold text-indigo-800">{t("nav.language")}</span>
+                <span className="font-semibold text-indigo-800">
+                  {t("nav.language")}
+                </span>
               </div>
-              <div className="mt-2 grid grid-cols-5 gap-2">
-                {langs.map(({ code, label, countryCode }) => {
-                  const active = curLang.startsWith(code) || curBase === code;
-                  return (
-                    <button
-                      key={code}
-                      onClick={() => changeLang(code)}
-                      className={`px-2 py-1 rounded-md hover:bg-indigo-50 transition ${
-                        active ? "bg-indigo-600 text-white" : "text-indigo-700"
-                      }`}
-                      aria-current={active ? "true" : undefined}
-                      aria-label={t("nav.switchTo", { lang: label })}
-                      title={t("nav.switchTo", { lang: label })}
-                    >
-                      <span className="inline-flex items-center gap-1">
-                        <ReactCountryFlag countryCode={countryCode} svg style={{ width: "1.05em", height: "1.05em" }} />
-                        {label}
-                      </span>
-                    </button>
-                  );
-                })}
+
+              <div className="mt-2">
+                {/* Utilisation du DropdownList/Liste déroulante */}
+                <DropdownList<Lang>
+                  items={langs}
+                  selected={current}
+                  onSelect={(lang) => changeLang(lang.code)}
+                  labelFor={(item) => item.label}
+                  keyFor={(item) => item.code}
+                  isSelected={(item, selected) => item.code === selected?.code}
+                  placeholder="--"
+                />
               </div>
             </div>
 

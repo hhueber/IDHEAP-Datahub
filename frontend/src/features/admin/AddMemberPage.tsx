@@ -64,8 +64,13 @@ export default function AddMemberPage() {
     } catch (e: any) {
       const ae = e as ApiError;
       const d = (ae.details as any)?.detail;
-      if (Array.isArray(d)) setErrKey(d.map((x: any) => x.msg).join(" · "));
-      // erreur genérique de la part du serveur
+      // erreur de validation coté serveur
+      if (Array.isArray(d)) setErrKey("admin.addMember.errors.serverValidation");
+      // email déjà utilisé
+      else if (ae?.status === 409) setErrKey("admin.addMember.errors.emailExists");
+      // action interdite
+      else if (ae?.status === 403) setErrKey("admin.addMember.errors.forbidden");
+      // erreur générique
       else setErrKey("admin.addMember.errors.generic");
     } finally {
       setSubmitting(false);

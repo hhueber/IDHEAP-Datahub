@@ -32,8 +32,23 @@ export default function Login() {
       await login(email, password);
       navigate(from, { replace: true });
     } catch (e: any) {
-        // echec de connection, generique
-        setErrKey(e?.message || "login.errors.generic");
+      const code = e?.code || e?.status || e?.response?.status || e?.name;
+      if (code === 401 || e?.message?.toLowerCase?.().includes("invalid")) {
+        // erreur mauvais identifiants
+        setErrKey("login.errors.invalidCredentials");
+      } else if (code === "NetworkError" || code === 0) {
+        // erreur réseau
+        setErrKey("login.errors.network");
+      } else if (code === 423 || e?.message?.toLowerCase?.().includes("locked")) {
+        // erreur de compte verrouillé (si besoin)
+        setErrKey("login.errors.locked");
+      } else if (code === 429) {
+        // erreur de trop nombreurses tentatives
+        setErrKey("login.errors.rateLimited");
+      } else {
+        // erreur genérique 
+        setErrKey("login.errors.generic");
+      }
     } finally {
       setLoading(false);
     }

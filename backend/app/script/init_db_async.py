@@ -5,7 +5,7 @@ import logging
 from app import models
 from app.core.config import settings
 from app.core.logging_config import configure_logging
-from app.db import AsyncSessionLocal, engine
+from app.db import AsyncSessionLocal, engine, ensure_extensions
 from app.models import Base
 from app.repositories.user_repo import any_admin_exists, create_user
 from app.script.populate_db import populate_db
@@ -16,14 +16,20 @@ logger = logging.getLogger(__name__)
 
 
 async def create_schema() -> None:
+    try:
+        await ensure_extensions()
+    except Exception as e:
+        logger.warning("Could not ensure extensions (unaccent/postgis): %s", e)
+
     confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
     if confirm.lower() == "y":
         async with engine.begin() as conn:
             # Drop toute les tables pour repartir de 0
             logger.warning("Dropping all tables (destructive operation).")
             await conn.run_sync(Base.metadata.drop_all)
+            await ensure_extensions()
             # Cree les tables dans la base de données
-            logger.info("Creating all tables…")
+            logger.info("Creating all tables...")
             await conn.run_sync(Base.metadata.create_all)
         logger.info("Database schema created.")
 

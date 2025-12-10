@@ -12,7 +12,16 @@ import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
 import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
-import { ADMIN } from "@/config/roles";
+import { ADMIN, MEMBER } from "@/config/roles";
+import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
+import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
+import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
+import CantonAllPage from "@/features/pageAll/CantonAllPage";
+import QCatAllPage from "@/features/pageAll/QCatAllPage";
+import QGlobalAllPage from "@/features/pageAll/QGlobalAllPage";
+import QPerSurvAllPage from "@/features/pageAll/QPerSurvAllPage";
+import SurveyAllPage from "@/features/pageAll/SurveyAllPage";
+import OptionAllPage from "@/features/pageAll/OptionAllPage";
 
 // Démo admin déjà fournie
 function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs</div>; }
@@ -40,6 +49,78 @@ export default function App() {
           {/* Pages privées accessibles aux membres connectés */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/password" element={<ChangePasswordPage />} />
+          
+          <Route
+            path="/admin/surveys"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <SurveyAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/options"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <OptionAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/qglobal"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <QGlobalAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/qps"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <QPerSurvAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/qcat"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <QCatAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/places/communes"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <CommuneAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/places/districts"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <DistrictAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/places/cantons"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <CantonAllPage />
+              </RequireRole>
+            }
+          />
 
           {/* Pages admin (rôle ADMIN uniquement) */}
           <Route
@@ -59,6 +140,14 @@ export default function App() {
             }
           />
           <Route path="/admin/users/delete" element={<RequireRole roles={[ADMIN]}><DeleteMemberPage /></RequireRole>} />
+          <Route
+            path="/admin/config/placeOfInterest"
+            element={
+              <RequireRole roles={[ADMIN]}>
+                <PlaceOfInterestConfigPage />
+              </RequireRole>
+            }
+          />
         </Route>
       </Routes>
     </AuthProvider>
