@@ -1,0 +1,18 @@
+{
+  "instance_name": "IDHEAP DataHub",
+  "logo_url": "/img/idheap-dh.png",
+
+  "colour_light_primary": "#D60270",
+  "colour_light_secondary": "#0038A8",
+  "colour_light_background": "#FFFFFF",
+  "colour_light_card": "#FFFFFF",
+  "colour_light_text": "#111827",
+
+  "colour_dark_primary": "#FB377F",
+  "colour_dark_secondary": "#60A5FA",
+  "colour_dark_background": "#020617",
+  "colour_dark_card": "#020617",
+  "colour_dark_text": "#E5E7EB",
+
+  "theme_default_mode": "light"
+}

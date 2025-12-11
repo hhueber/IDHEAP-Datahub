@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import brand from "@/img/idheap-dh.png";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
+import { loadThemeConfig } from "@/theme/themeStorage";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
@@ -19,6 +19,14 @@ export default function Navbar() {
   const [errKey, setErrKey] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
+
+  const cfg = loadThemeConfig();
+  const instanceName = cfg.instance_name;
+  const logoUrl = cfg.logo_url;
+
+  const accentColor = cfg.colour_light_primary;
+  const cardBg = cfg.colour_light_card;
+  const cardText = cfg.colour_light_text;
 
   // fermer le drawer au clic extérieur / ESC
   useEffect(() => {
@@ -74,13 +82,13 @@ export default function Navbar() {
         style={{ "--leaflet-top-offset": "96px" } as React.CSSProperties}
       >
         <img
-          src={brand}
-          alt={t("nav.currentLogoName")}
+          src={logoUrl}
+          alt={instanceName}
           className="h-12 sm:h-14 w-auto object-contain select-none
              rounded-xl ring-1 ring-black/10 shadow-2xl bg-white"
         />
         {!open && (
-          <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2 text-indigo-600" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2" aria-hidden="true" style={{ color: accentColor }}>
             {/* <path d="M12 2l2.955 6.241 6.883.98-4.919 4.71 1.161 6.829L12 17.77l-6.08 3.99 1.161-6.829L2.162 9.221l6.883-.98L12 2z" fill="currentColor"/> */}
           </svg>
         )}
@@ -96,12 +104,16 @@ export default function Navbar() {
             aria-label={t("nav.navigation")}
             className="absolute left-0 top-0 h-full w-[min(10rem,70vw)]
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
-                       bg-white/95 backdrop-blur p-3"
+                       backdrop-blur p-3"
+            style={{
+              backgroundColor: cardBg,
+              color: cardText,
+            }}
           >
             {/* Langues */}
             <div className="p-2 mb-2 rounded-xl bg-white/80">
               <div className="flex items-center gap-2 px-1 py-1">
-                <span className="font-semibold text-indigo-800">
+                <span className="font-semibold" style={{ color: accentColor }}>
                   {t("nav.language")}
                 </span>
               </div>
@@ -131,14 +143,16 @@ export default function Navbar() {
             <div className="space-y-1">
               <Link
                 to="/"
-                className="block w-full px-3 py-2 rounded-lg font-medium text-indigo-700 hover:bg-indigo-50 transition"
+                className="block w-full px-3 py-2 rounded-lg font-medium transition hover:bg-black/5"
+                style={{ color: accentColor }}
                 onClick={() => setOpen(false)}
               >
                 {t("nav.home")}
               </Link>
               <button
                 type="button"
-                className="w-full text-left px-3 py-2 rounded-lg font-medium text-indigo-700 hover:bg-indigo-50 transition"
+                className="w-full text-left px-3 py-2 rounded-lg font-medium transition hover:bg-black/5"
+                style={{ color: accentColor }}
                 onClick={() => setOpen(false)}
               >
                 {t("nav.data", "Data")}
