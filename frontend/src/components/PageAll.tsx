@@ -17,6 +17,8 @@ import { SearchBar } from "@/utils/SearchBar";
 import type { FindPageResponse } from "@/features/pageAll/all_types";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba } from "@/utils/color";
 
 type PageAllProps = {
   title: string;
@@ -72,6 +74,16 @@ export default function PageAll({
     ],
     // pas de clear_fields ici -> DELETE complet de la ligne
   }));
+
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary;
+  const background = cfg.colour_light_background;
+  const borderColor = cfg.colour_light_secondary;
+  const textColor = cfg.colour_light_text;
+
+  const subtleText = hexToRgba(textColor, 0.7);
+  const rowSelectedBg = hexToRgba(primary, 0.15);
+  const headerBg = hexToRgba(primary, 0.04);
 
   const findPageForUid = React.useCallback(
     async (uid: number): Promise<number> => {
@@ -159,7 +171,11 @@ export default function PageAll({
   const hasActions = !!actions && (actions.show || actions.edit || actions.delete);
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="p-6 flex flex-col h-full" 
+      style={{
+        backgroundColor: background,
+        color: textColor,
+      }}>
       <h1 className="text-xl font-semibold mb-4">{title}</h1>
 
       {/* Barre supérieure : recherche + tri, responsive */}
@@ -182,13 +198,18 @@ export default function PageAll({
 
         {/* Bloc tri */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm text-gray-700">
+          <span className="text-sm" style={{ color: subtleText }}>
             {t("dashboardSidebar.pageAll.sortBy")}
           </span>
           <select
             value={sortBy}
             onChange={handleSortByChange}
-            className="h-9 rounded border px-2 text-sm bg-white"
+            className="h-9 rounded border px-2 text-sm"
+            style={{
+              backgroundColor: background,
+              borderColor,
+              color: textColor,
+            }}
           >
             <option value="uid">{t("dashboardSidebar.pageAll.uid")}</option>
             <option value="name">{t("dashboardSidebar.pageAll.name")}</option>
@@ -196,7 +217,18 @@ export default function PageAll({
           <button
             type="button"
             onClick={toggleSortDir}
-            className="h-9 px-3 rounded border text-sm flex items-center gap-1 bg-white hover:bg-gray-50"
+            className={`
+              h-9 px-3 rounded border text-sm flex items-center gap-1
+              hover:[background-color:var(--pageall-sort-hover-bg)]
+            `}
+            style={
+              {
+                backgroundColor: background,
+                borderColor,
+                color: textColor,
+                "--pageall-sort-hover-bg": headerBg,
+              } as React.CSSProperties
+            }
           >
             {sortDir === "asc" ? (
               <>
@@ -215,7 +247,7 @@ export default function PageAll({
 
       <div className="flex-1 flex flex-col">
         {loading && (
-          <div className="text-sm text-gray-500 mb-2">
+          <div className="text-sm mb-2" style={{ color: subtleText }}>
             <LoadingDots label={t("dashboardSidebar.pageAll.loading")} />
           </div>
         )}
@@ -232,21 +264,33 @@ export default function PageAll({
         )}
 
         {/* table avec scroll horizontal si besoin */}
-        <div className="flex-1 overflow-auto border rounded">
+        <div className="flex-1 overflow-auto border rounded"
+          style={{
+            borderColor,
+            backgroundColor: background,
+          }}>
           <div className="overflow-x-auto">
             <table className="min-w-max w-full text-sm border-collapse">
-              <thead className="bg-gray-100">
+              <thead style={{ backgroundColor: headerBg }}>
                 <tr>
                   {columns.map((col) => (
                     <th
                       key={col.key}
-                      className="border-b px-3 py-2 text-left font-medium whitespace-nowrap"
+                      className="border-b px-3 py-2 text-left font-medium whitespace-nowrap text-sm"
+                      style={{
+                        borderColor,
+                        color: textColor,
+                      }}
                     >
                       {col.label}
                     </th>
                   ))}
                   {hasActions && (
-                    <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap">
+                    <th className="border-b px-3 py-2 text-left font-medium whitespace-nowrap text-sm"
+                      style={{
+                        borderColor,
+                        color: textColor,
+                      }}>
                       {t("dashboardSidebar.pageAll.actions")}
                     </th>
                   )}
@@ -257,7 +301,8 @@ export default function PageAll({
                   <tr>
                     <td
                       colSpan={columns.length + (hasActions ? 1 : 0)}
-                      className="px-3 py-4 text-center text-gray-500"
+                      className="px-3 py-4 text-center"
+                      style={{ color: subtleText }}
                     >
                       {t("dashboardSidebar.pageAll.noData")}
                     </td>
@@ -267,9 +312,16 @@ export default function PageAll({
                     // quand element chercher met la ligne en jaune
                     <tr key={row.uid}
                         className={[
-                        "hover:bg-gray-50",
-                        selectedUid === row.uid ? "bg-yellow-50" : "",
-                        ].join(" ")}>
+                          "transition-colors",
+                          selectedUid === row.uid ? "bg-[var(--pageall-row-selected-bg)]" : "",
+                          "hover:[background-color:var(--pageall-row-hover-bg)]",
+                        ].join(" ")}
+                        style={
+                          {
+                            "--pageall-row-hover-bg": headerBg,
+                            "--pageall-row-selected-bg": rowSelectedBg,
+                          } as React.CSSProperties
+                        }>
                       {columns.map((col) => {
                         const value = (row as any)[col.key];
                         const content = col.render ? col.render(row) : value;
@@ -284,6 +336,7 @@ export default function PageAll({
                           <td
                             key={col.key}
                             className={`border-b px-3 py-2 whitespace-nowrap ${alignClass}`}
+                            style={{ borderColor, color: textColor }}
                           >
                             {content}
                           </td>
@@ -291,12 +344,23 @@ export default function PageAll({
                       })}
 
                       {hasActions && (
-                        <td className="border-b px-3 py-2 whitespace-nowrap">
+                        <td className="border-b px-3 py-2 whitespace-nowrap" style={{ borderColor }}>
                           <div className="flex flex-wrap gap-1">
                             {actions?.show && (
                               <button
                                 type="button"
-                                className="px-2 py-1 text-xs rounded border hover:bg-gray-100"
+                                className={`
+                                  px-2 py-1 text-xs rounded border
+                                  hover:[background-color:var(--pageall-btn-hover-bg)]
+                                `}
+                                style={
+                                  {
+                                    backgroundColor: background,
+                                    borderColor,
+                                    color: textColor,
+                                    "--pageall-btn-hover-bg": headerBg,
+                                  } as React.CSSProperties
+                                }
                                 onClick={() => {
                                   // TODO: Wiring réel plus tard
                                   console.log("Show", entity, row.uid);
@@ -308,7 +372,18 @@ export default function PageAll({
                             {actions?.edit && (
                               <button
                                 type="button"
-                                className="px-2 py-1 text-xs rounded border hover:bg-gray-100"
+                                className={`
+                                  px-2 py-1 text-xs rounded border
+                                  hover:[background-color:var(--pageall-btn-hover-bg)]
+                                `}
+                                style={
+                                  {
+                                    backgroundColor: background,
+                                    borderColor,
+                                    color: textColor,
+                                    "--pageall-btn-hover-bg": headerBg,
+                                  } as React.CSSProperties
+                                }
                                 onClick={() => {
                                   // TODO: Wiring réel plus tard
                                   console.log("Edit", entity, row.uid);

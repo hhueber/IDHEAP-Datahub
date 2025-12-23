@@ -59,7 +59,7 @@ export default function PlaceOfInterestMenuModal({
   const textColor = cfg.colour_light_text;
   const borderColor = cfg.colour_light_secondary;
 
-  const overlayBg = hexToRgba(textColor, 0.4);
+  const overlayBg = cfg.navbar_overlay_light_bg;
   const hoverRowBg = hexToRgba(primary, 0.06);
   const mutedText = hexToRgba(textColor, 0.7);
 
