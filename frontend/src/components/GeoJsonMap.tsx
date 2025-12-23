@@ -9,6 +9,7 @@ import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
+import { loadThemeConfig } from "@/theme/themeStorage";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -52,6 +53,15 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
+  const cfg = loadThemeConfig();
+  const background = cfg.colour_light_background;
+  const countryColors = cfg.country_light;
+  const lakesColores = cfg.lakes_light;
+  const cantonClores = cfg.canton_light;
+  const districtColores = cfg.district_light;
+  const communesColores = cfg.communes_light;
+
+
   /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
     const ctrl = new AbortController();
@@ -93,30 +103,30 @@ export default function GeoJsonMap({
 
   // Styles (couleurs/épaisseurs/fill) des différentes couches
   const countryStyle = useMemo(() => ({
-  color: "#000000",      // frontière pays en noir
+  color: countryColors,      // frontière pays en noir
   weight: 1,
-  fillColor: "#ffffff",  // fond blanc
+  fillColor: background,  // fond blanc
   fillOpacity: 1,
 }), []);
 const lakesStyle = useMemo(() => ({
-  color: "#3b82f6",      // bleu
+  color: lakesColores,      // bleu
   weight: 1.2,
   // si préfère uniquement le contour mettre fillOpacity: 0
-  fillColor: "#3b82f6",
+  fillColor: lakesColores,
   fillOpacity: 0.85,
 }), []);
 const cantonsStyle = useMemo(() => ({
-  color: "#ef4444",      // rouge
+  color: cantonClores,      // rouge
   weight: 1.2,
   fillOpacity: 0,
 }), []);
 const districtsStyle = useMemo(() => ({
-  color: "#7c3aed",      // violet bleuter
+  color: districtColores,      // violet bleuter
   weight: 0.9,
   fillOpacity: 0,
 }), []);
 const communesStyle = useMemo(() => ({
-  color: "#16a34a",       // green
+  color: communesColores,       // green
   weight: 0.6,
   fillOpacity: 0,
 }), []);

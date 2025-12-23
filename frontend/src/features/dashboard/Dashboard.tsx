@@ -8,6 +8,7 @@ export default function Dashboard() {
 
   const name = user?.full_name ?? t("dashboard.anonymous");
   const role = user?.role ?? null;
+  // TODO modifier entierement la pagepour afficher des infos pertinentes
 
   return (
     <section className="p-8 space-y-4">

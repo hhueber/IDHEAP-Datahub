@@ -2,6 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import type { AllItem } from "@/features/pageAll/all_types";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba } from "@/utils/color";
 
 type Props = {
   search: string;
@@ -22,6 +24,15 @@ export function SearchBar({
 }: Props) {
   const { t } = useTranslation();
 
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary;
+  const background = cfg.colour_light_background;
+  const textColor = cfg.colour_light_text;
+  const secondary = cfg.colour_light_secondary; // pour les bordures / séparateurs
+
+  const subtleText = hexToRgba(textColor, 0.7);
+  const hoverRowBg = hexToRgba(primary, 0.06);
+
   return (
     <div className="flex flex-col gap-1 w-full sm:w-auto mb-3">
       <div className="flex items-center gap-2">
@@ -36,37 +47,58 @@ export function SearchBar({
           <button
             type="button"
             onClick={onClearSearch}
-            className="text-xs text-gray-600 hover:text-black"
+            className="text-xs transition hover:[color:var(--search-clear-hover-color)]"
+            style={
+              {
+                color: subtleText,
+                "--search-clear-hover-color": primary,
+              } as React.CSSProperties
+            }
           >
             {t("dashboardSidebar.pageAll.clear")}
           </button>
         )}
       </div>
       {searchLoading && (
-        <div className="text-xs text-gray-500">
+        <div className="text-xs" style={{ color: subtleText }}>
           <LoadingDots label={t("dashboardSidebar.pageAll.searching")} />
         </div>
       )}
 
       {suggestions.length > 0 && (
-        <div className="mt-1 border rounded bg-white max-h-56 overflow-y-auto text-sm shadow-sm">
+        <div className="mt-1 border rounded max-h-56 overflow-y-auto text-sm shadow-sm"
+          style={{
+            backgroundColor: background,
+            borderColor: secondary,
+            color: textColor,
+          }}>
           {suggestions.map((s) => (
             <button
               key={s.uid}
               type="button"
               onClick={() => onSuggestionClick(s)}
-              className="w-full text-left px-3 py-2 hover:bg-gray-50 flex items-center justify-between"
+              className="w-full text-left px-3 py-2 flex items-center justify-between
+                transition
+                [background-color:var(--search-suggest-bg)]
+                hover:[background-color:var(--search-suggest-hover-bg)]"
+              style={
+                {
+                  color: textColor,
+                  "--search-suggest-bg": background,
+                  "--search-suggest-hover-bg": hoverRowBg,
+                } as React.CSSProperties
+              }
             >
               <span>
-                <span className="font-medium">{s.name}</span>
+                <span className="font-medium" style={{ color: textColor }}>{s.name}</span>
                 {s.code && (
-                  <span className="text-xs text-gray-500 ml-2">
+                  <span className="text-xs ml-2" style={{ color: subtleText }}>
                     ({s.code})
                   </span>
                 )}
               </span>
               {s.year != null && (
-                <span className="text-xs text-gray-500">{s.year}</span>
+                <span className="text-xs" style={{ color: subtleText }}>{s.year}</span>
               )}
             </button>
           ))}

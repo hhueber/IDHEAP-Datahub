@@ -1,6 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 type ConfigEditorModalProps = {
   title: string;
@@ -24,22 +26,49 @@ export function ConfigEditorModal({
   children,
 }: ConfigEditorModalProps) {
   const { t } = useTranslation();
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary || "#D60270";
+  const secondary = cfg.colour_light_secondary || "rgba(0,0,0,0.10)";
+  const background = cfg.colour_light_background || "#FFFFFF";
+  const textColor = cfg.colour_light_text || "#111827";
+
+  // Overlay derrière la modal (au lieu de bg-black/30)
+  const overlayBg = hexToRgba(textColor, 0.30);
+
+  // Couleurs des boutons
+  const submitTextColor = getAdaptiveTextColor(primary);
+  const cancelHoverBg = hexToRgba(primary, 0.05);
+  const submitHoverBg = hexToRgba(primary, 0.90);
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/30 flex 
-                items-start sm:items-center justify-center"
+      className="fixed inset-0 z-50 flex items-start sm:items-center justify-center"
+      style={{ backgroundColor: overlayBg }}
     >
       <div
-        className=" bg-white w-full max-w-3xl mx-2 sm:mx-4 mt-4 sm:mt-0 rounded-none sm:rounded-xl shadow-xl
-                    p-4 sm:p-6 max-h-[90vh] overflow-y-auto"
+        className="
+          w-full max-w-3xl mx-2 sm:mx-4 mt-4 sm:mt-0
+          rounded-none sm:rounded-xl shadow-xl
+          p-4 sm:p-6 max-h-[90vh] overflow-y-auto border
+        "
+        style={{
+          backgroundColor: background,
+          color: textColor,
+          borderColor: secondary,
+        }}
       >
         {/* header */}
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">{title}</h2>
+          <h2 className="text-xl font-semibold" style={{ color: textColor }}>{title}</h2>
           <button
             type="button"
             onClick={onClose}
-            className="text-gray-500 hover:text-black"
+            className="text-sm transition hover:[color:var(--config-close-hover)]"
+            style={
+              {
+                color: textColor,
+                "--config-close-hover": primary,
+              } as React.CSSProperties
+            }
           >
             {/* croix pour fermeture de la modal */}
             {"\u00D7"}
@@ -54,14 +83,29 @@ export function ConfigEditorModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-2 rounded-lg border"
+              className="px-3 py-2 rounded-lg border text-sm transition hover:[background-color:var(--config-cancel-hover-bg)]"
+              style={
+                {
+                  borderColor: secondary,
+                  color: textColor,
+                  backgroundColor: background,
+                  "--config-cancel-hover-bg": cancelHoverBg,
+                } as React.CSSProperties
+              }
             >
               {t("admin.config.configEditor.cancel")}
             </button>
             <button
               type="submit"
               disabled={isSaving}
-              className="px-3 py-2 rounded-lg bg-black text-white disabled:opacity-60"
+              className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-60 transition hover:[background-color:var(--config-submit-hover-bg)]"
+              style={
+                {
+                  backgroundColor: primary,
+                  color: submitTextColor,
+                  "--config-submit-hover-bg": submitHoverBg,
+                } as React.CSSProperties
+              }
             >
               {isSaving ? (
                 <span aria-live="polite">

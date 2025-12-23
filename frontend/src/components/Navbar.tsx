@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
 import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba } from "@/utils/color";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
@@ -24,9 +25,16 @@ export default function Navbar() {
   const instanceName = cfg.instance_name;
   const logoUrl = cfg.logo_url;
 
-  const accentColor = cfg.colour_light_primary;
-  const cardBg = cfg.colour_light_card;
-  const cardText = cfg.colour_light_text;
+  // Pour l’instant: light uniquement
+  const primary = cfg.colour_light_primary;
+  const linkText = cfg.colour_light_text;
+  const navbarLogoBorder = cfg.colour_light_secondary;
+
+  const navbarOverlayBg = cfg.navbar_overlay_light_bg;
+  const navbarPanelBg = cfg.colour_light_background; // fond du panneau de navigation
+  const navbarLogoBg = cfg.colour_light_background; // fond derrière le logo
+
+  const hoverBg = hexToRgba(primary, 0.08);
 
   // fermer le drawer au clic extérieur / ESC
   useEffect(() => {
@@ -84,11 +92,14 @@ export default function Navbar() {
         <img
           src={logoUrl}
           alt={instanceName}
-          className="h-12 sm:h-14 w-auto object-contain select-none
-             rounded-xl ring-1 ring-black/10 shadow-2xl bg-white"
+          className="h-12 sm:h-14 w-auto object-contain select-none rounded-xl shadow-2xl" // fond blanc derrière le logo et ombre noire
+          style={{
+            backgroundColor: navbarLogoBg,
+            border: `1px solid ${navbarLogoBorder}`,
+          }}
         />
         {!open && (
-          <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2" aria-hidden="true" style={{ color: accentColor }}>
+          <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2" aria-hidden="true" style={{ color: primary }}>
             {/* <path d="M12 2l2.955 6.241 6.883.98-4.919 4.71 1.161 6.829L12 17.77l-6.08 3.99 1.161-6.829L2.162 9.221l6.883-.98L12 2z" fill="currentColor"/> */}
           </svg>
         )}
@@ -97,7 +108,7 @@ export default function Navbar() {
       {/* Drawer + Overlay (au-dessus du reste de la map) */}
       {open && (
         <div className="fixed inset-0 z-50">
-          <div className="absolute inset-0 bg-black/30" onClick={() => setOpen(false)} aria-hidden />
+          <div className="absolute inset-0" style={{ backgroundColor: navbarOverlayBg }} onClick={() => setOpen(false)} aria-hidden />
           <div
             ref={panelRef}
             role="menu"
@@ -106,14 +117,14 @@ export default function Navbar() {
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
                        backdrop-blur p-3"
             style={{
-              backgroundColor: cardBg,
-              color: cardText,
+              backgroundColor: navbarPanelBg,
+              color: linkText,
             }}
           >
             {/* Langues */}
-            <div className="p-2 mb-2 rounded-xl bg-white/80">
+            <div className="p-2 mb-2 rounded-xl">
               <div className="flex items-center gap-2 px-1 py-1">
-                <span className="font-semibold" style={{ color: accentColor }}>
+                <span className="font-semibold" style={{ color: primary }}>
                   {t("nav.language")}
                 </span>
               </div>
@@ -143,16 +154,29 @@ export default function Navbar() {
             <div className="space-y-1">
               <Link
                 to="/"
-                className="block w-full px-3 py-2 rounded-lg font-medium transition hover:bg-black/5"
-                style={{ color: accentColor }}
+                className="
+                  block w-full px-3 py-2 rounded-lg font-medium transition
+                  hover:[background-color:var(--navbar-link-hover-bg)]
+                "
+                style={{
+                  color: primary,
+                  // on donne la valeur de la couleur de hover à une CSS variable
+                  "--navbar-link-hover-bg": hoverBg,
+                } as React.CSSProperties}
                 onClick={() => setOpen(false)}
               >
                 {t("nav.home")}
               </Link>
               <button
                 type="button"
-                className="w-full text-left px-3 py-2 rounded-lg font-medium transition hover:bg-black/5"
-                style={{ color: accentColor }}
+                className="
+                  w-full text-left px-3 py-2 rounded-lg font-medium transition
+                  hover:[background-color:var(--navbar-link-hover-bg)]
+                "
+                style={{
+                  color: primary,
+                  "--navbar-link-hover-bg": hoverBg,
+                } as React.CSSProperties}
                 onClick={() => setOpen(false)}
               >
                 {t("nav.data", "Data")}

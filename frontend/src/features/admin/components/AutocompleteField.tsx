@@ -1,4 +1,6 @@
 import React from "react";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 type AutocompleteFieldProps<T> = {
   value: string;
@@ -43,6 +45,16 @@ export default function AutocompleteField<T>({
 
   const boxRef = React.useRef<HTMLDivElement>(null);
   const listId = React.useId();
+
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary;
+  const background = cfg.colour_light_background;
+  const textColor = cfg.colour_light_text;
+  const borderColor = cfg.colour_light_secondary;
+
+  const mutedText = hexToRgba(textColor, 0.6);
+  const hoverItemBg = hexToRgba(primary, 0.06);
+  const activeItemText = getAdaptiveTextColor(primary);
 
   // Fermeture quand on clique en dehors
   React.useEffect(() => {
@@ -123,24 +135,33 @@ export default function AutocompleteField<T>({
         aria-autocomplete="list"
         placeholder={placeholder}
         className="w-full rounded-lg border px-3 py-2"
+        style={{
+          backgroundColor: background,
+          borderColor: borderColor,
+          color: textColor,
+        }}
       />
 
       {open && (
         <div
           id={listId}
           role="listbox"
-          className="absolute z-50 mt-1 w-full rounded-lg bg-white shadow-xl ring-1 ring-black/10 max-h-64 overflow-auto"
+          className="absolute z-50 mt-1 w-full rounded-lg shadow-xl max-h-64 overflow-auto border"
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+          }}
         >
           {/* État chargement */}
           {loading && renderLoading && (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-3 py-2 text-sm" style={{ color: mutedText }}>
               {renderLoading()}
             </div>
           )}
 
           {/* Aucun résultat */}
           {!loading && items.length === 0 && renderEmpty && (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-3 py-2 text-sm" style={{ color: mutedText }}>
               {renderEmpty(value)}
             </div>
           )}
@@ -159,11 +180,18 @@ export default function AutocompleteField<T>({
                   onPick(it);
                   setOpen(false);
                 }}
-                className={`w-full text-left px-3 py-2 text-sm ${
-                  i === active
-                    ? "bg-indigo-600 text-white"
-                    : "hover:bg-indigo-50 text-gray-800"
-                }`}
+                className={`
+                  w-full text-left px-3 py-2 text-sm transition
+                  bg-[var(--auto-item-bg)]
+                  hover:bg-[var(--auto-item-hover-bg)]
+                `}
+                style={
+                  {
+                    "--auto-item-bg": i === active ? primary : "transparent",
+                    "--auto-item-hover-bg": i === active ? primary : hoverItemBg,
+                    color: i === active ? activeItemText : textColor,
+                  } as React.CSSProperties
+                }
               >
                 {renderItem(it)}
               </button>

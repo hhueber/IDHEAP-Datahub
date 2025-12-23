@@ -5,6 +5,8 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 export default function ChangePasswordPage() {
   const { t } = useTranslation();
@@ -13,6 +15,16 @@ export default function ChangePasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
+
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary;
+  const borderColor = cfg.colour_light_secondary;
+  const background = cfg.colour_light_background;
+  const textColor = cfg.colour_light_text;
+
+  const helpTextColor = hexToRgba(textColor, 0.7);
+  const submitTextColor = getAdaptiveTextColor(primary);
+  const submitHoverBg = hexToRgba(primary, 0.9);
 
   // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,8 +76,13 @@ export default function ChangePasswordPage() {
   };
 
   return (
-    <section className="p-6 max-w-xl">
-      <h1 className="text-2xl font-semibold mb-4">{t("changePassword.title")}</h1>
+    <section className="p-6 max-w-xl"
+      style={{
+        backgroundColor: background,
+        borderColor: borderColor,
+        color: textColor,
+      }}>
+      <h1 className="text-2xl font-semibold mb-4" style={{ color: textColor }}>{t("changePassword.title")}</h1>
 
       <form className="space-y-4" onSubmit={onSubmit}>
         <PasswordField
@@ -88,7 +105,7 @@ export default function ChangePasswordPage() {
             onChange={onChange}
             autoComplete="new-password"
           />
-          <p className="text-xs text-gray-500 mt-1">{t("changePassword.passwordHelp")}</p>
+          <p className="text-xs mt-1" style={{ color: helpTextColor }}>{t("changePassword.passwordHelp")}</p>
         </div>
 
         <PasswordField
@@ -126,8 +143,21 @@ export default function ChangePasswordPage() {
         <button
           type="submit"
           disabled={submitting}
-          className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60"
+          className="
+            rounded-lg px-4 py-2 text-sm font-medium
+            disabled:opacity-60 disabled:cursor-not-allowed
+            transition
+            [background-color:var(--submit-bg)]
+            hover:[background-color:var(--submit-hover-bg)]
+          "
           aria-busy={submitting}
+          style={
+            {
+              "--submit-bg": primary,
+              "--submit-hover-bg": submitHoverBg,
+              color: submitTextColor,
+            } as React.CSSProperties
+          }
         >
           {submitting ? <LoadingDots label={t("changePassword.submitting")} /> : t("changePassword.submit")}
         </button>

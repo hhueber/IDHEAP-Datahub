@@ -5,6 +5,8 @@ import { useConfigResource } from "../hooks/useConfigResource";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 
@@ -15,6 +17,19 @@ export default function ConfigPlaceOfInterestPage() {
   const [creating, setCreating] = useState(false);
 
   const [placeOfInterestToDelete, setPlaceOfInterestToDelete] = useState<PlaceOfInterestDTO | null>(null);
+
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary;
+  const background = cfg.colour_light_background;
+  const textColor = cfg.colour_light_text;
+  const borderColor = cfg.colour_light_secondary;
+
+  const submitTextColor = getAdaptiveTextColor(primary);
+  const tableHeaderBg = hexToRgba(primary, 0.02);
+  const rowBorderColor = borderColor;
+  const emptyTextColor = hexToRgba(textColor, 0.7);
+  const loadingTextColor = hexToRgba(textColor, 0.8);
+  const editHoverBg = hexToRgba(primary, 0.06);
 
   const askDelete = (placeOfInterest: PlaceOfInterestDTO) => {
     if (!placeOfInterest.code) return;
@@ -37,9 +52,13 @@ export default function ConfigPlaceOfInterestPage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{t("admin.config.placeOfInterestPage.title")}</h2>
+        <h2 className="text-xl font-semibold" style={{ color: textColor }}>{t("admin.config.placeOfInterestPage.title")}</h2>
         <button
-          className="rounded-lg bg-black text-white px-3 py-2"
+          className="rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
+          style={{
+            backgroundColor: primary,
+            color: submitTextColor,
+          }}
           onClick={() => {
             setCreating(true);
             setEditing(null);
@@ -50,11 +69,20 @@ export default function ConfigPlaceOfInterestPage() {
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-700"><LoadingDots label={t("admin.config.placeOfInterestPage.loading")} /></div>
+        <div className="text-sm" style={{ color: loadingTextColor }}><LoadingDots label={t("admin.config.placeOfInterestPage.loading")} /></div>
       ) : (
-        <div className="overflow-x-auto border rounded-lg">
+        <div className="overflow-x-auto border rounded-lg" 
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+          }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="border-b"
+              style={{
+                backgroundColor: tableHeaderBg,
+                borderColor: borderColor,
+                color: textColor,
+              }}>
               <tr>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.name")}</th>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.fr")}</th>
@@ -68,19 +96,30 @@ export default function ConfigPlaceOfInterestPage() {
             </thead>
             <tbody>
               {items.map((c) => (
-                <tr key={c.code ?? c.default_name} className="border-t">
-                  <td className="px-3 py-2">{c.default_name}</td>
-                  <td className="px-3 py-2">{c.name_fr || "—"}</td>
-                  <td className="px-3 py-2">{c.name_de || "—"}</td>
-                  <td className="px-3 py-2">{c.name_it || "—"}</td>
-                  <td className="px-3 py-2">{c.name_ro || "—"}</td>
-                  <td className="px-3 py-2">{c.name_en || "—"}</td>
-                  <td className="px-3 py-2">
+                <tr key={c.code ?? c.default_name} className="border-t" style={{ borderColor: rowBorderColor }}>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.default_name}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_fr || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_de || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_it || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_ro || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_en || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>
                     {fmt4(c.pos[0])}, {fmt4(c.pos[1])}
                   </td>
                   <td className="px-3 py-2 text-right space-x-2">
                     <button
-                      className="px-2 py-1 rounded bg-gray-100"
+                      className={`
+                        px-2 py-1 rounded text-sm border transition
+                        hover:[background-color:var(--poi-edit-hover-bg)]
+                      `}
+                      style={
+                        {
+                          backgroundColor: background,
+                          borderColor: borderColor,
+                          color: textColor,
+                          "--poi-edit-hover-bg": editHoverBg,
+                        } as React.CSSProperties
+                      }
                       onClick={() => {
                         setEditing(c);
                         setCreating(false);
@@ -101,7 +140,8 @@ export default function ConfigPlaceOfInterestPage() {
                 <tr>
                   <td
                     colSpan={9}
-                    className="text-center text-gray-500 px-3 py-6"
+                    className="px-3 py-6 text-center"
+                    style={{ color: emptyTextColor }}
                   >
                     {t("admin.config.placeOfInterestPage.empty")}
                   </td>

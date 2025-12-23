@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
 import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
+import { loadThemeConfig } from "@/theme/themeStorage";
+import { getAdaptiveTextColor } from "@/utils/color";
 
 const CUSTOM_OFFSET_PX = 160;
 
@@ -29,6 +31,13 @@ export default function PlaceOfInterestLayer() {
     setHideAllBackend(!hideAllBackend);
   };
 
+  const cfg = loadThemeConfig();
+  const primary = cfg.colour_light_primary;
+  const borderColor = cfg.colour_light_secondary;
+  const background = cfg.colour_light_background;
+  const textColor = cfg.colour_light_text;
+  const toggleOnText = getAdaptiveTextColor(primary);
+
   return (
     <>
       <div
@@ -44,10 +53,15 @@ export default function PlaceOfInterestLayer() {
             onClick={() => setIsMenuOpen(true)}
             className="
               w-8 h-8 flex items-center justify-center
-              bg-white hover:bg-stone-100
-              text-stone-800 text-lg font-semibold
-              border-b border-stone-300
+              text-lg font-semibold
+              border-b
+              transition hover:opacity-90
             "
+            style={{
+              backgroundColor: background,
+              color: textColor,
+              borderColor,
+            }}
             title={t("map.menu.global")}
           >
             {/* Bouton menu hambourger */}
@@ -58,14 +72,17 @@ export default function PlaceOfInterestLayer() {
           <button
             type="button"
             onClick={togglePlaceOfInterest}
-            className={`
+            className="
               w-8 h-8 flex items-center justify-center
               text-base
-              ${hideAllBackend
-                ? "bg-white text-stone-500 hover:bg-stone-100"
-                : "bg-indigo-600 text-white hover:bg-indigo-500"
-              }
-            `}
+              border-t
+              transition hover:opacity-90
+            "
+            style={{
+              backgroundColor: hideAllBackend ? background : primary,
+              color: hideAllBackend ? textColor : toggleOnText,
+              borderColor,
+            }}
             title={
               hideAllBackend
                 ? t("map.placeOfInterest.show")
