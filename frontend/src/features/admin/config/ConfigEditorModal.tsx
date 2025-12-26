@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type ConfigEditorModalProps = {
   title: string;
@@ -26,11 +27,12 @@ export function ConfigEditorModal({
   children,
 }: ConfigEditorModalProps) {
   const { t } = useTranslation();
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary || "#D60270";
-  const secondary = cfg.colour_light_secondary || "rgba(0,0,0,0.10)";
-  const background = cfg.colour_light_background || "#FFFFFF";
-  const textColor = cfg.colour_light_text || "#111827";
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const secondary = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
 
   // Overlay derrière la modal (au lieu de bg-black/30)
   const overlayBg = hexToRgba(textColor, 0.30);

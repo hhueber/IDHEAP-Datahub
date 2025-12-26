@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type Role = "ADMIN" | "MEMBER";
 type MenuItem = {
@@ -25,9 +26,10 @@ const isPathActive = (path: string, current: string) =>
   current === path || current.startsWith(path + "/");
 
 function ItemLink({ to, children }: { to: string; children: React.ReactNode }) {
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const textBase = cfg.colour_light_text;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const textBase = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
   const hoverBg = hexToRgba(primary, 0.06);
   const activeText = getAdaptiveTextColor(primary);
   return (
@@ -75,9 +77,10 @@ function TreeItem({
   const { t } = useTranslation();
   if (!canSee(userRole, item)) return null;
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const textBase = cfg.colour_light_text;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const textBase = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
   const hoverBg = hexToRgba(primary, 0.06);
   const activeText = getAdaptiveTextColor(primary);
 
@@ -158,11 +161,13 @@ export default function DashboardSidebar() {
   const userRole = (user?.role as Role) || undefined;
   const location = useLocation();
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const bg = cfg.colour_light_background;
-  const border = cfg.colour_light_secondary;
-  const text = cfg.colour_light_text;
-  const primary = cfg.colour_light_primary;
+  const bg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const border = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const text = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+
   const logoutText = getAdaptiveTextColor(primary);
 
   // 5 sections top-level (Dashboard en premier)

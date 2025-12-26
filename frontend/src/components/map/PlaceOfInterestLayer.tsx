@@ -5,6 +5,7 @@ import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfIntere
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 const CUSTOM_OFFSET_PX = 160;
 
@@ -31,11 +32,12 @@ export default function PlaceOfInterestLayer() {
     setHideAllBackend(!hideAllBackend);
   };
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const borderColor = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
   const toggleOnText = getAdaptiveTextColor(primary);
 
   return (
@@ -57,9 +59,10 @@ export default function PlaceOfInterestLayer() {
               border-b
               transition hover:opacity-90
             "
+            // les couleurs sont fixes pour que tout les bouton de la map garde le meme style
             style={{
-              backgroundColor: background,
-              color: textColor,
+              backgroundColor: "#FFFFFF",
+              color: "#111827",
               borderColor,
             }}
             title={t("map.menu.global")}
@@ -79,8 +82,8 @@ export default function PlaceOfInterestLayer() {
               transition hover:opacity-90
             "
             style={{
-              backgroundColor: hideAllBackend ? background : primary,
-              color: hideAllBackend ? textColor : toggleOnText,
+              backgroundColor: hideAllBackend ? "#FFFFFF" : primary,
+              color: hideAllBackend ? "#111827" : toggleOnText,
               borderColor,
             }}
             title={

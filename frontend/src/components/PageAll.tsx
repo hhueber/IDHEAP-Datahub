@@ -19,6 +19,7 @@ import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type PageAllProps = {
   title: string;
@@ -75,11 +76,12 @@ export default function PageAll({
     // pas de clear_fields ici -> DELETE complet de la ligne
   }));
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const borderColor = cfg.colour_light_secondary;
-  const textColor = cfg.colour_light_text;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
 
   const subtleText = hexToRgba(textColor, 0.7);
   const rowSelectedBg = hexToRgba(primary, 0.15);

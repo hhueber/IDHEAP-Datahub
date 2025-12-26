@@ -2,6 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type Props = {
   page: number;
@@ -16,11 +17,13 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
     return <div className="mt-4 mb-8" />;
   }
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const borderColor = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  
 
   const hoverBg = hexToRgba(primary, 0.06);     // fond léger au survol
   const dotsColor = hexToRgba(textColor, 0.6);  // "..." un peu estompé

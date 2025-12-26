@@ -4,6 +4,7 @@ import LoadingDots from "@/utils/LoadingDots";
 import type { AllItem } from "@/features/pageAll/all_types";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type Props = {
   search: string;
@@ -24,11 +25,12 @@ export function SearchBar({
 }: Props) {
   const { t } = useTranslation();
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const secondary = cfg.colour_light_secondary; // pour les bordures / séparateurs
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const secondary = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary; // pour les bordures / séparateurs
 
   const subtleText = hexToRgba(textColor, 0.7);
   const hoverRowBg = hexToRgba(primary, 0.06);
@@ -42,6 +44,11 @@ export function SearchBar({
           onChange={onSearchChange}
           className="h-9 w-full sm:w-64 rounded border px-2 text-sm"
           placeholder={t("dashboardSidebar.pageAll.searchPlaceholder")}
+          style={{
+            backgroundColor: background,
+            borderColor: secondary,
+            color: textColor,
+          }}
         />
         {search && (
           <button

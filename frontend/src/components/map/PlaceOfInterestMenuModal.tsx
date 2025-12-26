@@ -4,6 +4,7 @@ import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInter
 import { communesApi, PlaceOfInterestSuggestDTO } from "@/features/geo/communesApi";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 
 type Props = {
@@ -53,13 +54,14 @@ export default function PlaceOfInterestMenuModal({
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
 
-  const overlayBg = cfg.navbar_overlay_light_bg;
+  const overlayBg = (mode === "dark" ? cfg.navbar_overlay_dark_bg : cfg.navbar_overlay_light_bg) ?? cfg.navbar_overlay_light_bg;
   const hoverRowBg = hexToRgba(primary, 0.06);
   const mutedText = hexToRgba(textColor, 0.7);
 

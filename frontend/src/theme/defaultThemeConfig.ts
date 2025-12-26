@@ -18,18 +18,18 @@ export const DEFAULT_THEME_CONFIG: ThemeConfig = {
   country_light: "#000000",
   lakes_light: "#3b82f6",
 
-  navbar_overlay_dark_bg: "rgba(0,0,0,0.65)",
+  navbar_overlay_dark_bg: "rgba(15,23,42,0.85)",
 
   colour_dark_primary: "#FB377F",
-  colour_dark_secondary: "#60A5FA",
+  colour_dark_secondary: "rgba(148,163,184,0.45)",
   colour_dark_background: "#020617",
-  colour_dark_text: "#E5E7EB",
+  colour_dark_text: "#F9FAFB",
 
-  communes_dark: "#4ade80",
-  district_dark: "#c4b5fd",
-  canton_dark: "#fca5a5",
-  country_dark: "#f9fafb",
-  lakes_dark: "#60a5fa",
+  communes_dark: "#22c55e",
+  district_dark: "#a855f7",
+  canton_dark: "#f87171",
+  country_dark: "#e5e7eb",
+  lakes_dark: "#0ea5e9",
 
   theme_default_mode: "light",
 };

@@ -4,6 +4,7 @@ import { jsPDF } from "jspdf";
 import { useTranslation } from "react-i18next";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 // Déclenche un téléchargement à partir d’une DataURL (PNG ou autre)
 function downloadDataUrl(filename: string, dataUrl: string) {
@@ -45,11 +46,13 @@ export default function MapExportButtons() {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
+
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const cardBg = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
 
   const hoverBg = hexToRgba(primary, 0.08);
 

@@ -10,6 +10,7 @@ import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { loadThemeConfig } from "@/theme/themeStorage";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -53,13 +54,14 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const background = cfg.colour_light_background;
-  const countryColors = cfg.country_light;
-  const lakesColores = cfg.lakes_light;
-  const cantonClores = cfg.canton_light;
-  const districtColores = cfg.district_light;
-  const communesColores = cfg.communes_light;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const countryColors = (mode === "dark" ? cfg.country_dark : cfg.country_light) ?? cfg.country_light;
+  const lakesColores = (mode === "dark" ? cfg.lakes_dark : cfg.lakes_light) ?? cfg.lakes_light;
+  const cantonClores = (mode === "dark" ? cfg.canton_dark : cfg.canton_light) ?? cfg.canton_light;
+  const districtColores = (mode === "dark" ? cfg.district_dark : cfg.district_light) ?? cfg.district_light;
+  const communesColores = (mode === "dark" ? cfg.communes_dark : cfg.communes_light) ?? cfg.communes_light;
 
 
   /** Chargement des couches géo pour l’année courante. */
@@ -139,12 +141,20 @@ const communesStyle = useMemo(() => ({
   const communes  = (bundle as any)?.communes ?? null;
 
   return (
-    <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
+    <div ref={hostRef} data-map-root 
+      className={`${className} overflow-hidden`}
+      style={
+        {
+          // on expose la couleur de fond à Leaflet via une variable CSS
+          "--map-bg": background,
+        } as React.CSSProperties
+      }
+    >
       {/* Ajustements UI Leaflet */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
-        [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
+        [data-map-root] .leaflet-container { background: var(--map-bg); }
       `}</style>
       <MapContainer
         center={[46.8182, 8.2275]}

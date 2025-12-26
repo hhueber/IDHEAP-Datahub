@@ -5,6 +5,7 @@ import HomeInfoPanel from "@/features/home/components/HomeInfoPanel";
 import { useBootstrap } from "@/features/home/hooks/useBootstrap";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -17,10 +18,12 @@ export default function Home() {
 
   // Theme
   const cfg = loadThemeConfig();
+  const { mode } = useThemeMode();
 
-  const primary = cfg.colour_light_primary;        // bouton flottant
-  const cardBg = cfg.colour_light_background;            // fond du drawer
-  const borderColor = cfg.colour_light_secondary;  // toutes les bordures
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary; // bouton flottant
+  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background; // fond du drawer
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary; // toutes les bordures
+  
   const autoActiveText = getAdaptiveTextColor(primary);
   const home_button_text = autoActiveText;
 

@@ -2,6 +2,7 @@
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type DropdownListProps<T> = {
   items: T[];
@@ -37,18 +38,18 @@ export function DropdownList<T>({
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
 
-  // Pour l’instant: light uniquement
-  const primary = cfg.colour_light_primary;
-  const cardBg = cfg.colour_light_background;
-  const dropdownBorderColor = cfg.colour_light_secondary;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const dropdownBorderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
 
   const autoActiveText = getAdaptiveTextColor(primary);
 
-  const dropdownMenuBg = cfg.colour_light_background; // fond du menu / blanc
+  const dropdownMenuBg = cardBg; // fond du menu / blanc
   const dropdownActiveText = autoActiveText; // item sélectionné = texte blanc
-  const dropdownUnactiveText = cfg.colour_light_text; // item non sélectionné = texte normal
+  const dropdownUnactiveText = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text; // item non sélectionné = texte normal
 
   const hoverBg = hexToRgba(primary, 0.08);
 

@@ -5,16 +5,18 @@ import type { LatLngExpression } from "leaflet";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type Props = {
   placeOfInterest: PlaceOfInterestMarker[];
 };
 
 export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
 
   return (
     // zIndex < 650 (tooltipPane) pour que les tooltips passent par-dessus
@@ -25,9 +27,9 @@ export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
           center={c.pos as LatLngExpression}
           radius={5}
           pathOptions={{
-            color: "#000",
+            color: textColor,
             weight: 1,
-            fillColor: "#000",
+            fillColor: textColor,
             fillOpacity: 1,
           }}
           eventHandlers={{

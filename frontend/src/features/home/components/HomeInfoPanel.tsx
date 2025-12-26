@@ -6,6 +6,7 @@ import { useSurveyQuestions } from "@/features/questions/hooks/useSurveyQuestion
 import MapExportButtons from "@/features/home/components/MapExportButtons";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 const GLOBAL_UID = -1;
 
@@ -20,11 +21,12 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
   const { t } = useTranslation();
   const [selectedUid, setSelectedUid] = useState<number>(GLOBAL_UID);
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
 
-  const cardBg = cfg.colour_light_background;
-  const cardBorder = cfg.colour_light_secondary;
-  const textColor = cfg.colour_light_text;
+  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const cardBorder = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
 
   const subtitleColor = hexToRgba(textColor, 0.7); // text sous le titre
   const mutedColor = hexToRgba(textColor, 0.6);
@@ -151,12 +153,13 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
 }
 
 function QuestionCard({ primary, secondary }: { primary: string; secondary?: string }) {
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
 
-  const primaryColor = cfg.colour_light_primary;
-  const cardBg = cfg.colour_light_background;
-  const borderColor = cfg.colour_light_secondary;
-  const textColor = cfg.colour_light_text;
+  const primaryColor = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
 
   const hoverBg = hexToRgba(primaryColor, 0.06);
   return (
@@ -184,7 +187,7 @@ function QuestionCard({ primary, secondary }: { primary: string; secondary?: str
       }
     >
       {/* Texte localisé (ou label si fallback déjà fait côté API) */}
-      <div className="text-sm text-gray-800 font-medium">
+      <div className="text-sm font-medium">
         {primary}
       </div>
     </button>
@@ -192,10 +195,12 @@ function QuestionCard({ primary, secondary }: { primary: string; secondary?: str
 }
 
 function EmptyHint({ text }: { text: string }) {
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const cardBg = cfg.colour_light_background;
-  const borderColor = cfg.colour_light_secondary;
-  const textColor = hexToRgba(cfg.colour_light_text, 0.7);
+  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const textColors = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const textColor = hexToRgba(textColors, 0.7);
   return (
     <div className="rounded-xl text-sm px-3 py-2"
       style={{

@@ -1,6 +1,7 @@
 import React from "react";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 type AutocompleteFieldProps<T> = {
   value: string;
@@ -46,11 +47,12 @@ export default function AutocompleteField<T>({
   const boxRef = React.useRef<HTMLDivElement>(null);
   const listId = React.useId();
 
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
+  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
+  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
+  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
+  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
 
   const mutedText = hexToRgba(textColor, 0.6);
   const hoverItemBg = hexToRgba(primary, 0.06);
