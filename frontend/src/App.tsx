@@ -16,7 +16,14 @@ import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestCo
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
 import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
 import CantonAllPage from "@/features/pageAll/CantonAllPage";
-import CommuneShowPage from "@/features/pageShow/CommuneShowPage";
+
+import ShowPage from "@/features/pageShow/ShowPage";
+
+import QCatAllPage from "@/features/pageAll/QCatAllPage";
+import QGlobalAllPage from "@/features/pageAll/QGlobalAllPage";
+import QPerSurvAllPage from "@/features/pageAll/QPerSurvAllPage";
+import SurveyAllPage from "@/features/pageAll/SurveyAllPage";
+import OptionAllPage from "@/features/pageAll/OptionAllPage";
 
 // Démo admin déjà fournie
 function AdminUsers() {
@@ -46,6 +53,52 @@ export default function App() {
           {/* Pages privées accessibles aux membres connectés */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/password" element={<ChangePasswordPage />} />
+
+          <Route
+            path="/admin/surveys"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <SurveyAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/options"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <OptionAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/qglobal"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <QGlobalAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/qps"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <QPerSurvAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/qcat"
+            element={
+              <RequireRole roles={["ADMIN", "MEMBER"]}>
+                <QCatAllPage />
+              </RequireRole>
+            }
+          />
+
           <Route
             path="/admin/places/communes"
             element={
@@ -55,10 +108,10 @@ export default function App() {
             }
           />
           <Route
-            path="/admin/places/communes/show/:id"
+            path="/admin/places/show/:entity/:id"
             element={
               <RequireRole roles={["ADMIN", "MEMBER"]}>
-                <CommuneShowPage />
+                <ShowPage />
               </RequireRole>
             }
           />

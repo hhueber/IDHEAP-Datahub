@@ -7,7 +7,7 @@ type PageAllProps = {
   id: number;
 };
 
-export default function CommunePageShow({ id }: PageAllProps) {
+export default function EntityShow({ id }: PageAllProps) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [commune, setCommune] = useState<CommuneItem>();

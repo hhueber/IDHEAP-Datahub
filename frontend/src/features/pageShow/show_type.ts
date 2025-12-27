@@ -1,3 +1,9 @@
+export enum Entity {
+  Commune = "commune",
+  District = "district",
+  Canton = "canton",
+}
+
 export type CantonItem = {
   uid: number;
   code: string;
