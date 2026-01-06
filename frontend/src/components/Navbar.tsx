@@ -3,8 +3,9 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
 import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
+import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 import { useThemeMode } from "@/theme/ThemeContext";
+import { resolveAssetUrl } from "@/shared/apiFetch";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
@@ -27,7 +28,8 @@ export default function Navbar() {
 
   const cfg = loadThemeConfig();
   const instanceName = cfg.instance_name;
-  const logoUrl = cfg.logo_url;
+  const logoUrlRaw = cfg.logo_url;
+  const logoUrl = logoUrlRaw ? resolveAssetUrl(logoUrlRaw) : "/img/idheap-dh.png";
 
   // Pour l’instant: light uniquement
   const primary = (isDark ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
@@ -35,7 +37,7 @@ export default function Navbar() {
   const navbarLogoBorder = (isDark ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
   const navbarOverlayBg = (isDark ? cfg.navbar_overlay_dark_bg : cfg.navbar_overlay_light_bg) ?? cfg.navbar_overlay_light_bg;
   const navbarPanelBg = (isDark ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background; // fond du panneau de navigation
-  const navbarLogoBg = navbarPanelBg; // fond derrière le logo
+  const navbarLogoBg = (isDark ? getAdaptiveTextColor(navbarPanelBg) : navbarPanelBg) ?? navbarPanelBg; // fond derrière le logo
 
   const hoverBg = hexToRgba(primary, 0.08);
 

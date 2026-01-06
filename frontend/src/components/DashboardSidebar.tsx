@@ -296,6 +296,7 @@ export default function DashboardSidebar() {
           roles: ["ADMIN"],
           children: [
             { key: "admin-config-placeOfInterest", labelKey: "dashboardSidebar.administration.config.placeOfInterest", to: "/admin/config/placeOfInterest", roles: ["ADMIN"], },
+            { key: "admin-config-theme", labelKey: "dashboardSidebar.administration.config.theme", to: "/admin/config/theme", roles: ["ADMIN"], },
           ],
         },
       ],
