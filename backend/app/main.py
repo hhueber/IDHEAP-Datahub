@@ -1,9 +1,7 @@
 from app.api.router import auth, communes, config, delete, geo, home, pageAll, questions, user
 from app.core.middleware import setup_middlewares
-from app.core.paths import STATIC_DIR
 from app.db import get_db
 from fastapi import Depends, FastAPI
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,8 +19,6 @@ app.include_router(config.router, prefix="/config", tags=["config"])
 app.include_router(communes.router, prefix="/communes", tags=["communes"])
 app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
-
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 # backend swagger: url:8000

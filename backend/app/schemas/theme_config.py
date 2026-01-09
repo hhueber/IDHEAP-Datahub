@@ -37,8 +37,3 @@ class ThemeConfig(BaseModel):
     lakes_dark: Optional[str] = None
 
     theme_default_mode: Literal["light", "dark"] = "light"
-
-
-class LogoUploadPayload(BaseModel):
-    # on envoie un data URL complet: "data:image/png;base64,...."
-    image_data: str
