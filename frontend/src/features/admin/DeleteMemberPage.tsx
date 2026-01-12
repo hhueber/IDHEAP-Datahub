@@ -4,8 +4,8 @@ import { deleteMember } from "@/services/admin";
 import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
+import type { Role } from "@/config/roles";
 
-type Role = "MEMBER" | "ADMIN";
 
 export default function DeleteMemberPage() {
   const { t } = useTranslation();
