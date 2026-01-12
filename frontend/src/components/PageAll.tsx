@@ -15,7 +15,7 @@ import LoadingDots from "@/utils/LoadingDots";
 import { usePageAllSearch } from "@/features/pageAll/usePageAllSearch";
 import { SearchBar } from "@/utils/SearchBar";
 import type { FindPageResponse } from "@/features/pageAll/all_types";
-import { usePageAllDelete } from "@/features/pageAll/usePageAllDelete";
+import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 
 type PageAllProps = {
@@ -56,13 +56,22 @@ export default function PageAll({
   } = usePageAllSearch(entity);
 
   const {
-    deleteTarget,
-    deleteLoading,
-    deleteError,
-    openDeleteConfirm,
-    handleConfirmDelete,
-    handleCancelDelete,
-  } = usePageAllDelete(entity);
+    target: deleteTarget,
+    loading: deleteLoading,
+    error: deleteError,
+    openConfirm: openDeleteConfirm,
+    confirm: confirmDelete,
+    cancel: cancelDelete,
+  } = useDelete<AllItem>((row) => ({
+    entity,
+    filters: [
+      {
+        field: "uid",
+        value: row.uid,
+      },
+    ],
+    // pas de clear_fields ici -> DELETE complet de la ligne
+  }));
 
   const findPageForUid = React.useCallback(
     async (uid: number): Promise<number> => {
@@ -345,7 +354,7 @@ export default function PageAll({
         }
         cancelLabel={t("common.cancel", "Cancel")}
         onConfirm={async () => {
-          const ok = await handleConfirmDelete();
+          const ok = await confirmDelete();
           if (!ok) return;
           if (items.length === 1 && page > 1) {
             setPage((prev) => Math.max(1, prev - 1));
@@ -353,7 +362,7 @@ export default function PageAll({
              void loadPage(page);
           }
         }}
-        onCancel={handleCancelDelete}
+        onCancel={cancelDelete}
       />
       </div>
     </div>
