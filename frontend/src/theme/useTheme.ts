@@ -1,7 +1,6 @@
 import { useMemo } from "react";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { getThemeTokens } from "@/theme/themeTokens";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 export function useTheme() {
   const cfg = loadThemeConfig();
@@ -15,16 +14,16 @@ export function useTheme() {
       cfg,
       ...tokens,
 
-      // dérivés des couleurs de base
-      hoverText05: hexToRgba(tokens.textColor, 0.5),
-      hoverText07: hexToRgba(tokens.textColor, 0.7),
-      hoverText30: hexToRgba(tokens.textColor, 0.30),
-      adaptiveTextColorPrimary: getAdaptiveTextColor(tokens.primary),
-      hoverPrimary04: hexToRgba(tokens.primary, 0.04),
-      hoverPrimary06: hexToRgba(tokens.primary, 0.06),
-      hoverPrimary15: hexToRgba(tokens.primary, 0.15),
-      hoverPrimary90: hexToRgba(tokens.primary, 0.90),
-      hoverBg08: hexToRgba(tokens.primary, 0.08),
+      // dérivés des couleurs de base suite dans partie 2
+      hoverText05: tokens.textColor,
+      hoverText07: tokens.textColor,
+      hoverText30: tokens.textColor,
+      adaptiveTextColorPrimary: tokens.primary,
+      hoverPrimary04: tokens.primary,
+      hoverPrimary06: tokens.primary,
+      hoverPrimary15: tokens.primary,
+      hoverPrimary90: tokens.primary,
+      hoverBg08: tokens.primary,
     };
   }, [cfg]);
 }

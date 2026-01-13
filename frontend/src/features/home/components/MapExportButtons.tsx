@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { jsPDF } from "jspdf";
 import { useTranslation } from "react-i18next";
-import { hexToRgba } from "@/utils/color";
 import { useTheme } from "@/theme/useTheme";
 
 // Déclenche un téléchargement à partir d’une DataURL (PNG ou autre)
@@ -196,7 +195,7 @@ export default function MapExportButtons() {
       </div>
 
       {/* Note d’usage */}
-      <p className="text-xs mt-2" style={{ color: hexToRgba(textColor, 0.7) }}>
+      <p className="text-xs mt-2" style={{ color: textColor }}>
         {t("export.note")}
       </p>
 

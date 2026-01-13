@@ -3,7 +3,6 @@
 import { CircleMarker, Tooltip, Pane } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
-import { hexToRgba } from "@/utils/color";
 import { useTheme } from "@/theme/useTheme";
 
 type Props = {
@@ -56,7 +55,7 @@ export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
                 borderColor: borderColor,
                 borderWidth: 1,
                 borderStyle: "solid",
-                boxShadow: `0 1px 2px ${hexToRgba("#000000", 0.1)}`,
+                boxShadow: `0 1px 2px ${"#000000"}`, // couleur en dure pour garder une coehérence visuelle
               }}
             >
               {c.name}
