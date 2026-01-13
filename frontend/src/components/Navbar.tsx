@@ -2,8 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
@@ -21,20 +20,9 @@ export default function Navbar() {
   const panelRef = useRef<HTMLDivElement>(null);
   const btnRef = useRef<HTMLButtonElement>(null);
 
-  const cfg = loadThemeConfig();
+  const { primary, textColor, background, borderColor, navbarOverlayBg, hoverBg08, cfg } = useTheme();
   const instanceName = cfg.instance_name;
   const logoUrl = cfg.logo_url;
-
-  // Pour l’instant: light uniquement
-  const primary = cfg.colour_light_primary;
-  const linkText = cfg.colour_light_text;
-  const navbarLogoBorder = cfg.colour_light_secondary;
-
-  const navbarOverlayBg = cfg.navbar_overlay_light_bg;
-  const navbarPanelBg = cfg.colour_light_background; // fond du panneau de navigation
-  const navbarLogoBg = cfg.colour_light_background; // fond derrière le logo
-
-  const hoverBg = hexToRgba(primary, 0.08);
 
   // fermer le drawer au clic extérieur / ESC
   useEffect(() => {
@@ -94,8 +82,8 @@ export default function Navbar() {
           alt={instanceName}
           className="h-12 sm:h-14 w-auto object-contain select-none rounded-xl shadow-2xl" // fond blanc derrière le logo et ombre noire
           style={{
-            backgroundColor: navbarLogoBg,
-            border: `1px solid ${navbarLogoBorder}`,
+            backgroundColor: background, //fond derrière le logo
+            border: `1px solid ${borderColor}`,
           }}
         />
         {!open && (
@@ -117,8 +105,8 @@ export default function Navbar() {
                        overflow-y-auto rounded-tr-2xl rounded-br-2xl
                        backdrop-blur p-3"
             style={{
-              backgroundColor: navbarPanelBg,
-              color: linkText,
+              backgroundColor: background, // fond du panneau
+              color: textColor,
             }}
           >
             {/* Langues */}
@@ -161,7 +149,7 @@ export default function Navbar() {
                 style={{
                   color: primary,
                   // on donne la valeur de la couleur de hover à une CSS variable
-                  "--navbar-link-hover-bg": hoverBg,
+                  "--navbar-link-hover-bg": hoverBg08,
                 } as React.CSSProperties}
                 onClick={() => setOpen(false)}
               >
@@ -175,7 +163,7 @@ export default function Navbar() {
                 "
                 style={{
                   color: primary,
-                  "--navbar-link-hover-bg": hoverBg,
+                  "--navbar-link-hover-bg": hoverBg08,
                 } as React.CSSProperties}
                 onClick={() => setOpen(false)}
               >

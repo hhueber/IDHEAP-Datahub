@@ -9,7 +9,7 @@ import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
-import { loadThemeConfig } from "@/theme/themeStorage";
+import { useTheme } from "@/theme/useTheme";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -53,13 +53,7 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const cfg = loadThemeConfig();
-  const background = cfg.colour_light_background;
-  const countryColors = cfg.country_light;
-  const lakesColores = cfg.lakes_light;
-  const cantonClores = cfg.canton_light;
-  const districtColores = cfg.district_light;
-  const communesColores = cfg.communes_light;
+  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores } = useTheme();
 
 
   /** Chargement des couches géo pour l’année courante. */

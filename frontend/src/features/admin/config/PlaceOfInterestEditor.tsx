@@ -5,8 +5,7 @@ import { ConfigEditorModal } from "./ConfigEditorModal";
 import AutocompleteField from "../components/AutocompleteField";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 type CommuneSuggestion = {
   uid: number;
@@ -33,12 +32,7 @@ export default function PlaceOfInterestEditor({
 }) {
   const { t } = useTranslation();
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const secondary = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const subtleText = hexToRgba(textColor, 0.7);
+  const { textColor, background, borderColor, hoverText07 } = useTheme();
 
   const [form, setForm] = useState<PlaceOfInterestDTO>(
     () =>
@@ -138,7 +132,7 @@ export default function PlaceOfInterestEditor({
       <div className="p-3 rounded-lg border"
         style={{
           backgroundColor: background,
-          borderColor: secondary,
+          borderColor: borderColor,
           color: textColor,
         }}>
         <div className="font-medium mb-2" style={{ color: textColor }}>{t("admin.config.placeOfInterestEditor.importFromCommunes")}</div>
@@ -171,7 +165,7 @@ export default function PlaceOfInterestEditor({
           className="w-full rounded-lg border px-3 py-2"
           style={{
             backgroundColor: background,
-            borderColor: secondary,
+            borderColor: borderColor,
             color: textColor,
           }}
           placeholder="Lausanne, Genève, Zürich…"
@@ -190,7 +184,7 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
           />
@@ -204,7 +198,7 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
           />
@@ -218,7 +212,7 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
           />
@@ -232,7 +226,7 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
           />
@@ -246,7 +240,7 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
           />
@@ -267,12 +261,12 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
             required
           />
-          <div className="text-xs mt-1" style={{ color: subtleText }}>
+          <div className="text-xs mt-1" style={{ color: hoverText07 }}>
             {t("admin.config.placeOfInterestEditor.labels.preview")} {fmt4(form.pos[0])}
           </div>
         </div>
@@ -288,12 +282,12 @@ export default function PlaceOfInterestEditor({
             className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor: secondary,
+              borderColor: borderColor,
               color: textColor,
             }}
             required
           />
-          <div className="text-xs mt-1" style={{ color: subtleText }}>
+          <div className="text-xs mt-1" style={{ color: hoverText07 }}>
             {t("admin.config.placeOfInterestEditor.labels.preview")} {fmt4(form.pos[1])}
           </div>
         </div>

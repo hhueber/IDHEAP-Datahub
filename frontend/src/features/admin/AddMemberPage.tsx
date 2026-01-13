@@ -5,9 +5,8 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 import type { Role } from "@/config/roles";
+import { useTheme } from "@/theme/useTheme";
 
 
 export default function AddMemberPage() {
@@ -31,14 +30,7 @@ export default function AddMemberPage() {
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const borderColor = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-
-  const mutedText = hexToRgba(textColor, 0.7);
-  const submitTextColor = getAdaptiveTextColor(primary);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverText07 } = useTheme();
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -158,7 +150,7 @@ export default function AddMemberPage() {
               onChange={onChange}
               autoComplete="new-password"
             />
-            <p className="text-xs mt-1" style={{ color: mutedText }}>{t("admin.addMember.passwordHelp")}</p>
+            <p className="text-xs mt-1" style={{ color: hoverText07 }}>{t("admin.addMember.passwordHelp")}</p>
           </div>
           <PasswordField
             id="confirm"
@@ -177,7 +169,7 @@ export default function AddMemberPage() {
         <button type="submit" disabled={submitting} className="rounded-lg px-4 py-2 disabled:opacity-60 transition hover:opacity-90"
           style={{
             backgroundColor: primary,
-            color: submitTextColor,
+            color: adaptiveTextColorPrimary,
           }}>
           {submitting ? <LoadingDots label={t("admin.addMember.submitting")} /> : t("admin.addMember.submit")}
         </button>

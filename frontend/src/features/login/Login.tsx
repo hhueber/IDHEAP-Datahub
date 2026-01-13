@@ -5,8 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -20,15 +19,7 @@ export default function Login() {
   const [errKey, setErrKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const borderColor = cfg.colour_light_secondary;
-  const textColor = cfg.colour_light_text;
-
-  const submitBaseBg = hexToRgba(primary, 0.9);
-  const submitHoverBg = hexToRgba(primary, 1);
-  const submitTextColor = getAdaptiveTextColor(primary);
+  const { background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary90 } = useTheme();
 
   // Déjà connecté (ex: cookie valide) -> redirection immédiate
   useEffect(() => {
@@ -127,9 +118,9 @@ export default function Login() {
           aria-busy={loading}
           style={
             {
-              backgroundColor: submitBaseBg,
-              color: submitTextColor,
-              "--login-submit-hover-bg": submitHoverBg,
+              backgroundColor: hoverPrimary90,
+              color: adaptiveTextColorPrimary,
+              "--login-submit-hover-bg": hoverPrimary90,
             } as React.CSSProperties
           }
         >

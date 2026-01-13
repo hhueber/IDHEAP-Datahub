@@ -5,8 +5,7 @@ import { useConfigResource } from "../hooks/useConfigResource";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 
@@ -18,18 +17,7 @@ export default function ConfigPlaceOfInterestPage() {
 
   const [placeOfInterestToDelete, setPlaceOfInterestToDelete] = useState<PlaceOfInterestDTO | null>(null);
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
-
-  const submitTextColor = getAdaptiveTextColor(primary);
-  const tableHeaderBg = hexToRgba(primary, 0.02);
-  const rowBorderColor = borderColor;
-  const emptyTextColor = hexToRgba(textColor, 0.7);
-  const loadingTextColor = hexToRgba(textColor, 0.8);
-  const editHoverBg = hexToRgba(primary, 0.06);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07, hoverPrimary04 } = useTheme();
 
   const askDelete = (placeOfInterest: PlaceOfInterestDTO) => {
     if (!placeOfInterest.code) return;
@@ -57,7 +45,7 @@ export default function ConfigPlaceOfInterestPage() {
           className="rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
           style={{
             backgroundColor: primary,
-            color: submitTextColor,
+            color: adaptiveTextColorPrimary,
           }}
           onClick={() => {
             setCreating(true);
@@ -69,7 +57,7 @@ export default function ConfigPlaceOfInterestPage() {
       </div>
 
       {loading ? (
-        <div className="text-sm" style={{ color: loadingTextColor }}><LoadingDots label={t("admin.config.placeOfInterestPage.loading")} /></div>
+        <div className="text-sm" style={{ color: hoverText07 }}><LoadingDots label={t("admin.config.placeOfInterestPage.loading")} /></div>
       ) : (
         <div className="overflow-x-auto border rounded-lg" 
           style={{
@@ -79,7 +67,7 @@ export default function ConfigPlaceOfInterestPage() {
           <table className="min-w-full text-sm">
             <thead className="border-b"
               style={{
-                backgroundColor: tableHeaderBg,
+                backgroundColor: hoverPrimary04,
                 borderColor: borderColor,
                 color: textColor,
               }}>
@@ -96,7 +84,7 @@ export default function ConfigPlaceOfInterestPage() {
             </thead>
             <tbody>
               {items.map((c) => (
-                <tr key={c.code ?? c.default_name} className="border-t" style={{ borderColor: rowBorderColor }}>
+                <tr key={c.code ?? c.default_name} className="border-t" style={{ borderColor: borderColor }}>
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.default_name}</td>
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.name_fr || "—"}</td>
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.name_de || "—"}</td>
@@ -117,7 +105,7 @@ export default function ConfigPlaceOfInterestPage() {
                           backgroundColor: background,
                           borderColor: borderColor,
                           color: textColor,
-                          "--poi-edit-hover-bg": editHoverBg,
+                          "--poi-edit-hover-bg": hoverPrimary06,
                         } as React.CSSProperties
                       }
                       onClick={() => {
@@ -141,7 +129,7 @@ export default function ConfigPlaceOfInterestPage() {
                   <td
                     colSpan={9}
                     className="px-3 py-6 text-center"
-                    style={{ color: emptyTextColor }}
+                    style={{ color: hoverText07 }}
                   >
                     {t("admin.config.placeOfInterestPage.empty")}
                   </td>

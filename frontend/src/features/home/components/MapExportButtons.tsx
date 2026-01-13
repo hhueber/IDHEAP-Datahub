@@ -2,8 +2,8 @@
 import { useState } from "react";
 import { jsPDF } from "jspdf";
 import { useTranslation } from "react-i18next";
-import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 // Déclenche un téléchargement à partir d’une DataURL (PNG ou autre)
 function downloadDataUrl(filename: string, dataUrl: string) {
@@ -45,13 +45,7 @@ export default function MapExportButtons() {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const cardBg = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
-
-  const hoverBg = hexToRgba(primary, 0.08);
+  const { primary, textColor, background, borderColor, hoverPrimary06 } = useTheme();
 
   const filenamePrefix = t("export.filenamePrefix");
   const today = new Date().toISOString().slice(0, 10);
@@ -155,7 +149,7 @@ export default function MapExportButtons() {
   return (
     <section className="rounded-2xl p-4 shadow-sm border"
       style={{
-        backgroundColor: cardBg,
+        backgroundColor: background,
         borderColor: borderColor,
         color: textColor,
       }}>
@@ -169,8 +163,8 @@ export default function MapExportButtons() {
             {
               borderColor: borderColor,
               color: primary,
-              "--export-btn-bg": cardBg,
-              "--export-btn-hover-bg": hoverBg,
+              "--export-btn-bg": background,
+              "--export-btn-hover-bg": hoverPrimary06,
             } as React.CSSProperties
           }>
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true" style={{ color: primary }}>
@@ -188,8 +182,8 @@ export default function MapExportButtons() {
             {
               borderColor: borderColor,
               color: primary,
-              "--export-btn-bg": cardBg,
-              "--export-btn-hover-bg": hoverBg,
+              "--export-btn-bg": background,
+              "--export-btn-hover-bg": hoverPrimary06,
             } as React.CSSProperties
           }>
           <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true" style={{ color: primary }}>

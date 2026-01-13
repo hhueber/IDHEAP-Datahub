@@ -17,8 +17,7 @@ import { SearchBar } from "@/utils/SearchBar";
 import type { FindPageResponse } from "@/features/pageAll/all_types";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 type PageAllProps = {
   title: string;
@@ -75,15 +74,7 @@ export default function PageAll({
     // pas de clear_fields ici -> DELETE complet de la ligne
   }));
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const background = cfg.colour_light_background;
-  const borderColor = cfg.colour_light_secondary;
-  const textColor = cfg.colour_light_text;
-
-  const subtleText = hexToRgba(textColor, 0.7);
-  const rowSelectedBg = hexToRgba(primary, 0.15);
-  const headerBg = hexToRgba(primary, 0.04);
+  const { textColor, background, borderColor, hoverPrimary04, hoverPrimary15, hoverText07 } = useTheme();
 
   const findPageForUid = React.useCallback(
     async (uid: number): Promise<number> => {
@@ -198,7 +189,7 @@ export default function PageAll({
 
         {/* Bloc tri */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm" style={{ color: subtleText }}>
+          <span className="text-sm" style={{ color: hoverText07 }}>
             {t("dashboardSidebar.pageAll.sortBy")}
           </span>
           <select
@@ -226,7 +217,7 @@ export default function PageAll({
                 backgroundColor: background,
                 borderColor,
                 color: textColor,
-                "--pageall-sort-hover-bg": headerBg,
+                "--pageall-sort-hover-bg": hoverPrimary04,
               } as React.CSSProperties
             }
           >
@@ -247,7 +238,7 @@ export default function PageAll({
 
       <div className="flex-1 flex flex-col">
         {loading && (
-          <div className="text-sm mb-2" style={{ color: subtleText }}>
+          <div className="text-sm mb-2" style={{ color: hoverText07 }}>
             <LoadingDots label={t("dashboardSidebar.pageAll.loading")} />
           </div>
         )}
@@ -271,7 +262,7 @@ export default function PageAll({
           }}>
           <div className="overflow-x-auto">
             <table className="min-w-max w-full text-sm border-collapse">
-              <thead style={{ backgroundColor: headerBg }}>
+              <thead style={{ backgroundColor: hoverPrimary04 }}>
                 <tr>
                   {columns.map((col) => (
                     <th
@@ -302,7 +293,7 @@ export default function PageAll({
                     <td
                       colSpan={columns.length + (hasActions ? 1 : 0)}
                       className="px-3 py-4 text-center"
-                      style={{ color: subtleText }}
+                      style={{ color: hoverText07 }}
                     >
                       {t("dashboardSidebar.pageAll.noData")}
                     </td>
@@ -318,8 +309,8 @@ export default function PageAll({
                         ].join(" ")}
                         style={
                           {
-                            "--pageall-row-hover-bg": headerBg,
-                            "--pageall-row-selected-bg": rowSelectedBg,
+                            "--pageall-row-hover-bg": hoverPrimary04,
+                            "--pageall-row-selected-bg": hoverPrimary15,
                           } as React.CSSProperties
                         }>
                       {columns.map((col) => {
@@ -358,7 +349,7 @@ export default function PageAll({
                                     backgroundColor: background,
                                     borderColor,
                                     color: textColor,
-                                    "--pageall-btn-hover-bg": headerBg,
+                                    "--pageall-btn-hover-bg": hoverPrimary04,
                                   } as React.CSSProperties
                                 }
                                 onClick={() => {
@@ -381,7 +372,7 @@ export default function PageAll({
                                     backgroundColor: background,
                                     borderColor,
                                     color: textColor,
-                                    "--pageall-btn-hover-bg": headerBg,
+                                    "--pageall-btn-hover-bg": hoverPrimary04,
                                   } as React.CSSProperties
                                 }
                                 onClick={() => {

@@ -3,8 +3,7 @@ import { useTranslation } from "react-i18next";
 import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
 import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 const CUSTOM_OFFSET_PX = 160;
 
@@ -31,12 +30,7 @@ export default function PlaceOfInterestLayer() {
     setHideAllBackend(!hideAllBackend);
   };
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const borderColor = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const toggleOnText = getAdaptiveTextColor(primary);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary } = useTheme();
 
   return (
     <>
@@ -80,7 +74,7 @@ export default function PlaceOfInterestLayer() {
             "
             style={{
               backgroundColor: hideAllBackend ? background : primary,
-              color: hideAllBackend ? textColor : toggleOnText,
+              color: hideAllBackend ? textColor : adaptiveTextColorPrimary,
               borderColor,
             }}
             title={

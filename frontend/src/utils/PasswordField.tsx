@@ -1,8 +1,7 @@
 // masque ou pas les mot de passe
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   id: string;
@@ -32,10 +31,7 @@ export default function PasswordField({
   variant = "default",
 }: Props) {
   const { t } = useTranslation();
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const textColor = cfg.colour_light_text;
-  const toggleHoverBg = hexToRgba(primary, 0.06);
+  const { textColor, hoverPrimary06 } = useTheme();
 
   const [visible, setVisible] = useState(false);
 
@@ -86,7 +82,7 @@ export default function PasswordField({
             style={
               {
                 color: textColor,
-                "--pwd-toggle-hover-bg": toggleHoverBg,
+                "--pwd-toggle-hover-bg": hoverPrimary06,
               } as React.CSSProperties
             }
           >

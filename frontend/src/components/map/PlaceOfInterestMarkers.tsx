@@ -3,18 +3,15 @@
 import { CircleMarker, Tooltip, Pane } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
-import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   placeOfInterest: PlaceOfInterestMarker[];
 };
 
 export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
-  const cfg = loadThemeConfig();
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const borderColor = cfg.colour_light_secondary;
+  const { textColor, background, borderColor } = useTheme();
 
   return (
     // zIndex < 650 (tooltipPane) pour que les tooltips passent par-dessus

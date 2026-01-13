@@ -5,8 +5,7 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 
 export default function ChangePasswordPage() {
   const { t } = useTranslation();
@@ -16,15 +15,7 @@ export default function ChangePasswordPage() {
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const borderColor = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-
-  const helpTextColor = hexToRgba(textColor, 0.7);
-  const submitTextColor = getAdaptiveTextColor(primary);
-  const submitHoverBg = hexToRgba(primary, 0.9);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverText07, hoverPrimary06 } = useTheme();
 
   // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -105,7 +96,7 @@ export default function ChangePasswordPage() {
             onChange={onChange}
             autoComplete="new-password"
           />
-          <p className="text-xs mt-1" style={{ color: helpTextColor }}>{t("changePassword.passwordHelp")}</p>
+          <p className="text-xs mt-1" style={{ color: hoverText07 }}>{t("changePassword.passwordHelp")}</p>
         </div>
 
         <PasswordField
@@ -154,8 +145,8 @@ export default function ChangePasswordPage() {
           style={
             {
               "--submit-bg": primary,
-              "--submit-hover-bg": submitHoverBg,
-              color: submitTextColor,
+              "--submit-hover-bg": hoverPrimary06,
+              color: adaptiveTextColorPrimary,
             } as React.CSSProperties
           }
         >

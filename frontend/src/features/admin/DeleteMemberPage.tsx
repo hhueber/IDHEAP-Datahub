@@ -4,9 +4,8 @@ import { deleteMember } from "@/services/admin";
 import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { getAdaptiveTextColor } from "@/utils/color";
 import type { Role } from "@/config/roles";
+import { useTheme } from "@/theme/useTheme";
 
 
 export default function DeleteMemberPage() {
@@ -21,12 +20,7 @@ export default function DeleteMemberPage() {
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
 
-  const cfg = loadThemeConfig();
-  const primary = cfg.colour_light_primary;
-  const borderColor = cfg.colour_light_secondary;
-  const background = cfg.colour_light_background;
-  const textColor = cfg.colour_light_text;
-  const primaryText = getAdaptiveTextColor(primary);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary } = useTheme();
 
   // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -132,7 +126,7 @@ export default function DeleteMemberPage() {
           className="rounded-lg px-4 py-2 disabled:opacity-60 hover:opacity-90 transition"
           style={{
             backgroundColor: primary,
-            color: primaryText,
+            color: adaptiveTextColorPrimary,
             borderColor: primary,
             borderWidth: 1,
             borderStyle: "solid",
