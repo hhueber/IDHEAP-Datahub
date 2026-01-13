@@ -4,7 +4,6 @@ from .canton import Canton
 from .canton_map import CantonMap
 from .commune import Commune
 from .commune_map import CommuneMap
-from .config import Config
 from .country import Country
 from .district import District
 from .district_map import DistrictMap
@@ -36,5 +35,4 @@ __all__ = [
     "DistrictMap",
     "LakeMap",
     "PlaceOfInterest",
-    "Config",
 ]

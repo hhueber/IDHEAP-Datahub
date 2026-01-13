@@ -15,7 +15,7 @@ export function useTheme() {
       cfg,
       ...tokens,
 
-      // dérivés (optionnel mais pratique)
+      // dérivés des couleurs de base
       hoverText05: hexToRgba(tokens.textColor, 0.5),
       hoverText07: hexToRgba(tokens.textColor, 0.7),
       hoverText30: hexToRgba(tokens.textColor, 0.30),

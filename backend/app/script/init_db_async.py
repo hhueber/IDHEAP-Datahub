@@ -8,7 +8,6 @@ from app.core.logging_config import configure_logging
 from app.db import AsyncSessionLocal, engine, ensure_extensions
 from app.models import Base
 from app.repositories.user_repo import any_admin_exists, create_user
-from app.script.populate_config import populate_config_if_empty
 from app.script.populate_db import populate_db
 from app.script.populate_geo_db import populate_async_geo
 
@@ -46,10 +45,6 @@ async def create_schema() -> None:
                 logger.info("Admin user(s) already exist; skipping root seed.")
     else:
         logger.info("ROOT_EMAIL or ROOT_PASSWORD not set; no root created.")
-
-    # Config par défaut si besoin
-    await populate_config_if_empty()
-    logger.info("Config table initialized (if empty).")
 
     # Populate la base de donnée
     await populate_db()
