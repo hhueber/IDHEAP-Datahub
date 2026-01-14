@@ -169,3 +169,23 @@ export async function safeApi<T = any>(...args: Parameters<typeof apiFetch<T>>):
     throw e;
   }
 }
+
+/**
+ * Transforme un chemin éventuel en URL absolue.
+ * - Si `raw` commence par http:// ou https:// -> on ne touche pas
+ * - Sinon -> on préfixe avec API_BASE_URL
+ *   ex: "/static/uploads/logo.png" -> "http://localhost:8000/static/uploads/logo.png"
+ *   ceci est pour la gestion des url des images
+ */
+export function resolveAssetUrl(raw: string | null | undefined): string | undefined {
+  if (!raw) return undefined;
+
+  const trimmed = raw.trim();
+  if (/^https?:\/\//i.test(trimmed)) {
+    return trimmed;
+  }
+
+  const base = BASE_URL.replace(/\/+$/, "");
+  const path = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return `${base}${path}`;
+}
