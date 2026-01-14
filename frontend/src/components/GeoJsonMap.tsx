@@ -133,12 +133,20 @@ const communesStyle = useMemo(() => ({
   const communes  = (bundle as any)?.communes ?? null;
 
   return (
-    <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
+    <div ref={hostRef} data-map-root 
+      className={`${className} overflow-hidden`}
+      style={
+        {
+          // on expose la couleur de fond à Leaflet via une variable CSS
+          "--map-bg": background,
+        } as React.CSSProperties
+      }
+    >
       {/* Ajustements UI Leaflet */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
-        [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
+        [data-map-root] .leaflet-container { background: var(--map-bg); }
       `}</style>
       <MapContainer
         center={[46.8182, 8.2275]}

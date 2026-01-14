@@ -15,9 +15,8 @@ export function pickThemeValue(
   const light = cfg[lightKey];
   const dark = cfg[darkKey];
 
-  // Si on est en dark MAIS que la clé dark n’existe pas encore (PR pas mergée),
   // on fallback sur light.
-  return (mode === "dark" ? (dark ?? light) : light) ?? "";
+  return (mode === "dark" ? dark ?? light : light) ?? light;
 }
 
 export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
@@ -27,6 +26,7 @@ export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
   const borderColor = pickThemeValue(cfg, mode, "colour_light_secondary", "colour_dark_secondary");
 
   const navbarOverlayBg = pickThemeValue(cfg, mode, "navbar_overlay_light_bg", "navbar_overlay_dark_bg");
+  const logoBackground = pickThemeValue(cfg, mode, "logoBackground_light", "logoBackground_dark");
 
   const countryColors = pickThemeValue(cfg, mode, "country_light", "country_dark");
   const lakesColores = pickThemeValue(cfg, mode, "lakes_light", "lakes_dark");
@@ -40,6 +40,7 @@ export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
     background,
     borderColor,
     navbarOverlayBg,
+    logoBackground,
     countryColors,
     lakesColores,
     cantonClores,

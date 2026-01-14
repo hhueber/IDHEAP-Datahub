@@ -1,17 +1,18 @@
 import { useMemo } from "react";
 import { loadThemeConfig } from "@/theme/themeStorage";
+import { useThemeMode } from "@/theme/ThemeContext";
 import { getThemeTokens } from "@/theme/themeTokens";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 export function useTheme() {
+  const { mode } = useThemeMode();
   const cfg = loadThemeConfig();
 
   return useMemo(() => {
-    const effectiveMode: "light" | "dark" = "light";
-    const tokens = getThemeTokens(cfg, effectiveMode);
+    const tokens = getThemeTokens(cfg, mode);
 
     return {
-      effectiveMode,
+      mode,
       cfg,
       ...tokens,
 
@@ -26,5 +27,5 @@ export function useTheme() {
       hoverPrimary90: hexToRgba(tokens.primary, 0.90),
       hoverBg08: hexToRgba(tokens.primary, 0.08),
     };
-  }, [cfg]);
+  }, [mode, cfg]);
 }

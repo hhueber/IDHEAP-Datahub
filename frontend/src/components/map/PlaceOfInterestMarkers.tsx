@@ -22,9 +22,9 @@ export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
           center={c.pos as LatLngExpression}
           radius={5}
           pathOptions={{
-            color: "#000",
+            color: textColor,
             weight: 1,
-            fillColor: "#000",
+            fillColor: textColor,
             fillOpacity: 1,
           }}
           eventHandlers={{

@@ -31,7 +31,8 @@ export default function PasswordField({
   variant = "default",
 }: Props) {
   const { t } = useTranslation();
-  const { textColor, hoverPrimary06 } = useTheme();
+  
+  const { background, borderColor, textColor, hoverPrimary06 } = useTheme();
 
   const [visible, setVisible] = useState(false);
 
@@ -61,6 +62,11 @@ export default function PasswordField({
           placeholder={placeholder}
           autoComplete={autoComplete}
           required={required}
+          style={{
+            backgroundColor: background,
+            borderColor,
+            color: textColor,
+          }}
         />
 
         {/* Wrapper pleine hauteur de l'INPUT */}

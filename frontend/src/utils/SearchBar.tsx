@@ -34,6 +34,11 @@ export function SearchBar({
           onChange={onSearchChange}
           className="h-9 w-full sm:w-64 rounded border px-2 text-sm"
           placeholder={t("dashboardSidebar.pageAll.searchPlaceholder")}
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+            color: textColor,
+          }}
         />
         {search && (
           <button

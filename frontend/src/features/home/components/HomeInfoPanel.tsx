@@ -169,7 +169,7 @@ function QuestionCard({ primary, secondary }: { primary: string; secondary?: str
       }
     >
       {/* Texte localisé (ou label si fallback déjà fait côté API) */}
-      <div className="text-sm text-gray-800 font-medium">
+      <div className="text-sm font-medium">
         {primary}
       </div>
     </button>

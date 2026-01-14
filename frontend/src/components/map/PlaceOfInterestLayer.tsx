@@ -51,9 +51,10 @@ export default function PlaceOfInterestLayer() {
               border-b
               transition hover:opacity-90
             "
+            // les couleurs sont fixes pour que tout les bouton de la map garde le meme style
             style={{
-              backgroundColor: background,
-              color: textColor,
+              backgroundColor: "#FFFFFF",
+              color: "#111827",
               borderColor,
             }}
             title={t("map.menu.global")}
