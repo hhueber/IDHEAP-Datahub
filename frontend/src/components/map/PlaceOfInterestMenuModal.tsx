@@ -2,9 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import { communesApi, PlaceOfInterestSuggestDTO } from "@/features/geo/communesApi";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 
 type Props = {
@@ -54,16 +52,7 @@ export default function PlaceOfInterestMenuModal({
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-
-  const overlayBg = (mode === "dark" ? cfg.navbar_overlay_dark_bg : cfg.navbar_overlay_light_bg) ?? cfg.navbar_overlay_light_bg;
-  const hoverRowBg = hexToRgba(primary, 0.06);
-  const mutedText = hexToRgba(textColor, 0.7);
+  const { textColor, background, borderColor, navbarOverlayBg, hoverText07, hoverPrimary06 } = useTheme();
 
   useEffect(() => {
     if (!isOpen) {
@@ -149,7 +138,7 @@ export default function PlaceOfInterestMenuModal({
         onClick={handleBackdropClick}
         style={
           {
-            backgroundColor: overlayBg,
+            backgroundColor: navbarOverlayBg,
           } as React.CSSProperties
         }
       />
@@ -174,7 +163,7 @@ export default function PlaceOfInterestMenuModal({
             style={
               {
                 color: textColor,
-                "--poi-close-hover-bg": hoverRowBg,
+                "--poi-close-hover-bg": hoverPrimary06,
               } as React.CSSProperties
             }
           >
@@ -189,7 +178,7 @@ export default function PlaceOfInterestMenuModal({
             {t("map.menu.instancePlaceOfInterest")}
           </h3>
           {backendPlaceOfInterest.length === 0 ? (
-            <p className="text-xs" style={{ color: mutedText }}>
+            <p className="text-xs" style={{ color: hoverText07 }}>
               {t("map.menu.noInstancePlaceOfInterest")}
             </p>
           ) : (
@@ -223,7 +212,7 @@ export default function PlaceOfInterestMenuModal({
               {t("map.menu.localPlaceOfInterest")}
           </h3>
           {extraPlaceOfInterest.length === 0 ? (
-              <p className="text-xs" style={{ color: mutedText }}>
+              <p className="text-xs" style={{ color: hoverText07 }}>
               {t("map.menu.noLocalPlaceOfInterest")}
               </p>
           ) : (
@@ -278,7 +267,7 @@ export default function PlaceOfInterestMenuModal({
             }
           />
           {loading && (
-            <p className="text-xs" style={{ color: mutedText }}>
+            <p className="text-xs" style={{ color: hoverText07 }}>
               {t("map.menu.loadingSuggestions")}
             </p>
           )}
@@ -303,12 +292,12 @@ export default function PlaceOfInterestMenuModal({
                   onClick={() => handleAddSuggestion(s)}
                   style={
                     {
-                      "--poi-suggest-hover-bg": hoverRowBg,
+                      "--poi-suggest-hover-bg": hoverPrimary06,
                     } as React.CSSProperties
                   }
                 >
                   <span>{s.default_name}</span>
-                  <span className="text-[10px]" style={{ color: mutedText }}>
+                  <span className="text-[10px]" style={{ color: hoverText07 }}>
                     {s.pos[0].toFixed(3)}, {s.pos[1].toFixed(3)}
                   </span>
                 </li>

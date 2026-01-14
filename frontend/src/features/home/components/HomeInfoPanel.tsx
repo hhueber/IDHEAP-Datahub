@@ -4,9 +4,7 @@ import YearSelector from "@/features/home/components/YearSelector";
 import type { HomeBootstrap } from "@/features/home/services/homeApi";
 import { useSurveyQuestions } from "@/features/questions/hooks/useSurveyQuestions";
 import MapExportButtons from "@/features/home/components/MapExportButtons";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 const GLOBAL_UID = -1;
 
@@ -21,15 +19,7 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
   const { t } = useTranslation();
   const [selectedUid, setSelectedUid] = useState<number>(GLOBAL_UID);
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-
-  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const cardBorder = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-
-  const subtitleColor = hexToRgba(textColor, 0.7); // text sous le titre
-  const mutedColor = hexToRgba(textColor, 0.6);
+  const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
   const surveysWithGlobal = useMemo(
     () => [{ uid: GLOBAL_UID, year: Number.NaN }, ...(data?.surveys ?? [])],
@@ -48,16 +38,16 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
       {/* Carte entête */}
       <section className="rounded-2xl backdrop-blur shadow-sm  p-4"
         style={{
-          backgroundColor: cardBg,
+          backgroundColor: background,
           borderWidth: 1,
           borderStyle: "solid",
-          borderColor: cardBorder,
+          borderColor: borderColor,
         }}
       >
         <h1 className="text-xl font-bold" style={{ color: textColor }}>
           {t("home.heroTitle")}
         </h1>
-        <p className="mt-2  text-sm leading-relaxed" style={{ color: subtitleColor }}>
+        <p className="mt-2  text-sm leading-relaxed" style={{ color: hoverText07 }}>
           {t("home.heroSubtitle")}
         </p>
       </section>
@@ -66,12 +56,12 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
       {(loading || error) && (
         <section className="rounded-2xl shadow-sm  p-3" 
           style={{
-            backgroundColor: cardBg,
+            backgroundColor: background,
             borderWidth: 1,
             borderStyle: "solid",
-            borderColor: cardBorder,
+            borderColor: borderColor,
           }}>
-          {loading && <p className="text-sm" style={{ color: mutedColor }}>{t("common.loading")}</p>}
+          {loading && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
           {error && (
             <p className="text-red-600">
               {t(errorKey ?? "home.bootstrapError")}
@@ -83,10 +73,10 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
       {/* Carte sélection année */}
       <section className="rounded-2xl shadow-sm p-4"
           style={{
-            backgroundColor: cardBg,
+            backgroundColor: background,
             borderWidth: 1,
             borderStyle: "solid",
-            borderColor: cardBorder,
+            borderColor: borderColor,
           }}>
         <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>
           {t("home.sectionDates")}
@@ -105,10 +95,10 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
       {/* Carte questions */}
       <section className="rounded-2xl shadow-sm p-4"
           style={{
-            backgroundColor: cardBg,
+            backgroundColor: background,
             borderWidth: 1,
             borderStyle: "solid",
-            borderColor: cardBorder,
+            borderColor: borderColor,
           }}>
         <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
           {t("home.sectionQuestions")}
@@ -127,7 +117,7 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
             )
           ) : (
             <>
-              {loadingS && <p className="text-sm" style={{ color: mutedColor }}>{t("common.loading")}</p>}
+              {loadingS && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
               {errorKeyS && (
                 <p className="text-red-600">
                   {t(errorKeyS)}
@@ -153,15 +143,7 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
 }
 
 function QuestionCard({ primary, secondary }: { primary: string; secondary?: string }) {
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-
-  const primaryColor = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-
-  const hoverBg = hexToRgba(primaryColor, 0.06);
+  const { textColor, background, borderColor, hoverPrimary06 } = useTheme();
   return (
     <button
       type="button"
@@ -179,8 +161,8 @@ function QuestionCard({ primary, secondary }: { primary: string; secondary?: str
       style={
         {
           // on passe les couleurs au CSS via des variables
-          "--question-card-bg": cardBg,
-          "--question-card-hover-bg": hoverBg,
+          "--question-card-bg": background,
+          "--question-card-hover-bg": hoverPrimary06,
           borderColor: borderColor,
           color: textColor,
         } as React.CSSProperties
@@ -195,20 +177,15 @@ function QuestionCard({ primary, secondary }: { primary: string; secondary?: str
 }
 
 function EmptyHint({ text }: { text: string }) {
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const textColors = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const textColor = hexToRgba(textColors, 0.7);
+  const { background, borderColor, hoverText07 } = useTheme();
   return (
     <div className="rounded-xl text-sm px-3 py-2"
       style={{
-        backgroundColor: cardBg,
+        backgroundColor: background,
         borderWidth: 1,
         borderStyle: "solid",
         borderColor: borderColor,
-        color: textColor,
+        color: hoverText07,
       }}>
       {text}
     </div>

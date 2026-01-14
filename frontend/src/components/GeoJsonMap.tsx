@@ -9,8 +9,7 @@ import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -54,14 +53,7 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const countryColors = (mode === "dark" ? cfg.country_dark : cfg.country_light) ?? cfg.country_light;
-  const lakesColores = (mode === "dark" ? cfg.lakes_dark : cfg.lakes_light) ?? cfg.lakes_light;
-  const cantonClores = (mode === "dark" ? cfg.canton_dark : cfg.canton_light) ?? cfg.canton_light;
-  const districtColores = (mode === "dark" ? cfg.district_dark : cfg.district_light) ?? cfg.district_light;
-  const communesColores = (mode === "dark" ? cfg.communes_dark : cfg.communes_light) ?? cfg.communes_light;
+  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores } = useTheme();
 
 
   /** Chargement des couches géo pour l’année courante. */

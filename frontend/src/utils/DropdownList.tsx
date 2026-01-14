@@ -1,8 +1,6 @@
 // Liste déroulante
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type DropdownListProps<T> = {
   items: T[];
@@ -38,20 +36,8 @@ export function DropdownList<T>({
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
+  const { primary, background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary06 } = useTheme();
 
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const dropdownBorderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-
-  const autoActiveText = getAdaptiveTextColor(primary);
-
-  const dropdownMenuBg = cardBg; // fond du menu / blanc
-  const dropdownActiveText = autoActiveText; // item sélectionné = texte blanc
-  const dropdownUnactiveText = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text; // item non sélectionné = texte normal
-
-  const hoverBg = hexToRgba(primary, 0.08);
 
   // Fermeture au clic extérieur / ESC
   useEffect(() => {
@@ -100,9 +86,9 @@ export function DropdownList<T>({
           buttonClassName,
         ].join(" ")}
         style={{
-          backgroundColor: cardBg,
+          backgroundColor: background,
           color: primary,             // texte du bouton = primary
-          borderColor: dropdownBorderColor, // ring/border soft
+          borderColor: borderColor, // ring/border soft
         }}
         aria-haspopup="listbox"
         aria-expanded={open}
@@ -130,8 +116,8 @@ export function DropdownList<T>({
             popoverClassName,
           ].join(" ")}
           style={{
-            backgroundColor: dropdownMenuBg,
-            borderColor: dropdownBorderColor,
+            backgroundColor: background,
+            borderColor: borderColor,
             borderWidth: 1,
             borderStyle: "solid",
           }}
@@ -163,9 +149,9 @@ export function DropdownList<T>({
                     backgroundColor: active
                       ? primary // fond actif
                       : isHovered
-                      ? hoverBg // fond hover, donc primary très claire
+                      ? hoverPrimary06 // fond hover, donc primary très claire
                       : "transparent",
-                    color: active ? dropdownActiveText : dropdownUnactiveText,
+                    color: active ? adaptiveTextColorPrimary : textColor,
                   }}
                 >
                   {labelFor(item)}
