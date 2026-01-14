@@ -3,6 +3,7 @@ from app.db import get_db
 from app.repositories.delete_repo import clear_fields, delete_rows
 from app.schemas.delete import DeleteRequest, DeleteResponse
 from app.schemas.user import UserPublic
+from app.security.delete_guard import assert_delete_allowed, DeleteAction
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -36,6 +37,7 @@ async def generic_delete(
 
     try:
         if payload.clear_fields:
+            assert_delete_allowed(entity=payload.entity, action=DeleteAction.CLEAR_FIELDS)
             affected = await clear_fields(
                 db,
                 entity=payload.entity,
@@ -44,6 +46,7 @@ async def generic_delete(
             )
             action = "Cleared fields"
         else:
+            assert_delete_allowed(entity=payload.entity, action=DeleteAction.DELETE_ROWS)
             affected = await delete_rows(
                 db,
                 entity=payload.entity,

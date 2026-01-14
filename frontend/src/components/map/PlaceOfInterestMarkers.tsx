@@ -3,20 +3,15 @@
 import { CircleMarker, Tooltip, Pane } from "react-leaflet";
 import type { LatLngExpression } from "leaflet";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
-import { loadThemeConfig } from "@/theme/themeStorage";
 import { hexToRgba } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   placeOfInterest: PlaceOfInterestMarker[];
 };
 
 export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
+  const { textColor, background, borderColor } = useTheme();
 
   return (
     // zIndex < 650 (tooltipPane) pour que les tooltips passent par-dessus
@@ -61,7 +56,7 @@ export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
                 borderColor: borderColor,
                 borderWidth: 1,
                 borderStyle: "solid",
-                boxShadow: `0 1px 2px ${hexToRgba("#000000", 0.1)}`,
+                boxShadow: `0 1px 2px ${hexToRgba("#111827", 0.1)}`, // couleur en dure pour garder une coehérence visuelle
               }}
             >
               {c.name}

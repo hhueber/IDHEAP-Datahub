@@ -1,9 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type ConfigEditorModalProps = {
   title: string;
@@ -27,24 +25,13 @@ export function ConfigEditorModal({
   children,
 }: ConfigEditorModalProps) {
   const { t } = useTranslation();
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const secondary = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
 
-  // Overlay derrière la modal (au lieu de bg-black/30)
-  const overlayBg = hexToRgba(textColor, 0.30);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText30, hoverPrimary90 } = useTheme();
 
-  // Couleurs des boutons
-  const submitTextColor = getAdaptiveTextColor(primary);
-  const cancelHoverBg = hexToRgba(primary, 0.05);
-  const submitHoverBg = hexToRgba(primary, 0.90);
   return (
     <div
       className="fixed inset-0 z-50 flex items-start sm:items-center justify-center"
-      style={{ backgroundColor: overlayBg }}
+      style={{ backgroundColor: hoverText30 }}
     >
       <div
         className="
@@ -55,7 +42,7 @@ export function ConfigEditorModal({
         style={{
           backgroundColor: background,
           color: textColor,
-          borderColor: secondary,
+          borderColor: borderColor,
         }}
       >
         {/* header */}
@@ -88,10 +75,10 @@ export function ConfigEditorModal({
               className="px-3 py-2 rounded-lg border text-sm transition hover:[background-color:var(--config-cancel-hover-bg)]"
               style={
                 {
-                  borderColor: secondary,
+                  borderColor: borderColor,
                   color: textColor,
                   backgroundColor: background,
-                  "--config-cancel-hover-bg": cancelHoverBg,
+                  "--config-cancel-hover-bg": hoverPrimary06,
                 } as React.CSSProperties
               }
             >
@@ -104,8 +91,8 @@ export function ConfigEditorModal({
               style={
                 {
                   backgroundColor: primary,
-                  color: submitTextColor,
-                  "--config-submit-hover-bg": submitHoverBg,
+                  color: adaptiveTextColorPrimary,
+                  "--config-submit-hover-bg": hoverPrimary90,
                 } as React.CSSProperties
               }
             >

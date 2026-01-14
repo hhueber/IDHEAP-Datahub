@@ -2,9 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import type { AllItem } from "@/features/pageAll/all_types";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   search: string;
@@ -25,15 +23,7 @@ export function SearchBar({
 }: Props) {
   const { t } = useTranslation();
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const secondary = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary; // pour les bordures / séparateurs
-
-  const subtleText = hexToRgba(textColor, 0.7);
-  const hoverRowBg = hexToRgba(primary, 0.06);
+  const { primary, background, borderColor, textColor, hoverPrimary06, hoverText07 } = useTheme();
 
   return (
     <div className="flex flex-col gap-1 w-full sm:w-auto mb-3">
@@ -46,7 +36,7 @@ export function SearchBar({
           placeholder={t("dashboardSidebar.pageAll.searchPlaceholder")}
           style={{
             backgroundColor: background,
-            borderColor: secondary,
+            borderColor: borderColor,
             color: textColor,
           }}
         />
@@ -57,7 +47,7 @@ export function SearchBar({
             className="text-xs transition hover:[color:var(--search-clear-hover-color)]"
             style={
               {
-                color: subtleText,
+                color: hoverText07,
                 "--search-clear-hover-color": primary,
               } as React.CSSProperties
             }
@@ -67,7 +57,7 @@ export function SearchBar({
         )}
       </div>
       {searchLoading && (
-        <div className="text-xs" style={{ color: subtleText }}>
+        <div className="text-xs" style={{ color: hoverText07 }}>
           <LoadingDots label={t("dashboardSidebar.pageAll.searching")} />
         </div>
       )}
@@ -76,7 +66,7 @@ export function SearchBar({
         <div className="mt-1 border rounded max-h-56 overflow-y-auto text-sm shadow-sm"
           style={{
             backgroundColor: background,
-            borderColor: secondary,
+            borderColor: borderColor,
             color: textColor,
           }}>
           {suggestions.map((s) => (
@@ -92,20 +82,20 @@ export function SearchBar({
                 {
                   color: textColor,
                   "--search-suggest-bg": background,
-                  "--search-suggest-hover-bg": hoverRowBg,
+                  "--search-suggest-hover-bg": hoverPrimary06,
                 } as React.CSSProperties
               }
             >
               <span>
                 <span className="font-medium" style={{ color: textColor }}>{s.name}</span>
                 {s.code && (
-                  <span className="text-xs ml-2" style={{ color: subtleText }}>
+                  <span className="text-xs ml-2" style={{ color: hoverText07 }}>
                     ({s.code})
                   </span>
                 )}
               </span>
               {s.year != null && (
-                <span className="text-xs" style={{ color: subtleText }}>{s.year}</span>
+                <span className="text-xs" style={{ color: hoverText07 }}>{s.year}</span>
               )}
             </button>
           ))}

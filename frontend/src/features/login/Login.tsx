@@ -5,9 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -21,16 +19,7 @@ export default function Login() {
   const [errKey, setErrKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-
-  const submitBaseBg = hexToRgba(primary, 0.9);
-  const submitHoverBg = hexToRgba(primary, 1);
-  const submitTextColor = getAdaptiveTextColor(primary);
+  const { background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary90 } = useTheme();
 
   // Déjà connecté (ex: cookie valide) -> redirection immédiate
   useEffect(() => {
@@ -129,9 +118,9 @@ export default function Login() {
           aria-busy={loading}
           style={
             {
-              backgroundColor: submitBaseBg,
-              color: submitTextColor,
-              "--login-submit-hover-bg": submitHoverBg,
+              backgroundColor: hoverPrimary90,
+              color: adaptiveTextColorPrimary,
+              "--login-submit-hover-bg": hoverPrimary90,
             } as React.CSSProperties
           }
         >

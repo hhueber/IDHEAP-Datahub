@@ -22,8 +22,6 @@ app.include_router(communes.router, prefix="/communes", tags=["communes"])
 app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
 
 # backend swagger: url:8000
 @app.get("/")

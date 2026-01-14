@@ -12,6 +12,7 @@ import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
 import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
+import { ADMIN, MEMBER } from "@/config/roles";
 import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
 import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
@@ -53,7 +54,7 @@ export default function App() {
           <Route
             path="/admin/surveys"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <SurveyAllPage />
               </RequireRole>
             }
@@ -62,7 +63,7 @@ export default function App() {
           <Route
             path="/admin/options"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <OptionAllPage />
               </RequireRole>
             }
@@ -71,7 +72,7 @@ export default function App() {
           <Route
             path="/admin/qglobal"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QGlobalAllPage />
               </RequireRole>
             }
@@ -80,7 +81,7 @@ export default function App() {
           <Route
             path="/admin/qps"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QPerSurvAllPage />
               </RequireRole>
             }
@@ -89,7 +90,7 @@ export default function App() {
           <Route
             path="/admin/qcat"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QCatAllPage />
               </RequireRole>
             }
@@ -98,7 +99,7 @@ export default function App() {
           <Route
             path="/admin/places/communes"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <CommuneAllPage />
               </RequireRole>
             }
@@ -107,7 +108,7 @@ export default function App() {
           <Route
             path="/admin/places/districts"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <DistrictAllPage />
               </RequireRole>
             }
@@ -116,7 +117,7 @@ export default function App() {
           <Route
             path="/admin/places/cantons"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <CantonAllPage />
               </RequireRole>
             }
@@ -126,7 +127,7 @@ export default function App() {
           <Route
             path="/admin/users"
             element={
-              <RequireRole roles={["ADMIN"]}>
+              <RequireRole roles={[ADMIN]}>
                 <AdminUsers />
               </RequireRole>
             }
@@ -134,16 +135,16 @@ export default function App() {
           <Route
             path="/admin/users/new"
             element={
-              <RequireRole roles={["ADMIN"]}>
+              <RequireRole roles={[ADMIN]}>
                 <AddMemberPage />
               </RequireRole>
             }
           />
-          <Route path="/admin/users/delete" element={<RequireRole roles={["ADMIN"]}><DeleteMemberPage /></RequireRole>} />
+          <Route path="/admin/users/delete" element={<RequireRole roles={[ADMIN]}><DeleteMemberPage /></RequireRole>} />
           <Route
             path="/admin/config/placeOfInterest"
             element={
-              <RequireRole roles={["ADMIN"]}>
+              <RequireRole roles={[ADMIN]}>
                 <PlaceOfInterestConfigPage />
               </RequireRole>
             }

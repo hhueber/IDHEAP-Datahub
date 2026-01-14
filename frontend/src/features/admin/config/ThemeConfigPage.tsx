@@ -9,9 +9,7 @@ import {
 } from "@/services/config";
 import LoadingDots from "@/utils/LoadingDots";
 import { ConfirmModal } from "@/utils/ConfirmModal";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { useThemeMode } from "@/theme/ThemeContext";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 import { resolveAssetUrl } from "@/shared/apiFetch";
 import { PresetsSection, Preset } from "@/features/admin/components/theme/PresetsSection";
 import { ThemeColorsSection } from "@/features/admin/components/theme/ThemeColorsSection";
@@ -35,15 +33,7 @@ export default function ThemeConfigPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingLogoDataUrl, setPendingLogoDataUrl] = useState<string | null>(null);
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const backgroundLogo = (mode === "dark" ? getAdaptiveTextColor(background) : background) ?? background;
-  const autoActiveText = getAdaptiveTextColor(primary);
-  const cardBg = hexToRgba(textColor, 0.02);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05 } = useTheme();
 
   // Charger la config au montage
   useEffect(() => {
@@ -239,7 +229,7 @@ export default function ThemeConfigPage() {
       {/* Informations générales */}
       <div
         className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: cardBg, borderColor: borderColor }}
+        style={{ backgroundColor: hoverText05, borderColor: borderColor }}
       >
         <h2 className="text-lg font-semibold mb-2">
           {t("admin.config.themeConfigPage.general")}
@@ -291,7 +281,7 @@ export default function ThemeConfigPage() {
                     src={previewUrl}
                     alt="logo preview"
                     className="h-10 max-w-[160px] object-contain border rounded"
-                    style={{ backgroundColor: backgroundLogo }}
+                    style={{ backgroundColor: logoBackground }}
                   />
                 </div>
               ) : null}
@@ -365,7 +355,7 @@ export default function ThemeConfigPage() {
       {/* Presets */}
       <PresetsSection
         presets={PRESETS}
-        cardBg={cardBg}
+        cardBg={hoverText05}
         cardBorder={borderColor}
         title={t("admin.config.themeConfigPage.presets")}
         helpText={t("admin.config.themeConfigPage.presetsHelp")}
@@ -380,7 +370,7 @@ export default function ThemeConfigPage() {
         config={config}
         onFieldChange={(key, val) => updateField(key, val)}
         background={background}
-        cardBg={cardBg}
+        cardBg={hoverText05}
         cardBorder={borderColor}
         textColor={textColor}
       />
@@ -393,7 +383,7 @@ export default function ThemeConfigPage() {
         config={config}
         onFieldChange={(key, val) => updateField(key, val)}
         background={background}
-        cardBg={cardBg}
+        cardBg={hoverText05}
         cardBorder={borderColor}
         textColor={textColor}
       />
@@ -401,7 +391,7 @@ export default function ThemeConfigPage() {
       {/* Couleurs carte */}
       <div
         className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: cardBg, borderColor: borderColor }}
+        style={{ backgroundColor: hoverText05, borderColor: borderColor }}
       >
         <h2 className="text-lg font-semibold">
           {t("admin.config.themeConfigPage.mapSection")}
@@ -415,7 +405,7 @@ export default function ThemeConfigPage() {
             config={config}
             onFieldChange={(key, val) => updateField(key, val)}
             background={background}
-            cardBg={cardBg}
+            cardBg={hoverText05}
             cardBorder={borderColor}
             textColor={textColor}
           />
@@ -426,7 +416,7 @@ export default function ThemeConfigPage() {
             config={config}
             onFieldChange={(key, val) => updateField(key, val)}
             background={background}
-            cardBg={cardBg}
+            cardBg={hoverText05}
             cardBorder={borderColor}
             textColor={textColor}
           />
@@ -443,7 +433,7 @@ export default function ThemeConfigPage() {
           style={{
             backgroundColor: primary,
             borderColor: primary,
-            color: autoActiveText,
+            color: adaptiveTextColorPrimary,
           }}
         >
           {saveState === "saving" ? (
