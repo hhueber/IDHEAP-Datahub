@@ -44,7 +44,7 @@ export default function MapExportButtons() {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
-  const { primary, textColor, background, borderColor, hoverPrimary06 } = useTheme();
+  const { primary, textColor, background, borderColor, hoverPrimary06, hoverText07 } = useTheme();
 
   const filenamePrefix = t("export.filenamePrefix");
   const today = new Date().toISOString().slice(0, 10);
@@ -195,7 +195,7 @@ export default function MapExportButtons() {
       </div>
 
       {/* Note d’usage */}
-      <p className="text-xs mt-2" style={{ color: textColor }}>
+      <p className="text-xs mt-2" style={{ color: hoverText07 }}>
         {t("export.note")}
       </p>
 
