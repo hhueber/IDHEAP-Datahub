@@ -15,7 +15,6 @@ export function pickThemeValue(
   const light = cfg[lightKey];
   const dark = cfg[darkKey];
 
-  // Si on est en dark MAIS que la clé dark n’existe pas encore (PR pas mergée),
   // on fallback sur light.
   return (mode === "dark" ? dark ?? light : light) ?? light;
 }
