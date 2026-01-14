@@ -4,6 +4,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import type { Role } from "@/config/roles";
+import { useTheme } from "@/theme/useTheme";
 
 type MenuItem = {
   key: string;
@@ -23,15 +24,26 @@ const isPathActive = (path: string, current: string) =>
   current === path || current.startsWith(path + "/");
 
 function ItemLink({ to, children }: { to: string; children: React.ReactNode }) {
+  const { primary, textColor, adaptiveTextColorPrimary, hoverPrimary06 } = useTheme();
   return (
     <NavLink
       to={to}
       end
       className={({ isActive }) =>
         [
-          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium",
-          isActive ? "bg-black text-white" : "text-gray-700 hover:bg-gray-100",
+          "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition",
+          isActive
+            ? "[background-color:var(--sidebar-link-active-bg)] [color:var(--sidebar-link-active-text)]"
+            : "[color:var(--sidebar-link-text)] hover:[background-color:var(--sidebar-link-hover-bg)]",
         ].join(" ")
+      }
+      style={
+        {
+          "--sidebar-link-active-bg": primary,
+          "--sidebar-link-hover-bg": hoverPrimary06,
+          "--sidebar-link-text": textColor,
+          "--sidebar-link-active-text": adaptiveTextColorPrimary,
+        } as React.CSSProperties
       }
     >
       {children}
@@ -57,6 +69,8 @@ function TreeItem({
 }) {
   const { t } = useTranslation();
   if (!canSee(userRole, item)) return null;
+
+  const { primary, textColor, adaptiveTextColorPrimary, hoverPrimary06 } = useTheme();
 
   const label = item.labelKey ? t(item.labelKey) : (item.label ?? "");
   const hasChildren = !!item.children?.some((c) => canSee(userRole, c));
@@ -87,10 +101,20 @@ function TreeItem({
         type="button"
         onClick={() => onToggle(item.key)}
         className={[
-          "w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold",
-          active ? "bg-gray-900 text-white" : "text-gray-700 hover:bg-gray-100",
+          "w-full flex items-center justify-between rounded-lg px-3 py-2 text-sm font-semibold transition",
+          active
+            ? "[background-color:var(--sidebar-section-active-bg)] [color:var(--sidebar-section-active-text)]"
+            : "[color:var(--sidebar-section-text)] hover:[background-color:var(--sidebar-section-hover-bg)]",
         ].join(" ")}
-        style={{ paddingLeft: padding }}
+        style={
+          {
+            paddingLeft: padding,
+            "--sidebar-section-active-bg": primary,
+            "--sidebar-section-hover-bg": hoverPrimary06,
+            "--sidebar-section-text": textColor,
+            "--sidebar-section-active-text": adaptiveTextColorPrimary,
+          } as React.CSSProperties
+        }
         aria-expanded={isOpen(item.key)}
         aria-label={t("dashboardSidebar.toggleSection", { section: label })}
       >
@@ -124,6 +148,8 @@ export default function DashboardSidebar() {
   const { user, logout } = useAuth();
   const userRole = (user?.role as Role) || undefined;
   const location = useLocation();
+
+  const { primary, background, borderColor, textColor, adaptiveTextColorPrimary, hoverText05, hoverText07 } = useTheme();
 
   // 5 sections top-level (Dashboard en premier)
   // définition du menu (contrôlé par rôle)
@@ -282,7 +308,7 @@ export default function DashboardSidebar() {
   const roleLabel = /roles\./.test(roleKey) ? ( (roleKey && roleKey !== "roles.") ? ( ( ( (t as any)(roleKey) !== roleKey ) ? t(roleKey) : (user?.role || "") ) ) : "" ) : "";
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 border-r bg-white">
+    <aside className="fixed inset-y-0 left-0 w-64 border-r" style={{ backgroundColor: background, borderColor: borderColor, color: textColor }}>
       {/* en-tête */}
       <div className="h-16 border-b px-4 flex items-center">
         <span className="text-lg font-semibold">{t("dashboardSidebar.privateSpace")}</span>
@@ -308,13 +334,14 @@ export default function DashboardSidebar() {
         {/* pied : infos utilisateur + logout */}
         <div className="mt-auto border-t p-4">
           <div className="mb-3 text-sm">
-            <div className="font-medium">{user?.full_name}</div>
-            <div className="text-gray-500">{user?.email}</div>
-            <div className="text-xs text-gray-400">{t("dashboardSidebar.rolePrefix")} {roleLabel}</div>
+            <div className="font-medium" style={{ color: textColor }}>{user?.full_name}</div>
+            <div className="text-xs" style={{ color: hoverText07 }}>{user?.email}</div>
+            <div className="text-xs" style={{ color: hoverText05 }}>{t("dashboardSidebar.rolePrefix")} {roleLabel}</div>
           </div>
           <button
             onClick={logout}
-            className="w-full rounded-lg bg-black px-3 py-2 text-sm font-medium text-white hover:opacity-90"
+            className="w-full rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
+            style={{ backgroundColor: primary, color: adaptiveTextColorPrimary }}
             aria-label={t("dashboardSidebar.logout")}
             title={t("dashboardSidebar.logout")}
           >

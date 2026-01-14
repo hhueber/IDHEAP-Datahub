@@ -1,7 +1,8 @@
 from app.repositories.question_repo import list_global_questions, normalize_lang
 from app.repositories.survey_repo import list_surveys_uid_year
-from app.schemas.questions import HomeBootstrap, QuestionList, QuestionItem, SurveyBrief
+from app.schemas.questions import HomeBootstrap, QuestionItem, QuestionList, SurveyBrief
 from sqlalchemy.ext.asyncio import AsyncSession
+
 
 async def get_home_bootstrap(db: AsyncSession, accept_language: str | None) -> HomeBootstrap:
     lang = normalize_lang(accept_language)

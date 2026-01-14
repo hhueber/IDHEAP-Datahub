@@ -4,6 +4,7 @@ import YearSelector from "@/features/home/components/YearSelector";
 import type { HomeBootstrap } from "@/features/home/services/homeApi";
 import { useSurveyQuestions } from "@/features/questions/hooks/useSurveyQuestions";
 import MapExportButtons from "@/features/home/components/MapExportButtons";
+import { useTheme } from "@/theme/useTheme";
 
 const GLOBAL_UID = -1;
 
@@ -17,6 +18,8 @@ type Props = {
 export default function HomeInfoPanel({ data, loading, error, errorKey }: Props) {
   const { t } = useTranslation();
   const [selectedUid, setSelectedUid] = useState<number>(GLOBAL_UID);
+
+  const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
   const surveysWithGlobal = useMemo(
     () => [{ uid: GLOBAL_UID, year: Number.NaN }, ...(data?.surveys ?? [])],
@@ -33,19 +36,32 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
   return (
     <div className="space-y-4">
       {/* Carte entête */}
-      <section className="rounded-2xl bg-white/90 backdrop-blur ring-1 ring-black/5 shadow-sm shadow-gray-200 p-4">
-        <h1 className="text-xl font-bold text-gray-900">
+      <section className="rounded-2xl backdrop-blur shadow-sm  p-4"
+        style={{
+          backgroundColor: background,
+          borderWidth: 1,
+          borderStyle: "solid",
+          borderColor: borderColor,
+        }}
+      >
+        <h1 className="text-xl font-bold" style={{ color: textColor }}>
           {t("home.heroTitle")}
         </h1>
-        <p className="mt-2 text-gray-600 text-sm leading-relaxed">
+        <p className="mt-2  text-sm leading-relaxed" style={{ color: hoverText07 }}>
           {t("home.heroSubtitle")}
         </p>
       </section>
 
       {/* État global */}
       {(loading || error) && (
-        <section className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm shadow-gray-200 p-3">
-          {loading && <p className="text-gray-500">{t("common.loading")}</p>}
+        <section className="rounded-2xl shadow-sm  p-3" 
+          style={{
+            backgroundColor: background,
+            borderWidth: 1,
+            borderStyle: "solid",
+            borderColor: borderColor,
+          }}>
+          {loading && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
           {error && (
             <p className="text-red-600">
               {t(errorKey ?? "home.bootstrapError")}
@@ -55,8 +71,14 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
       )}
 
       {/* Carte sélection année */}
-      <section className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm shadow-gray-200 p-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-2">
+      <section className="rounded-2xl shadow-sm p-4"
+          style={{
+            backgroundColor: background,
+            borderWidth: 1,
+            borderStyle: "solid",
+            borderColor: borderColor,
+          }}>
+        <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>
           {t("home.sectionDates")}
         </h2>
         <div className="max-w-sm">
@@ -71,8 +93,14 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
       </section>
 
       {/* Carte questions */}
-      <section className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm shadow-gray-200 p-4">
-        <h2 className="text-sm font-semibold text-gray-700 mb-3">
+      <section className="rounded-2xl shadow-sm p-4"
+          style={{
+            backgroundColor: background,
+            borderWidth: 1,
+            borderStyle: "solid",
+            borderColor: borderColor,
+          }}>
+        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
           {t("home.sectionQuestions")}
         </h2>
 
@@ -89,7 +117,7 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
             )
           ) : (
             <>
-              {loadingS && <p className="text-gray-500">{t("common.loading")}</p>}
+              {loadingS && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
               {errorKeyS && (
                 <p className="text-red-600">
                   {t(errorKeyS)}
@@ -115,18 +143,30 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
 }
 
 function QuestionCard({ primary, secondary }: { primary: string; secondary?: string }) {
+  const { textColor, background, borderColor, hoverPrimary06 } = useTheme();
   return (
     <button
       type="button"
-      className="
+      className={`
         text-left w-full
-        rounded-xl ring-1 ring-indigo-100 bg-white
-        px-3 py-2
-        shadow-sm shadow-indigo-50
-        hover:bg-indigo-50/60 hover:ring-indigo-200
+        rounded-xl px-3 py-2
+        shadow-sm
         active:translate-y-[1px]
         transition
-      "
+        border
+        bg-[var(--question-card-bg)]
+        hover:bg-[var(--question-card-hover-bg)]
+        hover:shadow-md
+      `}
+      style={
+        {
+          // on passe les couleurs au CSS via des variables
+          "--question-card-bg": background,
+          "--question-card-hover-bg": hoverPrimary06,
+          borderColor: borderColor,
+          color: textColor,
+        } as React.CSSProperties
+      }
     >
       {/* Texte localisé (ou label si fallback déjà fait côté API) */}
       <div className="text-sm text-gray-800 font-medium">
@@ -137,8 +177,16 @@ function QuestionCard({ primary, secondary }: { primary: string; secondary?: str
 }
 
 function EmptyHint({ text }: { text: string }) {
+  const { background, borderColor, hoverText07 } = useTheme();
   return (
-    <div className="rounded-xl ring-1 ring-gray-200 bg-gray-50 text-gray-600 text-sm px-3 py-2">
+    <div className="rounded-xl text-sm px-3 py-2"
+      style={{
+        backgroundColor: background,
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: borderColor,
+        color: hoverText07,
+      }}>
       {text}
     </div>
   );

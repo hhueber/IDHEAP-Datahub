@@ -1,5 +1,6 @@
 // petite modale pour confirmer la suppression 
 import React from "react";
+import { useTheme } from "@/theme/useTheme";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -22,22 +23,36 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   if (!open) return null;
 
+  const { primary, background, borderColor, textColor, hoverPrimary06, hoverText30 } = useTheme();
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/30 flex items-center justify-center">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-xl p-6">
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: hoverText30 }}>
+      <div className="w-full max-w-md rounded-xl shadow-xl p-6 border"
+        style={{
+          backgroundColor: background,
+          borderColor: borderColor,
+          color: textColor,
+        }}>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
+          <h2 className="text-lg font-semibold" style={{ color: textColor }}>{title}</h2>
           <button
             type="button"
             onClick={onCancel}
-            className="text-gray-500 hover:text-black"
+            className="text-sm transition hover:[color:var(--confirm-close-hover-color)]"
+            style={
+              {
+                color: textColor,
+                "--confirm-close-hover-color": primary,
+              } as React.CSSProperties
+            }
           >
             {/* Croix de fermeture */}
             {"\u00D7"}
           </button>
         </div>
 
-        <p className="text-sm text-gray-700 mb-6 whitespace-pre-line">
+        <p className="text-sm mb-6 whitespace-pre-line"
+          style={{ color: textColor }}>
           {message}
         </p>
 
@@ -45,14 +60,25 @@ export function ConfirmModal({
           <button
             type="button"
             onClick={onCancel}
-            className="px-3 py-2 rounded-lg border text-sm"
+            className="
+              px-3 py-2 rounded-lg border text-sm
+              transition hover:[background-color:var(--confirm-cancel-hover-bg)]
+            "
+            style={
+              {
+                backgroundColor: background,
+                borderColor: borderColor,
+                color: textColor,
+                "--confirm-cancel-hover-bg": hoverPrimary06,
+              } as React.CSSProperties
+            }
           >
             {cancelLabel}
           </button>
           <button
             type="button"
             onClick={onConfirm}
-            className="px-3 py-2 rounded-lg bg-red-600 text-white text-sm"
+            className="px-3 py-2 rounded-lg bg-red-600 text-white text-sm hover:opacity-90 transition"
           >
             {confirmLabel}
           </button>

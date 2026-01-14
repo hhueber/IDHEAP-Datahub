@@ -1,4 +1,5 @@
 import React from "react";
+import { useTheme } from "@/theme/useTheme";
 
 type AutocompleteFieldProps<T> = {
   value: string;
@@ -43,6 +44,8 @@ export default function AutocompleteField<T>({
 
   const boxRef = React.useRef<HTMLDivElement>(null);
   const listId = React.useId();
+
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07 } = useTheme();
 
   // Fermeture quand on clique en dehors
   React.useEffect(() => {
@@ -123,24 +126,33 @@ export default function AutocompleteField<T>({
         aria-autocomplete="list"
         placeholder={placeholder}
         className="w-full rounded-lg border px-3 py-2"
+        style={{
+          backgroundColor: background,
+          borderColor: borderColor,
+          color: textColor,
+        }}
       />
 
       {open && (
         <div
           id={listId}
           role="listbox"
-          className="absolute z-50 mt-1 w-full rounded-lg bg-white shadow-xl ring-1 ring-black/10 max-h-64 overflow-auto"
+          className="absolute z-50 mt-1 w-full rounded-lg shadow-xl max-h-64 overflow-auto border"
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+          }}
         >
           {/* État chargement */}
           {loading && renderLoading && (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-3 py-2 text-sm" style={{ color: hoverText07 }}>
               {renderLoading()}
             </div>
           )}
 
           {/* Aucun résultat */}
           {!loading && items.length === 0 && renderEmpty && (
-            <div className="px-3 py-2 text-sm text-gray-500">
+            <div className="px-3 py-2 text-sm" style={{ color: hoverText07 }}>
               {renderEmpty(value)}
             </div>
           )}
@@ -159,11 +171,18 @@ export default function AutocompleteField<T>({
                   onPick(it);
                   setOpen(false);
                 }}
-                className={`w-full text-left px-3 py-2 text-sm ${
-                  i === active
-                    ? "bg-indigo-600 text-white"
-                    : "hover:bg-indigo-50 text-gray-800"
-                }`}
+                className={`
+                  w-full text-left px-3 py-2 text-sm transition
+                  bg-[var(--auto-item-bg)]
+                  hover:bg-[var(--auto-item-hover-bg)]
+                `}
+                style={
+                  {
+                    "--auto-item-bg": i === active ? primary : "transparent",
+                    "--auto-item-hover-bg": i === active ? primary : hoverPrimary06,
+                    color: i === active ? adaptiveTextColorPrimary : textColor,
+                  } as React.CSSProperties
+                }
               >
                 {renderItem(it)}
               </button>

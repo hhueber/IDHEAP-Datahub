@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import GeoJsonMap from "@/components/GeoJsonMap";
 import HomeInfoPanel from "@/features/home/components/HomeInfoPanel";
 import { useBootstrap } from "@/features/home/hooks/useBootstrap";
+import { useTheme } from "@/theme/useTheme";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -12,6 +13,9 @@ export default function Home() {
 
   // appel bootstrap
   const { data, loading, error, errorKey } = useBootstrap();
+
+  // Theme
+  const { primary, background, borderColor, adaptiveTextColorPrimary } = useTheme();
 
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
@@ -26,15 +30,19 @@ export default function Home() {
         onClick={() => setPanelOpen(v => !v)}
         className="
           fixed bottom-4 z-[3600]
-          h-12 w-12 rounded-full ring-1 ring-indigo-200 bg-indigo-600 text-white
-          shadow-lg hover:bg-indigo-500 active:translate-y-px
+          h-12 w-12 rounded-full border
+          shadow-lg active:translate-y-px
           grid place-items-center
           transition-transform duration-300 ease-out
+          hover:opacity-90
         "
         style={{
           right: "max(env(safe-area-inset-right), 1rem)",
           // se décale à gauche de la largeur du drawer quand ouvert
           transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
+          backgroundColor: primary,
+          borderColor: borderColor,
+          color: adaptiveTextColorPrimary, // texte + icône blancs comme avant
         }}
         aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
       >
@@ -61,7 +69,7 @@ export default function Home() {
           className={`
             absolute right-0 top-0 h-full
             w-[min(90vw,28rem)]
-            bg-white/95 backdrop-blur shadow-2xl ring-1 ring-black/10
+            backdrop-blur shadow-2xl border
             transform transition-transform duration-300 ease-out
             ${panelOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}
             overflow-y-auto
@@ -69,6 +77,10 @@ export default function Home() {
           `}
           role="dialog"
           aria-modal="true"
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+          }}
         >
           <div className="p-5">
             <HomeInfoPanel data={data} loading={loading} error={error} errorKey={errorKey} />

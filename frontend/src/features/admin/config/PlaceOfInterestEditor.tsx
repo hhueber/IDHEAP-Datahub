@@ -5,6 +5,7 @@ import { ConfigEditorModal } from "./ConfigEditorModal";
 import AutocompleteField from "../components/AutocompleteField";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
+import { useTheme } from "@/theme/useTheme";
 
 type CommuneSuggestion = {
   uid: number;
@@ -30,6 +31,8 @@ export default function PlaceOfInterestEditor({
   onSaved: () => void;
 }) {
   const { t } = useTranslation();
+
+  const { textColor, background, borderColor, hoverText07 } = useTheme();
 
   const [form, setForm] = useState<PlaceOfInterestDTO>(
     () =>
@@ -126,8 +129,13 @@ export default function PlaceOfInterestEditor({
       submitLabel={initial ? t("admin.config.placeOfInterestEditor.submitEdit") : t("admin.config.placeOfInterestEditor.submitCreate")}
     >
       {/* Auto-complétion Communes : suggestions sous le champ */}
-      <div className="p-3 rounded-lg border">
-        <div className="font-medium mb-2">{t("admin.config.placeOfInterestEditor.importFromCommunes")}</div>
+      <div className="p-3 rounded-lg border"
+        style={{
+          backgroundColor: background,
+          borderColor: borderColor,
+          color: textColor,
+        }}>
+        <div className="font-medium mb-2" style={{ color: textColor }}>{t("admin.config.placeOfInterestEditor.importFromCommunes")}</div>
         <AutocompleteField<CommuneSuggestion>
           value={search}
           onChange={setSearch}
@@ -138,7 +146,7 @@ export default function PlaceOfInterestEditor({
             const r = await suggestCommunes(q, 10);
             return r.data ?? [];
           }}
-          renderItem={(c) => <span className="font-medium">{c.name}</span>}
+          renderItem={(c) => <span className="font-medium" style={{ color: textColor }}>{c.name}</span>}
           onPick={pickCommune}
           renderLoading={() => <LoadingDots label={t("admin.config.placeOfInterestEditor.search")} />}
           renderEmpty={(q) =>
@@ -155,6 +163,11 @@ export default function PlaceOfInterestEditor({
           value={form.default_name}
           onChange={onChange}
           className="w-full rounded-lg border px-3 py-2"
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+            color: textColor,
+          }}
           placeholder="Lausanne, Genève, Zürich…"
           required
         />
@@ -169,6 +182,11 @@ export default function PlaceOfInterestEditor({
             value={form.name_fr || ""}
             onChange={onChange}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
           />
         </div>
         <div>
@@ -178,6 +196,11 @@ export default function PlaceOfInterestEditor({
             value={form.name_de || ""}
             onChange={onChange}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
           />
         </div>
         <div>
@@ -187,6 +210,11 @@ export default function PlaceOfInterestEditor({
             value={form.name_it || ""}
             onChange={onChange}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
           />
         </div>
         <div>
@@ -196,6 +224,11 @@ export default function PlaceOfInterestEditor({
             value={form.name_ro || ""}
             onChange={onChange}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
           />
         </div>
         <div>
@@ -205,6 +238,11 @@ export default function PlaceOfInterestEditor({
             value={form.name_en || ""}
             onChange={onChange}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
           />
         </div>
       </div>
@@ -221,9 +259,14 @@ export default function PlaceOfInterestEditor({
             onChange={onChange}
             onBlur={onBlurRound}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
             required
           />
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs mt-1" style={{ color: hoverText07 }}>
             {t("admin.config.placeOfInterestEditor.labels.preview")} {fmt4(form.pos[0])}
           </div>
         </div>
@@ -237,9 +280,14 @@ export default function PlaceOfInterestEditor({
             onChange={onChange}
             onBlur={onBlurRound}
             className="w-full rounded-lg border px-3 py-2"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+              color: textColor,
+            }}
             required
           />
-          <div className="text-xs text-gray-500 mt-1">
+          <div className="text-xs mt-1" style={{ color: hoverText07 }}>
             {t("admin.config.placeOfInterestEditor.labels.preview")} {fmt4(form.pos[1])}
           </div>
         </div>
