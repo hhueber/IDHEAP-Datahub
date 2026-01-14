@@ -1,8 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   page: number;
@@ -17,17 +15,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
     return <div className="mt-4 mb-8" />;
   }
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  
-
-  const hoverBg = hexToRgba(primary, 0.06);     // fond léger au survol
-  const dotsColor = hexToRgba(textColor, 0.6);  // "..." un peu estompé
-  const activeText = getAdaptiveTextColor(primary); // texte lisible sur fond primary
+  const { primary, background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07 } = useTheme();
 
   // --- logique pour la version "desktop" (>= sm) ---
   const delta = 3; // nb de pages de chaque côté sur grand écran
@@ -89,7 +77,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
               backgroundColor: background,
               borderColor,
               color: textColor,
-              "--pager-hover-bg": hoverBg,
+              "--pager-hover-bg": hoverPrimary06,
             } as React.CSSProperties
           }
         >
@@ -113,7 +101,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
               backgroundColor: background,
               borderColor,
               color: textColor,
-              "--pager-hover-bg": hoverBg,
+              "--pager-hover-bg": hoverPrimary06,
             } as React.CSSProperties
           }
         >
@@ -137,7 +125,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
               backgroundColor: background,
               borderColor,
               color: textColor,
-              "--pager-hover-bg": hoverBg,
+              "--pager-hover-bg": hoverPrimary06,
             } as React.CSSProperties
           }
         >
@@ -149,7 +137,7 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
             <span
               key={`dots-${i}`}
               className="px-2 py-1 text-sm select-none"
-              style={{ color: dotsColor }}
+              style={{ color: hoverText07 }}
             >
               ...
             </span>
@@ -167,13 +155,13 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
                   ? ({
                       backgroundColor: primary,
                       borderColor: primary,
-                      color: activeText,
+                      color: adaptiveTextColorPrimary,
                     } as React.CSSProperties)
                   : ({
                       backgroundColor: background,
                       borderColor,
                       color: textColor,
-                      "--pager-hover-bg": hoverBg,
+                      "--pager-hover-bg": hoverPrimary06,
                     } as React.CSSProperties)
               }
             >

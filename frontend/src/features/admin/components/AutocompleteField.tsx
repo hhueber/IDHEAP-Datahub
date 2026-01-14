@@ -1,7 +1,5 @@
 import React from "react";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type AutocompleteFieldProps<T> = {
   value: string;
@@ -47,16 +45,7 @@ export default function AutocompleteField<T>({
   const boxRef = React.useRef<HTMLDivElement>(null);
   const listId = React.useId();
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-
-  const mutedText = hexToRgba(textColor, 0.6);
-  const hoverItemBg = hexToRgba(primary, 0.06);
-  const activeItemText = getAdaptiveTextColor(primary);
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07 } = useTheme();
 
   // Fermeture quand on clique en dehors
   React.useEffect(() => {
@@ -156,14 +145,14 @@ export default function AutocompleteField<T>({
         >
           {/* État chargement */}
           {loading && renderLoading && (
-            <div className="px-3 py-2 text-sm" style={{ color: mutedText }}>
+            <div className="px-3 py-2 text-sm" style={{ color: hoverText07 }}>
               {renderLoading()}
             </div>
           )}
 
           {/* Aucun résultat */}
           {!loading && items.length === 0 && renderEmpty && (
-            <div className="px-3 py-2 text-sm" style={{ color: mutedText }}>
+            <div className="px-3 py-2 text-sm" style={{ color: hoverText07 }}>
               {renderEmpty(value)}
             </div>
           )}
@@ -190,8 +179,8 @@ export default function AutocompleteField<T>({
                 style={
                   {
                     "--auto-item-bg": i === active ? primary : "transparent",
-                    "--auto-item-hover-bg": i === active ? primary : hoverItemBg,
-                    color: i === active ? activeItemText : textColor,
+                    "--auto-item-hover-bg": i === active ? primary : hoverPrimary06,
+                    color: i === active ? adaptiveTextColorPrimary : textColor,
                   } as React.CSSProperties
                 }
               >

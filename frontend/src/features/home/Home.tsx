@@ -3,9 +3,7 @@ import { useTranslation } from "react-i18next";
 import GeoJsonMap from "@/components/GeoJsonMap";
 import HomeInfoPanel from "@/features/home/components/HomeInfoPanel";
 import { useBootstrap } from "@/features/home/hooks/useBootstrap";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 export default function Home() {
   const { t } = useTranslation();
@@ -17,15 +15,7 @@ export default function Home() {
   const { data, loading, error, errorKey } = useBootstrap();
 
   // Theme
-  const cfg = loadThemeConfig();
-  const { mode } = useThemeMode();
-
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary; // bouton flottant
-  const cardBg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background; // fond du drawer
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary; // toutes les bordures
-  
-  const autoActiveText = getAdaptiveTextColor(primary);
-  const home_button_text = autoActiveText;
+  const { primary, background, borderColor, adaptiveTextColorPrimary } = useTheme();
 
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
@@ -52,7 +42,7 @@ export default function Home() {
           transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
           backgroundColor: primary,
           borderColor: borderColor,
-          color: home_button_text, // texte + icône blancs comme avant
+          color: adaptiveTextColorPrimary, // texte + icône blancs
         }}
         aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
       >
@@ -88,7 +78,7 @@ export default function Home() {
           role="dialog"
           aria-modal="true"
           style={{
-            backgroundColor: cardBg,
+            backgroundColor: background,
             borderColor: borderColor,
           }}
         >
