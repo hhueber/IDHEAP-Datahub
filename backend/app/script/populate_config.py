@@ -13,6 +13,24 @@ logger = logging.getLogger(__name__)
 CONFIG_SEED_PATH = Path(__file__).with_name("config_defaults.json")
 
 
+def sanitize_key(raw: object) -> str | None:
+    key = str(raw).strip()
+    if not key:
+        return None
+    if len(key) > 100:
+        return None
+    return key
+
+
+def sanitize_value(raw: object) -> str | None:
+    value = str(raw).strip()
+    if not value:
+        return None
+    if len(value) > 1000:
+        return None
+    return value
+
+
 async def populate_config_if_empty() -> None:
     """Insère la config par défaut uniquement si la table est vide."""
     async with AsyncSessionLocal() as session:  # type: AsyncSession
@@ -36,8 +54,19 @@ async def populate_config_if_empty() -> None:
             logger.error("Failed to load config_defaults.json: %s", e)
             return
 
-        # Insérer chaque entrée
-        for key, value in data.items():
+        for raw_key, raw_value in data.items():
+            key = sanitize_key(raw_key)
+            value = sanitize_value(raw_value)
+
+            if key is None or value is None:
+                logger.warning("Skipping invalid config entry: key=%r value=%r", raw_key, raw_value)
+                continue
+
+            # mini-check des valeurs et clés spécifiques
+            if key == "theme_default_mode" and value not in {"light", "dark"}:
+                logger.warning("Skipping invalid theme_default_mode: %r", value)
+                continue
+
             await session.execute(
                 text(
                     """
@@ -46,7 +75,7 @@ async def populate_config_if_empty() -> None:
                     ON CONFLICT (key) DO NOTHING
                     """
                 ),
-                {"key": key, "value": str(value)},
+                {"key": key, "value": value},
             )
 
         await session.commit()

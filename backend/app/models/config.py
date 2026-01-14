@@ -11,5 +11,3 @@ class Config(Base):
     # ex: "instance_name", "colour_light_primary", "logo_url"
     key: Mapped[str] = mapped_column(String(100), primary_key=True)
     value: Mapped[str] = mapped_column(Text, nullable=False)
-
-    description: Mapped[str | None] = mapped_column(Text, nullable=True)

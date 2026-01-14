@@ -56,7 +56,7 @@ export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
                 borderColor: borderColor,
                 borderWidth: 1,
                 borderStyle: "solid",
-                boxShadow: `0 1px 2px ${hexToRgba("#000000", 0.1)}`, // couleur en dure pour garder une coehérence visuelle
+                boxShadow: `0 1px 2px ${hexToRgba("#111827", 0.1)}`, // couleur en dure pour garder une coehérence visuelle
               }}
             >
               {c.name}
