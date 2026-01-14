@@ -42,7 +42,7 @@ export default function Home() {
           transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
           backgroundColor: primary,
           borderColor: borderColor,
-          color: adaptiveTextColorPrimary, // texte + icône blancs
+          color: adaptiveTextColorPrimary, // texte + icône blancs comme avant
         }}
         aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
       >
