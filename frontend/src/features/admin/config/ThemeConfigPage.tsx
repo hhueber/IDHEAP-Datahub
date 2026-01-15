@@ -22,6 +22,8 @@ import {
   MAP_DARK_FIELDS,
   PRESETS,
 } from "@/features/admin/components/theme/themeConfigMeta";
+import { saveThemeConfig as saveThemeConfigToStorage } from "@/theme/themeStorage";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 
 export default function ThemeConfigPage() {
@@ -35,6 +37,8 @@ export default function ThemeConfigPage() {
 
   const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, cfg } = useTheme();
   const logoUrlRaw = cfg.logo_url;
+
+  const { refreshTheme } = useThemeMode();
 
   // Charger la config au montage
   useEffect(() => {
@@ -154,18 +158,23 @@ export default function ThemeConfigPage() {
     setError(null);
 
     try {
-      let cfgToSave: ThemeConfigDto = { ...config };
+        let cfgToSave: ThemeConfigDto = { ...config };
 
-      if (pendingLogoDataUrl) {
-        const uploadedUrl = await uploadThemeLogo(pendingLogoDataUrl);
-        cfgToSave = { ...cfgToSave, logo_url: uploadedUrl };
-      }
+        if (pendingLogoDataUrl) {
+            const uploadedUrl = await uploadThemeLogo(pendingLogoDataUrl);
+            cfgToSave = { ...cfgToSave, logo_url: uploadedUrl };
+        }
+        const res = await saveThemeConfig(cfgToSave);
+        const fresh = await fetchThemeConfig();
+        const freshCfg = { ...cfgToSave, ...fresh };
 
-      await saveThemeConfig(cfgToSave);
-      setConfig(cfgToSave);
-      setPendingLogoDataUrl(null);
-      setSaveState("success");
-      setTimeout(() => setSaveState("idle"), 1500);
+        setConfig(freshCfg);
+        setPendingLogoDataUrl(null);
+        saveThemeConfigToStorage(freshCfg as any);
+        refreshTheme();
+
+        setSaveState("success");
+        setTimeout(() => setSaveState("idle"), 1500);
     } catch (e: any) {
       console.error(e);
       setError(t("admin.config.themeConfigPage.saveError"));

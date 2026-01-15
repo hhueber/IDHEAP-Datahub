@@ -16,22 +16,6 @@ async def load_effective_config(session: AsyncSession) -> dict[str, str]:
     return {row["key"]: row["value"] for row in rows}
 
 
-def _slugify_instance_name(name: str | None) -> str:
-    """
-    Transforme un nom d'instance en slug safe pour un dossier :
-    - minuscules
-    - remplace tout ce qui n'est pas [a-z0-9-] par '-'
-    - compresse les '-' multiples
-    """
-    if not name:
-        return "default"
-
-    slug = name.lower()
-    slug = re.sub(r"[^a-z0-9\-]+", "-", slug)
-    slug = re.sub(r"-+", "-", slug).strip("-")
-    return slug or "default"
-
-
 async def handle_logo_data_url(db: AsyncSession, data_url: str) -> str:
     """
     - Valide le data URL (image)
@@ -101,20 +85,15 @@ async def handle_logo_data_url(db: AsyncSession, data_url: str) -> str:
             detail="Image too large",
         )
 
-    # Récupérer la config actuelle pour connaître l'instance
-    current_cfg = await load_effective_config(db)
-    instance_name = current_cfg.get("instance_name")
-    instance_slug = _slugify_instance_name(instance_name)
-
     # Dossier: static/uploads/logos/<instance_slug>/
-    upload_dir = LOGO_UPLOAD_DIR / instance_slug
+    upload_dir = LOGO_UPLOAD_DIR
     upload_dir.mkdir(parents=True, exist_ok=True)
 
     # Sauvegarder le nouveau fichier
-    filename = f"{instance_slug}_logo_{uuid4().hex}{ext}"
+    filename = f"logo_{uuid4().hex}{ext}"
     dest_path = upload_dir / filename
     dest_path.write_bytes(raw)
 
     # URL publique renvoyée au front
-    public_url = f"{LOGO_PUBLIC_PREFIX}/{instance_slug}/{filename}"
+    public_url = f"{LOGO_PUBLIC_PREFIX}/{filename}"
     return public_url

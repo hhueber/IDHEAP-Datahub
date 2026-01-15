@@ -104,7 +104,8 @@ async def theme_config_update(
     ensure_admin(current)
     await upsert_theme_config(db, payload)
     await db.commit()
-    return {"success": True, "detail": "Saved"}
+    cfg = await get_theme_config(db)
+    return {"success": True, "detail": "Saved", "data": cfg.model_dump()}
 
 
 @router.post("/theme/logo")
