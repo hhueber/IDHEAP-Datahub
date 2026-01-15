@@ -33,7 +33,8 @@ export default function ThemeConfigPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingLogoDataUrl, setPendingLogoDataUrl] = useState<string | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05 } = useTheme();
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, cfg } = useTheme();
+  const logoUrlRaw = cfg.logo_url;
 
   // Charger la config au montage
   useEffect(() => {
@@ -46,6 +47,11 @@ export default function ThemeConfigPage() {
           setConfig({
             theme_default_mode: "light",
             ...data,
+            // si le backend ne renvoie rien, on initialise depuis le localStorage (ou default)
+            logo_url:
+                (data.logo_url ?? "").trim()
+                ? data.logo_url
+                : ((logoUrlRaw ?? "").trim() ? logoUrlRaw : DEFAULT_LOGO),
           });
         }
       } catch (e: any) {
@@ -60,7 +66,7 @@ export default function ThemeConfigPage() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [t, logoUrlRaw]);
 
   const updateField = (key: keyof ThemeConfigDto, value: string | null) => {
     setConfig((prev) => {
@@ -189,9 +195,20 @@ export default function ThemeConfigPage() {
 
   const defaultMode: ThemeMode = config.theme_default_mode || "light";
 
-  const previewUrl =
-    pendingLogoDataUrl ??
-    (config.logo_url ? resolveAssetUrl(config.logo_url) : undefined);
+  const DEFAULT_LOGO = "/img/idheap-dh.png";
+  const rawLogo = (config.logo_url ?? "").trim();
+
+  const resolvedLogo =
+    !rawLogo
+      ? DEFAULT_LOGO
+      : rawLogo.startsWith("http://") || rawLogo.startsWith("https://")
+        ? rawLogo
+        : rawLogo.startsWith("/static/")
+          ? resolveAssetUrl(rawLogo)
+          : rawLogo.startsWith("/")
+            ? rawLogo
+            : resolveAssetUrl(rawLogo);
+  const previewUrl = pendingLogoDataUrl ?? resolvedLogo;
 
   const mapLightFieldsWithLabels = MAP_LIGHT_FIELDS.map((f) => ({
     key: f.key,
@@ -229,7 +246,7 @@ export default function ThemeConfigPage() {
       {/* Informations générales */}
       <div
         className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: hoverText05, borderColor: borderColor }}
+        style={{ backgroundColor: background, borderColor: borderColor }}
       >
         <h2 className="text-lg font-semibold mb-2">
           {t("admin.config.themeConfigPage.general")}
@@ -355,7 +372,7 @@ export default function ThemeConfigPage() {
       {/* Presets */}
       <PresetsSection
         presets={PRESETS}
-        cardBg={hoverText05}
+        cardBg={background}
         cardBorder={borderColor}
         title={t("admin.config.themeConfigPage.presets")}
         helpText={t("admin.config.themeConfigPage.presetsHelp")}
@@ -365,11 +382,13 @@ export default function ThemeConfigPage() {
       {/* Couleurs Light */}
       <ThemeColorsSection
         variant="light"
+        logoUrl={previewUrl}
         title={t("admin.config.themeConfigPage.lightSection")}
         fields={lightFieldsWithLabels}
         config={config}
         onFieldChange={(key, val) => updateField(key, val)}
         background={background}
+        logoBackground={logoBackground}
         cardBg={hoverText05}
         cardBorder={borderColor}
         textColor={textColor}
@@ -378,11 +397,13 @@ export default function ThemeConfigPage() {
       {/* Couleurs Dark */}
       <ThemeColorsSection
         variant="dark"
+        logoUrl={previewUrl}
         title={t("admin.config.themeConfigPage.darkSection")}
         fields={darkFieldsWithLabels}
         config={config}
         onFieldChange={(key, val) => updateField(key, val)}
         background={background}
+        logoBackground={logoBackground}
         cardBg={hoverText05}
         cardBorder={borderColor}
         textColor={textColor}
@@ -391,7 +412,7 @@ export default function ThemeConfigPage() {
       {/* Couleurs carte */}
       <div
         className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: hoverText05, borderColor: borderColor }}
+        style={{ backgroundColor: background, borderColor: borderColor }}
       >
         <h2 className="text-lg font-semibold">
           {t("admin.config.themeConfigPage.mapSection")}

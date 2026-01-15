@@ -15,8 +15,10 @@ function normalizeColor(color: MaybeColor, fallback: string): string {
 
 type ThemePreviewPanelProps = {
   variant: "light" | "dark";
+  logoUrl?: string;
   title: string;
   backgroundColor?: MaybeColor;
+  logoBackground?: MaybeColor;
   textColor?: MaybeColor;
   primaryColor?: MaybeColor;
   secondaryColor?: MaybeColor;
@@ -24,8 +26,10 @@ type ThemePreviewPanelProps = {
 
 export function ThemePreviewPanel({
   variant,
+  logoUrl,
   title,
   backgroundColor,
+  logoBackground,
   textColor,
   primaryColor,
   secondaryColor,
@@ -46,6 +50,10 @@ export function ThemePreviewPanel({
     textColor,
     variant === "dark" ? "#F9FAFB" : "#111827"
   );
+  const logoBg = normalizeColor(
+    logoBackground,
+    "#ffffff"
+  );
 
   const cardText = getAdaptiveTextColor(bg);
   const { t } = useTranslation();
@@ -64,6 +72,21 @@ export function ThemePreviewPanel({
         className="mb-3 h-4 rounded-md"
         style={{ backgroundColor: primary }}
       />
+
+      {/* Logo preview */}
+      {logoUrl ? (
+        <div
+          className="mb-3 inline-flex items-center justify-center rounded-md border px-3 py-2"
+          style={{ backgroundColor: logoBg, borderColor: secondary }}
+        >
+          <img
+            src={logoUrl}
+            alt="logo preview"
+            className="max-h-10 max-w-[180px] object-contain select-none"
+            draggable={false}
+          />
+        </div>
+      ) : null}
 
       {/* Contenu principal */}
       <div className="space-y-2">
