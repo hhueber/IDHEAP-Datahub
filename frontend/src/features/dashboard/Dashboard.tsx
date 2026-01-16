@@ -386,7 +386,7 @@ export default function Dashboard() {
           </div>
 
           <div className="mt-3 text-xs" style={{ color: hexToRgba(text, 0.6) }}>
-            {t("dashboard.health.note", "Plus tard : brancher un endpoint /systéme simple.")}
+            {t("dashboard.health.note", "Plus tard : brancher un endpoint /systéme.")}
           </div>
         </Card>
 
