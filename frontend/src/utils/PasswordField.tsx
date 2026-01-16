@@ -1,9 +1,7 @@
 // masque ou pas les mot de passe
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   id: string;
@@ -33,13 +31,8 @@ export default function PasswordField({
   variant = "default",
 }: Props) {
   const { t } = useTranslation();
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const toggleHoverBg = hexToRgba(primary, 0.06);
+  
+  const { background, borderColor, textColor, hoverPrimary06 } = useTheme();
 
   const [visible, setVisible] = useState(false);
 
@@ -95,7 +88,7 @@ export default function PasswordField({
             style={
               {
                 color: textColor,
-                "--pwd-toggle-hover-bg": toggleHoverBg,
+                "--pwd-toggle-hover-bg": hoverPrimary06,
               } as React.CSSProperties
             }
           >

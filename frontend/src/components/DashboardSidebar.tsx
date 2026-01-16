@@ -3,11 +3,9 @@ import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import type { Role } from "@/config/roles";
+import { useTheme } from "@/theme/useTheme";
 
-type Role = "ADMIN" | "MEMBER";
 type MenuItem = {
   key: string;
   labelKey?: string; // <- clé i18n
@@ -26,12 +24,7 @@ const isPathActive = (path: string, current: string) =>
   current === path || current.startsWith(path + "/");
 
 function ItemLink({ to, children }: { to: string; children: React.ReactNode }) {
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const textBase = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const hoverBg = hexToRgba(primary, 0.06);
-  const activeText = getAdaptiveTextColor(primary);
+  const { primary, textColor, adaptiveTextColorPrimary, hoverPrimary06 } = useTheme();
   return (
     <NavLink
       to={to}
@@ -47,9 +40,9 @@ function ItemLink({ to, children }: { to: string; children: React.ReactNode }) {
       style={
         {
           "--sidebar-link-active-bg": primary,
-          "--sidebar-link-hover-bg": hoverBg,
-          "--sidebar-link-text": textBase,
-          "--sidebar-link-active-text": activeText,
+          "--sidebar-link-hover-bg": hoverPrimary06,
+          "--sidebar-link-text": textColor,
+          "--sidebar-link-active-text": adaptiveTextColorPrimary,
         } as React.CSSProperties
       }
     >
@@ -77,12 +70,7 @@ function TreeItem({
   const { t } = useTranslation();
   if (!canSee(userRole, item)) return null;
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const textBase = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const hoverBg = hexToRgba(primary, 0.06);
-  const activeText = getAdaptiveTextColor(primary);
+  const { primary, textColor, adaptiveTextColorPrimary, hoverPrimary06 } = useTheme();
 
   const label = item.labelKey ? t(item.labelKey) : (item.label ?? "");
   const hasChildren = !!item.children?.some((c) => canSee(userRole, c));
@@ -122,9 +110,9 @@ function TreeItem({
           {
             paddingLeft: padding,
             "--sidebar-section-active-bg": primary,
-            "--sidebar-section-hover-bg": hoverBg,
-            "--sidebar-section-text": textBase,
-            "--sidebar-section-active-text": activeText,
+            "--sidebar-section-hover-bg": hoverPrimary06,
+            "--sidebar-section-text": textColor,
+            "--sidebar-section-active-text": adaptiveTextColorPrimary,
           } as React.CSSProperties
         }
         aria-expanded={isOpen(item.key)}
@@ -161,14 +149,7 @@ export default function DashboardSidebar() {
   const userRole = (user?.role as Role) || undefined;
   const location = useLocation();
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const bg = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const border = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const text = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-
-  const logoutText = getAdaptiveTextColor(primary);
+  const { primary, background, borderColor, textColor, adaptiveTextColorPrimary, hoverText05, hoverText07 } = useTheme();
 
   // 5 sections top-level (Dashboard en premier)
   // définition du menu (contrôlé par rôle)
@@ -328,7 +309,7 @@ export default function DashboardSidebar() {
   const roleLabel = /roles\./.test(roleKey) ? ( (roleKey && roleKey !== "roles.") ? ( ( ( (t as any)(roleKey) !== roleKey ) ? t(roleKey) : (user?.role || "") ) ) : "" ) : "";
 
   return (
-    <aside className="fixed left-0 top-16 w-64 border-r" style={{ backgroundColor: bg, borderColor: border, color: text }}>
+    <aside className="fixed left-0 top-16 w-64 border-r" style={{ backgroundColor: background, borderColor: borderColor, color: textColor }}>
 
       {/* contenu + menu */}
       <div className="h-[calc(100vh-4rem)] flex flex-col">

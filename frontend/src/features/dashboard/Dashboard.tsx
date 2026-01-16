@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import { loadThemeConfig } from "@/theme/themeStorage";
 import { useThemeMode } from "@/theme/ThemeContext";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { hexToRgba } from "@/utils/color";
 
 type Kpi = { label: string; value: string; sub?: string };
 

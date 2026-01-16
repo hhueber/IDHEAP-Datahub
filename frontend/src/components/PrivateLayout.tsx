@@ -1,15 +1,10 @@
 import { Outlet } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import PrivateNavbar from "@/components/PrivateTopbar";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 export default function PrivateLayout() {
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const background =
-    (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ??
-    cfg.colour_light_background;
+  const { background } = useTheme();
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: background }}>

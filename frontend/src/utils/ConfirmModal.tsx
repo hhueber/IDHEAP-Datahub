@@ -1,8 +1,6 @@
 // petite modale pour confirmer la suppression 
 import React from "react";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba } from "@/utils/color";
-import { useThemeMode } from "@/theme/ThemeContext";
+import { useTheme } from "@/theme/useTheme";
 
 type ConfirmModalProps = {
   open: boolean;
@@ -25,20 +23,10 @@ export function ConfirmModal({
 }: ConfirmModalProps) {
   if (!open) return null;
 
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
-  const primary = (mode === "dark" ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const background = (mode === "dark" ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-  const textColor = (mode === "dark" ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const borderColor = (mode === "dark" ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-
-  // overlay léger basé sur la couleur de texte
-  const overlayBg = hexToRgba(textColor, 0.3);
-  // hover pour le bouton "Annuler"
-  const cancelHoverBg = hexToRgba(primary, 0.06);
+  const { primary, background, borderColor, textColor, hoverPrimary06, hoverText30 } = useTheme();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: overlayBg }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ backgroundColor: hoverText30 }}>
       <div className="w-full max-w-md rounded-xl shadow-xl p-6 border"
         style={{
           backgroundColor: background,
@@ -81,7 +69,7 @@ export function ConfirmModal({
                 backgroundColor: background,
                 borderColor: borderColor,
                 color: textColor,
-                "--confirm-cancel-hover-bg": cancelHoverBg,
+                "--confirm-cancel-hover-bg": hoverPrimary06,
               } as React.CSSProperties
             }
           >

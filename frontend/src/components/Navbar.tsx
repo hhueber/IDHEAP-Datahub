@@ -2,10 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 import { useThemeMode } from "@/theme/ThemeContext";
-import { resolveAssetUrl } from "@/shared/apiFetch";
 
 type Lang = { code: string; label: string };
 const langs: Lang[] = [
@@ -25,21 +23,10 @@ export default function Navbar() {
 
   const { mode, toggleMode } = useThemeMode();
   const isDark = mode === "dark";
-
-  const cfg = loadThemeConfig();
+  
+  const { primary, textColor, background, borderColor, navbarOverlayBg, logoBackground, hoverBg08, cfg } = useTheme();
   const instanceName = cfg.instance_name;
-  const logoUrlRaw = cfg.logo_url;
-  const logoUrl = logoUrlRaw ? resolveAssetUrl(logoUrlRaw) : "/img/idheap-dh.png";
-
-  // Pour l’instant: light uniquement
-  const primary = (isDark ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-  const linkText = (isDark ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-  const navbarLogoBorder = (isDark ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-  const navbarOverlayBg = (isDark ? cfg.navbar_overlay_dark_bg : cfg.navbar_overlay_light_bg) ?? cfg.navbar_overlay_light_bg;
-  const navbarPanelBg = (isDark ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background; // fond du panneau de navigation
-  const navbarLogoBg = (isDark ? getAdaptiveTextColor(navbarPanelBg) : navbarPanelBg) ?? navbarPanelBg; // fond derrière le logo
-
-  const hoverBg = hexToRgba(primary, 0.08);
+  const logoUrl = cfg.logo_url;
 
   // fermer le drawer au clic extérieur / ESC
   useEffect(() => {
@@ -99,13 +86,12 @@ export default function Navbar() {
           alt={instanceName}
           className="h-12 sm:h-14 w-auto object-contain select-none rounded-xl shadow-2xl" // fond blanc derrière le logo et ombre noire
           style={{
-            backgroundColor: navbarLogoBg,
-            border: `1px solid ${navbarLogoBorder}`,
+            backgroundColor: logoBackground, //fond derrière le logo toujours blanc
+            border: `1px solid ${borderColor}`,
           }}
         />
         {!open && (
           <svg viewBox="0 0 24 24" className="absolute w-6 h-6 -right-2 -bottom-2" aria-hidden="true" style={{ color: primary }}>
-            {/* <path d="M12 2l2.955 6.241 6.883.98-4.919 4.71 1.161 6.829L12 17.77l-6.08 3.99 1.161-6.829L2.162 9.221l6.883-.98L12 2z" fill="currentColor"/> */}
           </svg>
         )}
       </button>
@@ -123,8 +109,8 @@ export default function Navbar() {
                        backdrop-blur p-3
                        flex flex-col"
             style={{
-              backgroundColor: navbarPanelBg,
-              color: linkText,
+              backgroundColor: background, // fond du panneau
+              color: textColor,
             }}
           >
             <div className="flex-1 overflow-y-auto">
@@ -168,7 +154,7 @@ export default function Navbar() {
                   style={{
                     color: primary,
                     // on donne la valeur de la couleur de hover à une CSS variable
-                    "--navbar-link-hover-bg": hoverBg,
+                    "--navbar-link-hover-bg": hoverBg08,
                   } as React.CSSProperties}
                   onClick={() => setOpen(false)}
                 >
@@ -182,7 +168,7 @@ export default function Navbar() {
                   "
                   style={{
                     color: primary,
-                    "--navbar-link-hover-bg": hoverBg,
+                    "--navbar-link-hover-bg": hoverBg08,
                   } as React.CSSProperties}
                   onClick={() => setOpen(false)}
                 >
