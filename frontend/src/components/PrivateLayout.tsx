@@ -5,7 +5,6 @@ import { useTheme } from "@/theme/useTheme";
 
 export default function PrivateLayout() {
   const { background } = useTheme();
-
   return (
     <div className="min-h-screen" style={{ backgroundColor: background }}>
       {/* navbar privée horizontale */}

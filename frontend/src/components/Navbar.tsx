@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
+import { resolveAssetUrl } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
 import { useThemeMode } from "@/theme/ThemeContext";
 
@@ -26,7 +27,12 @@ export default function Navbar() {
   
   const { primary, textColor, background, borderColor, navbarOverlayBg, logoBackground, hoverBg08, cfg } = useTheme();
   const instanceName = cfg.instance_name;
-  const logoUrl = cfg.logo_url;
+  const DEFAULT_LOGO = "/img/idheap-dh.png";
+  const logoUrlRaw = cfg.logo_url;
+  const logoUrl =
+    !logoUrlRaw || logoUrlRaw === DEFAULT_LOGO
+      ? DEFAULT_LOGO
+      : resolveAssetUrl(logoUrlRaw);
 
   // fermer le drawer au clic extérieur / ESC
   useEffect(() => {

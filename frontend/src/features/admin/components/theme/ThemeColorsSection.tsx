@@ -10,11 +10,13 @@ type ColorFieldDef = {
 
 type ThemeColorsSectionProps = {
   variant: "light" | "dark";
+  logoUrl?: string;
   title: string;
   fields: ColorFieldDef[];
   config: ThemeConfigDto;
   onFieldChange: (key: keyof ThemeConfigDto, value: string) => void;
   background: string;
+  logoBackground: string
   cardBg: string;
   cardBorder: string;
   textColor: string;
@@ -22,11 +24,13 @@ type ThemeColorsSectionProps = {
 
 export function ThemeColorsSection({
   variant,
+  logoUrl,
   title,
   fields,
   config,
   onFieldChange,
   background,
+  logoBackground,
   cardBg,
   cardBorder,
   textColor,
@@ -39,16 +43,19 @@ export function ThemeColorsSection({
     variant === "light" ? "colour_light_primary" : "colour_dark_primary";
   const secondaryKey =
     variant === "light" ? "colour_light_secondary" : "colour_dark_secondary";
+  const logoBgKey = 
+    variant === "light" ? "logoBackground_light" : "logoBackground_dark";
 
   const backgroundColor = config[backgroundKey] ?? undefined;
   const inputText = config[textKey] ?? undefined;
   const primaryColor = config[primaryKey] ?? undefined;
   const secondaryColor = config[secondaryKey] ?? undefined;
+  const logoBgValue = config[logoBgKey] ?? undefined;
 
   return (
     <div
       className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-      style={{ backgroundColor: cardBg, borderColor: cardBorder }}
+      style={{ backgroundColor: background, borderColor: cardBorder }}
     >
       <h2 className="text-lg font-semibold">{title}</h2>
       <div className="space-y-4 lg:flex lg:gap-6">
@@ -68,12 +75,14 @@ export function ThemeColorsSection({
         <div className="mt-4 lg:mt-0 w-full lg:w-80">
           <ThemePreviewPanel
             variant={variant}
+            logoUrl={logoUrl}
             title={
               variant === "light"
                 ? "Light preview"
                 : "Dark preview"
             }
             backgroundColor={backgroundColor}
+            logoBackground={logoBgValue}
             textColor={inputText}
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}

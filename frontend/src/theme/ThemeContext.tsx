@@ -13,6 +13,7 @@ export type ThemeMode = "light" | "dark";
 type ThemeContextValue = {
   mode: ThemeMode;
   toggleMode: () => void;
+  refreshTheme: () => void;
 };
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
@@ -37,6 +38,7 @@ function getInitialMode(): ThemeMode {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [mode, setMode] = useState<ThemeMode>(() => getInitialMode());
+  const [themeVersion, setThemeVersion] = useState(0);
 
   // Persistance du choix de utilisateur
   useEffect(() => {
@@ -45,13 +47,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [mode]);
 
-  const toggleMode = () => {
-    setMode((prev) => (prev === "dark" ? "light" : "dark"));
-  };
+  const toggleMode = () => setMode((prev) => (prev === "dark" ? "light" : "dark"));
+  
+  const refreshTheme = () => setThemeVersion((v) => v + 1);
 
   return (
-    <ThemeContext.Provider value={{ mode, toggleMode }}>
-      {children}
+    <ThemeContext.Provider value={{ mode, toggleMode, refreshTheme }}>
+      {/* on force un rerender global quand themeVersion change */}
+      <div key={themeVersion}>{children}</div>
     </ThemeContext.Provider>
   );
 }
