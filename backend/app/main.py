@@ -1,3 +1,6 @@
+from pathlib import Path
+
+
 from app.api.router import auth, communes, config, delete, geo, home, pageAll, questions, user
 from app.core.middleware import setup_middlewares
 from app.core.paths import STATIC_DIR
@@ -22,6 +25,7 @@ app.include_router(communes.router, prefix="/communes", tags=["communes"])
 app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
 
+Path(STATIC_DIR).mkdir(parents=True, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
