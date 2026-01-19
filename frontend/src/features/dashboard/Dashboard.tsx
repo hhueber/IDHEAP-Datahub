@@ -27,9 +27,18 @@ export default function Dashboard() {
   // faux data (juste pour le rendu)
   const coverage = 76; // 0..100
 
+  const quickLinkCls = `
+    rounded-2xl border p-4
+    transition
+    hover:-translate-y-0.5
+    hover:bg-[var(--qa-bg)]
+    hover:border-[var(--qa-border)]
+    hover:text-[var(--qa-text)]
+  `;
+
   return (
     <section className="space-y-6" style={{ color: textColor }}>
-      {/* HERO HEADER */}
+      {/* HERO HEADER (plus premium) */}
       <div
         className="rounded-3xl border p-5 sm:p-6 backdrop-blur"
         style={{
@@ -117,47 +126,63 @@ export default function Dashboard() {
             </div>
 
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* 1) Créer un questionnaire */}
               <Link
                 to="/admin/surveys/new"
-                className="rounded-2xl border p-4 transition hover:translate-y-[-1px]"
-                style={{
-                  borderColor: hoverPrimary30,
-                  backgroundColor: hoverPrimary10,
-                  color: primary,
-                }}
+                style={
+                  {
+                    // couleurs dynamiques venant de ton thème
+                    "--qa-bg": hoverPrimary10,
+                    "--qa-border": hoverPrimary30,
+                    "--qa-text": primary,
+                  } as React.CSSProperties
+                }
+                className={quickLinkCls}
               >
-                <div className="text-sm font-semibold">{t("dashboard.quickActions.newSurvey", "Créer un questionnaire")}</div>
-                <div className="mt-1 text-xs" style={{ color: hoverText07 }}>
+                <div className="text-sm font-semibold">
+                  {t("dashboard.quickActions.newSurvey", "Créer un questionnaire")}
+                </div>
+                <div className="mt-1 text-xs opacity-70">
                   {t("dashboard.quickActions.newSurveySub", "Nouveau formulaire")}
                 </div>
               </Link>
 
+              {/* 2) Gérer les questions */}
               <Link
                 to="/admin/qps"
-                className="rounded-2xl border p-4 transition hover:translate-y-[-1px]"
-                style={{
-                  borderColor: borderColor,
-                  backgroundColor: "transparent",
-                  color: primary,
-                }}
+                style={
+                  {
+                    "--qa-bg": hoverPrimary10,
+                    "--qa-border": hoverPrimary30,
+                    "--qa-text": primary,
+                  } as React.CSSProperties
+                }
+                className={quickLinkCls}
               >
-                <div className="text-sm font-semibold">{t("dashboard.quickActions.manageQuestions", "Gérer les questions")}</div>
-                <div className="mt-1 text-xs" style={{ color: hoverText07 }}>
+                <div className="text-sm font-semibold">
+                  {t("dashboard.quickActions.manageQuestions", "Gérer les questions")}
+                </div>
+                <div className="mt-1 text-xs opacity-70">
                   {t("dashboard.quickActions.manageQuestionsSub", "Banque de questions")}
                 </div>
               </Link>
 
+              {/* 3) Communes suisses */}
               <Link
                 to="/admin/places/communes"
-                className="rounded-2xl border p-4 transition hover:translate-y-[-1px]"
-                style={{
-                  borderColor: borderColor,
-                  backgroundColor: "transparent",
-                  color: primary,
-                }}
+                style={
+                  {
+                    "--qa-bg": hoverPrimary10,
+                    "--qa-border": hoverPrimary30,
+                    "--qa-text": primary,
+                  } as React.CSSProperties
+                }
+                className={quickLinkCls}
               >
-                <div className="text-sm font-semibold">{t("dashboard.quickActions.browsePlaces", "Communes suisses")}</div>
-                <div className="mt-1 text-xs" style={{ color: hoverText07 }}>
+                <div className="text-sm font-semibold">
+                  {t("dashboard.quickActions.browsePlaces", "Communes suisses")}
+                </div>
+                <div className="mt-1 text-xs opacity-70">
                   {t("dashboard.quickActions.browsePlacesSub", "Données géographiques")}
                 </div>
               </Link>
