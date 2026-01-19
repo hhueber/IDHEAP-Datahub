@@ -22,6 +22,7 @@ import QGlobalAllPage from "@/features/pageAll/QGlobalAllPage";
 import QPerSurvAllPage from "@/features/pageAll/QPerSurvAllPage";
 import SurveyAllPage from "@/features/pageAll/SurveyAllPage";
 import OptionAllPage from "@/features/pageAll/OptionAllPage";
+import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 
 // Démo admin déjà fournie
 function AdminUsers() { return <div className="p-6">Admin: gestion utilisateurs</div>; }
@@ -145,6 +146,14 @@ export default function App() {
             element={
               <RequireRole roles={[ADMIN]}>
                 <PlaceOfInterestConfigPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/config/theme"
+            element={
+              <RequireRole roles={["ADMIN"]}>
+                <ThemeConfigPage />
               </RequireRole>
             }
           />
