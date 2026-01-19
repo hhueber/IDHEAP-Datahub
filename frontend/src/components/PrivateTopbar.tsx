@@ -2,8 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DropdownList } from "@/utils/DropdownList";
-import { loadThemeConfig } from "@/theme/themeStorage";
-import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
+import { useTheme } from "@/theme/useTheme";
 import { useThemeMode } from "@/theme/ThemeContext";
 import { resolveAssetUrl } from "@/shared/apiFetch";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,29 +21,18 @@ export default function PrivateTopbar() {
   const { user, logout } = useAuth();
   const { mode, toggleMode } = useThemeMode();
   const isDark = mode === "dark";
-
-  const cfg = loadThemeConfig();
+  
+  const { primary, textColor, background, borderColor, logoBackground, hoverPrimary10, hoverPrimary15, cfg } = useTheme();
   const instanceName = cfg.instance_name;
-
+  const DEFAULT_LOGO = "/img/idheap-dh.png";
   const logoUrlRaw = cfg.logo_url;
-  const logoUrl = logoUrlRaw ? resolveAssetUrl(logoUrlRaw) : "/img/idheap-dh.png";
+  const logoUrl =
+    !logoUrlRaw || logoUrlRaw === DEFAULT_LOGO
+      ? DEFAULT_LOGO
+      : resolveAssetUrl(logoUrlRaw);
 
-  const primary =
-    (isDark ? cfg.colour_dark_primary : cfg.colour_light_primary) ?? cfg.colour_light_primary;
-
-  const secondary =
-    (isDark ? cfg.colour_dark_secondary : cfg.colour_light_secondary) ?? cfg.colour_light_secondary;
-
-  const bg =
-    (isDark ? cfg.colour_dark_background : cfg.colour_light_background) ?? cfg.colour_light_background;
-
-  const text =
-    (isDark ? cfg.colour_dark_text : cfg.colour_light_text) ?? cfg.colour_light_text;
-
-  const hoverBg = hexToRgba(primary, 0.10);
-
-//   user n'est pas encore retouner au frontend
-  const userName = user?.full_name ?? t("dashboard.anonymous", "Anonymous");
+//   user n'est pas encore retouner au frontend mais l'idée est d'avoir les initiales du User
+  const userName = user?.full_name ?? t("dashboard.private.anonymous");
   const initials = useMemo(() => {
     const parts = (userName || "").trim().split(/\s+/).filter(Boolean);
     const a = parts[0]?.[0] ?? "U";
@@ -72,7 +60,7 @@ export default function PrivateTopbar() {
   const isActive = (path: string) => loc.pathname === path || loc.pathname.startsWith(path + "/");
 
   const pillStyle: React.CSSProperties = {
-    borderColor: secondary,
+    borderColor: borderColor,
     color: primary,
     backgroundColor: "transparent",
   };
@@ -81,9 +69,9 @@ export default function PrivateTopbar() {
     <header
       className="sticky top-0 z-50 w-full backdrop-blur"
       style={{
-        backgroundColor: bg,
-        borderBottom: `1px solid ${secondary}`,
-        color: text,
+        backgroundColor: background,
+        borderBottom: `1px solid ${borderColor}`,
+        color: textColor,
         height: "64px",
       }}
     >
@@ -96,8 +84,8 @@ export default function PrivateTopbar() {
               alt={instanceName}
               className="h-10 w-10 rounded-xl object-contain shadow"
               style={{
-                backgroundColor: isDark ? getAdaptiveTextColor(bg) : bg,
-                border: `1px solid ${secondary}`,
+                backgroundColor: logoBackground,
+                border: `1px solid ${borderColor}`,
               }}
             />
             <div className="hidden sm:block min-w-0">
@@ -105,7 +93,7 @@ export default function PrivateTopbar() {
                 {instanceName}
               </div>
               <div className="text-xs opacity-80 truncate">
-                {t("nav.privateArea", "Zone privée")}
+                {t("nav.private.privateArea")}
               </div>
             </div>
           </Link>
@@ -118,7 +106,7 @@ export default function PrivateTopbar() {
             className="px-3 py-2 rounded-lg text-sm font-medium transition"
             style={{
               color: primary,
-              backgroundColor: isActive("/dashboard") ? hoverBg : "transparent",
+              backgroundColor: isActive("/dashboard") ? hoverPrimary10 : "transparent",
             }}
           >
             {t("dashboard.title")}
@@ -129,10 +117,10 @@ export default function PrivateTopbar() {
             className="px-3 py-2 rounded-lg text-sm font-medium transition"
             style={{
               color: primary,
-              backgroundColor: isActive("/") ? hoverBg : "transparent",
+              backgroundColor: isActive("/") ? hoverPrimary10 : "transparent",
             }}
           >
-            {t("nav.home", "Home")}
+            {t("nav.home")}
           </Link>
         </nav>
 
@@ -174,7 +162,7 @@ export default function PrivateTopbar() {
             onClick={toggleMode}
             className="px-3 py-2 rounded-lg text-sm font-medium border transition"
             style={pillStyle}
-            aria-label={t("nav.theme", "Theme")}
+            aria-label={t("nav.theme")}
           >
             {isDark ? "Dark" : "Light"}
           </button>
@@ -184,8 +172,8 @@ export default function PrivateTopbar() {
             <div
               className="h-9 w-9 rounded-xl flex items-center justify-center text-sm font-bold border"
               style={{
-                borderColor: secondary,
-                backgroundColor: hexToRgba(primary, 0.12),
+                borderColor: borderColor,
+                backgroundColor: hoverPrimary15,
                 color: primary,
               }}
               title={userName}
@@ -198,18 +186,18 @@ export default function PrivateTopbar() {
               onClick={logout}
               className="hidden sm:inline-flex px-3 py-2 rounded-lg text-sm font-medium transition border"
               style={{
-                borderColor: secondary,
+                borderColor: borderColor,
                 color: primary,
                 backgroundColor: "transparent",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLButtonElement).style.backgroundColor = hoverBg;
+                (e.currentTarget as HTMLButtonElement).style.backgroundColor = hoverPrimary10;
               }}
               onMouseLeave={(e) => {
                 (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent";
               }}
             >
-              {t("dashboard.logout", "Logout")}
+              {t("dashboard.logout")}
             </button>
           </div>
         </div>

@@ -8,9 +8,14 @@
     "home": "Accueil",
     "data": "Données",
     "currentLogoName": "IDHEAP",
+    "theme": "Thème",
     "errors": {
       "changeLanguage": "Impossible de changer la langue pour le moment."
-    } 
+    },
+    "private": {
+      "privateArea": "Zone privée",
+      "anonymous": "Inconnue·e"
+    }
   },
   "home": {
     "heroTitle": "IDHEAP Data Explorer",
