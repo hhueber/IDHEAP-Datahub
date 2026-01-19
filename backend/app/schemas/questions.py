@@ -7,6 +7,7 @@ Conventions:
 from typing import List, Optional
 
 
+from app.schemas.theme_config import ThemeConfig
 from pydantic import BaseModel
 
 
@@ -31,3 +32,4 @@ class HomeBootstrap(BaseModel):
     message: str
     surveys: List[SurveyBrief]
     globals: QuestionList
+    themeConfig: ThemeConfig

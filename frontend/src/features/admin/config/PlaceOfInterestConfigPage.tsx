@@ -5,6 +5,7 @@ import { useConfigResource } from "../hooks/useConfigResource";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
+import { useTheme } from "@/theme/useTheme";
 
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 
@@ -15,6 +16,8 @@ export default function ConfigPlaceOfInterestPage() {
   const [creating, setCreating] = useState(false);
 
   const [placeOfInterestToDelete, setPlaceOfInterestToDelete] = useState<PlaceOfInterestDTO | null>(null);
+
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07, hoverPrimary04 } = useTheme();
 
   const askDelete = (placeOfInterest: PlaceOfInterestDTO) => {
     if (!placeOfInterest.code) return;
@@ -37,9 +40,13 @@ export default function ConfigPlaceOfInterestPage() {
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">{t("admin.config.placeOfInterestPage.title")}</h2>
+        <h2 className="text-xl font-semibold" style={{ color: textColor }}>{t("admin.config.placeOfInterestPage.title")}</h2>
         <button
-          className="rounded-lg bg-black text-white px-3 py-2"
+          className="rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
+          style={{
+            backgroundColor: primary,
+            color: adaptiveTextColorPrimary,
+          }}
           onClick={() => {
             setCreating(true);
             setEditing(null);
@@ -50,11 +57,20 @@ export default function ConfigPlaceOfInterestPage() {
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-700"><LoadingDots label={t("admin.config.placeOfInterestPage.loading")} /></div>
+        <div className="text-sm" style={{ color: hoverText07 }}><LoadingDots label={t("admin.config.placeOfInterestPage.loading")} /></div>
       ) : (
-        <div className="overflow-x-auto border rounded-lg">
+        <div className="overflow-x-auto border rounded-lg" 
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+          }}>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="border-b"
+              style={{
+                backgroundColor: hoverPrimary04,
+                borderColor: borderColor,
+                color: textColor,
+              }}>
               <tr>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.name")}</th>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.fr")}</th>
@@ -68,19 +84,30 @@ export default function ConfigPlaceOfInterestPage() {
             </thead>
             <tbody>
               {items.map((c) => (
-                <tr key={c.code ?? c.default_name} className="border-t">
-                  <td className="px-3 py-2">{c.default_name}</td>
-                  <td className="px-3 py-2">{c.name_fr || "—"}</td>
-                  <td className="px-3 py-2">{c.name_de || "—"}</td>
-                  <td className="px-3 py-2">{c.name_it || "—"}</td>
-                  <td className="px-3 py-2">{c.name_ro || "—"}</td>
-                  <td className="px-3 py-2">{c.name_en || "—"}</td>
-                  <td className="px-3 py-2">
+                <tr key={c.code ?? c.default_name} className="border-t" style={{ borderColor: borderColor }}>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.default_name}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_fr || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_de || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_it || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_ro || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_en || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>
                     {fmt4(c.pos[0])}, {fmt4(c.pos[1])}
                   </td>
                   <td className="px-3 py-2 text-right space-x-2">
                     <button
-                      className="px-2 py-1 rounded bg-gray-100"
+                      className={`
+                        px-2 py-1 rounded text-sm border transition
+                        hover:[background-color:var(--poi-edit-hover-bg)]
+                      `}
+                      style={
+                        {
+                          backgroundColor: background,
+                          borderColor: borderColor,
+                          color: textColor,
+                          "--poi-edit-hover-bg": hoverPrimary06,
+                        } as React.CSSProperties
+                      }
                       onClick={() => {
                         setEditing(c);
                         setCreating(false);
@@ -101,7 +128,8 @@ export default function ConfigPlaceOfInterestPage() {
                 <tr>
                   <td
                     colSpan={9}
-                    className="text-center text-gray-500 px-3 py-6"
+                    className="px-3 py-6 text-center"
+                    style={{ color: hoverText07 }}
                   >
                     {t("admin.config.placeOfInterestPage.empty")}
                   </td>

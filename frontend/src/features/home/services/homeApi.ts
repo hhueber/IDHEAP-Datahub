@@ -13,11 +13,14 @@ export type QuestionList = {
   count?: number;
 };
 
+export type ThemeConfig = Record<string, string>;
+
 export type HomeBootstrap = {
   message: string;
   surveys: SurveyBrief[];
   stats?: { surveys: number };
   globals: QuestionList;
+  themeConfig?: ThemeConfig;
 };
 
 export const homeApi = {

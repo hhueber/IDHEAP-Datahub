@@ -54,7 +54,9 @@
     "loading": "Chargement…",
     "error": "Erreur",
     "close": "Fermer",
-    "unknown": "Erreur inconnue"
+    "unknown": "Erreur inconnue",
+    "confirm": "Confirmer",
+    "cancel": "Annuler"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -260,6 +262,54 @@
           "confirmLabel": "Supprimer",
           "cancelLabel": "Annuler"
         },
+        "themeConfigPage": {
+          "title": "Configuration du thème et de l'instance",
+          "general": "Instance",
+          "instanceName": "Nom de l'instance",
+          "logoUrl": "URL du logo",
+          "logoPreview": "Aperçu du logo",
+          "logoUpload": "Importer un logo",
+          "logoDropZone": "Zone de dépot du logo",
+          "logoDropHint": "Glisser une image ici ou cliquer pour sélectionner un fichier",
+          "logoBrowse": "Importer...",
+          "currentMode": "Mode actuel : {{mode}}",
+          "defaultMode": "Mode par défaut",
+          "light": "Thème clair",
+          "dark": "Thème sombre",
+          "presets": "Préreglages de couleurs",
+          "presetsHelp": "Choisissez un préréglage de couleurs pour les themes clair et sombre a appliquer rapidement une palette cohérente.",
+          "lightSection": "Thème clair",
+          "darkSection": "Thème sombre",
+          "lightPreview": "Apercçu du thème clair",
+          "darkPreview": "Aperçu du thème sombre",
+          "mapLightPreview": "Aperçu de la carte thème claire",
+          "mapDarkPreview": "Aperçu de la carte thème sombre",
+          "mapSection": "Couleurs de la carte",
+          "primaryColourLabel": "Couleur primaire",
+          "secondaryColourLabel": "Couleur secondaire",
+          "backgroundColourLabel": "Couleur de fond",
+          "textColourLabel": "Couleur du texte",
+          "navbarOverlayLabel": "Opacité de la barre de navigation",
+          "logoBackgroundLabel": "Couleur de fond du logo",
+          "communesColourLabel": "Couleur des communes",
+          "districtColourLabel": "Couleur des districts",
+          "cantonColourLabel": "Couleur des cantons",
+          "countryColourLabel": "Couleur du pays",
+          "lakesColourLabel": "Couleur des lacs",
+          "saving": "Enregistrement",
+          "save": "Enregistrer",
+          "saved": "Enregistré.",
+          "confirmTitle": "Confirmer les modifications",
+          "confirmMessage": "Étes-vous sûr·e de vouloir enregistrer les modifications du thème ? Cela affectera l'apparence de toute l'application.",
+          "logoUploadError": "Une erreur est survenue lors du chargement de l'image du logo.",
+          "loadError": "Impossible de charger la configuration du thème.",
+          "saveError": "Une erreur est survenue lors de l'enregistrement de la configuration.",
+          "previewPanel": {
+            "text": "Lorem ipsum — simple text",
+            "buttonPrimary": "Bouton primaire",
+            "secondaryFrame": "Cadre secondaire"
+          }
+        },
         "configEditor": {
           "cancel": "Annuler",
           "submit": "Enregistrer",
@@ -351,7 +401,8 @@
       },
       "config": {
         "_": "Configuration",
-        "placeOfInterest": "Lieux d'intérêt"
+        "placeOfInterest": "Lieux d'intérêt",
+        "theme": "Theme"
       }
     },
     "pageAll": {
@@ -370,7 +421,14 @@
       "show": "montrer",
       "edit": "éditer",
       "delete": "Supprimer",
-      "value": "Valeur"
+      "value": "Valeur",
+      "searchPlaceholder": "Rechercher dans cette entité...",
+      "clear": "Effacer",
+      "searching": "Recherche",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
+      "deleting": "Suppression",
+      "deleteError": "Erreur de suppression : "
     }
   },
   "roles": {

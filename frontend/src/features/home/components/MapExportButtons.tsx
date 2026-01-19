@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { jsPDF } from "jspdf";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/theme/useTheme";
 
 // Déclenche un téléchargement à partir d’une DataURL (PNG ou autre)
 function downloadDataUrl(filename: string, dataUrl: string) {
@@ -42,6 +43,8 @@ async function captureMapBlob(): Promise<Blob> {
 export default function MapExportButtons() {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
+
+  const { primary, textColor, background, borderColor, hoverPrimary06, hoverText07 } = useTheme();
 
   const filenamePrefix = t("export.filenamePrefix");
   const today = new Date().toISOString().slice(0, 10);
@@ -129,26 +132,41 @@ export default function MapExportButtons() {
   // Classes utilitaires pour les boutons
   const btn =
     "inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium " +
-    "bg-white ring-1 ring-indigo-200 text-indigo-700 " +
-    "hover:bg-indigo-50 hover:ring-indigo-300 " +
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400 " +
-    "disabled:opacity-60 disabled:cursor-not-allowed transition";
+    "border transition disabled:opacity-60 disabled:cursor-not-allowed " +
+    "focus:outline-none " +
+    "[background-color:var(--export-btn-bg)] " + // fond normal
+    "hover:[background-color:var(--export-btn-hover-bg)] " // fond au hover
 
   // Icône spinner pendant l’export
   const spinner = (
-    <svg className="h-4 w-4 animate-spin text-indigo-700" viewBox="0 0 24 24" aria-hidden="true">
+    <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true" style={{ color: primary }}>
       <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" className="opacity-25" />
       <path d="M4 12a8 8 0 0 1 8-8v4A4 4 0 0 0 8 12H4z" fill="currentColor" className="opacity-75" />
     </svg>
   );
 
   return (
-    <section className="rounded-2xl bg-white ring-1 ring-black/5 shadow-sm shadow-gray-200 p-4">
-      <h2 className="text-sm font-semibold text-gray-700 mb-2">{t("export.title")}</h2>
+    <section className="rounded-2xl p-4 shadow-sm border"
+      style={{
+        backgroundColor: background,
+        borderColor: borderColor,
+        color: textColor,
+      }}>
+      <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>{t("export.title")}</h2>
       {/* Actions PNG / PDF */}
       <div className="flex flex-wrap gap-2">
-        <button onClick={exportPNG} disabled={busy !== null} className={btn} title={t("export.pngTooltip")}>
-          <svg viewBox="0 0 24 24" className="h-4 w-4 text-indigo-700" aria-hidden="true">
+        <button onClick={exportPNG} disabled={busy !== null} 
+          className={btn}
+          title={t("export.pngTooltip")}
+          style={
+            {
+              borderColor: borderColor,
+              color: primary,
+              "--export-btn-bg": background,
+              "--export-btn-hover-bg": hoverPrimary06,
+            } as React.CSSProperties
+          }>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true" style={{ color: primary }}>
             <path d="M4 5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Z" fill="currentColor" />
             <path d="M8 15l3-3 2 3 3-3 2 3v2H8v-2Z" fill="white" opacity=".6" />
           </svg>
@@ -156,8 +174,18 @@ export default function MapExportButtons() {
           {busy === "png" && spinner}
         </button>
 
-        <button onClick={exportPDF} disabled={busy !== null} className={btn} title={t("export.pdfTooltip")}>
-          <svg viewBox="0 0 24 24" className="h-4 w-4 text-indigo-700" aria-hidden="true">
+        <button onClick={exportPDF} disabled={busy !== null} 
+          className={btn}
+          title={t("export.pdfTooltip")}
+          style={
+            {
+              borderColor: borderColor,
+              color: primary,
+              "--export-btn-bg": background,
+              "--export-btn-hover-bg": hoverPrimary06,
+            } as React.CSSProperties
+          }>
+          <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true" style={{ color: primary }}>
             <path d="M7 3h6l4 4v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z" fill="currentColor" />
             <path d="M13 3v4h4" stroke="white" strokeWidth="2" strokeLinecap="round" />
           </svg>
@@ -167,7 +195,7 @@ export default function MapExportButtons() {
       </div>
 
       {/* Note d’usage */}
-      <p className="text-xs text-gray-500 mt-2">
+      <p className="text-xs mt-2" style={{ color: hoverText07 }}>
         {t("export.note")}
       </p>
 

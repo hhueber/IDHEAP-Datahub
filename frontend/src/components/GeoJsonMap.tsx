@@ -9,6 +9,7 @@ import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
+import { useTheme } from "@/theme/useTheme";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -52,6 +53,9 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
+  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores } = useTheme();
+
+
   /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
     const ctrl = new AbortController();
@@ -93,30 +97,30 @@ export default function GeoJsonMap({
 
   // Styles (couleurs/épaisseurs/fill) des différentes couches
   const countryStyle = useMemo(() => ({
-  color: "#000000",      // frontière pays en noir
+  color: countryColors,      // frontière pays en noir
   weight: 1,
-  fillColor: "#ffffff",  // fond blanc
+  fillColor: background,  // fond blanc
   fillOpacity: 1,
 }), []);
 const lakesStyle = useMemo(() => ({
-  color: "#3b82f6",      // bleu
+  color: lakesColores,      // bleu
   weight: 1.2,
   // si préfère uniquement le contour mettre fillOpacity: 0
-  fillColor: "#3b82f6",
+  fillColor: lakesColores,
   fillOpacity: 0.85,
 }), []);
 const cantonsStyle = useMemo(() => ({
-  color: "#ef4444",      // rouge
+  color: cantonClores,      // rouge
   weight: 1.2,
   fillOpacity: 0,
 }), []);
 const districtsStyle = useMemo(() => ({
-  color: "#7c3aed",      // violet bleuter
+  color: districtColores,      // violet bleuter
   weight: 0.9,
   fillOpacity: 0,
 }), []);
 const communesStyle = useMemo(() => ({
-  color: "#16a34a",       // green
+  color: communesColores,       // green
   weight: 0.6,
   fillOpacity: 0,
 }), []);
@@ -129,12 +133,20 @@ const communesStyle = useMemo(() => ({
   const communes  = (bundle as any)?.communes ?? null;
 
   return (
-    <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
+    <div ref={hostRef} data-map-root 
+      className={`${className} overflow-hidden`}
+      style={
+        {
+          // on expose la couleur de fond à Leaflet via une variable CSS
+          "--map-bg": background,
+        } as React.CSSProperties
+      }
+    >
       {/* Ajustements UI Leaflet */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
-        [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
+        [data-map-root] .leaflet-container { background: var(--map-bg); }
       `}</style>
       <MapContainer
         center={[46.8182, 8.2275]}

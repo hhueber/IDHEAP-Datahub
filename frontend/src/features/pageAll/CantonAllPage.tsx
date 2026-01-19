@@ -17,7 +17,7 @@ export default function CantonAllPage() {
 
   const actions: ActionsConfig = {
     show: true,
-    edit: true,
+    edit: false,
     delete: false,
   };
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import { communesApi, PlaceOfInterestSuggestDTO } from "@/features/geo/communesApi";
+import { useTheme } from "@/theme/useTheme";
 
 
 type Props = {
@@ -50,6 +51,8 @@ export default function PlaceOfInterestMenuModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  const { textColor, background, borderColor, navbarOverlayBg, hoverText07, hoverPrimary06 } = useTheme();
 
   useEffect(() => {
     if (!isOpen) {
@@ -131,11 +134,23 @@ export default function PlaceOfInterestMenuModal({
     <div className="fixed inset-0 z-[700] flex items-center justify-center">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0"
         onClick={handleBackdropClick}
+        style={
+          {
+            backgroundColor: navbarOverlayBg,
+          } as React.CSSProperties
+        }
       />
       {/* Contenu */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-[90%] p-4 z-[710]">
+      <div className="relative rounded-lg shadow-xl max-w-lg w-[90%] p-4 z-[710] border"
+        style={
+          {
+            backgroundColor: background,
+            borderColor,
+            color: textColor,
+          } as React.CSSProperties
+        }>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-lg font-semibold">
             {t("map.menu.global")}
@@ -143,8 +158,14 @@ export default function PlaceOfInterestMenuModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-stone-100"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:[background-color:var(--poi-close-hover-bg)]"
             aria-label={t("common.close")}
+            style={
+              {
+                color: textColor,
+                "--poi-close-hover-bg": hoverPrimary06,
+              } as React.CSSProperties
+            }
           >
             {/* Symbole de croix de fermeture */}
             {"\u00D7"}
@@ -157,7 +178,7 @@ export default function PlaceOfInterestMenuModal({
             {t("map.menu.instancePlaceOfInterest")}
           </h3>
           {backendPlaceOfInterest.length === 0 ? (
-            <p className="text-xs text-stone-500">
+            <p className="text-xs" style={{ color: hoverText07 }}>
               {t("map.menu.noInstancePlaceOfInterest")}
             </p>
           ) : (
@@ -191,7 +212,7 @@ export default function PlaceOfInterestMenuModal({
               {t("map.menu.localPlaceOfInterest")}
           </h3>
           {extraPlaceOfInterest.length === 0 ? (
-              <p className="text-xs text-stone-500">
+              <p className="text-xs" style={{ color: hoverText07 }}>
               {t("map.menu.noLocalPlaceOfInterest")}
               </p>
           ) : (
@@ -236,10 +257,17 @@ export default function PlaceOfInterestMenuModal({
             value={query}
             onChange={handleSearchChange}
             placeholder={t("map.menu.addPlaceOfInterestPlaceholder")}
-            className="w-full border border-stone-300 rounded px-2 py-1 text-sm mb-2"
+            className="w-full rounded px-2 py-1 text-sm mb-2 border"
+            style={
+              {
+                backgroundColor: background,
+                borderColor,
+                color: textColor,
+              } as React.CSSProperties
+            }
           />
           {loading && (
-            <p className="text-xs text-stone-500">
+            <p className="text-xs" style={{ color: hoverText07 }}>
               {t("map.menu.loadingSuggestions")}
             </p>
           )}
@@ -249,15 +277,27 @@ export default function PlaceOfInterestMenuModal({
             </p>
           )}
           {suggestions.length > 0 && (
-            <ul className="max-h-32 overflow-auto text-sm border border-stone-200 rounded">
+            <ul className="max-h-32 overflow-auto text-sm border rounded"
+              style={
+                {
+                  borderColor,
+                  backgroundColor: background,
+                  color: textColor,
+                } as React.CSSProperties
+              }>
               {suggestions.map((s, idx) => (
                 <li
                   key={`${s.default_name}-${idx}`}
-                  className="px-2 py-1 hover:bg-stone-100 cursor-pointer flex items-center justify-between gap-2"
+                  className="px-2 py-1 cursor-pointer flex items-center justify-between gap-2 hover:[background-color:var(--poi-suggest-hover-bg)]"
                   onClick={() => handleAddSuggestion(s)}
+                  style={
+                    {
+                      "--poi-suggest-hover-bg": hoverPrimary06,
+                    } as React.CSSProperties
+                  }
                 >
                   <span>{s.default_name}</span>
-                  <span className="text-[10px] text-stone-400">
+                  <span className="text-[10px]" style={{ color: hoverText07 }}>
                     {s.pos[0].toFixed(3)}, {s.pos[1].toFixed(3)}
                   </span>
                 </li>

@@ -50,3 +50,19 @@ class AllResponse(BaseModel):
     success: bool
     detail: str
     data: AllPayload
+
+
+class SuggestResponse(BaseModel):
+    success: bool
+    detail: str
+    data: List[AllItem]
+
+
+class FindPageData(BaseModel):
+    page: int
+
+
+class FindPageResponse(BaseModel):
+    success: bool
+    detail: str
+    data: FindPageData

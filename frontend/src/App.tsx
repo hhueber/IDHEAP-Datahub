@@ -12,18 +12,19 @@ import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
 import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
+import { ADMIN, MEMBER } from "@/config/roles";
 import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
 import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
 import CantonAllPage from "@/features/pageAll/CantonAllPage";
-
-import ShowPage from "@/features/pageShow/ShowPage";
-
 import QCatAllPage from "@/features/pageAll/QCatAllPage";
 import QGlobalAllPage from "@/features/pageAll/QGlobalAllPage";
 import QPerSurvAllPage from "@/features/pageAll/QPerSurvAllPage";
 import SurveyAllPage from "@/features/pageAll/SurveyAllPage";
 import OptionAllPage from "@/features/pageAll/OptionAllPage";
+import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
+import ShowPage from "@/features/pageShow/ShowPage";
+
 
 // Démo admin déjà fournie
 function AdminUsers() {
@@ -53,11 +54,11 @@ export default function App() {
           {/* Pages privées accessibles aux membres connectés */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/password" element={<ChangePasswordPage />} />
-
+          
           <Route
             path="/admin/surveys"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <SurveyAllPage />
               </RequireRole>
             }
@@ -66,7 +67,7 @@ export default function App() {
           <Route
             path="/admin/options"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <OptionAllPage />
               </RequireRole>
             }
@@ -75,7 +76,7 @@ export default function App() {
           <Route
             path="/admin/qglobal"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QGlobalAllPage />
               </RequireRole>
             }
@@ -84,7 +85,7 @@ export default function App() {
           <Route
             path="/admin/qps"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QPerSurvAllPage />
               </RequireRole>
             }
@@ -93,7 +94,7 @@ export default function App() {
           <Route
             path="/admin/qcat"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QCatAllPage />
               </RequireRole>
             }
@@ -102,7 +103,7 @@ export default function App() {
           <Route
             path="/admin/places/communes"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <CommuneAllPage />
               </RequireRole>
             }
@@ -119,7 +120,7 @@ export default function App() {
           <Route
             path="/admin/places/districts"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <DistrictAllPage />
               </RequireRole>
             }
@@ -128,7 +129,7 @@ export default function App() {
           <Route
             path="/admin/places/cantons"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <CantonAllPage />
               </RequireRole>
             }
@@ -138,7 +139,7 @@ export default function App() {
           <Route
             path="/admin/users"
             element={
-              <RequireRole roles={["ADMIN"]}>
+              <RequireRole roles={[ADMIN]}>
                 <AdminUsers />
               </RequireRole>
             }
@@ -146,24 +147,25 @@ export default function App() {
           <Route
             path="/admin/users/new"
             element={
-              <RequireRole roles={["ADMIN"]}>
+              <RequireRole roles={[ADMIN]}>
                 <AddMemberPage />
               </RequireRole>
             }
           />
+          <Route path="/admin/users/delete" element={<RequireRole roles={[ADMIN]}><DeleteMemberPage /></RequireRole>} />
           <Route
-            path="/admin/users/delete"
+            path="/admin/config/placeOfInterest"
             element={
-              <RequireRole roles={["ADMIN"]}>
-                <DeleteMemberPage />
+              <RequireRole roles={[ADMIN]}>
+                <PlaceOfInterestConfigPage />
               </RequireRole>
             }
           />
           <Route
-            path="/admin/config/placeOfInterest"
+            path="/admin/config/theme"
             element={
               <RequireRole roles={["ADMIN"]}>
-                <PlaceOfInterestConfigPage />
+                <ThemeConfigPage />
               </RequireRole>
             }
           />

@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { homeApi, HomeBootstrap } from "@/features/home/services/homeApi";
 
+import { saveThemeConfig, loadThemeConfig } from "@/theme/themeStorage";
+
 // Cache par langue
 const cacheByLang = new Map<string, HomeBootstrap>();
 
@@ -16,7 +18,14 @@ export function useBootstrap() {
 
   useEffect(() => {
     if (cacheByLang.has(lang)) {
-      setData(cacheByLang.get(lang)!);
+      const d = cacheByLang.get(lang)!;
+
+      // -> Même si c'est du cache, on vérifie themeConfig : si absent -> charger depuis localStorage
+      if (!d.themeConfig) {
+        d.themeConfig = loadThemeConfig();
+      }
+
+      setData(d);
       setLoading(false);
       setError(null);
       setErrorKey(null);
@@ -31,6 +40,12 @@ export function useBootstrap() {
     homeApi
       .getBootstrap(c.signal, lang)
       .then((d) => {
+        if (d.themeConfig) {
+          saveThemeConfig(d.themeConfig);
+        } else {
+          // -> Si pas de config reçue -> fallback localStorage ou defaults
+          d.themeConfig = loadThemeConfig();
+        }
         cacheByLang.set(lang, d);
         setData(d);
       })

@@ -1,5 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/theme/useTheme";
 
 type Props = {
   page: number;
@@ -8,7 +9,13 @@ type Props = {
 };
 
 export default function Pagination({ page, totalPages, onChange }: Props) {
-  if (totalPages <= 1) return null;
+  // Si une seule page, on ne montre pas de contrôles,
+  // mais on garde un petit espace en bas pour l'esthétique.
+  if (totalPages <= 1) {
+    return <div className="mt-4 mb-8" />;
+  }
+
+  const { primary, background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07 } = useTheme();
 
   // --- logique pour la version "desktop" (>= sm) ---
   const delta = 3; // nb de pages de chaque côté sur grand écran
@@ -59,18 +66,44 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
           type="button"
           onClick={handlePrev}
           disabled={!canPrev}
-          className="min-w-[2.5rem] h-9 flex items-center justify-center rounded border text-sm disabled:opacity-40"
+          className={`
+            min-w-[2.5rem] h-9 flex items-center justify-center rounded border text-sm
+            disabled:opacity-40
+            transition
+            hover:[background-color:var(--pager-hover-bg)]
+          `}
+          style={
+            {
+              backgroundColor: background,
+              borderColor,
+              color: textColor,
+              "--pager-hover-bg": hoverPrimary06,
+            } as React.CSSProperties
+          }
         >
           {"\u00AB"}
         </button>
-        <span className="text-sm text-gray-700">
+        <span className="text-sm" style={{ color: textColor }}>
           {t("pagination.page")} <span className="font-semibold">{page}</span> / {totalPages}
         </span>
         <button
           type="button"
           onClick={handleNext}
           disabled={!canNext}
-          className="min-w-[2.5rem] h-9 flex items-center justify-center rounded border text-sm disabled:opacity-40"
+          className={`
+            min-w-[2.5rem] h-9 flex items-center justify-center rounded border text-sm
+            disabled:opacity-40
+            transition
+            hover:[background-color:var(--pager-hover-bg)]
+          `}
+          style={
+            {
+              backgroundColor: background,
+              borderColor,
+              color: textColor,
+              "--pager-hover-bg": hoverPrimary06,
+            } as React.CSSProperties
+          }
         >
           {"\u00BB"}
         </button>
@@ -82,7 +115,19 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
           type="button"
           onClick={handlePrev}
           disabled={!canPrev}
-          className="px-3 py-1 text-sm border rounded disabled:opacity-40"
+          className={`
+            px-3 py-1 text-sm border rounded disabled:opacity-40
+            transition
+            hover:[background-color:var(--pager-hover-bg)]
+          `}
+          style={
+            {
+              backgroundColor: background,
+              borderColor,
+              color: textColor,
+              "--pager-hover-bg": hoverPrimary06,
+            } as React.CSSProperties
+          }
         >
           {"\u00AB"}
         </button>
@@ -91,7 +136,8 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
           p === "..." ? (
             <span
               key={`dots-${i}`}
-              className="px-2 py-1 text-sm text-gray-500 select-none"
+              className="px-2 py-1 text-sm select-none"
+              style={{ color: hoverText07 }}
             >
               ...
             </span>
@@ -100,10 +146,24 @@ export default function Pagination({ page, totalPages, onChange }: Props) {
               key={p}
               type="button"
               onClick={() => onChange(p)}
-              className={[
-                "min-w-[2.25rem] px-2 py-1 text-sm border rounded",
-                p === page ? "bg-black text-white" : "bg-white hover:bg-gray-100",
-              ].join(" ")}
+              className={`
+                min-w-[2.25rem] px-2 py-1 text-sm border rounded
+                ${p === page ? "font-semibold" : "hover:[background-color:var(--pager-hover-bg)]"}
+              `}
+              style={
+                p === page
+                  ? ({
+                      backgroundColor: primary,
+                      borderColor: primary,
+                      color: adaptiveTextColorPrimary,
+                    } as React.CSSProperties)
+                  : ({
+                      backgroundColor: background,
+                      borderColor,
+                      color: textColor,
+                      "--pager-hover-bg": hoverPrimary06,
+                    } as React.CSSProperties)
+              }
             >
               {p}
             </button>

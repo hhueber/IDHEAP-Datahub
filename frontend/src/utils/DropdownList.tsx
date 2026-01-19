@@ -1,5 +1,6 @@
 // Liste déroulante
 import React, { useEffect, useRef, useState, type ReactNode } from "react";
+import { useTheme } from "@/theme/useTheme";
 
 type DropdownListProps<T> = {
   items: T[];
@@ -32,6 +33,11 @@ export function DropdownList<T>({
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement | null>(null);
   const popRef = useRef<HTMLDivElement | null>(null);
+
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const { primary, background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary06 } = useTheme();
+
 
   // Fermeture au clic extérieur / ESC
   useEffect(() => {
@@ -74,21 +80,28 @@ export function DropdownList<T>({
         onClick={() => setOpen((v) => !v)}
         className={[
           "w-full flex items-center justify-between rounded-lg",
-          "ring-1 ring-indigo-200 bg-white px-3 py-2",
-          "text-indigo-700 hover:bg-indigo-50 transition",
+          "border px-3 py-2",
+          "transition",
+          "hover:opacity-90", // effet hover simple, garde l’UX
           buttonClassName,
         ].join(" ")}
+        style={{
+          backgroundColor: background,
+          color: primary,             // texte du bouton = primary
+          borderColor: borderColor, // ring/border soft
+        }}
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className="font-medium">
+        <span className="font-medium" style={{ color: primary }}>
           {selected ? labelFor(selected) : placeholder}
         </span>
         <span
-          className={`ml-2 text-xs text-indigo-500 transition-transform ${
+          className={`ml-2 text-xs transition-transform ${
             open ? "rotate-180" : ""
           }`}
           aria-hidden="true"
+          style={{ color: primary }} // icone 
         >
           {"\u25BC"}
         </span>
@@ -99,10 +112,15 @@ export function DropdownList<T>({
         <div
           ref={popRef}
           className={[
-            "absolute z-50 mt-2 w-full rounded-lg bg-white shadow-xl",
-            "ring-1 ring-black/10 overflow-hidden",
+            "absolute z-50 mt-2 w-full rounded-lg shadow-xl overflow-hidden",
             popoverClassName,
           ].join(" ")}
+          style={{
+            backgroundColor: background,
+            borderColor: borderColor,
+            borderWidth: 1,
+            borderStyle: "solid",
+          }}
           role="listbox"
         >
           <div className="max-h-60 overflow-y-auto">
@@ -111,6 +129,7 @@ export function DropdownList<T>({
                 ? isSelected(item, selected)
                 : item === selected;
               const key = keyFor ? keyFor(item, index) : index;
+              const isHovered = hoveredIndex === index;
 
               return (
                 <button
@@ -119,12 +138,21 @@ export function DropdownList<T>({
                   role="option"
                   aria-selected={active}
                   onClick={() => handleSelect(item)}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onMouseLeave={() => setHoveredIndex((prev) => (prev === index ? null : prev))}
                   className={
-                    "w-full text-left px-3 py-2 text-sm " +
-                    (active
-                      ? "bg-indigo-600 text-white"
-                      : "hover:bg-indigo-50 text-gray-800")
+                    "w-full text-left px-3 py-2 text-sm transition "
                   }
+                  style={{
+                    // actif : fond primary
+                    // survol (non actif) : hoverBg (tinte de primary)
+                    backgroundColor: active
+                      ? primary // fond actif
+                      : isHovered
+                      ? hoverPrimary06 // fond hover, donc primary très claire
+                      : "transparent",
+                    color: active ? adaptiveTextColorPrimary : textColor,
+                  }}
                 >
                   {labelFor(item)}
                 </button>

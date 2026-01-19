@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
+import { useTheme } from "@/theme/useTheme";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -17,6 +18,8 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [errKey, setErrKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const { background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary90 } = useTheme();
 
   // Déjà connecté (ex: cookie valide) -> redirection immédiate
   useEffect(() => {
@@ -55,9 +58,14 @@ export default function Login() {
   };
 
   return (
-    <section className="mx-auto max-w-lg rounded-2xl bg-white/90 backdrop-blur shadow-xl ring-1 ring-black/5 p-8">
-      <h2 className="text-2xl font-bold text-gray-900">{t("login.title")}</h2>
-      <p className="text-gray-600 mt-2">{t("login.subtitle")}</p>
+    <section className="mx-auto my-10 max-w-lg rounded-2xl shadow-xl p-8 border"
+      style={{
+        backgroundColor: background,
+        borderColor,
+        color: textColor,
+      }}>
+      <h2 className="text-2xl font-bold">{t("login.title")}</h2>
+      <p className="mt-2 text-sm">{t("login.subtitle")}</p>
 
       {/* Message d’erreur éventuel */}
       {errKey && (
@@ -68,7 +76,7 @@ export default function Login() {
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
         <div>
-          <label className="block text-sm font-medium text-gray-700" htmlFor="email">
+          <label className="block text-sm font-medium mb-1" htmlFor="email" style={{ color: textColor }}>
             {t("login.emailLabel")}
           </label>
           <input
@@ -80,6 +88,11 @@ export default function Login() {
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder={t("login.emailPlaceholder")}
+            style={{
+              backgroundColor: background,
+              borderColor,
+              color: textColor,
+            }}
           />
         </div>
 
@@ -97,8 +110,19 @@ export default function Login() {
 
         <button
           disabled={loading}
-          className="mt-3 w-full rounded bg-black text-white py-2 disabled:opacity-60"
+          className={`
+            mt-3 w-full rounded py-2 text-sm font-medium
+            disabled:opacity-60 disabled:cursor-not-allowed
+            hover:[background-color:var(--login-submit-hover-bg)]
+          `}
           aria-busy={loading}
+          style={
+            {
+              backgroundColor: hoverPrimary90,
+              color: adaptiveTextColorPrimary,
+              "--login-submit-hover-bg": hoverPrimary90,
+            } as React.CSSProperties
+          }
         >
           {loading ? (
             <LoadingDots label={t("login.submitting")} />
