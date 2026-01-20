@@ -1,65 +1,32 @@
-from typing import Optional
+from typing import Any, Dict, List, Optional
 
 
 from pydantic import BaseModel
 
 
-class CantonItem(BaseModel):
-    uid: int
-    code: str
-    name: str
-    ofs_id: int
-    name_de: Optional[str]
-    name_fr: Optional[str]
-    name_en: Optional[str]
-    name_ro: Optional[str]
-    name_it: Optional[str]
-
-    class Config:
-        orm_mode = True
+class ShowMetaActions(BaseModel):
+    can_edit: bool = False
+    can_delete: bool = False
 
 
-class CommuneItem(BaseModel):
-    uid: int
-    code: str
-    name: str
-    name_de: Optional[str]
-    name_fr: Optional[str]
-    name_en: Optional[str]
-    name_ro: Optional[str]
-    name_it: Optional[str]
-
-    class Config:
-        orm_mode = True
+class ShowMetaField(BaseModel):
+    key: str
+    label: str
+    kind: str = "text"
+    group: Optional[str] = None
 
 
-class DistrictItem(BaseModel):
-    uid: int
-    code: str
-    name: str
-    name_de: Optional[str]
-    name_fr: Optional[str]
-    name_en: Optional[str]
-    name_ro: Optional[str]
-    name_it: Optional[str]
-
-    class Config:
-        orm_mode = True
+class ShowMeta(BaseModel):
+    entity: str
+    title_key: str
+    hide_keys: List[str] = []
+    fields: List[ShowMetaField] = []
+    languages: Optional[Dict[str, str]] = None
+    actions: ShowMetaActions = ShowMetaActions()
 
 
-class CantonResponse(BaseModel):
+class ShowResponse(BaseModel):
     success: bool
     detail: str
-    data: Optional[CantonItem]
-
-
-class DistrictResponse(BaseModel):
-    success: bool
-    detail: str
-    data: Optional[DistrictItem]
-
-
-class CommuneResponse(BaseModel):
-    success: bool
-    detail: str
-    data: Optional[CommuneItem]
+    meta: Optional[ShowMeta] = None
+    data: Optional[Dict[str, Any]] = None

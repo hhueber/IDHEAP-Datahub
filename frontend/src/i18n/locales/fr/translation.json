@@ -429,6 +429,20 @@
       "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
       "deleting": "Suppression",
       "deleteError": "Erreur de suppression : "
+    },
+    "pageShow": {
+      "loading": "Chargement",
+      "error": "Erreur :",
+      "noData": "pas de données",
+      "mainInfo": "Informations principales",
+      "languages": "Langues",
+      "edit": "éditer",
+      "delete": "Supprimer",
+      "children": "Enfants",
+      "childrenHint": "Relations / tables associées",
+      "insights": "Insights",
+      "insightsHint": "Carte / stats / infos",
+      "text": "Texte"
     }
   },
   "roles": {

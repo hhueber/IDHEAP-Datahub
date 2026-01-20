@@ -1,77 +1,265 @@
-import { CommuneItem, CommuneResponse } from "@/features/pageShow/show_type";
-import { apiFetch } from "@/shared/apiFetch";
-import { useCallback, useEffect, useState } from "react";
+import React from "react";
 import { useTranslation } from "react-i18next";
+import { apiFetch } from "@/shared/apiFetch";
+import { useTheme } from "@/theme/useTheme";
+import type { Entity, ShowResponse, ShowMetaField } from "@/features/pageShow/show_type";
 
-type PageAllProps = {
+type Props = {
   id: number;
+  entity: Entity;
+  onEdit?: (entity: Entity, id: number) => void;
+  onDelete?: (entity: Entity, id: number) => void;
 };
 
-export default function EntityShow({ id }: PageAllProps) {
+const LANGS: { key: "de" | "fr" | "en" | "it" | "ro"; label: string }[] = [
+  { key: "de", label: "Deutsch" },
+  { key: "fr", label: "Français" },
+  { key: "en", label: "English" },
+  { key: "it", label: "Italiano" },
+  { key: "ro", label: "Rumantsch" },
+];
+
+function renderEmpty(v: any): string {
+  if (v === null || v === undefined) return "—";
+  if (typeof v === "string") return v.trim().length > 0 ? v : "—";
+  return String(v);
+}
+
+function formatValue(kind: ShowMetaField["kind"], value: any) {
+  if (value === null || value === undefined) return "—";
+  if (kind === "bool") return value ? "Yes" : "No";
+  return String(value);
+}
+
+export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const { t } = useTranslation();
-  const [loading, setLoading] = useState(false);
-  const [commune, setCommune] = useState<CommuneItem>();
+  const { textColor, background, borderColor, hoverPrimary04, hoverText07, hoverPrimary06, } = useTheme();
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+  const [meta, setMeta] = React.useState<ShowResponse["meta"]>(null);
+  const [data, setData] = React.useState<ShowResponse["data"]>(null);
+  const canEdit = meta?.actions?.can_edit ?? false;
+  const canDelete = meta?.actions?.can_delete ?? false;
 
-  const loadCommune = useCallback(
-    async (id: number) => {
-      // setLoading(true);
-      const json = await apiFetch<CommuneResponse>(`/show/commune/${id}`);
-      if (json.data) setCommune(json.data);
-    },
-    [id]
-  );
+  const load = React.useCallback(async () => {
+    setLoading(true);
+    setError(null);
 
-  useEffect(() => {
-    loadCommune(id);
-  }, [id]);
+    try {
+      const json = await apiFetch<ShowResponse>(`/show/${entity}/${id}`, {
+        method: "GET",
+        auth: true,
+      });
+
+      setMeta(json.meta ?? null);
+
+      if (!json.success) {
+        setData(null);
+        setError(json.detail || t("common.error"));
+        return;
+      }
+
+      setData(json.data ?? null);
+    } catch (e: any) {
+      setMeta(null);
+      setData(null);
+      setError(e?.message ?? t("common.error"));
+    } finally {
+      setLoading(false);
+    }
+  }, [entity, id, t]);
+
+  React.useEffect(() => {
+    void load();
+  }, [load]);
+
+  const title =
+    meta?.title_key && data?.[meta.title_key]
+      ? String(data[meta.title_key])
+      : `${entity} #${id}`;
+
+  const fields = meta?.fields ?? [];
 
   return (
-    <div className="w-full h-full flex gap-x-10 ">
-      <div className="w-2/3 bg-transparent h-full flex flex-col gap-y-5">
-        <div className="bg-gray-50 p-6 rounded-xl outline flex-grow outline-black/25 shadow-lg">
-          <h2 className="text-5xl pt-2 pb-6 text-center text-gray-800 border-b border-gray-300 mb-6">
-            {commune?.name}
-          </h2>
+    <div className="w-full h-full" style={{ backgroundColor: background, color: textColor }}>
+      <div className="flex flex-col lg:flex-row gap-6 h-full">
+        {/* LEFT */}
+        <div className="flex-1 flex flex-col gap-6 min-w-0">
+          {/* MAIN CARD */}
+          <div
+            className="rounded-2xl border shadow-sm"
+            style={{ borderColor, backgroundColor: background }}
+          >
+            <div
+              className="px-6 py-5 border-b flex items-start justify-between gap-4"
+              style={{ borderColor }}
+            >
+              <div className="min-w-0">
+                <h2 className="text-3xl font-semibold truncate">{title}</h2>
+              </div>
 
-          <div className="grid grid-cols-[150px_1fr] gap-x-6 gap-y-3 text-lg">
-            <p className="font-semibold text-gray-600">Uid</p>
-            <p className="text-gray-800">{commune?.uid}</p>
+              <div className="flex items-center gap-2 shrink-0">
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => onEdit?.(entity, id)}
+                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                    style={{
+                      backgroundColor: background,
+                      borderColor,
+                      color: textColor,
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = hoverPrimary04;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = background;
+                    }}
+                  >
+                    {t("dashboardSidebar.pageShow.edit")}
+                  </button>
+                )}
 
-            <p className="font-semibold text-gray-600">Code</p>
-            <p className="text-gray-800">{commune?.code}</p>
+                {canDelete && (
+                  <button
+                    type="button"
+                    onClick={() => onDelete?.(entity, id)}
+                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                    style={{
+                      backgroundColor: background,
+                      borderColor: "rgba(239,68,68,0.35)",
+                      color: "rgb(220,38,38)",
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)";
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = background;
+                    }}
+                  >
+                    {t("dashboardSidebar.pageShow.delete")}
+                  </button>
+                )}
+              </div>
+            </div>
 
-            <div className="col-span-2 my-4 border-t border-gray-200"></div>
+            <div className="px-6 py-5">
+              {loading && (
+                <div className="text-sm" style={{ color: hoverText07 }}>
+                  {t("dashboardSidebar.pageShow.loading")}
+                </div>
+              )}
 
-            <p className="font-semibold text-gray-600">Nom Allemand</p>
-            <p className="text-gray-800 italic">{commune?.name_de || "N/A"}</p>
+              {error && (
+                <div className="text-sm" style={{ color: "rgb(220,38,38)" }}>
+                  {t("dashboardSidebar.pageShow.error")} {error}
+                </div>
+              )}
 
-            <p className="font-semibold text-gray-600">Nom Français</p>
-            <p className="text-gray-800 italic">{commune?.name_fr || "N/A"}</p>
+              {!loading && !error && !data && (
+                <div className="text-sm" style={{ color: hoverText07 }}>
+                  {t("dashboardSidebar.pageShow.noData")}
+                </div>
+              )}
 
-            <p className="font-semibold text-gray-600">Nom Anglais</p>
-            <p className="text-gray-800 italic">{commune?.name_en || "N/A"}</p>
+              {data && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* MAIN */}
+                  <div
+                    className="rounded-xl border p-4"
+                    style={{ borderColor, backgroundColor: hoverPrimary04 }}
+                  >
+                    <div className="text-sm font-medium mb-3">
+                      {t("dashboardSidebar.pageShow.mainInfo")}
+                    </div>
 
-            <p className="font-semibold text-gray-600">Nom Italien</p>
-            <p className="text-gray-800 italic">{commune?.name_it || "N/A"}</p>
+                    <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
+                      {fields
+                        .filter((f) => data[f.key] !== undefined)
+                        .map((f) => (
+                          <React.Fragment key={f.key}>
+                            <div className="font-medium" style={{ color: hoverText07 }}>
+                              {f.label}
+                            </div>
+                            <div className="break-words">
+                              {formatValue(f.kind, data[f.key])}
+                            </div>
+                          </React.Fragment>
+                        ))}
+                    </div>
+                  </div>
 
-            <p className="font-semibold text-gray-600">Nom Romanche</p>
-            <p className="text-gray-800 italic">{commune?.name_ro || "N/A"}</p>
+                  {/* LANGUAGES */}
+                  {meta?.languages && (
+                    <div
+                      className="rounded-xl border p-4"
+                      style={{ borderColor, backgroundColor: hoverPrimary04 }}
+                    >
+                      <div className="text-sm font-medium mb-3">
+                        {t("dashboardSidebar.pageShow.languages")}
+                      </div>
 
-            {/* ...etc. */}
+                      <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
+                        {LANGS.map((l) => {
+                          const key = meta.languages?.[l.key];
+                          if (!key) return null;
+                          if (data[key] === undefined) return null;
+
+                          return (
+                            <React.Fragment key={l.key}>
+                              <div className="font-medium" style={{ color: hoverText07 }}>
+                                {t("dashboardSidebar.pageShow.text")} ({l.label})
+                              </div>
+                              <div className="italic">{renderEmpty(data[key])}</div>
+                            </React.Fragment>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* CHILDREN */}
+          <div
+            className="rounded-2xl border shadow-sm"
+            style={{ borderColor, backgroundColor: background }}
+          >
+            <div className="px-6 py-4 border-b" style={{ borderColor }}>
+              <h3 className="text-xl font-semibold">
+                {t("dashboardSidebar.pageShow.children")}
+              </h3>
+              <div className="text-sm" style={{ color: hoverText07 }}>
+                {t("dashboardSidebar.pageShow.childrenHint")}
+              </div>
+            </div>
+            <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
+              (À brancher plus tard via meta.children)
+            </div>
           </div>
         </div>
 
-        {/* 1.2. SOUS-PANNEAU DU BAS */}
-        <div className="bg-gray-50 p-4 rounded-xl outline flex-grow outline-black/25">
-          {/* flex-grow pour partager la hauteur */}
-          <h3 className="text-3xl text-gray-700">Children</h3>
-          <p className="mt-4">Et la on mets les enfants</p>
-        </div>
-      </div>
-
-      {/* 3. Enfant 2 : Prend 1/3 de la largeur du parent */}
-      <div className="w-1/3 bg-gray-50 h-full p-4 rounded-xl outline outline-black/25">
-        Carte, stat, info
+        {/* RIGHT */}
+        <aside className="w-full lg:w-[360px] shrink-0">
+          <div
+            className="rounded-2xl border shadow-sm h-full"
+            style={{ borderColor, backgroundColor: background }}
+          >
+            <div className="px-6 py-4 border-b" style={{ borderColor }}>
+              <h3 className="text-xl font-semibold">
+                {t("dashboardSidebar.pageShow.insights")}
+              </h3>
+              <div className="text-sm" style={{ color: hoverText07 }}>
+                {t("dashboardSidebar.pageShow.insightsHint")}
+              </div>
+            </div>
+            <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
+              (À brancher plus tard)
+            </div>
+          </div>
+        </aside>
       </div>
     </div>
   );

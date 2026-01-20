@@ -2,56 +2,38 @@ export enum Entity {
   Commune = "commune",
   District = "district",
   Canton = "canton",
+
+  Survey = "survey",
+  QuestionPerSurvey = "question_per_survey",
+  QuestionGlobal = "question_global",
+  QuestionCategory = "question_category",
+  Option = "option",
 }
 
-export type CantonItem = {
-  uid: number;
-  code: string;
-  name: string;
-  ofs_id: number;
-  name_de: string | null;
-  name_fr: string | null;
-  name_en: string | null;
-  name_ro: string | null;
-  name_it: string | null;
+export type ShowMetaActions = {
+  can_edit: boolean;
+  can_delete: boolean;
 };
 
-export type DistrictItem = {
-  uid: number;
-  code: string;
-  name: string;
-  name_de: string | null;
-  name_fr: string | null;
-  name_en: string | null;
-  name_ro: string | null;
-  name_it: string | null;
+export type ShowMetaField = {
+  key: string;
+  label: string;
+  kind?: "text" | "number" | "bool" | "year";
+  group?: string | null;
 };
 
-export type CommuneItem = {
-  uid: number;
-  code: string;
-  name: string;
-  name_de: string | null;
-  name_fr: string | null;
-  name_en: string | null;
-  name_ro: string | null;
-  name_it: string | null;
+export type ShowMeta = {
+  entity: string;
+  title_key: string;
+  hide_keys: string[];
+  fields: ShowMetaField[];
+  languages?: Record<"de" | "fr" | "en" | "it" | "ro", string>;
+  actions?: ShowMetaActions;
 };
 
-export type CommuneResponse = {
+export type ShowResponse = {
   success: boolean;
   detail: string;
-  data: CommuneItem | null;
-};
-
-export type CantonResponse = {
-  success: boolean;
-  detail: string;
-  data: CantonItem | null;
-};
-
-export type DistrictResponse = {
-  success: boolean;
-  detail: string;
-  data: DistrictItem | null;
+  meta: ShowMeta | null;
+  data: Record<string, any> | null;
 };

@@ -1,27 +1,36 @@
-from typing import List, Optional
+from typing import Any, Dict, Optional, Type
 
 
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
+from app.models.option import Option
+from app.models.question_category import QuestionCategory
+from app.models.question_global import QuestionGlobal
+from app.models.question_per_survey import QuestionPerSurvey
+from app.models.survey import Survey
+from app.schemas.pageAll import EntityEnum
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def get_commune_by_ofs(db: AsyncSession, ofs_id: str) -> Optional[Commune]:
-    print(f"MAIS DIS VOIR JAMY {ofs_id}")
-    req = select(Commune).where((Commune.code == ofs_id))
-    res = await db.execute(req)
-    return res.scalar_one_or_none()
+ENTITY_MODEL_MAP: Dict[EntityEnum, Type[Any]] = {
+    EntityEnum.commune: Commune,
+    EntityEnum.district: District,
+    EntityEnum.canton: Canton,
+    EntityEnum.survey: Survey,
+    EntityEnum.question_per_survey: QuestionPerSurvey,
+    EntityEnum.question_global: QuestionGlobal,
+    EntityEnum.question_category: QuestionCategory,
+    EntityEnum.option: Option,
+}
 
 
-async def get_district_by_ofs(db: AsyncSession, ofs_id: str) -> Optional[District]:
-    req = select(District).where((District.code == ofs_id))
-    res = await db.execute(req)
-    return res.scalar_one_or_none()
+async def get_by_uid(db: AsyncSession, entity: EntityEnum, uid: int) -> Optional[Any]:
+    model = ENTITY_MODEL_MAP.get(entity)
+    if model is None:
+        return None
 
-
-async def get_canton_by_ofs(db: AsyncSession, ofs_id: str) -> Optional[Canton]:
-    req = select(Canton).where((Canton.ofs_id == int(ofs_id)))
+    req = select(model).where(model.uid == uid)
     res = await db.execute(req)
     return res.scalar_one_or_none()

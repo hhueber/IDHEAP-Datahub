@@ -18,6 +18,7 @@ import type { FindPageResponse } from "@/features/pageAll/all_types";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTheme } from "@/theme/useTheme";
+import { useNavigate } from "react-router-dom";
 
 type PageAllProps = {
   title: string;
@@ -74,6 +75,7 @@ export default function PageAll({
     // pas de clear_fields ici -> DELETE complet de la ligne
   }));
 
+  const navigate = useNavigate();
   const { textColor, background, borderColor, hoverPrimary04, hoverPrimary15, hoverText07 } = useTheme();
 
   const findPageForUid = React.useCallback(
@@ -353,8 +355,7 @@ export default function PageAll({
                                   } as React.CSSProperties
                                 }
                                 onClick={() => {
-                                  // TODO: Wiring réel plus tard
-                                  console.log("Show", entity, row.uid);
+                                  navigate(`/admin/places/show/${entity}/${row.uid}`);
                                 }}
                               >
                                 {t("dashboardSidebar.pageAll.show")}
