@@ -35,23 +35,6 @@ export default function HomeInfoPanel({ data, loading, error, errorKey }: Props)
 
   return (
     <div className="space-y-4">
-      {/* Carte entête */}
-      <section className="rounded-2xl backdrop-blur shadow-sm  p-4"
-        style={{
-          backgroundColor: background,
-          borderWidth: 1,
-          borderStyle: "solid",
-          borderColor: borderColor,
-        }}
-      >
-        <h1 className="text-xl font-bold" style={{ color: textColor }}>
-          {t("home.heroTitle")}
-        </h1>
-        <p className="mt-2  text-sm leading-relaxed" style={{ color: hoverText07 }}>
-          {t("home.heroSubtitle")}
-        </p>
-      </section>
-
       {/* État global */}
       {(loading || error) && (
         <section className="rounded-2xl shadow-sm  p-3" 

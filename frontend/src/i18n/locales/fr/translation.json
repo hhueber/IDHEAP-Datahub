@@ -18,8 +18,6 @@
     }
   },
   "home": {
-    "heroTitle": "IDHEAP Data Explorer",
-    "heroSubtitle": "Ce site, réalisé par l’IDHEAP, permet d’explorer les données des communes suisses. Vous pouvez visualiser l’évolution dans le temps : choisissez d’abord une année de questionnaire, puis la question que vous souhaitez voir représentée. Certaines questions globales couvrent plusieurs années ; vous pouvez les sélectionner directement, puis choisir l’année d’affichage.",
     "openPanel": "Ouvrir le panneau",
     "close": "Fermer",
     "sectionDates": "Dates",
