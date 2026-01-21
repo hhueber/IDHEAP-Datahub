@@ -162,7 +162,6 @@ export default function DashboardSidebar() {
       children: [
         { key: "survey-all",  labelKey: "dashboardSidebar.survey.all",     to: "/admin/surveys",     roles: ["ADMIN", "MEMBER"] },
         { key: "survey-edit", labelKey: "dashboardSidebar.survey.newEdit", to: "/admin/surveys/new", roles: ["ADMIN", "MEMBER"] },
-        { key: "survey-show", labelKey: "dashboardSidebar.survey.show",    to: "/admin/surveys/show",roles: ["ADMIN", "MEMBER"] },
       ],
     },
     {
@@ -177,7 +176,6 @@ export default function DashboardSidebar() {
           children: [
             { key: "qps-all",  labelKey: "dashboardSidebar.qa.qps.all",     to: "/admin/qps",     roles: ["ADMIN", "MEMBER"] },
             { key: "qps-edit", labelKey: "dashboardSidebar.qa.qps.newEdit", to: "/admin/qps/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "qps-show", labelKey: "dashboardSidebar.qa.qps.show",    to: "/admin/qps/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
@@ -187,7 +185,6 @@ export default function DashboardSidebar() {
           children: [
             { key: "qglobal-all",  labelKey: "dashboardSidebar.qa.qglobal.all",     to: "/admin/qglobal",     roles: ["ADMIN", "MEMBER"] },
             { key: "qglobal-edit", labelKey: "dashboardSidebar.qa.qglobal.newEdit", to: "/admin/qglobal/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "qglobal-show", labelKey: "dashboardSidebar.qa.qglobal.show",    to: "/admin/qglobal/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
@@ -197,7 +194,6 @@ export default function DashboardSidebar() {
           children: [
             { key: "qcat-all",  labelKey: "dashboardSidebar.qa.qcat.all",     to: "/admin/qcat",     roles: ["ADMIN", "MEMBER"] },
             { key: "qcat-edit", labelKey: "dashboardSidebar.qa.qcat.newEdit", to: "/admin/qcat/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "qcat-show", labelKey: "dashboardSidebar.qa.qcat.show",    to: "/admin/qcat/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
@@ -207,7 +203,6 @@ export default function DashboardSidebar() {
           children: [
             { key: "answer-all",  labelKey: "dashboardSidebar.qa.answer.all",     to: "/admin/answers",     roles: ["ADMIN", "MEMBER"] },
             { key: "answer-edit", labelKey: "dashboardSidebar.qa.answer.newEdit", to: "/admin/answers/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "answer-show", labelKey: "dashboardSidebar.qa.answer.show",    to: "/admin/answers/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
@@ -217,7 +212,6 @@ export default function DashboardSidebar() {
           children: [
             { key: "option-all",  labelKey: "dashboardSidebar.qa.option.all",     to: "/admin/options",     roles: ["ADMIN", "MEMBER"] },
             { key: "option-edit", labelKey: "dashboardSidebar.qa.option.newEdit", to: "/admin/options/new", roles: ["ADMIN", "MEMBER"] },
-            { key: "option-show", labelKey: "dashboardSidebar.qa.option.show",    to: "/admin/options/show",roles: ["ADMIN", "MEMBER"] },
           ],
         },
       ],
@@ -233,7 +227,6 @@ export default function DashboardSidebar() {
           roles: ["ADMIN", "MEMBER"],
           children: [
             { key: "commune-all",  labelKey: "dashboardSidebar.places.commune.all",  to: "/admin/places/communes",       roles: ["ADMIN", "MEMBER"] },
-            { key: "commune-show", labelKey: "dashboardSidebar.places.commune.show", to: "/admin/places/communes/show",  roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
@@ -242,7 +235,6 @@ export default function DashboardSidebar() {
           roles: ["ADMIN", "MEMBER"],
           children: [
             { key: "district-all",  labelKey: "dashboardSidebar.places.district.all",  to: "/admin/places/districts",      roles: ["ADMIN", "MEMBER"] },
-            { key: "district-show", labelKey: "dashboardSidebar.places.district.show", to: "/admin/places/districts/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
         {
@@ -251,7 +243,6 @@ export default function DashboardSidebar() {
           roles: ["ADMIN", "MEMBER"],
           children: [
             { key: "canton-all",  labelKey: "dashboardSidebar.places.canton.all",  to: "/admin/places/cantons",      roles: ["ADMIN", "MEMBER"] },
-            { key: "canton-show", labelKey: "dashboardSidebar.places.canton.show", to: "/admin/places/cantons/show", roles: ["ADMIN", "MEMBER"] },
           ],
         },
       ],
