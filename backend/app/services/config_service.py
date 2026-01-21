@@ -20,9 +20,9 @@ async def handle_logo_data_url(db: AsyncSession, data_url: str) -> str:
     """
     - Valide le data URL (image)
     - Décode le base64
-    - Détermine le dossier d'upload en fonction de l'instance (instance_name -> slug)
+    - Détermine le dossier d'upload en fonction du LOGO_PUBLIC_PREFIX
     - Sauvegarde le nouveau fichier sur disque
-    - Retourne l'URL publique à stocker dans la config (LOGO_PUBLIC_PREFIX/instance_slug/filename)
+    - Retourne l'URL publique à stocker dans la config (LOGO_PUBLIC_PREFIX/filename)
     """
     if not data_url:
         raise HTTPException(
