@@ -1,6 +1,8 @@
 import React from "react";
 import { getAdaptiveTextColor } from "@/utils/color";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_THEME_CONFIG } from "@/theme/defaultThemeConfig";
+import { getThemeTokens } from "@/theme/themeTokens";
 
 type MaybeColor = string | null | undefined;
 
@@ -34,26 +36,13 @@ export function ThemePreviewPanel({
   primaryColor,
   secondaryColor,
 }: ThemePreviewPanelProps) {
-  const bg = normalizeColor(
-    backgroundColor,
-    variant === "dark" ? "#020617" : "#ffffff"
-  );
-  const primary = normalizeColor(
-    primaryColor,
-    variant === "dark" ? "#FB377F" : "#D60270"
-  );
-  const secondary = normalizeColor(
-    secondaryColor,
-    variant === "dark" ? "rgba(148,163,184,0.45)" : "rgba(0,0,0,0.10)"
-  );
-  const text = normalizeColor(
-    textColor,
-    variant === "dark" ? "#F9FAFB" : "#111827"
-  );
-  const logoBg = normalizeColor(
-    logoBackground,
-    "#ffffff"
-  );
+  const baseTokens = getThemeTokens(DEFAULT_THEME_CONFIG, variant);
+  // Fallbacks "safe" pour éviter un preview illisible si la config est vide/invalide.
+  const bg = normalizeColor(backgroundColor, baseTokens.background);
+  const primary = normalizeColor(primaryColor, baseTokens.primary);
+  const secondary = normalizeColor(secondaryColor, baseTokens.borderColor);
+  const text = normalizeColor(textColor, baseTokens.textColor);
+  const logoBg = normalizeColor(logoBackground, baseTokens.logoBackground);
 
   const cardText = getAdaptiveTextColor(bg);
   const { t } = useTranslation();
@@ -107,13 +96,13 @@ export function ThemePreviewPanel({
           {t("admin.config.themeConfigPage.previewPanel.buttonPrimary")}
         </button>
 
-        {/* Badge / chip avec secondary */}
+        {/* Badge / chip avec secondary donc cadre secondaire*/}
         <span
           className="inline-flex items-center rounded-full px-2 py-[2px] text-[10px] font-medium"
           style={{
             border: `1px solid ${secondary}`,
             color: text,
-            backgroundColor: "rgba(255,255,255,0.06)",
+            backgroundColor: bg,
           }}
         >
           {t("admin.config.themeConfigPage.previewPanel.secondaryFrame")}
@@ -144,27 +133,19 @@ export function MapPreviewPanel({
   countryColor,
   lakesColor,
 }: MapPreviewPanelProps) {
-  const bg = normalizeColor(
-    backgroundColor,
-    variant === "dark" ? "#020617" : "#ffffff"
-  );
+  const baseTokens = getThemeTokens(DEFAULT_THEME_CONFIG, variant);
+  // Fallbacks "safe" pour éviter un preview illisible si la config est vide/invalide.
+  const bg = normalizeColor(backgroundColor, baseTokens.background);
   const text = getAdaptiveTextColor(bg);
 
-  const rows: { label: string; color: MaybeColor }[] = [
-    { label: "Communes", color: communeColor },
-    { label: "Districts", color: districtColor },
-    { label: "Cantons", color: cantonColor },
-    { label: "Country", color: countryColor },
-    { label: "Lakes", color: lakesColor },
+  // Liste des couleurs à afficher avec fallback.
+  const rows: { label: string; color: MaybeColor; fallback: string }[] = [
+    { label: "Communes",  color: communeColor,  fallback: baseTokens.communesColores },
+    { label: "Districts", color: districtColor, fallback: baseTokens.districtColores },
+    { label: "Cantons",   color: cantonColor,   fallback: baseTokens.cantonClores },
+    { label: "Country",   color: countryColor,  fallback: baseTokens.countryColors },
+    { label: "Lakes",     color: lakesColor,    fallback: baseTokens.lakesColores },
   ];
-
-  const fallbackColors = {
-    Communes: "#22c55e",
-    Districts: "#a855f7",
-    Cantons: "#f87171",
-    Country: "#000000",
-    Lakes: "#0ea5e9",
-  } as const;
 
   return (
     <div
@@ -177,21 +158,13 @@ export function MapPreviewPanel({
 
       <div className="grid grid-cols-1 gap-1">
         {rows.map((r) => {
-          const c = normalizeColor(
-            r.color,
-            // @ts-expect-error – accès volontaire au petit objet fallback
-            fallbackColors[r.label] || "#6b7280"
-          );
+          const c = normalizeColor(r.color, r.fallback);
           return (
+            // Badge pour text des couleurs de map
             <div
               key={r.label}
               className="flex items-center gap-2 rounded-md px-2 py-1"
-              style={{
-                backgroundColor:
-                  variant === "dark"
-                    ? "rgba(15,23,42,0.6)"
-                    : "rgba(255,255,255,0.7)",
-              }}
+              style={{ backgroundColor: bg }}
             >
               <span
                 className="inline-block h-3 w-6 rounded-sm border"

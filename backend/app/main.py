@@ -3,7 +3,7 @@ from pathlib import Path
 
 from app.api.router import auth, communes, config, delete, geo, home, pageAll, questions, user
 from app.core.middleware import setup_middlewares
-from app.core.paths import STATIC_DIR
+from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
 from app.db import get_db
 from fastapi import Depends, FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -25,8 +25,12 @@ app.include_router(communes.router, prefix="/communes", tags=["communes"])
 app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
 
-Path(STATIC_DIR).mkdir(parents=True, exist_ok=True)
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+STATIC_FS_ROOT.mkdir(parents=True, exist_ok=True)
+app.mount(
+    STATIC_URL_ROOT,
+    StaticFiles(directory=str(STATIC_FS_ROOT)),
+    name="static",
+)
 
 
 # backend swagger: url:8000
