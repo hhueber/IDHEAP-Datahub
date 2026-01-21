@@ -27,8 +27,12 @@ export default function Navbar() {
   
   const { primary, textColor, background, borderColor, navbarOverlayBg, logoBackground, hoverBg08, cfg } = useTheme();
   const instanceName = cfg.instance_name;
+  const DEFAULT_LOGO = "/img/idheap-dh.png";
   const logoUrlRaw = cfg.logo_url;
-  const logoUrl = logoUrlRaw ? resolveAssetUrl(logoUrlRaw) : "/img/idheap-dh.png";
+  const logoUrl =
+    !logoUrlRaw || logoUrlRaw === DEFAULT_LOGO
+      ? DEFAULT_LOGO
+      : resolveAssetUrl(logoUrlRaw);
 
   // fermer le drawer au clic extérieur / ESC
   useEffect(() => {

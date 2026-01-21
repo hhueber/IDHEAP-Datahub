@@ -12,6 +12,7 @@ export interface ThemeConfigDto {
   colour_light_background?: string | null;
   colour_light_text?: string | null;
   navbar_overlay_light_bg?: string | null;
+  logoBackground_light?: string | null;
 
   communes_light?: string | null;
   district_light?: string | null;
@@ -25,6 +26,7 @@ export interface ThemeConfigDto {
   colour_dark_background?: string | null;
   colour_dark_text?: string | null;
   navbar_overlay_dark_bg?: string | null;
+  logoBackground_dark?: string | null;
 
   communes_dark?: string | null;
   district_dark?: string | null;

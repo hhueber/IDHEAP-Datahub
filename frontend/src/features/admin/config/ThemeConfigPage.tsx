@@ -22,18 +22,27 @@ import {
   MAP_DARK_FIELDS,
   PRESETS,
 } from "@/features/admin/components/theme/themeConfigMeta";
+import { saveThemeConfig as saveThemeConfigToStorage } from "@/theme/themeStorage";
+import { useThemeMode } from "@/theme/ThemeContext";
 
 
 export default function ThemeConfigPage() {
   const { t } = useTranslation();
+  // État principal : config chargée depuis le backend (ou fallback local).
   const [config, setConfig] = useState<ThemeConfigDto | null>(null);
+  // États UI : chargement / sauvegarde / erreurs / confirmation.
   const [loading, setLoading] = useState(true);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // Data URL en attente : on n’envoie le fichier au backend qu’au moment de sauvegarder.
   const [pendingLogoDataUrl, setPendingLogoDataUrl] = useState<string | null>(null);
 
-  const { primary, textColor, background, borderColor, logoBackground, adaptiveTextColorPrimary, hoverText05 } = useTheme();
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, cfg } = useTheme();
+  // Logo actuel en cache (thème local) pour fallback si le backend ne renvoie rien.
+  const logoUrlRaw = cfg.logo_url;
+  // Permet de rafraîchir le thème après sauvegarde (ex: reload des tokens/couleurs).
+  const { refreshTheme } = useThemeMode();
 
   // Charger la config au montage
   useEffect(() => {
@@ -46,6 +55,11 @@ export default function ThemeConfigPage() {
           setConfig({
             theme_default_mode: "light",
             ...data,
+            // si le backend ne renvoie rien, on initialise depuis le localStorage (ou default)
+            logo_url:
+                (data.logo_url ?? "").trim()
+                ? data.logo_url
+                : ((logoUrlRaw ?? "").trim() ? logoUrlRaw : DEFAULT_LOGO),
           });
         }
       } catch (e: any) {
@@ -60,8 +74,9 @@ export default function ThemeConfigPage() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [t, logoUrlRaw]);
 
+  // Met à jour un champ de la config sans écraser le reste.
   const updateField = (key: keyof ThemeConfigDto, value: string | null) => {
     setConfig((prev) => {
       if (!prev) return { [key]: value } as ThemeConfigDto;
@@ -69,6 +84,7 @@ export default function ThemeConfigPage() {
     });
   };
 
+  // Applique un preset (light+dark) sur l’objet config en conservant le mode par défaut.
   const applyPreset = (preset: Preset) => {
     setConfig((prev) => {
       const base: ThemeConfigDto = {
@@ -83,6 +99,7 @@ export default function ThemeConfigPage() {
     });
   };
 
+  // Convertit un fichier en data URL (data:image/...;base64,...) pour preview et upload.
   function readFileAsDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -100,6 +117,7 @@ export default function ThemeConfigPage() {
     });
   }
 
+  // Gestion du drag & drop logo
   const handleLogoUrlDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     const text = e.dataTransfer.getData("text/plain");
@@ -111,7 +129,7 @@ export default function ThemeConfigPage() {
       return;
     }
 
-    // Cas 2 : fichier
+    // Cas fichier : on lit en data URL pour preview, puis on upload au moment du save.
     const file = e.dataTransfer.files?.[0];
     if (file) {
       try {
@@ -124,6 +142,7 @@ export default function ThemeConfigPage() {
     }
   };
 
+  // Cas sélection fichier via input.
   const handleLogoFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -137,10 +156,12 @@ export default function ThemeConfigPage() {
     }
   };
 
+  // Empêche le navigateur d’ouvrir le fichier quand on drop.
   const preventDefault = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
   };
 
+  // Sauvegarde
   const onSave = async () => {
     if (!config) return;
     setConfirmOpen(false);
@@ -148,18 +169,28 @@ export default function ThemeConfigPage() {
     setError(null);
 
     try {
-      let cfgToSave: ThemeConfigDto = { ...config };
+        let cfgToSave: ThemeConfigDto = { ...config };
 
-      if (pendingLogoDataUrl) {
-        const uploadedUrl = await uploadThemeLogo(pendingLogoDataUrl);
-        cfgToSave = { ...cfgToSave, logo_url: uploadedUrl };
-      }
+        // Si un nouveau logo est en attente, on l’upload d’abord puis on remplace logo_url.
+        if (pendingLogoDataUrl) {
+            const uploadedUrl = await uploadThemeLogo(pendingLogoDataUrl);
+            cfgToSave = { ...cfgToSave, logo_url: uploadedUrl };
+        }
+        // Enregistre la config côté backend.
+        const res = await saveThemeConfig(cfgToSave);
+        // Recharge depuis backend pour être sûr d’avoir la source de vérité.
+        const fresh = await fetchThemeConfig();
+        const freshCfg = { ...cfgToSave, ...fresh };
 
-      await saveThemeConfig(cfgToSave);
-      setConfig(cfgToSave);
-      setPendingLogoDataUrl(null);
-      setSaveState("success");
-      setTimeout(() => setSaveState("idle"), 1500);
+        // Met à jour l’UI + reset l’upload pending.
+        setConfig(freshCfg);
+        setPendingLogoDataUrl(null);
+        // Met à jour le localStorage et rafraîchit le thème appliqué.
+        saveThemeConfigToStorage(freshCfg as any);
+        refreshTheme();
+
+        setSaveState("success");
+        setTimeout(() => setSaveState("idle"), 1500);
     } catch (e: any) {
       console.error(e);
       setError(t("admin.config.themeConfigPage.saveError"));
@@ -189,9 +220,24 @@ export default function ThemeConfigPage() {
 
   const defaultMode: ThemeMode = config.theme_default_mode || "light";
 
-  const previewUrl =
-    pendingLogoDataUrl ??
-    (config.logo_url ? resolveAssetUrl(config.logo_url) : undefined);
+  // Logo par défaut local (fallback final).
+  const DEFAULT_LOGO = "/img/idheap-dh.png";
+  // Logo brut tel que stocké (peut être vide, URL absolue, chemin relatif...).
+  const rawLogo = (config.logo_url ?? "").trim();
+
+  // Résout correctement les chemins (URL absolue, static backend, ou asset local).
+  const resolvedLogo =
+    !rawLogo
+      ? DEFAULT_LOGO
+      : rawLogo.startsWith("http://") || rawLogo.startsWith("https://")
+        ? rawLogo
+        : rawLogo.startsWith("/static/")
+          ? resolveAssetUrl(rawLogo)
+          : rawLogo.startsWith("/")
+            ? rawLogo
+            : resolveAssetUrl(rawLogo);
+  // La preview prend priorité sur tout le reste.
+  const previewUrl = pendingLogoDataUrl ?? resolvedLogo;
 
   const mapLightFieldsWithLabels = MAP_LIGHT_FIELDS.map((f) => ({
     key: f.key,
@@ -229,7 +275,7 @@ export default function ThemeConfigPage() {
       {/* Informations générales */}
       <div
         className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: hoverText05, borderColor: borderColor }}
+        style={{ backgroundColor: background, borderColor: borderColor }}
       >
         <h2 className="text-lg font-semibold mb-2">
           {t("admin.config.themeConfigPage.general")}
@@ -272,6 +318,7 @@ export default function ThemeConfigPage() {
                 value={config.logo_url ?? ""}
                 onChange={(e) => updateField("logo_url", e.target.value)}
               />
+              {/* Preview du logo final (URL résolue ou data URL pending) */}
               {previewUrl ? (
                 <div className="mt-2 flex items-center gap-2">
                   <span className="text-xs opacity-70">
@@ -287,6 +334,7 @@ export default function ThemeConfigPage() {
               ) : null}
             </div>
 
+            {/* Dropzone upload */}
             <div className="flex-1 space-y-2">
               <label className="text-sm font-medium">
                 {t("admin.config.themeConfigPage.logoUpload")}
@@ -305,6 +353,7 @@ export default function ThemeConfigPage() {
                 <p className="mb-2 opacity-70">
                   {t("admin.config.themeConfigPage.logoDropHint")}
                 </p>
+                {/* Bouton "Parcourir" */}
                 <label
                   className="inline-flex items-center justify-center rounded-md border px-3 py-1 text-xs font-medium"
                   style={{ borderColor }}
@@ -355,7 +404,7 @@ export default function ThemeConfigPage() {
       {/* Presets */}
       <PresetsSection
         presets={PRESETS}
-        cardBg={hoverText05}
+        cardBg={background}
         cardBorder={borderColor}
         title={t("admin.config.themeConfigPage.presets")}
         helpText={t("admin.config.themeConfigPage.presetsHelp")}
@@ -365,11 +414,13 @@ export default function ThemeConfigPage() {
       {/* Couleurs Light */}
       <ThemeColorsSection
         variant="light"
+        logoUrl={previewUrl}
         title={t("admin.config.themeConfigPage.lightSection")}
         fields={lightFieldsWithLabels}
         config={config}
         onFieldChange={(key, val) => updateField(key, val)}
         background={background}
+        logoBackground={logoBackground}
         cardBg={hoverText05}
         cardBorder={borderColor}
         textColor={textColor}
@@ -378,11 +429,13 @@ export default function ThemeConfigPage() {
       {/* Couleurs Dark */}
       <ThemeColorsSection
         variant="dark"
+        logoUrl={previewUrl}
         title={t("admin.config.themeConfigPage.darkSection")}
         fields={darkFieldsWithLabels}
         config={config}
         onFieldChange={(key, val) => updateField(key, val)}
         background={background}
+        logoBackground={logoBackground}
         cardBg={hoverText05}
         cardBorder={borderColor}
         textColor={textColor}
@@ -391,13 +444,14 @@ export default function ThemeConfigPage() {
       {/* Couleurs carte */}
       <div
         className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: hoverText05, borderColor: borderColor }}
+        style={{ backgroundColor: background, borderColor: borderColor }}
       >
         <h2 className="text-lg font-semibold">
           {t("admin.config.themeConfigPage.mapSection")}
         </h2>
 
         <div className="space-y-6">
+          {/* Carte - Light */}
           <MapColorsSection
             title={t("admin.config.themeConfigPage.light")}
             variant="light"
@@ -409,6 +463,7 @@ export default function ThemeConfigPage() {
             cardBorder={borderColor}
             textColor={textColor}
           />
+          {/* Carte - Dark */}
           <MapColorsSection
             title={t("admin.config.themeConfigPage.dark")}
             variant="dark"
@@ -460,6 +515,7 @@ export default function ThemeConfigPage() {
         </div>
       </div>
 
+      {/* Confirmation avant d’écrire la config */}
       <ConfirmModal
         open={confirmOpen}
         title={t("admin.config.themeConfigPage.confirmTitle")}

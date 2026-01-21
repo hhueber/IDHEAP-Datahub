@@ -290,6 +290,7 @@
           "backgroundColourLabel": "Couleur de fond",
           "textColourLabel": "Couleur du texte",
           "navbarOverlayLabel": "Opacité de la barre de navigation",
+          "logoBackgroundLabel": "Couleur de fond du logo",
           "communesColourLabel": "Couleur des communes",
           "districtColourLabel": "Couleur des districts",
           "cantonColourLabel": "Couleur des cantons",
