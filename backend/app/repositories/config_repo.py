@@ -48,9 +48,9 @@ def _delete_logo_file_if_exists(url: str | None) -> None:
         return
 
     # Exemple:
-    #   url = "/static/uploads/logos/instance_slug/logo_xxx.png"
+    #   url = "/static/uploads/logos/logo_xxx.png"
     #   LOGO_PUBLIC_PREFIX = "/static/uploads/logos"
-    rel = url[len(LOGO_PUBLIC_PREFIX) :].lstrip("/")  # "instance_slug/logo_xxx.png"
+    rel = url[len(LOGO_PUBLIC_PREFIX) :].lstrip("/")  # "logo_xxx.png"
     file_path: Path = LOGO_UPLOAD_DIR / rel
 
     try:
