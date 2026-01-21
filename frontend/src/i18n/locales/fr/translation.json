@@ -432,11 +432,12 @@
       "languages": "Langues",
       "edit": "Éditer",
       "delete": "Supprimer",
-      "children": "Enfants",
+      "children": "Entités associées",
       "childrenHint": "Relations / tables associées",
       "insights": "Insights",
       "insightsHint": "Carte / stats / infos",
-      "text": "Texte"
+      "text": "Texte",
+      "noChildren": "Aucune données"
     }
   },
   "roles": {

@@ -10,6 +10,29 @@ export enum Entity {
   Option = "option",
 }
 
+export type ShowChildColumn = {
+  key: string;
+  label: string;
+  kind?: "text" | "number" | "bool" | "year";
+  align?: "left" | "center" | "right";
+};
+
+export type ShowChildActions = {
+  show?: boolean;
+  edit?: boolean;
+  delete?: boolean;
+};
+
+export type ShowChildMeta = {
+  key: string;
+  title: string;
+  entity: Entity;
+  fk_field: string;
+  per_page?: number;
+  columns: ShowChildColumn[];
+  actions?: ShowChildActions;
+};
+
 export type ShowMetaActions = {
   can_edit: boolean;
   can_delete: boolean;
@@ -29,6 +52,7 @@ export type ShowMeta = {
   fields: ShowMetaField[];
   languages?: Record<"de" | "fr" | "en" | "it" | "ro", string>;
   actions?: ShowMetaActions;
+  children?: ShowChildMeta[];
 };
 
 export type ShowResponse = {
@@ -36,4 +60,16 @@ export type ShowResponse = {
   detail: string;
   meta: ShowMeta | null;
   data: Record<string, any> | null;
+};
+
+export type ShowChildrenResponse = {
+  success: boolean;
+  detail: string;
+  data: null | {
+    items: Record<string, any>[];
+    total: number;
+    page: number;
+    per_page: number;
+    pages: number;
+  };
 };
