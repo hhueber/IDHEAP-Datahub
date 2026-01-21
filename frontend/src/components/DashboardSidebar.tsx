@@ -309,15 +309,11 @@ export default function DashboardSidebar() {
   const roleLabel = /roles\./.test(roleKey) ? ( (roleKey && roleKey !== "roles.") ? ( ( ( (t as any)(roleKey) !== roleKey ) ? t(roleKey) : (user?.role || "") ) ) : "" ) : "";
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-64 border-r" style={{ backgroundColor: background, borderColor: borderColor, color: textColor }}>
-      {/* en-tête */}
-      <div className="h-16 border-b px-4 flex items-center">
-        <span className="text-lg font-semibold">{t("dashboardSidebar.privateSpace")}</span>
-      </div>
+    <aside className="fixed left-0 top-16 w-64 border-r" style={{ backgroundColor: background, borderColor: borderColor, color: textColor }}>
 
       {/* contenu + menu */}
       <div className="h-[calc(100vh-4rem)] flex flex-col">
-        <nav className="px-3 py-4 space-y-1 overflow-auto">
+        <nav className="flex-1 min-h-0 px-3 py-4 space-y-1 overflow-y-auto">
           {menu
             .filter((m) => canSee(userRole, m))
             .map((m) => (
@@ -332,23 +328,6 @@ export default function DashboardSidebar() {
             ))}
         </nav>
 
-        {/* pied : infos utilisateur + logout */}
-        <div className="mt-auto border-t p-4">
-          <div className="mb-3 text-sm">
-            <div className="font-medium" style={{ color: textColor }}>{user?.full_name}</div>
-            <div className="text-xs" style={{ color: hoverText07 }}>{user?.email}</div>
-            <div className="text-xs" style={{ color: hoverText05 }}>{t("dashboardSidebar.rolePrefix")} {roleLabel}</div>
-          </div>
-          <button
-            onClick={logout}
-            className="w-full rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
-            style={{ backgroundColor: primary, color: adaptiveTextColorPrimary }}
-            aria-label={t("dashboardSidebar.logout")}
-            title={t("dashboardSidebar.logout")}
-          >
-            {t("dashboardSidebar.logout")}
-          </button>
-        </div>
       </div>
     </aside>
   );
