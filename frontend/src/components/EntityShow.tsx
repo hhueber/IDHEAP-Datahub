@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
 import type { Entity, ShowResponse, ShowMetaField } from "@/features/pageShow/show_type";
+import ChildrenTable from "@/features/pageShow/ChildrenTable";
 
 type Props = {
   id: number;
@@ -235,9 +236,22 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                 {t("dashboardSidebar.pageShow.childrenHint")}
               </div>
             </div>
-            <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
-              (À brancher plus tard via meta.children)
-            </div>
+            {meta?.children?.length ? (
+              <div className="px-6 py-5 flex flex-col gap-6">
+                {meta.children.map((child) => (
+                  <ChildrenTable
+                    key={child.key}
+                    parentEntity={entity}
+                    parentId={id}
+                    child={child}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
+                {t("dashboardSidebar.pageShow.noChildren")}
+              </div>
+            )}
           </div>
         </div>
 

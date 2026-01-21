@@ -445,7 +445,8 @@
       "childrenHint": "Relations / tables associées",
       "insights": "Insights",
       "insightsHint": "Carte / stats / infos",
-      "text": "Texte"
+      "text": "Texte",
+      "noChildren": "Aucun enfant à afficher"
     }
   },
   "roles": {
