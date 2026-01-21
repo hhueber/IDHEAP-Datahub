@@ -56,6 +56,16 @@ export default function Dashboard() {
                 ? t("dashboard.welcomeWithRole", { name, role })
                 : t("dashboard.welcome", { name })}
             </p>
+            {/* Indication que le dashboard est encore statique */}
+            <p
+              className="mt-0.5 text-xs italic"
+              style={{ color: hoverText05 }}
+            >
+              {t(
+                "dashboard.mockNotice",
+                "Dashboard mock"
+              )}
+            </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
