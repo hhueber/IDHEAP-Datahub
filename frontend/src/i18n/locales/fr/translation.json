@@ -339,62 +339,53 @@
       "dashboard": "Dashboard",
       "survey": "Survey",
       "qa": "Questions & Answers",
-      "places": "Places",
+      "places": "Lieux",
       "administration": "Administration"
     },
     "survey": {
       "_": "Survey",
       "all": "Tous",
-      "newEdit": "Nouveau / Éditer",
-      "show": "Afficher"
+      "newEdit": "Nouveau"
     },
     "qa": {
       "qps": {
         "_": "QuestionPerSurvey",
         "all": "Tous",
-        "newEdit": "Nouveau / Éditer",
-        "show": "Afficher"
+        "newEdit": "Nouveau"
       },
       "qglobal": {
         "_": "QuestionGlobal",
         "all": "Tous",
-        "newEdit": "Nouveau / Éditer",
-        "show": "Afficher"
+        "newEdit": "Nouveau"
       },
       "qcat": {
         "_": "QuestionCategory",
         "all": "Tous",
-        "newEdit": "Nouveau / Éditer",
-        "show": "Afficher"
+        "newEdit": "Nouveau"
       },
       "answer": {
         "_": "Answer",
         "all": "Tous",
-        "newEdit": "Nouveau / Éditer",
-        "show": "Afficher"
+        "newEdit": "Nouveau"
       },
       "option": {
         "_": "Option",
         "all": "Tous",
-        "newEdit": "Nouveau / Éditer",
-        "show": "Afficher"
+        "newEdit": "Nouveau"
       }
     },
     "places": {
       "commune": {
         "_": "Commune",
-        "all": "Toutes",
-        "show": "Afficher"
+        "all": "Tous"
       },
       "district": {
         "_": "District",
-        "all": "Tous",
-        "show": "Afficher"
+        "all": "Tous"
       },
       "canton": {
         "_": "Canton",
-        "all": "Tous",
-        "show": "Afficher"
+        "all": "Tous"
       }
     },
     "administration": {
