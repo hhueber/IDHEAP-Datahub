@@ -26,11 +26,6 @@ import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
 
 
-// Démo admin déjà fournie
-function AdminUsers() {
-  return <div className="p-6">Admin: gestion utilisateurs</div>;
-}
-
 export default function App() {
   return (
     // Contexte d’auth global (disponible partout)
@@ -136,14 +131,6 @@ export default function App() {
           />
 
           {/* Pages admin (rôle ADMIN uniquement) */}
-          <Route
-            path="/admin/users"
-            element={
-              <RequireRole roles={[ADMIN]}>
-                <AdminUsers />
-              </RequireRole>
-            }
-          />
           <Route
             path="/admin/users/new"
             element={
