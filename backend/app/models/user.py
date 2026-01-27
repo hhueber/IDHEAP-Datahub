@@ -1,13 +1,14 @@
 import uuid
 
 
-from sqlalchemy import Column, DateTime, Enum as SAEnum, String, Text
+from app.config.roles import Role, ROLE_VALUES
+from sqlalchemy import Column, DateTime
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import String, Text
 from sqlalchemy.sql import func
 
 
 from .base import Base
-from app.config.roles import ROLE_VALUES, Role
-
 
 
 class User(Base):
@@ -16,7 +17,8 @@ class User(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     email = Column(String, unique=True, nullable=False, index=True)
     password_hash = Column(Text, nullable=False)
-    full_name = Column(String, nullable=False)
+    first_name = Column(String, nullable=False)
+    last_name = Column(String, nullable=False)
     role = Column(
         SAEnum(*ROLE_VALUES, name="user_role", native_enum=False),
         nullable=False,

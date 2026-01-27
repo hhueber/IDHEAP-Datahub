@@ -1,5 +1,5 @@
 // Tableau de bord (zone privée) : affiche l’utilisateur connecté et pour l'instant un bouton de déconnexion
-import React from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -13,7 +13,13 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { primary, textColor, borderColor, hoverText05, hoverText07, hoverPrimary10, hoverPrimary15, hoverPrimary30, hoverPrimary90, cardBg } = useTheme();
 
-  const name = user?.full_name ?? t("dashboard.anonymous", "Anonyme");
+  const name = useMemo(() => {
+    if (!user) return t("dashboard.anonymous", "Anonyme");
+    const first = (user.first_name || "").trim();
+    const last = (user.last_name || "").trim();
+    const full = `${first} ${last}`.replace(/\s+/g, " ").trim();
+    return full || t("dashboard.anonymous", "Anonyme");
+  }, [user, t]);
   const role = user?.role ? String(user.role) : t("dashboard.roleUnknown", "Utilisateur");
 
   // placeholders KPI

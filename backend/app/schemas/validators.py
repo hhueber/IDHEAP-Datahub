@@ -9,13 +9,28 @@ from pydantic import AfterValidator
 _NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ0-9 .,'\-]+$")
 
 
-def _validate_full_name(v: str) -> str:
-    v = " ".join(v.split()).strip()
+def _normalize_spaces(v: str) -> str:
+    return " ".join((v or "").split()).strip()
+
+
+def _validate_name_field(field: str, v: str) -> str:
+    v = _normalize_spaces(v)
+
+    if not v:
+        raise ValueError(f"{field} ne doit pas être vide")
     if "<" in v or ">" in v:
-        raise ValueError("full_name ne doit pas contenir '<' ni '>'")
+        raise ValueError(f"{field} ne doit pas contenir '<' ni '>'")
     if not _NAME_RE.match(v):
-        raise ValueError("full_name contient des caractères non autorisés")
+        raise ValueError(f"{field} contient des caractères non autorisés")
     return v
+
+
+def _validate_first_name(v: str) -> str:
+    return _validate_name_field("first_name", v)
+
+
+def _validate_last_name(v: str) -> str:
+    return _validate_name_field("last_name", v)
 
 
 def _validate_password(v: str) -> str:
@@ -34,5 +49,6 @@ def _validate_password(v: str) -> str:
     return v
 
 
-FullNameStr = Annotated[str, AfterValidator(_validate_full_name)]
+NameFirstStr = Annotated[str, AfterValidator(_validate_first_name)]
+NameLastStr = Annotated[str, AfterValidator(_validate_last_name)]
 PasswordStr = Annotated[str, AfterValidator(_validate_password)]
