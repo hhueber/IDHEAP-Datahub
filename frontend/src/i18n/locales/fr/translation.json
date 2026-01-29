@@ -437,7 +437,13 @@
       "insights": "Insights",
       "insightsHint": "Carte / stats / infos",
       "text": "Texte",
-      "noChildren": "Aucune données"
+      "noChildren": "Aucune données",
+      "confirmClear": "Confirmer",
+      "deleteError": "Erreur de suppression",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "noSelection": "Aucun champ sélectionné.",
+      "confirmClearMessage": "Vous allez effacer les champs suivants :\n- {{fields}}",
+      "deleting": "Suppression..."    
     }
   },
   "roles": {
