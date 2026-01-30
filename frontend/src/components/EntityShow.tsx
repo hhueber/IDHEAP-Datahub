@@ -6,6 +6,7 @@ import type { Entity, ShowResponse, ShowMetaField } from "@/features/pageShow/sh
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
+import { useEdit } from "@/shared/useEdit";
 
 type Props = {
   id: number;
@@ -34,19 +35,32 @@ function formatValue(kind: ShowMetaField["kind"], value: any) {
   return String(value);
 }
 
+function normalizeToString(v: any): string {
+  if (v === null || v === undefined) return "";
+  return String(v);
+}
+
 export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const { t } = useTranslation();
-  const { textColor, background, borderColor, hoverPrimary04, hoverText07, hoverPrimary06, } = useTheme();
+  const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
+
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState<ShowResponse["meta"]>(null);
   const [data, setData] = React.useState<ShowResponse["data"]>(null);
+
   const canEdit = meta?.actions?.can_edit ?? false;
   const canDelete = meta?.actions?.can_delete ?? false;
 
+  // DELETE (clear fields)
   const [deleteMode, setDeleteMode] = React.useState(false);
   const [selectedFieldsToClear, setSelectedFieldsToClear] = React.useState<string[]>([]);
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+
+  // INLINE EDIT
+  const [editMode, setEditMode] = React.useState(false);
+  const [draft, setDraft] = React.useState<Record<string, string>>({});
+  const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -80,15 +94,20 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     void load();
   }, [load]);
 
-  const title =
-    meta?.title_key && data?.[meta.title_key]
-      ? String(data[meta.title_key])
-      : `${entity} #${id}`;
-
-  const fields = meta?.fields ?? [];
-
+  // Hook edit -> /edit
   const {
-    target: clearTarget,
+    loading: editLoading,
+    error: editError,
+    confirmWith: confirmEditWith,
+    cancel: cancelEdit,
+  } = useEdit<{ entity: Entity; id: number; updates: Record<string, string> }>((tgt) => ({
+    entity: tgt.entity,
+    filters: [{ field: "uid", value: tgt.id }],
+    updates: tgt.updates,
+  }));
+
+  // Hook delete -> /delete (DELETE)
+  const {
     loading: clearLoading,
     error: clearError,
     openConfirm: openClearConfirm,
@@ -100,11 +119,106 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     clear_fields: tgt.clear_fields,
   }));
 
-  const toggleField = (key: string) => {
+  const title =
+    meta?.title_key && data?.[meta.title_key]
+      ? String(data[meta.title_key])
+      : `${entity} #${id}`;
+
+  const fields = meta?.fields ?? [];
+
+  const toggleClearField = (key: string) => {
     setSelectedFieldsToClear((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     );
   };
+
+  // --- EDIT helpers
+  const isProtectedField = (key: string) => key === "uid" || key === "id";
+
+  const enterEditMode = () => {
+    if (!data) return;
+
+    // initialise draft avec les valeurs actuelles (only for fields we show + languages)
+    const next: Record<string, string> = {};
+
+    for (const f of fields) {
+      if (data[f.key] === undefined) continue;
+      if (isProtectedField(f.key)) continue;
+      next[f.key] = normalizeToString(data[f.key]);
+    }
+
+    // langues (meta.languages -> keys)
+    if (meta?.languages) {
+      for (const l of LANGS) {
+        const k = meta.languages?.[l.key];
+        if (!k) continue;
+        if (data[k] === undefined) continue;
+        if (isProtectedField(k)) continue;
+        next[k] = normalizeToString(data[k]);
+      }
+    }
+
+    setDraft(next);
+    setEditMode(true);
+
+    // Si delete mode actif, on le coupe (évite conflits UI)
+    setDeleteMode(false);
+    setSelectedFieldsToClear([]);
+    cancelClear();
+    setConfirmOpen(false);
+  };
+
+  const exitEditMode = () => {
+    setEditMode(false);
+    setDraft({});
+    setConfirmEditOpen(false);
+    cancelEdit();
+  };
+
+  const updateDraft = (key: string, value: string) => {
+    setDraft((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const getChangedUpdates = (): Record<string, string> => {
+    if (!data) return {};
+
+    const updates: Record<string, string> = {};
+
+    for (const [key, value] of Object.entries(draft)) {
+      if (isProtectedField(key)) continue;
+
+      // compare avec valeur d'origine (en string)
+      const original = normalizeToString(data[key]);
+
+      // si identique => ignore
+      if (value === original) continue;
+
+      // refuse vide
+      if (value.trim() === "") continue;
+
+      updates[key] = value;
+    }
+
+    return updates;
+  };
+
+  const hasAnyValidChange = () => {
+    const updates = getChangedUpdates();
+    return Object.keys(updates).length > 0;
+  };
+
+  // Styles UI pour l’édition inline : donnent des indices visuels clairs (fond léger, bordure, icône)
+  // indiquant qu’un champ est modifiable, tout en conservant une mise en page stable
+  const editableBoxClass =
+    "inline-flex items-center gap-2 rounded-md border px-2 py-1 min-h-[30px] w-full";
+  const editableBoxIdle =
+    "border-black/10 bg-black/3";
+  const editableBoxFocus =
+    "focus-within:border-black/30 focus-within:bg-black/5";
+  const editableInputClass =
+    "w-full bg-transparent outline-none text-sm leading-tight";
+  const pencilIconClass =
+    "text-xs opacity-70 select-none";
 
   return (
     <div className="w-full h-full" style={{ backgroundColor: background, color: textColor }}>
@@ -125,6 +239,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                {/* Confirm clear (delete mode) */}
                 {deleteMode && (
                   <button
                     type="button"
@@ -140,54 +255,81 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                       setConfirmOpen(true);
                     }}
                   >
-                    {t("dashboardSidebar.pageShow.confirmClear")}
-                  </button>
-                )}
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => onEdit?.(entity, id)}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{
-                      backgroundColor: background,
-                      borderColor,
-                      color: textColor,
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = hoverPrimary04;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = background;
-                    }}
-                  >
-                    {t("dashboardSidebar.pageShow.edit")}
+                    {t("dashboardSidebar.pageShow.confirm")}
                   </button>
                 )}
 
+                {/* Confirm edit (edit mode) */}
+                {editMode && (
+                  <button
+                    type="button"
+                    disabled={!hasAnyValidChange()}
+                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                    style={{ backgroundColor: background, borderColor, color: textColor }}
+                    onClick={() => setConfirmEditOpen(true)}
+                  >
+                    {t("dashboardSidebar.pageShow.confirm")}
+                  </button>
+                )}
+
+                {/* EDIT button -> toggles inline edit mode */}
+                {canEdit && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (editMode) {
+                        exitEditMode();
+                      } else {
+                        enterEditMode();
+                      }
+                    }}
+                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                    style={{ backgroundColor: background, borderColor, color: textColor }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverPrimary04; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = background; }}
+                  >
+                    {editMode ? t("common.cancel") : t("dashboardSidebar.pageShow.edit")}
+                  </button>
+                )}
+
+                {/* DELETE button */}
                 {canDelete && (
                   <button
                     type="button"
                     onClick={() => {
-                      // Active/désactive le mode sélection
-                      setDeleteMode((v) => !v);
-                      setSelectedFieldsToClear([]);
-                      cancelClear();
-                      setConfirmOpen(false);
+                      if (deleteMode) {
+                        // Cancel delete mode
+                        setDeleteMode(false);
+                        setSelectedFieldsToClear([]);
+                        cancelClear();
+                        setConfirmOpen(false);
+                      } else {
+                        setDeleteMode(true);
+                        exitEditMode();
+                      }
                     }}
                     className="h-9 px-3 rounded-lg border text-sm transition-colors"
                     style={{
                       backgroundColor: background,
-                      borderColor: "rgba(239,68,68,0.35)",
-                      color: "rgb(220,38,38)",
+                      borderColor: deleteMode
+                        ? borderColor
+                        : "rgba(239,68,68,0.35)", // couleur rouge
+                      color: deleteMode
+                        ? textColor
+                        : "rgb(220,38,38)", // couleur rouge
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)";
+                      if (!deleteMode) {
+                        e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)"; // rouge clair
+                      } else {
+                        e.currentTarget.style.backgroundColor = hoverPrimary04;
+                      }
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = background;
                     }}
                   >
-                    {t("dashboardSidebar.pageShow.delete")}
+                    {deleteMode ? t("common.cancel") : t("dashboardSidebar.pageShow.delete")}
                   </button>
                 )}
               </div>
@@ -227,31 +369,55 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                       {fields
                         .filter((f) => data[f.key] !== undefined)
                         .map((f) => {
-                          const isProtected = f.key === "uid" || f.key === "id"; // A adapter selon besoins
-                          const isSelectable = deleteMode && !isProtected;
+                          const protectedField = isProtectedField(f.key);
+                          const showClearCheckbox = deleteMode && !protectedField;
+                          const showEditInput = editMode && !protectedField;
 
                           return (
                             <React.Fragment key={f.key}>
+                              {/* label */}
                               <div className="font-medium flex items-center gap-2" style={{ color: hoverText07 }}>
                                 <span className="inline-flex w-4 justify-center shrink-0">
                                   <input
                                     type="checkbox"
                                     className={[
                                       "h-4 w-4 transition-opacity",
-                                      isSelectable ? "opacity-100" : "opacity-0 pointer-events-none",
+                                      showClearCheckbox ? "opacity-100" : "opacity-0 pointer-events-none",
                                     ].join(" ")}
                                     checked={selectedFieldsToClear.includes(f.key)}
-                                    onChange={() => toggleField(f.key)}
-                                    tabIndex={isSelectable ? 0 : -1}
-                                    aria-hidden={!isSelectable}
+                                    onChange={() => toggleClearField(f.key)}
+                                    tabIndex={showClearCheckbox ? 0 : -1}
+                                    aria-hidden={!showClearCheckbox}
                                   />
                                 </span>
-
                                 {f.label}
                               </div>
 
+                              {/* value / input */}
                               <div className="break-words">
-                                {formatValue(f.kind, data[f.key])}
+                                {!showEditInput && (
+                                  <span>{formatValue(f.kind, data[f.key])}</span>
+                                )}
+
+                                {showEditInput && (
+                                  <div
+                                    className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
+                                    style={{
+                                      borderColor,
+                                      backgroundColor: background,
+                                    }}
+                                  >
+                                    <input
+                                      value={draft[f.key] ?? normalizeToString(data[f.key])}
+                                      onChange={(e) => updateDraft(f.key, e.target.value)}
+                                      className={editableInputClass}
+                                      style={{ color: textColor }}
+                                    />
+                                    <span className={pencilIconClass} style={{ color: hoverText07 }}>
+                                      {"\u270E"}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
                             </React.Fragment>
                           );
@@ -275,6 +441,10 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                           if (!key) return null;
                           if (data[key] === undefined) return null;
 
+                          const protectedField = isProtectedField(key);
+                          const showClearCheckbox = deleteMode && !protectedField;
+                          const showEditInput = editMode && !protectedField;
+
                           return (
                             <React.Fragment key={l.key}>
                               <div className="font-medium flex items-center gap-2" style={{ color: hoverText07 }}>
@@ -283,17 +453,42 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                     type="checkbox"
                                     className={[
                                       "h-4 w-4 transition-opacity",
-                                      deleteMode ? "opacity-100" : "opacity-0 pointer-events-none",
+                                      showClearCheckbox ? "opacity-100" : "opacity-0 pointer-events-none",
                                     ].join(" ")}
                                     checked={selectedFieldsToClear.includes(key)}
-                                    onChange={() => toggleField(key)}
-                                    tabIndex={deleteMode ? 0 : -1}
-                                    aria-hidden={!deleteMode}
+                                    onChange={() => toggleClearField(key)}
+                                    tabIndex={showClearCheckbox ? 0 : -1}
+                                    aria-hidden={!showClearCheckbox}
                                   />
                                 </span>
                                 {t("dashboardSidebar.pageShow.text")} ({l.label})
                               </div>
-                              <div className="italic">{renderEmpty(data[key])}</div>
+
+                              <div>
+                                {!showEditInput && (
+                                  <div className="italic">{renderEmpty(data[key])}</div>
+                                )}
+
+                                {showEditInput && (
+                                  <div
+                                    className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
+                                    style={{
+                                      borderColor,
+                                      backgroundColor: background,
+                                    }}
+                                  >
+                                    <input
+                                      value={draft[key] ?? normalizeToString(data[key])}
+                                      onChange={(e) => updateDraft(key, e.target.value)}
+                                      className={`${editableInputClass} italic`}
+                                      style={{ color: textColor }}
+                                    />
+                                    <span className={pencilIconClass} style={{ color: hoverText07 }}>
+                                      {"\u270E"}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
                             </React.Fragment>
                           );
                         })}
@@ -357,12 +552,21 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
           </div>
         </aside>
       </div>
+
+      {/* Errors */}
       {clearError && (
         <div className="text-sm mb-2" style={{ color: "rgb(220,38,38)" }}>
           {t("dashboardSidebar.pageShow.deleteError")} {clearError}
         </div>
       )}
 
+      {editError && (
+        <div className="text-sm mb-2" style={{ color: "rgb(220,38,38)" }}>
+          {t("dashboardSidebar.pageShow.editError")} {editError}
+        </div>
+      )}
+
+      {/* Confirm Delete modal */}
       <ConfirmModal
         open={confirmOpen}
         title={t("dashboardSidebar.pageShow.confirmDeleteTitle")}
@@ -387,6 +591,40 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
           setConfirmOpen(false);
           setDeleteMode(false);
           setSelectedFieldsToClear([]);
+          void load();
+        }}
+      />
+
+      {/* Confirm EDIT modal */}
+      <ConfirmModal
+        open={confirmEditOpen}
+        title={t("dashboardSidebar.pageShow.confirmEditTitle")}
+        message={
+          Object.keys(getChangedUpdates()).length === 0
+            ? t("dashboardSidebar.pageShow.noSelection")
+            : t("dashboardSidebar.pageShow.confirmEditMessage", {
+                fields: Object.keys(getChangedUpdates()).join("\n- "),
+              })
+        }
+        confirmLabel={
+          editLoading 
+            ? t("dashboardSidebar.pageShow.saving")
+            : t("dashboardSidebar.pageShow.save")
+        }
+        cancelLabel={t("common.cancel")}
+        onCancel={() => setConfirmEditOpen(false)}
+        onConfirm={async () => {
+          const updates = getChangedUpdates();
+          if (Object.keys(updates).length === 0) return;
+
+          const ok = await confirmEditWith({
+            entity,
+            filters: [{ field: "uid", value: id }],
+            updates,
+          });
+          if (!ok) return;
+          setConfirmEditOpen(false);
+          exitEditMode();
           void load();
         }}
       />
