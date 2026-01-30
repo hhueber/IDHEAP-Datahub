@@ -56,7 +56,8 @@ async def create_user(
     await create_user_record(
         db,
         email=payload.email,
-        full_name=payload.full_name,
+        first_name=payload.first_name,
+        last_name=payload.last_name,
         role=payload.role,
         password_hash=pwd_hash,
     )
@@ -95,7 +96,11 @@ async def delete_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # permet de normaliser la string pour comparer les informations
-    if normalize_name(target.full_name) != normalize_name(payload.full_name) or target.role != payload.role:
+    if (
+        normalize_name(target.first_name) != normalize_name(payload.first_name)
+        or normalize_name(target.last_name) != normalize_name(payload.last_name)
+        or target.role != payload.role
+    ):
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Les informations fournies ne correspondent pas à l'utilisateur",

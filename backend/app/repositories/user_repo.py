@@ -22,12 +22,15 @@ async def get_user_by_id(db: AsyncSession, id: str) -> Optional[User]:
     return res.scalars().first()
 
 
-async def create_user(db: AsyncSession, email: str, password: str, full_name: str, role: str = "MEMBER") -> User:
+async def create_user(
+    db: AsyncSession, email: str, password: str, first_name: str, last_name: str, role: str = "MEMBER"
+) -> User:
     """creates a user and updates the database."""
     user = User(
         email=email,
         password_hash=get_password_hash(password),
-        full_name=full_name,
+        first_name=first_name,
+        last_name=last_name,
         role=role,
     )
     db.add(user)
@@ -63,11 +66,14 @@ async def mark_token_created(db: AsyncSession, user_id: str) -> datetime:
     return issued_at
 
 
-async def create_user_record(db: AsyncSession, *, email: str, full_name: str, role: str, password_hash: str) -> User:
+async def create_user_record(
+    db: AsyncSession, *, email: str, first_name: str, last_name: str, role: str, password_hash: str
+) -> User:
     """Inserts a user and commit into the database."""
     user = User(
         email=email,
-        full_name=full_name,
+        first_name=first_name,
+        last_name=last_name,
         role=role,
         password_hash=password_hash,
     )
