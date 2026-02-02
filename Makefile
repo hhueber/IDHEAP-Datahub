@@ -55,11 +55,46 @@ clean:
 
 ## Docker
 
+include .env
+export
+
 COMPOSE = docker compose
 DB_SERVICE = db
 FRONT_SERVICE = frontend
 INIT_SERVICE = schema_db_init
 API_SERVICE = api
+
+BACKUP_DIR = backups
+BACKUP_FILE = $(BACKUP_DIR)/$(DB_NAME).dump
+
+db_exec = $(COMPOSE) exec -T $(DB_SERVICE)
+
+# Create backup folder if missing
+$(BACKUP_DIR):
+	@mkdir -p $(BACKUP_DIR)
+
+# Dump DB into backups/<db>.dump
+dump_db: $(BACKUP_DIR)
+	@echo "Dumping database $(DB_NAME) -> $(BACKUP_FILE)"
+	@$(db_exec) pg_dump -Fc -U $(DB_USER) -d $(DB_NAME) > $(BACKUP_FILE)
+	@echo "✅ Dump created: $(BACKUP_FILE)"
+
+# Restore DB from backups/<db>.dump (drops objects first)
+restore_db:
+	@if [ ! -f "$(BACKUP_FILE)" ]; then \
+		echo "Backup file not found: $(BACKUP_FILE)"; \
+		echo "Run: make dump_db  (after you populated the DB once)"; \
+		exit 1; \
+	fi
+	@echo "♻️ Restoring database $(DB_NAME) from $(BACKUP_FILE)"
+	@cat $(BACKUP_FILE) | $(COMPOSE) exec -T $(DB_SERVICE) pg_restore -U $(DB_USER) -d $(DB_NAME) --clean --if-exists
+	@echo "✅ Restore done"
+
+# Remove only DB volume (data) then restart db
+reset_db:
+	@echo "Removing DB volume (pgdata)..."
+	$(COMPOSE) down -v --remove-orphans
+	@echo "✅ DB volume removed"
 
 # build service DB (db) and api and front + initdb, then display the Postgres logs.
 docker:
@@ -67,6 +102,16 @@ docker:
 	$(COMPOSE) up -d --build $(INIT_SERVICE) $(FRONT_SERVICE)
 	@echo "✅  Services started"
 	$(COMPOSE) logs -f $(INIT_SERVICE) $(API_SERVICE) $(FRONT_SERVICE)
+
+# Fast start: build db + api, restore dump, then start front (NO init service)
+docker_restore:
+	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
+	@echo "Waiting for DB to be ready..."
+	@$(COMPOSE) exec -T $(DB_SERVICE) sh -c 'until pg_isready -U $(DB_USER) -d $(DB_NAME); do sleep 1; done'
+	$(MAKE) restore_db
+	$(COMPOSE) up -d --build $(FRONT_SERVICE)
+	@echo "✅  Services started with restored DB"
+	$(COMPOSE) logs -f $(API_SERVICE) $(FRONT_SERVICE)
 
 # Stop the project's Docker services and delete the containers + volumes
 docker_clean:
