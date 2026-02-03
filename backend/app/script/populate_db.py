@@ -207,42 +207,62 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
+            GSB_2023 = pd.read_csv(
+                Path(BASE_DIR, "data", "GSB 2023_V1.csv"),
+                header=0,
+                sep=";",
+                low_memory=False,  # évite le warning mixed types
+            )
 
             for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
                 if pd.isna(row["BFS_2023"]):
                     continue
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+
+                bfs_code = str(int(row["BFS_2023"]))
+
+                result = await session.execute(select(Commune).filter_by(code=bfs_code))
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
+                    # ⚠️ selon ton modèle, district peut être nullable ou pas.
+                    # Si district est obligatoire, il faudra retrouver le district via un mapping BFS->district.
                     db_commune = Commune(
-                        code=str(row("BFS_2023")),
+                        code=bfs_code,
                         name=row["Gemeinde_2023"],
                         name_fr=row["Gemeinde_2023"],
                         name_it=row["Gemeinde_2023"],
                         name_ro=row["Gemeinde_2023"],
                         name_en=row["Gemeinde_2023"],
                         name_de=row["Gemeinde_2023"],
+                        # district=...,  # à mettre si non-nullable
                     )
                     session.add(db_commune)
                     await session.flush()
 
-                for col in GSB_2023:
-                    if "GSB" in col:
-                        survey = col.split("_")[0]
-                        year = int(survey.replace("GSB", ""))
-                        year = 2000 + year if year < 50 else 1900 + year
+                for col in GSB_2023.columns:
+                    # ne traiter que les colonnes du style GSB23_...
+                    if not col.startswith("GSB23_"):
+                        continue
 
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
-                        db_question = result.scalar_one_or_none()
+                    # chercher la question
+                    result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
+                    db_question = result.scalar_one_or_none()
 
-                        if db_question is None:
-                            raise RuntimeError("Question not found")
-                        db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
-                        )
-                        session.add(db_answer)
-                        await session.flush()
+                    if db_question is None:
+                        # colonne meta comme GSB23_Mode, GSB23_Teilnahme etc.
+                        # On ignore, sans casser l’import.
+                        # print(f"Skipping non-question column: {col}")
+                        continue
+
+                    db_answer = Answer(
+                        year=2023,
+                        question=db_question,
+                        commune=db_commune,
+                        value=str(row[col]),
+                    )
+                    session.add(db_answer)
+
+                # un flush par commune suffit (pas besoin à chaque answer)
+                await session.flush()
 
                     # print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
