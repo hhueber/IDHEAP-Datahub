@@ -10,6 +10,8 @@ import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { useTheme } from "@/theme/useTheme";
+import type { ChoroplethResponse } from "@/features/geo/geoApi";
+import MapLegendOverlay from "@/components/map/MapLegendOverlay";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -38,14 +40,20 @@ function ExposeMapOnWindow() {
 
 type Props = {
   className?: string;
+  year?: number | null; // année pour charger les couches "by_year"
+  choropleth?: ChoroplethResponse | null; // overlay communes colorées
   baseImageUrl?: string;
-  baseImageOpacity?: number; // 0..1
+  baseImageOpacity?: number;
+  panelOpen?: boolean;
 };
 
 export default function GeoJsonMap({
   className = "absolute inset-0",
+  year = null,
+  choropleth = null,
   baseImageUrl,
   baseImageOpacity = 1,
+  panelOpen = true,
 }: Props) {
   const { t } = useTranslation();
   const [bundle, setBundle] = useState<GeoBundle | null>(null);
@@ -53,7 +61,7 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores } = useTheme();
+  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores, borderColor } = useTheme();
 
 
   /** Chargement des couches géo pour l’année courante. */
@@ -61,10 +69,10 @@ export default function GeoJsonMap({
     const ctrl = new AbortController();
     let alive = true; // évite setState après unmount
 
-    const currentYear = new Date().getFullYear();
+    const y = typeof year === "number" ? year : new Date().getFullYear();
 
     geoApi
-      .getByYear(currentYear, ctrl.signal, {
+      .getByYear(y, ctrl.signal, {
         layers: ["country", "lakes", "cantons", "districts"],
         clearOthers: false,
       }
@@ -175,7 +183,7 @@ const communesStyle = useMemo(() => ({
         <Pane name="pane-country"  style={{ zIndex: 200 }}>
           {country   && <GeoJSON data={country as any}   style={() => countryStyle} pane="pane-country"  />}
         </Pane>
-        <Pane name="pane-lakes"    style={{ zIndex: 300 }}>
+        <Pane name="pane-lakes"    style={{ zIndex: 700 }}>
           {lakes     && <GeoJSON data={lakes as any}     style={() => lakesStyle} pane="pane-lakes"    />}
         </Pane>
         <Pane name="pane-communes" style={{ zIndex: 400 }}>
@@ -187,6 +195,42 @@ const communesStyle = useMemo(() => ({
         <Pane name="pane-cantons"  style={{ zIndex: 600 }}>
           {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
         </Pane>
+        {choropleth?.feature_collection && (
+          <>
+            <Pane name="choropleth" style={{ zIndex: 650 }} />
+            <GeoJSON
+              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}`}
+              data={choropleth.feature_collection as any}
+              pane="choropleth"
+              style={(feat: any) => {
+                const v = feat?.properties?.value ?? null;
+                const fill = feat?.properties?.fill_color ?? "#cccccc"; // actions de secours si fail du backend pour attribuer une couleur
+                return {
+                  weight: 1,
+                  opacity: 1,
+                  fillOpacity: 0.75,
+                  fillColor: fill,
+                  color: borderColor,
+                };
+              }}
+              onEachFeature={(feature: any, layer: any) => {
+                const props = feature?.properties ?? {};
+                const v = props.value ?? null;
+
+                // Si gradient: pas de nom de commune
+                if (choropleth.legend.type === "gradient") {
+                  layer.bindTooltip(`${v ?? "No data"}`, { sticky: true });
+                } else {
+                  const name = props.name ?? "";
+                  layer.bindTooltip(`${name}${name ? " — " : ""}${v ?? "No data"}`, { sticky: true });
+                }
+              }}
+            />
+
+            {/* Légende */}
+            <MapLegendOverlay choropleth={choropleth} panelOpen={panelOpen} />
+          </>
+        )}
         {/* Points villes et labels */}
         <PlaceOfInterestLayer />
       </MapContainer>

@@ -9,4 +9,11 @@ export const questionsApi = {
       query: { scope: "per_survey", survey_uid: surveyUid },
       headers: { "Accept-Language": lang ?? "en" }, // on passe la langue
     }),
+
+  getAvailableYears: (questionUid: number, scope: "per_survey" | "global", signal?: AbortSignal) =>
+    apiFetch<number[]>(`questions/${questionUid}/years`, {
+      method: "GET",
+      signal,
+      query: { scope },
+    }),
 };
