@@ -11,7 +11,6 @@ import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { useTheme } from "@/theme/useTheme";
 import type { ChoroplethResponse } from "@/features/geo/geoApi";
-import MapLegendOverlay from "@/components/map/MapLegendOverlay";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -226,9 +225,6 @@ const communesStyle = useMemo(() => ({
                 }
               }}
             />
-
-            {/* Légende */}
-            <MapLegendOverlay choropleth={choropleth} panelOpen={panelOpen} />
           </>
         )}
         {/* Points villes et labels */}
