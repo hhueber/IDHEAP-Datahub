@@ -62,6 +62,16 @@ export const geoApi = {
           : {}),
       },
     }),
+  getChoropleth: (params: { scope: "per_survey" | "global"; question_uid: number; year: number; }, signal?: AbortSignal) =>
+    apiFetch<ChoroplethResponse>("geo/choropleth", {
+      method: "GET",
+      signal,
+      query: {
+        scope: params.scope,
+        question_uid: params.question_uid,
+        year: params.year,
+      },
+    }),
 };
 
 export type PlaceOfInterestMapDTO = {
@@ -78,4 +88,41 @@ export const PlaceOfInterestApi = {
       signal,
       query: { lang },
     }),
+};
+
+export type LegendItem = {
+  label: string;
+  color: string;
+  value?: any | null;   // categorical
+  min?: number | null;  // gradient
+  max?: number | null;  // gradient
+};
+
+export type GradientMeta = {
+  mode: "continuous";
+  start: string;
+  end: string;
+  vmin: number;
+  vmax: number;
+  ticks: number[];
+};
+
+export type MapLegend = {
+  type: "categorical" | "gradient";
+  title: string;
+  items: LegendItem[];
+  gradient?: GradientMeta | null;
+};
+
+export type ChoroplethResponse = {
+  question_uid: number;
+  year_requested: number;
+  year_geo_communes?: number | null;
+  legend: MapLegend;
+  feature_collection: FeatureCollection<{
+    commune_uid: number;
+    name?: string;
+    code?: string;
+    value: string | null;
+  }>;
 };
