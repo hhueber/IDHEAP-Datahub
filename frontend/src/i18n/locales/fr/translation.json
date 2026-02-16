@@ -438,12 +438,17 @@
       "insightsHint": "Carte / stats / infos",
       "text": "Texte",
       "noChildren": "Aucune données",
-      "confirmClear": "Confirmer",
-      "deleteError": "Erreur de suppression",
+      "confirm": "Confirmer",
+      "deleteError": "Erreur de suppression : ",
       "confirmDeleteTitle": "Confirmer la suppression",
       "noSelection": "Aucun champ sélectionné.",
       "confirmClearMessage": "Vous allez effacer les champs suivants :\n- {{fields}}",
-      "deleting": "Suppression..."    
+      "deleting": "Suppression...",
+      "editError": "Erreur d'édition : ",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer",
+      "confirmEditTitle": "Confirmer l'édition",
+      "confirmEditMessage": "Vous allez éditer les champs suivants :\n- {{fields}}"
     }
   },
   "roles": {
