@@ -40,7 +40,12 @@ async def create_schema() -> None:
             admin_exists = await any_admin_exists(db)
             if not admin_exists:
                 admin = await create_user(
-                    db, settings.ROOT_EMAIL, settings.ROOT_PASSWORD, settings.ROOT_NAME, role="ADMIN"
+                    db,
+                    settings.ROOT_EMAIL,
+                    settings.ROOT_PASSWORD,
+                    settings.ROOT_FIRST_NAME,
+                    settings.ROOT_LAST_NAME,
+                    role="ADMIN",
                 )
                 logger.info("Root admin created:")
             else:

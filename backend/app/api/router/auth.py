@@ -1,4 +1,5 @@
 from datetime import timedelta
+import asyncio
 
 
 from app.api.dependencies import get_current_user
@@ -23,6 +24,8 @@ async def login(user_credentials: UserLogin, response: Response, db: AsyncSessio
     """Authenticate user by email and return access token."""
     user = await authenticate_user(db, user_credentials.email, user_credentials.password)
     if not user:
+        # délai de 2 secondes volontaire pour ralentir le brute-force
+        await asyncio.sleep(2.0)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password",

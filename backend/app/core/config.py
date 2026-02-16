@@ -52,7 +52,8 @@ class Settings(BaseSettings):
     # Super admin instance account
     ROOT_EMAIL: str | None = None
     ROOT_PASSWORD: str | None = None
-    ROOT_NAME: str | None = "Admin Root"
+    ROOT_FIRST_NAME: str | None = "Admin"
+    ROOT_LAST_NAME: str | None = "Root"
 
     model_config = SettingsConfigDict(
         env_file=".env", case_sensitive=False  # env_fill utile que en dev, case_sensitive passer a True en prod

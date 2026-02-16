@@ -31,14 +31,22 @@ export default function PrivateTopbar() {
       ? DEFAULT_LOGO
       : resolveAssetUrl(logoUrlRaw);
 
-//   user n'est pas encore retouner au frontend mais l'idée est d'avoir les initiales du User
-  const userName = user?.full_name ?? t("dashboard.private.anonymous");
+  const userName = useMemo(() => {
+    if (!user) return t("dashboard.private.anonymous");
+    const first = (user.first_name || "").trim();
+    const last = (user.last_name || "").trim();
+    const full = `${first} ${last}`.replace(/\s+/g, " ").trim();
+    return full || t("dashboard.private.anonymous");
+  }, [user, t]);
+
   const initials = useMemo(() => {
-    const parts = (userName || "").trim().split(/\s+/).filter(Boolean);
-    const a = parts[0]?.[0] ?? "U";
-    const b = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+    if (!user) return "U";
+    const firstParts = (user.first_name || "").trim().split(/\s+/).filter(Boolean);
+    const lastParts = (user.last_name || "").trim().split(/\s+/).filter(Boolean);
+    const a = firstParts[0]?.[0] ?? "U";
+    const b = lastParts.length > 0 ? (lastParts[lastParts.length - 1]?.[0] ?? "") : "";
     return (a + b).toUpperCase();
-  }, [userName]);
+  }, [user]);
 
   const curLang = (i18n.language || "").toLowerCase();
   const curBase = curLang.split("-")[0];
