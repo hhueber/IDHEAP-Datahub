@@ -199,7 +199,7 @@ const communesStyle = useMemo(() => ({
           <>
             <Pane name="choropleth" style={{ zIndex: 650 }} />
             <GeoJSON
-              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}`}
+              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}-${choropleth.granularity}`}
               data={choropleth.feature_collection as any}
               pane="choropleth"
               style={(feat: any) => {
@@ -217,11 +217,10 @@ const communesStyle = useMemo(() => ({
                 const props = feature?.properties ?? {};
                 const v = props.value ?? null;
 
-                // Si gradient: pas de nom de commune
                 if (choropleth.legend.type === "gradient") {
                   layer.bindTooltip(`${v ?? "No data"}`, { sticky: true });
                 } else {
-                  const name = props.name ?? "";
+                  const name = props.name ?? props.code ?? "";
                   layer.bindTooltip(`${name}${name ? " — " : ""}${v ?? "No data"}`, { sticky: true });
                 }
               }}

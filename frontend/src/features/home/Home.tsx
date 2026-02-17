@@ -5,6 +5,7 @@ import HomeInfoPanel from "@/features/home/components/HomeInfoPanel";
 import { useBootstrap } from "@/features/home/hooks/useBootstrap";
 import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
+import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 
 const GLOBAL_UID = -1;
 
@@ -18,6 +19,9 @@ export default function Home() {
   const [selectedSurveyUid, setSelectedSurveyUid] = useState<number>(GLOBAL_UID);
   const [selectedQuestionUid, setSelectedQuestionUid] = useState<number | null>(null);
   const [globalYear, setGlobalYear] = useState<number | null>(null);
+
+  // Granularity selector
+  const [granularity, setGranularity] = useState<ChoroplethGranularity>("commune");
 
   // appel bootstrap
   const { data, loading, error, errorKey } = useBootstrap();
@@ -43,6 +47,7 @@ export default function Home() {
     question_uid: selectedQuestionUid,
     year: activeYear,
     bins: 6,
+    granularity,
   });
 
   return (
@@ -130,6 +135,8 @@ export default function Home() {
             onQuestionSelect={(uid) => setSelectedQuestionUid(uid)}
             globalYear={globalYear}
             onGlobalYearChange={setGlobalYear}
+            granularity={granularity}
+            onGranularityChange={setGranularity}
           />
         </div>
       </aside>

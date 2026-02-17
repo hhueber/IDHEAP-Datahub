@@ -49,7 +49,6 @@ type GeoLayer = "country" | "lakes" | "cantons" | "districts" | "communes";
 // Client API : récupère les couches géo pour une année donnée
 // Donne le choix des GeoLayer souhaiter
 export const geoApi = {
-  // Si `year` est omise, le backend peut renvoyer l’année par défaut (courante)
   getByYear: (year?: number, signal?: AbortSignal, opts?: { layers?: GeoLayer[]; clearOthers?: boolean }) =>
     apiFetch<GeoBundle>("geo/by_year", {
       method: "GET",
@@ -57,12 +56,19 @@ export const geoApi = {
       query: {
         ...(typeof year === "number" ? { year } : {}),
         ...(opts?.layers?.length ? { layers: opts.layers.join(",") } : {}),
-        ...(typeof opts?.clearOthers === "boolean"
-          ? { clear_others: String(opts.clearOthers) }
-          : {}),
+        ...(typeof opts?.clearOthers === "boolean" ? { clear_others: String(opts.clearOthers) } : {}),
       },
     }),
-  getChoropleth: (params: { scope: "per_survey" | "global"; question_uid: number; year: number; }, signal?: AbortSignal) =>
+
+  getChoropleth: (
+    params: {
+      scope: "per_survey" | "global";
+      question_uid: number;
+      year: number;
+      granularity?: ChoroplethGranularity;
+    },
+    signal?: AbortSignal
+  ) =>
     apiFetch<ChoroplethResponse>("geo/choropleth", {
       method: "GET",
       signal,
@@ -70,6 +76,7 @@ export const geoApi = {
         scope: params.scope,
         question_uid: params.question_uid,
         year: params.year,
+        ...(params.granularity ? { granularity: params.granularity } : {}),
       },
     }),
 };
@@ -114,15 +121,23 @@ export type MapLegend = {
   gradient?: GradientMeta | null;
 };
 
+export type ChoroplethGranularity = "commune" | "district" | "canton" | "federal";
+
 export type ChoroplethResponse = {
   question_uid: number;
   year_requested: number;
   year_geo_communes?: number | null;
+  year_geo_districts?: number | null;
+  year_geo_cantons?: number | null;
+  granularity: ChoroplethGranularity;
   legend: MapLegend;
   feature_collection: FeatureCollection<{
-    commune_uid: number;
+    level: ChoroplethGranularity;
+    unit_uid: number;
     name?: string;
     code?: string;
     value: string | null;
+    value_kind?: "value" | "no_data" | "no_response";
+    fill_color?: string;
   }>;
 };
