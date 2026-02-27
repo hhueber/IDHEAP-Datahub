@@ -3,8 +3,10 @@ from typing import Optional, Set
 
 from app.db import get_db
 from app.repositories.placeOfInterest_repo import list_placeOfInterest_for_lang
+from app.schemas.choropleth import ChoroplethGranularity, ChoroplethResponse
 from app.schemas.geo import GeoBundle
 from app.schemas.placeOfInterest import PlaceOfInterestClientOut
+from app.services.choropleth_service import build_choropleth
 from app.services.geo_service import ALL_LAYERS, get_geo_by_year_selective
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -47,3 +49,29 @@ async def get_placeOfInterest_for_map(
     Si aucune ville n'est en DB, renvoie simplement [].
     """
     return await list_placeOfInterest_for_lang(db, lang)
+
+
+@router.get("/choropleth", response_model=ChoroplethResponse)
+async def commune_choropleth(
+    scope: str = Query(..., pattern="^(per_survey|global)$"),
+    question_uid: int = Query(...),
+    year: int = Query(...),
+    granularity: ChoroplethGranularity = Query("commune"),
+    db: AsyncSession = Depends(get_db),
+):
+    fc, legend, meta = await build_choropleth(
+        db,
+        scope=scope,
+        question_uid=question_uid,
+        year=year,
+        granularity=granularity,
+    )
+    return ChoroplethResponse(
+        question_uid=question_uid,
+        year_requested=year,
+        granularity=granularity,
+        year_geo_districts=meta.get("districts"),
+        year_geo_cantons=meta.get("cantons"),
+        legend=legend,
+        feature_collection=fc,
+    )

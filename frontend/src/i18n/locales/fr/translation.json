@@ -26,7 +26,12 @@
     "globalOption": "Global",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
     "noQuestionsForSelection": "Pas de questions pour cette sélection.",
-    "bootstrapError": "Impossible de charger les données initiales."
+    "bootstrapError": "Impossible de charger les données initiales.",
+    "availableYears": "Années disponibles pour cette question",
+    "noAvailableYears": "Acune année disponible",
+    "selectYear": "Selectionner une année",
+    "choropleth": "Date pour question globale",
+    "granularity": "Granularité"
   },
   "map": {
     "placeOfInterest": {
