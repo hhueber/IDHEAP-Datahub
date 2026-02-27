@@ -10,6 +10,7 @@ from app.models import Base
 from app.repositories.user_repo import any_admin_exists, create_user
 from app.script.populate_config import populate_config_if_empty
 from app.script.populate_db import populate_db
+from app.script.populate_demo_db import populate_demo_db
 from app.script.populate_geo_db import populate_async_geo
 
 
@@ -17,13 +18,14 @@ logger = logging.getLogger(__name__)
 
 
 async def create_schema() -> None:
+    print(settings.DATABASE_URL)
     try:
         await ensure_extensions()
     except Exception as e:
         logger.warning("Could not ensure extensions (unaccent/postgis): %s", e)
 
-    confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
-    if confirm.lower() == "y":
+    # confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
+    if 1:  # confirm.lower() == "y":
         async with engine.begin() as conn:
             # Drop toute les tables pour repartir de 0
             logger.warning("Dropping all tables (destructive operation).")
@@ -56,14 +58,21 @@ async def create_schema() -> None:
     await populate_config_if_empty()
     logger.info("Config table initialized (if empty).")
 
-    # Populate la base de donnée
-    await populate_db()
-    logger.info("Database populated successfully.")
-
     await populate_async_geo()
     logger.info("Database populated successfully with geo data.")
 
+    if is_demo:
+        await populate_demo_db()
+        logger.info("Database populated successfully with demo data.")
+    else:  # Populate la base de donnée
+        await populate_db()
+        logger.info("Database populated successfully.")
+
 
 if __name__ == "__main__":
-    configure_logging()
-    asyncio.run(create_schema())
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", dest="demo", action="store_true")
+    # configure_logging()
+    # asyncio.run(create_schema())
