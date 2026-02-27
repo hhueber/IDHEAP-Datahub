@@ -6,6 +6,7 @@ from app.db import SessionLocal
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
+from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from sqlalchemy import select
@@ -88,6 +89,16 @@ async def populate_demo_db() -> None:
 
         async with session.begin():
 
+            db_question_globale_kant = QuestionGlobal()
+
+            db_question_globale_spr = QuestionGlobal()
+
+            db_question_globale_17_23 = QuestionGlobal()
+
+            session.add(db_question_globale_kant)
+            session.add(db_question_globale_spr)
+            session.add(db_question_globale_17_23)
+
             for year in tqdm([2017, 2023], total=2, des="Processing all year"):
                 db_survey = Survey(name=f"GSB{str(year)[2:]}", year=year)
 
@@ -98,6 +109,7 @@ async def populate_demo_db() -> None:
                     code="kant",
                     label="kant",
                     survey=db_survey,
+                    question_global=db_question_globale_kant,
                     text_de="Canton de la commune",
                     text_fr="Canton de la commune",
                     text_it="Canton de la commune",
@@ -110,6 +122,7 @@ async def populate_demo_db() -> None:
                     code="spr",
                     label="spr",
                     survey=db_survey,
+                    question_global=db_question_globale_spr,
                     text_de="Langue de la commune",
                     text_fr="Langue de la commune",
                     text_it="Langue de la commune",
@@ -123,6 +136,7 @@ async def populate_demo_db() -> None:
                         code="GSB17_Q58",
                         label="GSB17_Q58",
                         survey=db_survey,
+                        question_global=db_question_globale_17_23,
                         text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
                         text_fr="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
                         text_it="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
@@ -154,11 +168,14 @@ async def populate_demo_db() -> None:
                         text_ro="Wo werden die Exekutivmitglieder gewählt?",
                         text_en="Wo werden die Exekutivmitglieder gewählt?",
                     )
+
+                    session.add(db_question_unique_17_2)
                 elif year == 2023:
                     db_question_globale_23 = QuestionPerSurvey(
                         code="GSB23_Q52",
                         label="GSB23_Q52",
                         survey=db_survey,
+                        question_global=db_question_globale_17_23,
                         text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
                         text_fr="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
                         text_it="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
@@ -179,3 +196,7 @@ async def populate_demo_db() -> None:
 
                     db_question_unique_23_2 = QuestionPerSurvey()
                     session.add(db_question_globale_23)
+                    session.add(db_question_unique_23_1)
+                    session.add(db_question_unique_23_2)
+
+                session.commit()
