@@ -288,17 +288,18 @@ function QuestionCard({ primary, selected, onClick, }: { primary: string; select
         active:translate-y-[1px]
         transition
         border
-        bg-[var(--question-card-bg)]
-        hover:bg-[var(--question-card-hover-bg)]
         hover:shadow-md
+        bg-[var(--qc-bg)]
+        hover:bg-[var(--qc-hover-bg)]
       `}
       style={
         {
           // on passe les couleurs au CSS via des variables
-          "--question-card-bg": background,
-          "--question-card-hover-bg": hoverPrimary06,
-          borderColor: borderColor,
+          "--qc-bg": selected ? hoverPrimary06 : background,
+          "--qc-hover-bg": hoverPrimary06,
+          borderColor: selected ? hoverPrimary06 : borderColor,
           color: textColor,
+          boxShadow: selected ? "0 0 0 2px rgba(0,0,0,0.06)" : undefined,
         } as React.CSSProperties
       }
     >
