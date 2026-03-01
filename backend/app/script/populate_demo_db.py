@@ -3,6 +3,7 @@ from pathlib import Path
 
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
+from app.models.answer import Answer
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
@@ -89,49 +90,69 @@ async def populate_demo_db() -> None:
 
         async with session.begin():
 
-            db_question_globale_kant = QuestionGlobal()
+            db_question_globale_kant = QuestionGlobal(
+                label="kant",
+                text_de="Kantonszugehörigkeit Gemeinden",
+                text_fr="Kantonszugehörigkeit Gemeinden",
+                text_en="Kantonszugehörigkeit Gemeinden",
+                text_it="Kantonszugehörigkeit Gemeinden",
+                text_ro="Kantonszugehörigkeit Gemeinden",
+            )
 
-            db_question_globale_spr = QuestionGlobal()
+            db_question_globale_spr = QuestionGlobal(
+                label="spr",
+                text_de="Sprachgebiete der Schweiz",
+                text_fr="Sprachgebiete der Schweiz",
+                text_en="Sprachgebiete der Schweiz",
+                text_it="Sprachgebiete der Schweiz",
+                text_ro="Sprachgebiete der Schweiz",
+            )
 
-            db_question_globale_17_23 = QuestionGlobal()
+            db_question_globale_17_23 = QuestionGlobal(
+                label="arbeiten",
+                text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                text_fr="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                text_en="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                text_it="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                text_ro="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+            )
 
             session.add(db_question_globale_kant)
             session.add(db_question_globale_spr)
             session.add(db_question_globale_17_23)
 
-            for year in tqdm([2017, 2023], total=2, des="Processing all year"):
+            for year in tqdm([2017, 2023], total=2, desc="Processing all year"):
                 db_survey = Survey(name=f"GSB{str(year)[2:]}", year=year)
 
                 session.add(db_survey)
                 await session.flush()
 
-                db_question = QuestionPerSurvey(
-                    code="kant",
-                    label="kant",
-                    survey=db_survey,
-                    question_global=db_question_globale_kant,
-                    text_de="Canton de la commune",
-                    text_fr="Canton de la commune",
-                    text_it="Canton de la commune",
-                    text_en="Canton de la commune",
-                    text_ro="Canton de la commune",
-                )
-                session.add(db_question)
-
-                db_question = QuestionPerSurvey(
-                    code="spr",
-                    label="spr",
-                    survey=db_survey,
-                    question_global=db_question_globale_spr,
-                    text_de="Langue de la commune",
-                    text_fr="Langue de la commune",
-                    text_it="Langue de la commune",
-                    text_en="Langue de la commune",
-                    text_ro="Langue de la commune",
-                )
-                session.add(db_question)
-
                 if year == 2017:
+                    db_question = QuestionPerSurvey(
+                        code="kant17",
+                        label="kant17",
+                        survey=db_survey,
+                        question_global=db_question_globale_kant,
+                        text_de="Canton de la commune",
+                        text_fr="Canton de la commune",
+                        text_it="Canton de la commune",
+                        text_en="Canton de la commune",
+                        text_ro="Canton de la commune",
+                    )
+                    session.add(db_question)
+
+                    db_question = QuestionPerSurvey(
+                        code="spr17",
+                        label="spr17",
+                        survey=db_survey,
+                        question_global=db_question_globale_spr,
+                        text_de="Langue de la commune",
+                        text_fr="Langue de la commune",
+                        text_it="Langue de la commune",
+                        text_en="Langue de la commune",
+                        text_ro="Langue de la commune",
+                    )
+                    session.add(db_question)
                     db_question_globale_17 = QuestionPerSurvey(
                         code="GSB17_Q58",
                         label="GSB17_Q58",
@@ -171,6 +192,32 @@ async def populate_demo_db() -> None:
 
                     session.add(db_question_unique_17_2)
                 elif year == 2023:
+
+                    db_question = QuestionPerSurvey(
+                        code="kant23",
+                        label="kant23",
+                        survey=db_survey,
+                        question_global=db_question_globale_kant,
+                        text_de="Canton de la commune",
+                        text_fr="Canton de la commune",
+                        text_it="Canton de la commune",
+                        text_en="Canton de la commune",
+                        text_ro="Canton de la commune",
+                    )
+                    session.add(db_question)
+
+                    db_question = QuestionPerSurvey(
+                        code="spr23",
+                        label="spr23",
+                        survey=db_survey,
+                        question_global=db_question_globale_spr,
+                        text_de="Langue de la commune",
+                        text_fr="Langue de la commune",
+                        text_it="Langue de la commune",
+                        text_en="Langue de la commune",
+                        text_ro="Langue de la commune",
+                    )
+                    session.add(db_question)
                     db_question_globale_23 = QuestionPerSurvey(
                         code="GSB23_Q52",
                         label="GSB23_Q52",
@@ -194,9 +241,167 @@ async def populate_demo_db() -> None:
                         text_ro="Welches ist Ihre höchste abgeschlossene Ausbildung?",
                     )
 
-                    db_question_unique_23_2 = QuestionPerSurvey()
+                    db_question_unique_23_2 = QuestionPerSurvey(
+                        code="GSB23_Q27",
+                        label="GSB23_Q27",
+                        survey=db_survey,
+                        text_de="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
+                        text_fr="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
+                        text_en="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
+                        text_it="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
+                        text_ro="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
+                    )
                     session.add(db_question_globale_23)
                     session.add(db_question_unique_23_1)
                     session.add(db_question_unique_23_2)
 
                 session.commit()
+
+        # Adding answer
+        async with session.begin():
+            crc = pd.read_csv(Path(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
+
+            for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
+                if pd.isna(row["gemid"]):
+                    continue
+
+                result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
+                db_commune = result.scalar_one_or_none()
+
+                if db_commune is None:
+                    # print(f">>> INSERTING COMMUNE {row['gemidname']}")
+                    db_commune = Commune(
+                        code=str(row["gemid"]),
+                        name=row["gemidname"],
+                        name_en=row["gemidname"],
+                        name_fr=row["gemidname"],
+                        name_it=row["gemidname"],
+                        name_ro=row["gemidname"],
+                        name_de=row["gemidname"],
+                        district=db_district,
+                    )
+                    session.add(db_commune)
+                    await session.flush()
+                i = 0
+                for col in crc:
+                    if "kant17" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant17"))
+                        db_question = result.scalar_one_or_none()
+                        print(i)
+                        db_answer = Answer(
+                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+                        i += 1
+
+                    elif "spr17" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr17"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+
+                    elif "GSB17_Q58" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q58"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+                    elif col == "GSB17_Q3":
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q3"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+                    elif "GSB17_Q42" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q42"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+
+            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
+            for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing Commune for 2023"):
+                if pd.isna(row["BFS_2023"]):
+                    continue
+                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+                db_commune = result.scalar_one_or_none()
+
+                if db_commune is None:
+                    db_commune = Commune(
+                        code=str(row("BFS_2023")),
+                        name=row["Gemeinde_2023"],
+                        name_fr=row["Gemeinde_2023"],
+                        name_it=row["Gemeinde_2023"],
+                        name_ro=row["Gemeinde_2023"],
+                        name_en=row["Gemeinde_2023"],
+                        name_de=row["Gemeinde_2023"],
+                    )
+                    session.add(db_commune)
+                    await session.flush()
+                for col in GSB_2023:
+                    if "kant" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant23"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+
+                    elif "spr" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr23"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+
+                    elif "GSB23_Q52" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q52"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+
+                    elif "GSB23_Q58" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q58"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+                    elif "GSB23_Q27" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q27"))
+                        db_question = result.scalar_one_or_none()
+
+                        db_answer = Answer(
+                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                        )
+                        session.add(db_answer)
+                        await session.flush()
+
+        # Adding Option
+        async with session.begin():
+            pass

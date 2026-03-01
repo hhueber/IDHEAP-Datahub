@@ -19,10 +19,14 @@ import shapely.wkb
 transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 
 
-async def populate_async_geo() -> None:
+async def populate_async_geo(is_demo: bool) -> None:
     has_country_populated = False
+    if is_demo:
+        years = [2017, 2023]
+    else:
+        years = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
     async with SessionLocal() as session:
-        for year in [1988, 1994, 1998, 2005, 2009, 2017, 2023]:
+        for year in years:
             if year < 2016:
                 year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
                 url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
@@ -78,6 +82,7 @@ async def populate_async_geo() -> None:
                                 multi = shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 multi = transform(transformer.transform, multi)
+                                print(bfs_number)
                                 db_commune_map = CommuneMap(
                                     year=year,
                                     commune=db_commune,
