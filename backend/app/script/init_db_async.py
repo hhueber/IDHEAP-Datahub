@@ -17,8 +17,7 @@ from app.script.populate_geo_db import populate_async_geo
 logger = logging.getLogger(__name__)
 
 
-async def create_schema() -> None:
-    print(settings.DATABASE_URL)
+async def create_schema(is_demo: bool) -> None:
     try:
         await ensure_extensions()
     except Exception as e:
@@ -58,9 +57,6 @@ async def create_schema() -> None:
     await populate_config_if_empty()
     logger.info("Config table initialized (if empty).")
 
-    await populate_async_geo()
-    logger.info("Database populated successfully with geo data.")
-
     if is_demo:
         await populate_demo_db()
         logger.info("Database populated successfully with demo data.")
@@ -68,11 +64,15 @@ async def create_schema() -> None:
         await populate_db()
         logger.info("Database populated successfully.")
 
+    await populate_async_geo(is_demo)
+    logger.info("Database populated successfully with geo data.")
+
 
 if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", dest="demo", action="store_true")
-    # configure_logging()
-    # asyncio.run(create_schema())
+    args = parser.parse_args()
+    configure_logging()
+    asyncio.run(create_schema(args.demo))
