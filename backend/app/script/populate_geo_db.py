@@ -82,7 +82,6 @@ async def populate_async_geo(is_demo: bool) -> None:
                                 multi = shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 multi = transform(transformer.transform, multi)
-                                print(bfs_number)
                                 db_commune_map = CommuneMap(
                                     year=year,
                                     commune=db_commune,
