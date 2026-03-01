@@ -93,28 +93,28 @@ async def populate_demo_db() -> None:
             db_question_globale_kant = QuestionGlobal(
                 label="kant",
                 text_de="Kantonszugehörigkeit Gemeinden",
-                text_fr="Kantonszugehörigkeit Gemeinden",
-                text_en="Kantonszugehörigkeit Gemeinden",
-                text_it="Kantonszugehörigkeit Gemeinden",
-                text_ro="Kantonszugehörigkeit Gemeinden",
+                text_fr="Appartenance cantonale Communes",
+                text_en="Cantonal affiliation Municipalities",
+                text_it="Appartenenza cantonale Comuni",
+                text_ro="Appartegnientscha al chantun da las vischnancas",
             )
 
             db_question_globale_spr = QuestionGlobal(
                 label="spr",
                 text_de="Sprachgebiete der Schweiz",
-                text_fr="Sprachgebiete der Schweiz",
-                text_en="Sprachgebiete der Schweiz",
-                text_it="Sprachgebiete der Schweiz",
-                text_ro="Sprachgebiete der Schweiz",
+                text_fr="Régions linguistiques de la Suisse",
+                text_en="Swiss language regions",
+                text_it="Aree linguistiche della Svizzera",
+                text_ro="territoris linguistics da la Svizra",
             )
 
             db_question_globale_17_23 = QuestionGlobal(
                 label="arbeiten",
                 text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
-                text_fr="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
-                text_en="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
-                text_it="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
-                text_ro="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                text_fr="Le/la président(e) de commune participe-t-il/elle activement à la gestion, c’est-à-dire qu’il/elle effectue-t-il/elle aussi des tâches administratives similaires à celles des employés de la gestion?",
+                text_en="Does the mayor actively participate in the administration, i.e. does he/she also perform administrative tasks similar to those of administrative staff?",
+                text_it="Il/la presidente del comune collabora attivamente alla gestione, ad esempio svolgendo compiti amministrativi analoghi a quelli dei collaboratori amministrativi?",
+                text_ro="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
             )
 
             session.add(db_question_globale_kant)
@@ -133,11 +133,11 @@ async def populate_demo_db() -> None:
                         label="kant17",
                         survey=db_survey,
                         question_global=db_question_globale_kant,
-                        text_de="Canton de la commune",
-                        text_fr="Canton de la commune",
-                        text_it="Canton de la commune",
-                        text_en="Canton de la commune",
-                        text_ro="Canton de la commune",
+                        text_de="Kantonszugehörigkeit Gemeinden",
+                        text_fr="Appartenance cantonale Communes",
+                        text_en="Cantonal affiliation Municipalities",
+                        text_it="Appartenenza cantonale Comuni",
+                        text_ro="Appartegnientscha al chantun da las vischnancas",
                     )
                     session.add(db_question)
 
@@ -146,11 +146,11 @@ async def populate_demo_db() -> None:
                         label="spr17",
                         survey=db_survey,
                         question_global=db_question_globale_spr,
-                        text_de="Langue de la commune",
-                        text_fr="Langue de la commune",
-                        text_it="Langue de la commune",
-                        text_en="Langue de la commune",
-                        text_ro="Langue de la commune",
+                        text_de="Sprachgebiete der Schweiz",
+                        text_fr="Régions linguistiques de la Suisse",
+                        text_en="Swiss language regions",
+                        text_it="Aree linguistiche della Svizzera",
+                        text_ro="territoris linguistics da la Svizra",
                     )
                     session.add(db_question)
                     db_question_globale_17 = QuestionPerSurvey(
@@ -158,11 +158,11 @@ async def populate_demo_db() -> None:
                         label="GSB17_Q58",
                         survey=db_survey,
                         question_global=db_question_globale_17_23,
-                        text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_fr="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_it="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_ro="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_en="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
+                        text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                        text_fr="Le/la président(e) de commune participe-t-il/elle activement à la gestion, c’est-à-dire qu’il/elle effectue-t-il/elle aussi des tâches administratives similaires à celles des employés de la gestion?",
+                        text_en="Does the mayor actively participate in the administration, i.e. does he/she also perform administrative tasks similar to those of administrative staff?",
+                        text_it="Il/la presidente del comune collabora attivamente alla gestione, ad esempio svolgendo compiti amministrativi analoghi a quelli dei collaboratori amministrativi?",
+                        text_ro="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
                     )
                     session.add(db_question_globale_17)
 
@@ -171,9 +171,9 @@ async def populate_demo_db() -> None:
                         label="GSB17_Q3",
                         survey=db_survey,
                         text_de="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
-                        text_fr="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
-                        text_en="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
-                        text_it="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
+                        text_fr="Comment le taux d’imposition de votre commune a-t-il évolué en 2017 par rapport à 2010?",
+                        text_en="How has the tax rate in your municipality changed in 2017 compared to 2010?",
+                        text_it="Come è cambiato il tasso d’imposta della sua comunità nel 2017 rispetto al 2010?",
                         text_ro="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
                     )
 
@@ -184,10 +184,10 @@ async def populate_demo_db() -> None:
                         label="GSB17_Q42",
                         survey=db_survey,
                         text_de="Wo werden die Exekutivmitglieder gewählt?",
-                        text_fr="Wo werden die Exekutivmitglieder gewählt?",
-                        text_it="Wo werden die Exekutivmitglieder gewählt?",
-                        text_ro="Wo werden die Exekutivmitglieder gewählt?",
-                        text_en="Wo werden die Exekutivmitglieder gewählt?",
+                        text_fr="Où les membres exécutifs sont-ils élus?",
+                        text_it="Dove vengono eletti i membri esecutivi?",
+                        text_ro="Nua vegnan elegids ils commembers da l’executiva?",
+                        text_en="Where are the executive members elected?",
                     )
 
                     session.add(db_question_unique_17_2)
@@ -198,11 +198,11 @@ async def populate_demo_db() -> None:
                         label="kant23",
                         survey=db_survey,
                         question_global=db_question_globale_kant,
-                        text_de="Canton de la commune",
-                        text_fr="Canton de la commune",
-                        text_it="Canton de la commune",
-                        text_en="Canton de la commune",
-                        text_ro="Canton de la commune",
+                        text_de="Kantonszugehörigkeit Gemeinden",
+                        text_fr="Appartenance cantonale Communes",
+                        text_en="Cantonal affiliation Municipalities",
+                        text_it="Appartenenza cantonale Comuni",
+                        text_ro="Appartegnientscha al chantun da las vischnancas",
                     )
                     session.add(db_question)
 
@@ -211,11 +211,11 @@ async def populate_demo_db() -> None:
                         label="spr23",
                         survey=db_survey,
                         question_global=db_question_globale_spr,
-                        text_de="Langue de la commune",
-                        text_fr="Langue de la commune",
-                        text_it="Langue de la commune",
-                        text_en="Langue de la commune",
-                        text_ro="Langue de la commune",
+                        text_de="Sprachgebiete der Schweiz",
+                        text_fr="Régions linguistiques de la Suisse",
+                        text_en="Swiss language regions",
+                        text_it="Aree linguistiche della Svizzera",
+                        text_ro="territoris linguistics da la Svizra",
                     )
                     session.add(db_question)
                     db_question_globale_23 = QuestionPerSurvey(
@@ -223,11 +223,11 @@ async def populate_demo_db() -> None:
                         label="GSB23_Q52",
                         survey=db_survey,
                         question_global=db_question_globale_17_23,
-                        text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_fr="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_it="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_ro="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
-                        text_en="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit,d.h.  erledigt  er/sie  auch  administrative  Tätigkeiten  ähnlich  wie Verwaltungsmitarbeitende?",
+                        text_de="Arbeitet der/die Gemeindepräsident/-in aktiv in der Verwaltung mit, d.h. erledigt er/sie auch administrative Tätigkeiten ähnlich wie Verwaltungsmitarbeitende?",
+                        text_fr="Le/la président(e) de commune participe-t-il/elle activement à la gestion, c’est-à-dire qu’il/elle effectue-t-il/elle aussi des tâches administratives similaires à celles des employés de la gestion?",
+                        text_en="Does the mayor actively participate in the administration, i.e. does he/she also perform administrative tasks similar to those of administrative staff?",
+                        text_it="Il/la presidente del comune collabora attivamente alla gestione, ad esempio svolgendo compiti amministrativi analoghi a quelli dei collaboratori amministrativi?",
+                        text_ro="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
                     )
 
                     db_question_unique_23_1 = QuestionPerSurvey(
@@ -235,10 +235,10 @@ async def populate_demo_db() -> None:
                         label="GSB23_Q58",
                         survey=db_survey,
                         text_de="Welches ist Ihre höchste abgeschlossene Ausbildung?",
-                        text_fr="Welches ist Ihre höchste abgeschlossene Ausbildung?",
-                        text_en="Welches ist Ihre höchste abgeschlossene Ausbildung?",
-                        text_it="Welches ist Ihre höchste abgeschlossene Ausbildung?",
-                        text_ro="Welches ist Ihre höchste abgeschlossene Ausbildung?",
+                        text_fr="Quel est le niveau le plus élevé d’éducation que vous avez atteint?",
+                        text_en="What is your highest completed education?",
+                        text_it="Qual è il suo più alto livello di istruzione conseguito?",
+                        text_ro="Tgenina è Vossa pli auta scolaziun terminada?",
                     )
 
                     db_question_unique_23_2 = QuestionPerSurvey(
@@ -246,10 +246,10 @@ async def populate_demo_db() -> None:
                         label="GSB23_Q27",
                         survey=db_survey,
                         text_de="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
-                        text_fr="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
-                        text_en="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
-                        text_it="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
-                        text_ro="Wie gestaltet sich aus Sicht Ihrer Gemeinde die Zusammenarbeit mit dem Kanton?",
+                        text_fr="Comment se présente la collaboration avec le canton du point de vue de votre commune?",
+                        text_en="How does the cooperation with the canton look like from the perspective of your community?",
+                        text_it="Come si presenta la collaborazione con il Cantone dal punto di vista del comune?",
+                        text_ro="Co sa preschenta or da vista da Vossa vischnanca la collavuraziun cun il chantun?",
                     )
                     session.add(db_question_globale_23)
                     session.add(db_question_unique_23_1)
@@ -401,7 +401,3 @@ async def populate_demo_db() -> None:
                         )
                         session.add(db_answer)
                         await session.flush()
-
-        # Adding Option
-        async with session.begin():
-            pass
