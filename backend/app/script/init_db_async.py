@@ -23,8 +23,8 @@ async def create_schema(is_demo: bool) -> None:
     except Exception as e:
         logger.warning("Could not ensure extensions (unaccent/postgis): %s", e)
 
-    # confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
-    if 1:  # confirm.lower() == "y":
+    confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
+    if confirm.lower() == "y":
         async with engine.begin() as conn:
             # Drop toute les tables pour repartir de 0
             logger.warning("Dropping all tables (destructive operation).")
