@@ -28,7 +28,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 async def populate_db() -> None:
     async with SessionLocal() as session:
         # District and commune
-        row_number = 0
 
         # Survey and question per survey
         async with session.begin():
@@ -40,7 +39,6 @@ async def populate_db() -> None:
                 )
                 session.add(db_survey)
                 await session.flush()
-                # print(f">> Inserting survey {year}")
 
                 gsb = pd.read_excel(
                     Path(BASE_DIR, "data", "CodeBook_Cleaned.xlsx"),
@@ -61,7 +59,6 @@ async def populate_db() -> None:
                     )
                     session.add(db_question)
                     await session.flush()
-                    # print(f">>> INSERTING QUESTION {str(index)}")
 
         # Global question and categories
         async with session.begin():
@@ -80,7 +77,6 @@ async def populate_db() -> None:
 
                     session.add(db_question_category)
                     await session.flush()
-                    # print(f">>> INSERTING QUESTION CATEGORY {row['category_label']}")
 
                 db_question_global = QuestionGlobal(
                     label=row["label"],
@@ -93,7 +89,6 @@ async def populate_db() -> None:
 
                 session.add(db_question_global)
                 await session.flush()
-                # print(f">>> INSERTING QUESTION GLOBAL {row['label']}")
 
         # Answer
         async with session.begin():
@@ -109,7 +104,6 @@ async def populate_db() -> None:
 
                 for col in crc:
                     if "GSB" in col:
-                        break
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
@@ -125,8 +119,6 @@ async def populate_db() -> None:
                         session.add(db_answer)
                         await session.flush()
 
-                # print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
-
         # Answer for 2023 data (separate file)
         async with session.begin():
             GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
@@ -140,7 +132,7 @@ async def populate_db() -> None:
                     print("Error")
                 for col in GSB_2023:
                     if "GSB23_Q" in col:
-                        break
+
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
@@ -155,5 +147,3 @@ async def populate_db() -> None:
                         )
                         session.add(db_answer)
                         await session.flush()
-
-                    print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(GSB_2023)}")
