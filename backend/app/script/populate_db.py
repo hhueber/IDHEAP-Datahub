@@ -104,9 +104,12 @@ async def populate_db() -> None:
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
                 db_commune = result.scalar_one_or_none()
+                if db_commune is None:
+                    print("Error")
 
                 for col in crc:
                     if "GSB" in col:
+                        break
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
@@ -133,22 +136,24 @@ async def populate_db() -> None:
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
                 db_commune = result.scalar_one_or_none()
-
+                if db_commune is None:
+                    print("Error")
                 for col in GSB_2023:
-                    if "GSB" in col:
+                    if "GSB23_Q" in col:
+                        break
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
 
                         result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
                         db_question = result.scalar_one_or_none()
-
                         if db_question is None:
                             raise RuntimeError("Question not found")
+
                         db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=year, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
                         )
                         session.add(db_answer)
                         await session.flush()
 
-                    # print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(crc)}")
+                    print(f">>> INSERTING ANSWER for commune {db_commune.name} {index}/{len(GSB_2023)}")

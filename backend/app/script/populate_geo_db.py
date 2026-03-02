@@ -24,13 +24,13 @@ logger = logging.getLogger(__name__)
 transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 
 
-def extract_geo_package(url: str) -> str:
+def extract_geo_package(url: str, tempdir: str) -> str:
     """Extract the geopackage fetched from url
 
     Args:
         url (str): url to extract from
     """
-    zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".")
+    zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=tempdir)
     response = requests.get(url)
     zip_file.write(response.content)
     zip_file.close()
@@ -67,7 +67,7 @@ async def populate_async_geo() -> None:
                 url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
             else:
                 url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
-                url = extract_geo_package(url)
+                url = extract_geo_package(url, ".")
 
             layers = fiona.listlayers(url)
 
