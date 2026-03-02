@@ -2,12 +2,14 @@
 // contrôles utilitaires (reset zoom Suisse, capture écran).
 import { MapContainer, GeoJSON, Pane, ImageOverlay, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
+import { useTranslation } from "react-i18next";
 import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
 import { onEachCanton } from "@/components/map/admLabels";
-import CityMarkers from "@/components/map/CityMarkers";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
+import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
+import { useTheme } from "@/theme/useTheme";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -45,9 +47,14 @@ export default function GeoJsonMap({
   baseImageUrl,
   baseImageOpacity = 1,
 }: Props) {
+  const { t } = useTranslation();
   const [bundle, setBundle] = useState<GeoBundle | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [errKey, setErrKey] = useState<string | null>(null);
+  const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
+
+  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores } = useTheme();
+
 
   /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
@@ -72,7 +79,14 @@ export default function GeoJsonMap({
         const msg = (e?.message || "").toLowerCase();
         if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
 
-        setError(e?.message || "Failed to load geometry");
+        if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
+          // erreur avec la connexion réseau
+          setErrKey("map.errors.network");
+        } else {
+          // erreur avec les GeoJson
+          setErrKey("map.errors.loadGeometry");
+        }
+        setErrDetail(e?.message || null);
       });
 
     return () => {
@@ -83,30 +97,30 @@ export default function GeoJsonMap({
 
   // Styles (couleurs/épaisseurs/fill) des différentes couches
   const countryStyle = useMemo(() => ({
-  color: "#000000",      // frontière pays en noir
+  color: countryColors,      // frontière pays en noir
   weight: 1,
-  fillColor: "#ffffff",  // fond blanc
+  fillColor: background,  // fond blanc
   fillOpacity: 1,
 }), []);
 const lakesStyle = useMemo(() => ({
-  color: "#3b82f6",      // bleu
+  color: lakesColores,      // bleu
   weight: 1.2,
   // si préfère uniquement le contour mettre fillOpacity: 0
-  fillColor: "#3b82f6",
+  fillColor: lakesColores,
   fillOpacity: 0.85,
 }), []);
 const cantonsStyle = useMemo(() => ({
-  color: "#ef4444",      // rouge
+  color: cantonClores,      // rouge
   weight: 1.2,
   fillOpacity: 0,
 }), []);
 const districtsStyle = useMemo(() => ({
-  color: "#7c3aed",      // violet bleuter
+  color: districtColores,      // violet bleuter
   weight: 0.9,
   fillOpacity: 0,
 }), []);
 const communesStyle = useMemo(() => ({
-  color: "#16a34a",       // green
+  color: communesColores,       // green
   weight: 0.6,
   fillOpacity: 0,
 }), []);
@@ -119,12 +133,20 @@ const communesStyle = useMemo(() => ({
   const communes  = (bundle as any)?.communes ?? null;
 
   return (
-    <div ref={hostRef} data-map-root className={`${className} overflow-hidden`}>
+    <div ref={hostRef} data-map-root 
+      className={`${className} overflow-hidden`}
+      style={
+        {
+          // on expose la couleur de fond à Leaflet via une variable CSS
+          "--map-bg": background,
+        } as React.CSSProperties
+      }
+    >
       {/* Ajustements UI Leaflet */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
-        [data-map-root] .leaflet-container { background: #ffffff; } /* fond blanc si pas de raster */
+        [data-map-root] .leaflet-container { background: var(--map-bg); }
       `}</style>
       <MapContainer
         center={[46.8182, 8.2275]}
@@ -166,14 +188,23 @@ const communesStyle = useMemo(() => ({
           {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
         </Pane>
         {/* Points villes et labels */}
-        <CityMarkers />
+        <PlaceOfInterestLayer />
       </MapContainer>
 
       {/* Alerte d’erreur de chargement géo */}
-      {error && (
-        <div className="absolute top-2 left-2 z-[4000] rounded bg-red-600 text-white px-3 py-1 text-sm shadow">
-          {error}
-        </div>
+      {errKey && (
+        <>
+          <div
+            className="absolute top-2 left-2 z-[4000] rounded bg-red-600 text-white px-3 py-1 text-sm shadow"
+            role="alert"
+            aria-live="assertive"
+            title={errDetail || undefined}
+          >
+            {t(errKey)}
+          </div>
+          {/* Annonce screen reader dédiée */}
+          <div className="sr-only" aria-live="assertive">{t(errKey)}</div>
+        </>
       )}
     </div>
   );

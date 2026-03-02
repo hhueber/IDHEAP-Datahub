@@ -10,29 +10,35 @@ export function useSurveyQuestions(surveyUid: number | null) {
 
   const [data, setData] = useState<QuestionItem[] | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
+  const [errorKey, setErrorKey] = useState<string | null>(null);
 
   useEffect(() => {
     if (surveyUid == null) {
       setData(null);
       setLoading(false);
-      setError(null);
+      setErrorKey(null);
       return;
     }
     const c = new AbortController();
     setLoading(true);
-    setError(null);
+    setErrorKey(null);
 
     questionsApi
       .getBySurvey(surveyUid, c.signal, lang)
       .then((result) => setData(result.items))
       .catch((e) => {
-        if ((e as any)?.name !== "AbortError") setError(e as Error);
+        if ((e as any)?.name === "AbortError") {
+          // chargement des question annulé
+          setErrorKey("questions.aborted");
+        } else {
+          // impossible de charger les questions
+          setErrorKey("questions.loadError");
+        }
       })
       .finally(() => setLoading(false));
 
     return () => c.abort();
   }, [surveyUid, lang]); // relance si l'ID ou la langue change
 
-  return { data, loading, error };
+  return { data, loading, errorKey };
 }

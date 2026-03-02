@@ -31,4 +31,5 @@ The `.env` file contains the following variables:
 - Super admin instance account
     - `ROOT_EMAIL`: Instance super admin account login; default `admin@example.com`.
     - `ROOT_PASSWORD`: Instance super admin account password; NO DEFAULT CHANGE THE KEY.
-    - `ROOT_NAME`: Instance super admin account name; default `Admin Root`.
+    - `ROOT_FIRST_NAME`: Instance super admin account first name; default `Admin`.
+    - `ROOT_LAST_NAME`: Instance super admin account last name; default `Root`.

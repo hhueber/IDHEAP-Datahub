@@ -30,3 +30,7 @@ async def get_db():
 async def ping_db():
     async with engine.connect() as conn:
         await conn.execute(text("SELECT 1"))
+
+async def ensure_extensions():
+    async with engine.begin() as conn:
+        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS unaccent;"))

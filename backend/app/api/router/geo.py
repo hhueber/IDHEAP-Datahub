@@ -2,7 +2,9 @@ from typing import Optional, Set
 
 
 from app.db import get_db
+from app.repositories.placeOfInterest_repo import list_placeOfInterest_for_lang
 from app.schemas.geo import GeoBundle
+from app.schemas.placeOfInterest import PlaceOfInterestClientOut
 from app.services.geo_service import ALL_LAYERS, get_geo_by_year_selective
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -33,3 +35,15 @@ async def geo_by_year(
 ):
     wanted = _parse_layers(layers)
     return await get_geo_by_year_selective(db, year, layers=wanted, clear_others=clear_others)
+
+
+@router.get("/placeOfInterest", response_model=list[PlaceOfInterestClientOut])
+async def get_placeOfInterest_for_map(
+    lang: str = Query("en", description="ISO code de langue, ex: fr, de, it, ro, en"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retourne la liste des villes actives avec un nom déjà dans la bonne langue.
+    Si aucune ville n'est en DB, renvoie simplement [].
+    """
+    return await list_placeOfInterest_for_lang(db, lang)

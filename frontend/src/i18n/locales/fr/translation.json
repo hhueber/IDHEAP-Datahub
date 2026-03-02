@@ -1,12 +1,23 @@
 {
   "nav": { 
-    "language": "Langue", 
+    "openMenu": "Ouvrir le menu",
+    "closeMenu": "Fermer le menu",
+    "navigation": "Navigation",
+    "language": "Langue",
+    "switchTo": "Basculer en {{lang}}",
+    "home": "Accueil",
     "data": "Données",
-    "home": "Accueil", 
-    "dataSoon": "Bientôt disponible." },
+    "currentLogoName": "IDHEAP",
+    "theme": "Thème",
+    "errors": {
+      "changeLanguage": "Impossible de changer la langue pour le moment."
+    },
+    "private": {
+      "privateArea": "Zone privée",
+      "anonymous": "Anonyme"
+    }
+  },
   "home": {
-    "heroTitle": "IDHEAP Data Explorer",
-    "heroSubtitle": "Ce site, réalisé par l’IDHEAP, permet d’explorer les données des communes suisses. Vous pouvez visualiser l’évolution dans le temps : choisissez d’abord une année de questionnaire, puis la question que vous souhaitez voir représentée. Certaines questions globales couvrent plusieurs années ; vous pouvez les sélectionner directement, puis choisir l’année d’affichage.",
     "openPanel": "Ouvrir le panneau",
     "close": "Fermer",
     "sectionDates": "Dates",
@@ -14,14 +25,432 @@
     "chooseYear": "Choisir une année",
     "globalOption": "Global",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
-    "noQuestionsForSelection": "Pas de questions pour cette sélection."
+    "noQuestionsForSelection": "Pas de questions pour cette sélection.",
+    "bootstrapError": "Impossible de charger les données initiales."
   },
-  "login": {
-    "title": "Connexion",
-    "subtitle": "Espace réservé pour la future auth."
+  "map": {
+    "placeOfInterest": {
+      "show": "Afficher les villes",
+      "hide": "Masquer les villes"
+    },
+    "menu": {
+      "global": "Menu global",
+      "instancePlaceOfInterest": "Lieux d'intérêt définies",
+      "noInstancePlaceOfInterest": "Aucun lieu d'intérêt défini.",
+      "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
+      "removePlaceOfInterest": "Supprimer",
+      "addPlaceOfInterest": "Ajouter un lieu d'intérêt",
+      "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
+      "loadingSuggestions": "Chargement des suggestions...",
+      "noLocalPlaceOfInterest": "Aucun lieu d'intérêt supplémentaire défini.",
+
+      "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
+    },
+    "errors": {
+      "loadGeometry": "Impossible de charger les couches géographiques.",
+      "network": "Problème de réseau. Vérifiez votre connexion.",
+      "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
+      "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
+    }
   },
   "common": {
     "loading": "Chargement…",
-    "error": "Erreur"
+    "error": "Erreur",
+    "close": "Fermer",
+    "unknown": "Erreur inconnue",
+    "confirm": "Confirmer",
+    "cancel": "Annuler"
+  },
+  "notFound": {
+    "message": "Page introuvable."
+  },
+  "questions": {
+    "empty": "Aucune question disponible.",
+    "loadError": "Impossible de charger les questions.",
+    "aborted": "Chargement annulé."
+  },
+  "login": {
+    "title": "Connexion",
+    "subtitle": "Espace réservé pour la future auth.",
+
+    "emailLabel": "Email",
+    "emailPlaceholder": "Entrez votre email",
+    "passwordLabel": "Mot de passe",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+
+    "submit": "Se connecter",
+    "submitting": "Connexion",
+
+    "errors": {
+      "generic": "Échec de la connexion.",
+      "invalidCredentials": "Identifiants incorrects.",
+      "network": "Problème de connexion réseau.",
+      "locked": "Compte verrouillé.",
+      "rateLimited": "Trop de tentatives. Réessayez plus tard."
+    }
+  },
+  "export": {
+    "title": "Export",
+    "pngLabel": "PNG",
+    "pdfLabel": "PDF",
+    "pngTooltip": "Exporter en PNG",
+    "pdfTooltip": "Exporter en PDF",
+
+    "note": "La capture reprend exactement la vue actuelle (zoom/déplacement) sans le menu.",
+
+    "ariaExportPng": "Export PNG en cours",
+    "ariaExportPdf": "Export PDF en cours",
+
+    "filenamePrefix": "carte",
+
+    "errors": {
+      "mapUnavailable": "Carte indisponible.",
+      "pngFailed": "Export PNG impossible.",
+      "pdfFailed": "Export PDF impossible."
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "welcome": "Bienvenue {{name}}",
+    "welcomeWithRole": "Bienvenue {{name}} ({{role}})",
+    "anonymous": "Utilisateur·trice",
+    "logout": "Se déconnecter"
+  },
+  "changePassword": {
+    "title": "Changer mon mot de passe",
+
+    "oldPasswordLabel": "Ancien mot de passe",
+    "oldPasswordPlaceholder": "Entrez votre ancien mot de passe",
+
+    "newPasswordLabel": "Nouveau mot de passe",
+    "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+
+    "confirmLabel": "Confirmation",
+    "confirmPlaceholder": "Confirmez votre nouveau mot de passe",
+
+    "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+
+    "submit": "Modifier",
+    "submitting": "Modification",
+
+    "success": "Mot de passe modifié.",
+    "successWithDetail": "Mot de passe modifié.",
+
+    "fail": "Échec de la modification du mot de passe.",
+    "failWithDetail": "Échec de la modification du mot de passe.",
+
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+
+    "errors": {
+      "confirmMismatch": "La confirmation ne correspond pas.",
+      "tooShort": "Mot de passe trop court (min. 10 caractères).",
+      "invalidOldPassword": "Ancien mot de passe invalide.",
+      "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+      "generic": "Une erreur est survenue."
+    }
+  },
+  "admin": {
+    "deleteMember": {
+      "title": "Supprimer un membre",
+
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
+
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
+
+      "submit": "Supprimer",
+      "submitting": "Suppression",
+
+      "success": "Utilisateur·trice supprimé·e.",
+      "fail": "Échec de suppression.",
+
+      "errors": {
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "notFound": "Utilisateur·trice introuvable.",
+        "forbidden": "Action interdite.",
+        "generic": "Une erreur est survenue."
+      }
+    },
+    "addMember": {
+      "title": "Ajouter un membre",
+
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
+
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
+
+      "passwordLabel": "Mot de passe",
+      "passwordPlaceholder": "Entrez le mot de passe",
+      "confirmLabel": "Confirmation",
+      "confirmPlaceholder": "Confirmez le mot de passe",
+      "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
+
+      "submit": "Créer le membre",
+      "submitting": "Création",
+
+      "success": "Membre créé·e.",
+      "fail": "Échec de création.",
+
+      "errors": {
+        "confirmMismatch": "La confirmation ne correspond pas.",
+        "tooShort": "Mot de passe trop court (min. 10 caractères).",
+        "emailExists": "Un membre avec ce courriel existe déjà.",
+        "forbidden": "Action interdite.",
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "generic": "Une erreur est survenue."
+      }
+    },
+    "config": {
+        "placeOfInterestEditor": {
+          "titleCreate": "Ajouter une ville",
+          "titleEdit": "Éditer une ville",
+
+          "importFromCommunes": "Importer depuis les communes",
+          "searchPlaceholder": "Tapez au moins 3 lettres...",
+          "search": "Recherche",
+          "empty": "Aucun résultat",
+
+          "canonicalLabel": "Nom canonique",
+          "canonicalPlaceholder": "Lausanne, Genève, Zürich...",
+
+          "labels": {
+            "fr": "Français",
+            "de": "Deutsch",
+            "it": "Italiano",
+            "ro": "Rumantsch",
+            "en": "Anglais",
+            "lat": "Latitude",
+            "lon": "Longitude",
+            "preview": "Aperçu :"
+          },
+
+          "submitCreate": "Créer",
+          "submitEdit": "Enregistrer"
+        },
+        "placeOfInterestPage": {
+          "title": "Villes",
+          "addButton": "Ajouter",
+          "columns": {
+            "name": "Nom",
+            "fr": "FR",
+            "de": "DE",
+            "it": "IT",
+            "ro": "RO",
+            "en": "EN",
+            "position": "Position"
+          },
+          "edit": "Éditer",
+          "delete": "Supprimer",
+          "empty": "Aucune ville",
+          "loading": "Chargement",
+          "titleConfirm": "Supprimer la ville",
+          "deleteConfirm": "Voulez-vous vraiment supprimer la ville « {{name}} » ?",
+          "confirmLabel": "Supprimer",
+          "cancelLabel": "Annuler"
+        },
+        "themeConfigPage": {
+          "title": "Configuration du thème et de l'instance",
+          "general": "Instance",
+          "instanceName": "Nom de l'instance",
+          "logoUrl": "URL du logo",
+          "logoPreview": "Aperçu du logo",
+          "logoUpload": "Importer un logo",
+          "logoDropZone": "Zone de dépot du logo",
+          "logoDropHint": "Glisser une image ici ou cliquer pour sélectionner un fichier",
+          "logoBrowse": "Importer...",
+          "currentMode": "Mode actuel : {{mode}}",
+          "defaultMode": "Mode par défaut",
+          "light": "Thème clair",
+          "dark": "Thème sombre",
+          "presets": "Préreglages de couleurs",
+          "presetsHelp": "Choisissez un préréglage de couleurs pour les themes clair et sombre a appliquer rapidement une palette cohérente.",
+          "lightSection": "Thème clair",
+          "darkSection": "Thème sombre",
+          "lightPreview": "Apercçu du thème clair",
+          "darkPreview": "Aperçu du thème sombre",
+          "mapLightPreview": "Aperçu de la carte thème claire",
+          "mapDarkPreview": "Aperçu de la carte thème sombre",
+          "mapSection": "Couleurs de la carte",
+          "primaryColourLabel": "Couleur primaire",
+          "secondaryColourLabel": "Couleur secondaire",
+          "backgroundColourLabel": "Couleur de fond",
+          "textColourLabel": "Couleur du texte",
+          "navbarOverlayLabel": "Opacité de la barre de navigation",
+          "logoBackgroundLabel": "Couleur de fond du logo",
+          "communesColourLabel": "Couleur des communes",
+          "districtColourLabel": "Couleur des districts",
+          "cantonColourLabel": "Couleur des cantons",
+          "countryColourLabel": "Couleur du pays",
+          "lakesColourLabel": "Couleur des lacs",
+          "saving": "Enregistrement",
+          "save": "Enregistrer",
+          "saved": "Enregistré.",
+          "confirmTitle": "Confirmer les modifications",
+          "confirmMessage": "Étes-vous sûr·e de vouloir enregistrer les modifications du thème ? Cela affectera l'apparence de toute l'application.",
+          "logoUploadError": "Une erreur est survenue lors du chargement de l'image du logo.",
+          "loadError": "Impossible de charger la configuration du thème.",
+          "saveError": "Une erreur est survenue lors de l'enregistrement de la configuration.",
+          "previewPanel": {
+            "text": "Lorem ipsum — simple text",
+            "buttonPrimary": "Bouton primaire",
+            "secondaryFrame": "Cadre secondaire"
+          }
+        },
+        "configEditor": {
+          "cancel": "Annuler",
+          "submit": "Enregistrer",
+          "saving": "Enregistrement"
+        },
+        "errors": {
+          "loadFailed": "Échec du chargement.",
+          "saved": "Enregistré.",
+          "saveFailed": "Échec de l'enregistrement.",
+          "deleted": "Supprimé.",
+          "deleteFailed": "Échec de la suppression.",
+          "network": "Problème de réseau."
+        }
+      }
+  },
+  "dashboardSidebar": {
+    "privateSpace": "Espace privé",
+    "toggleSection": "Basculer la section {{section}}",
+    "rolePrefix": "Rôle :",
+    "logout": "Se déconnecter",
+    "sections": {
+      "dashboard": "Dashboard",
+      "survey": "Survey",
+      "qa": "Questions & Answers",
+      "places": "Lieux",
+      "administration": "Administration"
+    },
+    "survey": {
+      "_": "Survey",
+      "all": "Tous",
+      "newEdit": "Nouveau"
+    },
+    "qa": {
+      "qps": {
+        "_": "QuestionPerSurvey",
+        "all": "Tous",
+        "newEdit": "Nouveau"
+      },
+      "qglobal": {
+        "_": "QuestionGlobal",
+        "all": "Tous",
+        "newEdit": "Nouveau"
+      },
+      "qcat": {
+        "_": "QuestionCategory",
+        "all": "Tous",
+        "newEdit": "Nouveau"
+      },
+      "answer": {
+        "_": "Answer",
+        "all": "Tous",
+        "newEdit": "Nouveau"
+      },
+      "option": {
+        "_": "Option",
+        "all": "Tous",
+        "newEdit": "Nouveau"
+      }
+    },
+    "places": {
+      "commune": {
+        "_": "Commune",
+        "all": "Tous"
+      },
+      "district": {
+        "_": "District",
+        "all": "Tous"
+      },
+      "canton": {
+        "_": "Canton",
+        "all": "Tous"
+      }
+    },
+    "administration": {
+      "changePassword": "Changer mon mot de passe",
+      "users": {
+        "_": "Utilisateur·trice·s",
+        "add": "Ajouter un·e membre",
+        "delete": "Supprimer un·e membre"
+      },
+      "config": {
+        "_": "Configuration",
+        "placeOfInterest": "Lieux d'intérêt",
+        "theme": "Theme"
+      }
+    },
+    "pageAll": {
+      "uid": "UID",
+      "name": "Nom",
+      "code": "Code",
+      "entity": "Entité",
+      "noData": "pas de données",
+      "asc": "Asc",
+      "desc": "Desc",
+      "error": "Erreur :",
+      "loading": "Chargement",
+      "sortBy": "Trier par",
+      "label": "Label",
+      "actions": "Actions",
+      "show": "Montrer",
+      "edit": "Éditer",
+      "delete": "Supprimer",
+      "value": "Valeur",
+      "searchPlaceholder": "Rechercher dans cette entité...",
+      "clear": "Effacer",
+      "searching": "Recherche",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
+      "deleting": "Suppression",
+      "deleteError": "Erreur de suppression : "
+    },
+    "pageShow": {
+      "loading": "Chargement",
+      "error": "Erreur :",
+      "noData": "Pas de données",
+      "mainInfo": "Informations principales",
+      "languages": "Langues",
+      "edit": "Éditer",
+      "delete": "Supprimer",
+      "children": "Entités associées",
+      "childrenHint": "Relations / tables associées",
+      "insights": "Insights",
+      "insightsHint": "Carte / stats / infos",
+      "text": "Texte",
+      "noChildren": "Aucune données",
+      "confirmClear": "Confirmer",
+      "deleteError": "Erreur de suppression",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "noSelection": "Aucun champ sélectionné.",
+      "confirmClearMessage": "Vous allez effacer les champs suivants :\n- {{fields}}",
+      "deleting": "Suppression..."    
+    }
+  },
+  "roles": {
+    "admin": "Administrateur·rice",
+    "member": "Membre"
+  },
+  "pagination": {
+    "page": "Page"
   }
 }
