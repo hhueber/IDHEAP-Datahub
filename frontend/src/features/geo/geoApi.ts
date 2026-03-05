@@ -139,5 +139,11 @@ export type ChoroplethResponse = {
     value: string | null;
     value_kind?: "value" | "no_data" | "no_response";
     fill_color?: string;
+    fill_pattern?: {
+      type: "stripes";
+      angle?: number;
+      stripe?: number;
+      colors?: string[];
+    };
   }>;
 };
