@@ -163,6 +163,19 @@ export default function PageAll({
 
   const hasActions = !!actions && (actions.show || actions.edit || actions.delete);
 
+  // Constante pour UI
+  const controlCls = "h-9 rounded-lg border px-3 text-sm transition inline-flex items-center gap-1";
+
+  const controlStyle: React.CSSProperties = {
+    backgroundColor: background,
+    borderColor,
+    color: textColor,
+  };
+
+  const hoverBgVars = {
+    "--pageall-control-hover-bg": hoverPrimary04,
+  } as React.CSSProperties;
+
   return (
     <div className="p-6 flex flex-col h-full" 
       style={{
@@ -197,44 +210,28 @@ export default function PageAll({
           <select
             value={sortBy}
             onChange={handleSortByChange}
-            className="h-9 rounded border px-2 text-sm"
-            style={{
-              backgroundColor: background,
-              borderColor,
-              color: textColor,
-            }}
+            className={`${controlCls} appearance-none pr-5`}
+            style={controlStyle}
           >
             <option value="uid">{t("dashboardSidebar.pageAll.uid")}</option>
             <option value="name">{t("dashboardSidebar.pageAll.name")}</option>
           </select>
-          <button
-            type="button"
-            onClick={toggleSortDir}
-            className={`
-              h-9 px-3 rounded border text-sm flex items-center gap-1
-              hover:[background-color:var(--pageall-sort-hover-bg)]
-            `}
-            style={
-              {
-                backgroundColor: background,
-                borderColor,
-                color: textColor,
-                "--pageall-sort-hover-bg": hoverPrimary04,
-              } as React.CSSProperties
-            }
+          <select
+            value={sortDir}
+            onChange={(e) => {
+              setSortDir(e.target.value as SortDir);
+              setPage(1);
+            }}
+            className={`${controlCls} appearance-none pr-5`}
+            style={controlStyle}
           >
-            {sortDir === "asc" ? (
-              <>
-                <span>{t("dashboardSidebar.pageAll.asc")}</span>
-                <span aria-hidden>↑</span>
-              </>
-            ) : (
-              <>
-                <span>{t("dashboardSidebar.pageAll.desc")}</span>
-                <span aria-hidden>↓</span>
-              </>
-            )}
-          </button>
+            <option value="asc">
+              {t("dashboardSidebar.pageAll.asc")}
+            </option>
+            <option value="desc">
+              {t("dashboardSidebar.pageAll.desc")}
+            </option>
+          </select>
         </div>
       </div>
 
@@ -257,10 +254,11 @@ export default function PageAll({
         )}
 
         {/* table avec scroll horizontal si besoin */}
-        <div className="flex-1 overflow-auto border rounded"
+        <div className="overflow-auto border rounded"
           style={{
             borderColor,
             backgroundColor: background,
+            maxHeight: "calc(100vh - 260px)",
           }}>
           <div className="overflow-x-auto">
             <table className="min-w-max w-full text-sm border-collapse">

@@ -26,13 +26,13 @@ export function SearchBar({
   const { primary, background, borderColor, textColor, hoverPrimary06, hoverText07 } = useTheme();
 
   return (
-    <div className="flex flex-col gap-1 w-full sm:w-auto mb-3">
+    <div className="relative w-full sm:w-64">
       <div className="flex items-center gap-2">
         <input
           type="text"
           value={search}
           onChange={onSearchChange}
-          className="h-9 w-full sm:w-64 rounded border px-2 text-sm"
+          className="h-9 w-full rounded border px-2 text-sm"
           placeholder={t("dashboardSidebar.pageAll.searchPlaceholder")}
           style={{
             backgroundColor: background,
@@ -63,12 +63,14 @@ export function SearchBar({
       )}
 
       {suggestions.length > 0 && (
-        <div className="mt-1 border rounded max-h-56 overflow-y-auto text-sm shadow-sm"
+        <div
+          className="absolute left-0 right-0 mt-1 border rounded max-h-56 overflow-y-auto text-sm shadow-sm z-50"
           style={{
             backgroundColor: background,
             borderColor: borderColor,
             color: textColor,
-          }}>
+          }}
+        >
           {suggestions.map((s) => (
             <button
               key={s.uid}
@@ -87,7 +89,9 @@ export function SearchBar({
               }
             >
               <span>
-                <span className="font-medium" style={{ color: textColor }}>{s.name}</span>
+                <span className="font-medium" style={{ color: textColor }}>
+                  {s.name}
+                </span>
                 {s.code && (
                   <span className="text-xs ml-2" style={{ color: hoverText07 }}>
                     ({s.code})
@@ -95,7 +99,9 @@ export function SearchBar({
                 )}
               </span>
               {s.year != null && (
-                <span className="text-xs" style={{ color: hoverText07 }}>{s.year}</span>
+                <span className="text-xs" style={{ color: hoverText07 }}>
+                  {s.year}
+                </span>
               )}
             </button>
           ))}

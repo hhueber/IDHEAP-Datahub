@@ -1,7 +1,7 @@
-export function normalizeFullName(first: string, last: string): string {
-  return `${(first || "").trim()} ${(last || "").trim()}`
-    .replace(/\s+/g, " ")
+export function normalizeName(s: string): string {
+  return (s || "")
     .trim()
-    .replace(/[<>]/g, ""); // on retire < >
+    .replace(/\s+/g, " ")
+    .replace(/[<>]/g, "");
 }
 export const normalizeEmail = (e: string) => (e || "").trim().toLowerCase();
