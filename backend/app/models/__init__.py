@@ -13,7 +13,10 @@ from .lake_map import LakeMap
 from .option import Option
 from .placeOfInterest import PlaceOfInterest
 from .question_category import QuestionCategory
+from .question_category_option_association import QuestionCategoryOptionAssociation
 from .question_global import QuestionGlobal
+from .question_global_option_association import QuestionGlobalOptionAssociation
+from .question_option_association import QuestionOptionAssociation
 from .question_per_survey import QuestionPerSurvey
 from .survey import Survey
 
@@ -37,4 +40,7 @@ __all__ = [
     "LakeMap",
     "PlaceOfInterest",
     "Config",
+    "QuestionGlobalOptionAssociation",
+    "QuestionOptionAssociation",
+    "QuestionCategoryOptionAssociation",
 ]

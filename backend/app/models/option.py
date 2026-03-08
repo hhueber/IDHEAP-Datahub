@@ -14,8 +14,6 @@ class Option(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     value: Mapped[str] = mapped_column(String)
 
-    question_category_uid: Mapped[int] = mapped_column(ForeignKey("question_category.uid", ondelete="CASCADE"))
-
     label_: Mapped[Optional[str]] = mapped_column("label", String, nullable=True)
 
     text_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -24,11 +22,17 @@ class Option(Base):
     text_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    question_global_uid: Mapped[Optional[int]] = mapped_column(ForeignKey("question_global.uid", ondelete="CASCADE"))
-    question_global: Mapped[Optional["QuestionGlobal"]] = relationship("QuestionGlobal", back_populates="option")
+    question_association: Mapped[List["QuestionOptionAssociation"]] = relationship(
+        "QuestionOptionAssociation", back_populates="option", cascade="all, delete-orphan"
+    )
 
-    question_uid: Mapped[int] = mapped_column(ForeignKey("question_per_survey.uid", ondelete="CASCADE"))
-    question: Mapped[List["QuestionPerSurvey"]] = relationship("QuestionPerSurvey", back_populates="option")
+    question_global_association: Mapped[List["QuestionGlobalOptionAssociation"]] = relationship(
+        "QuestionGlobalOptionAssociation", back_populates="option", cascade="all, delete-orphan"
+    )
+
+    question_category_association: Mapped[List["QuestionCategoryOptionAssociation"]] = relationship(
+        "QuestionCategoryOptionAssociation", back_populates="option", cascade="all, delete-orphan"
+    )
 
     @property
     def label(self) -> str:
