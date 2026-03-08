@@ -30,8 +30,10 @@ services:
     #     condition: service_healthy   # commenter si depends voulue ou pas entre les service api et db
     ports:
       - "8000:8000" # only for dev
+    working_dir: /app/backend
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend:z
+    
     restart: "always"
   
   frontend:
@@ -44,7 +46,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
+      - ./frontend:/app:Z
       - /app/node_modules
     depends_on:
       # Ensure backend starts before frontend
@@ -61,8 +63,9 @@ services:
       db:
         condition: service_healthy
     command: ["python", "-m", "app.script.init_db_async"]
+    working_dir: /app/backend
     volumes:
-      - ./backend:/app
+      - ./backend:/app/backend:z  
     restart: "no"
 
 volumes:
