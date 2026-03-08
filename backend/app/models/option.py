@@ -15,7 +15,6 @@ class Option(Base):
     value: Mapped[str] = mapped_column(String)
 
     question_category_uid: Mapped[int] = mapped_column(ForeignKey("question_category.uid", ondelete="CASCADE"))
-    question_category: Mapped["QuestionCategory"] = relationship("QuestionCategory", back_populates="option")
 
     label_: Mapped[Optional[str]] = mapped_column("label", String, nullable=True)
 
