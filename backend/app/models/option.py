@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 
 from sqlalchemy import ForeignKey, String
@@ -28,7 +28,7 @@ class Option(Base):
     question_global: Mapped[Optional["QuestionGlobal"]] = relationship("QuestionGlobal", back_populates="option")
 
     question_uid: Mapped[int] = mapped_column(ForeignKey("question_per_survey.uid", ondelete="CASCADE"))
-    question: Mapped["QuestionPerSurvey"] = relationship("QuestionPerSurvey", back_populates="option")
+    question: Mapped[List["QuestionPerSurvey"]] = relationship("QuestionPerSurvey", back_populates="option")
 
     @property
     def label(self) -> str:
