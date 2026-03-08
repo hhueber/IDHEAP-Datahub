@@ -1,3 +1,7 @@
+# Service de carte choroplèthe.
+# Une carte choroplèthe est une carte thématique où des zones géographiques
+# (par exemple des communes) sont colorées en fonction d'une valeur de données
+# (statistique, réponse à un sondage, score numérique, etc.).
 from typing import Optional, Tuple
 import json
 import math
