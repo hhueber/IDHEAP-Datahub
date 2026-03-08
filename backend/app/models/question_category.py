@@ -20,8 +20,8 @@ class QuestionCategory(Base):
     text_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    options: Mapped[List["Option"]] = relationship(
-        "Option", back_populates="question_category", cascade="all, delete-orphan"
+    option_association: Mapped[List["QuestionCategoryOptionAssociation"]] = relationship(
+        "QuestionCategoryOptionAssociation", back_populates="question", cascade="all, delete-orphan"
     )
 
     questions_global: Mapped[List["QuestionGlobal"]] = relationship(
