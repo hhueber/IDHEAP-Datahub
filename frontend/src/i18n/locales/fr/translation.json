@@ -313,6 +313,7 @@
           "logoUploadError": "Une erreur est survenue lors du chargement de l'image du logo.",
           "loadError": "Impossible de charger la configuration du thème.",
           "saveError": "Une erreur est survenue lors de l'enregistrement de la configuration.",
+          "noLogo": "Aucun logo",
           "previewPanel": {
             "text": "Lorem ipsum — simple text",
             "buttonPrimary": "Bouton primaire",

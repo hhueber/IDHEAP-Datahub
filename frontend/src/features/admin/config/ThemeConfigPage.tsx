@@ -429,7 +429,7 @@ export default function ThemeConfigPage() {
                       className="max-h-[80px] max-w-full object-contain"
                     />
                   ) : (
-                    <span className="text-xs opacity-50">No logo</span>
+                    <span className="text-xs opacity-50">{t("admin.config.themeConfigPage.noLogo")}</span>
                   )}
                 </div>
 
