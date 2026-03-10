@@ -58,6 +58,21 @@ async def commune_choropleth(
     year: int = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    """
+    Return data required to render a choropleth map of Swiss communes.
+
+    Each commune is colored according to the value of a given survey question
+    for a specific year.
+
+    Parameters:
+        scope (str): Aggregation mode ("per_survey" or "global").
+        question_uid (int): Survey question identifier.
+        year (int): Year of the data to display.
+
+    Returns:
+        ChoroplethResponse: GeoJSON FeatureCollection, legend and metadata
+        needed to render the choropleth map.
+    """
     fc, legend, y_geo = await build_commune_choropleth(
         db,
         scope=scope,
