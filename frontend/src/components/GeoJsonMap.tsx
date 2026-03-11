@@ -12,6 +12,8 @@ import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { useTheme } from "@/theme/useTheme";
 import type { ChoroplethResponse } from "@/features/geo/geoApi";
 import MapLegendOverlay from "@/components/map/MapLegendOverlay";
+import L from "leaflet";
+import "leaflet.pattern";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -63,6 +65,45 @@ export default function GeoJsonMap({
 
   const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores, borderColor } = useTheme();
 
+  const patternCacheRef = useRef<Map<string, any>>(new Map());
+
+  // Crée ou récupère un pattern de rayures multicolores (pour les choropleth catégorielles avec ex-aequo)
+  function getMultiStripePattern(map: any, colors: string[], angle = 45, stripe = 6) {
+    const cols = colors.filter(Boolean).slice(0, 12);
+    const key = `${cols.join("|")}|${angle}|${stripe}`;
+    const cache = patternCacheRef.current;
+    const existing = cache.get(key);
+    if (existing) return existing;
+
+    const n = cols.length;
+    const w = stripe * n;
+    const h = stripe * n;
+
+    const pattern = new (L as any).Pattern({
+      width: w,
+      height: h,
+      patternUnits: "userSpaceOnUse",
+      angle,
+    });
+
+    cols.forEach((col, i) => {
+      const rect = new (L as any).PatternRect({
+        x: i * stripe,
+        y: 0,
+        width: stripe,
+        height: h,
+        fill: true,
+        fillColor: col,
+        fillOpacity: 1,
+        stroke: false,
+      });
+      pattern.addShape(rect);
+    });
+
+    pattern.addTo(map);
+    cache.set(key, pattern);
+    return pattern;
+  }
 
   /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
@@ -203,14 +244,41 @@ const communesStyle = useMemo(() => ({
               data={choropleth.feature_collection as any}
               pane="choropleth"
               style={(feat: any) => {
-                const v = feat?.properties?.value ?? null;
-                const fill = feat?.properties?.fill_color ?? "#cccccc"; // actions de secours si fail du backend pour attribuer une couleur
-                return {
+                const props = feat?.properties ?? {};
+                const fill = props.fill_color ?? "#cccccc";
+                const pat = props.fill_pattern;
+                const map = (window as any).__leafletMap;
+
+                const base: any = {
                   weight: 1,
                   opacity: 1,
+                  color: borderColor,
+                };
+
+                // Si le backend a fourni un pattern (catégoriel + tie), on l'applique
+                if (
+                  map &&
+                  pat?.type === "stripes" &&
+                  Array.isArray(pat.colors) &&
+                  pat.colors.length >= 2
+                ) {
+                  const angle = typeof pat.angle === "number" ? pat.angle : 45;
+                  const stripe = typeof pat.stripe === "number" ? pat.stripe : 6;
+
+                  const p = getMultiStripePattern(map, pat.colors, angle, stripe);
+
+                  return {
+                    ...base,
+                    fillOpacity: 1,    // important: le pattern fait le rendu
+                    fillPattern: p,
+                  };
+                }
+
+                // fallback normal
+                return {
+                  ...base,
                   fillOpacity: 0.75,
                   fillColor: fill,
-                  color: borderColor,
                 };
               }}
               onEachFeature={(feature: any, layer: any) => {

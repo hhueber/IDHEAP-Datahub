@@ -55,6 +55,20 @@ def _default_colors(n: int) -> list[str]:
     return [base[i % len(base)] for i in range(n)]
 
 
+def _unique_keep_order(items: list[tuple[str, Any]], limit: int) -> list[tuple[str, Any]]:
+    seen: set[tuple[str, str]] = set()
+    out: list[tuple[str, Any]] = []
+    for k, v in items:
+        key = (k, "None" if v is None else str(v))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append((k, v))
+        if len(out) >= limit:
+            break
+    return out
+
+
 async def _global_distinct_non_empty_count(db: AsyncSession, q_uid: int, year: int) -> int:
     vtrim = func.btrim(Answer.value)
     stmt = select(func.count(func.distinct(vtrim))).where(
@@ -88,6 +102,41 @@ def _apply_fill_colors(
 
         if legend.type == "categorical":
             props["fill_color"] = (categorical_map or {}).get(v, "#999999")
+
+            # fill_pattern pour les égalités donc double couleur ou plus
+            cands = props.get("fill_pattern_candidates")
+            if isinstance(cands, list) and len(cands) >= 2:
+
+                def _color_for(k: str, vv: Any) -> str:
+                    if k == "no_data":
+                        return NO_DATA_COLOR
+                    if k == "no_response":
+                        return NO_RESPONSE_COLOR
+                    return (categorical_map or {}).get(vv, "#999999")
+
+                colors: list[str] = []
+                for c in cands[:MAX_CATEGORIES]:
+                    if not isinstance(c, dict):
+                        continue
+                    ck = str(c.get("kind"))
+                    cv = c.get("value")
+                    colors.append(_color_for(ck, cv))
+
+                # dédup couleurs sans casser l'ordre
+                seen: set[str] = set()
+                uniq_colors: list[str] = []
+                for col in colors:
+                    if col in seen:
+                        continue
+                    seen.add(col)
+                    uniq_colors.append(col)
+
+                if len(uniq_colors) >= 2:
+                    opts = props.get("fill_pattern_opts")
+                    if not isinstance(opts, dict):
+                        opts = {"type": "stripes", "angle": 45, "stripe": 6}
+                    props["fill_pattern"] = {**opts, "colors": uniq_colors}
+
             continue
 
         # gradient
@@ -287,6 +336,14 @@ def _build_legend_and_colors(features: list[Feature]) -> MapLegend:
             v = f.properties.get("value")
             if v is not None and v not in cmap:
                 f.properties["value"] = "__other__"
+
+    cands = f.properties.get("fill_pattern_candidates")
+    if isinstance(cands, list):
+        for c in cands:
+            if isinstance(c, dict) and c.get("kind") == "value":
+                vv = c.get("value")
+                if vv is not None and vv not in cmap:
+                    c["value"] = "__other__"
 
     _apply_fill_colors(features, legend, categorical_map=cmap, vmin=None, vmax=None)
     return legend
@@ -496,6 +553,18 @@ def _agg_cte_generic(
         ).group_by(counts.c.gid)
     ).cte(f"{cte_prefix}_top_real_count")
 
+    # toutes les valeurs ex-aequo au max (top_real_count)
+    ties = (
+        select(
+            counts.c.gid.label("gid"),
+            func.array_agg(func.distinct(counts.c.v)).label("tie_values"),
+        )
+        .select_from(counts)
+        .join(top, top.c.gid == counts.c.gid)
+        .where(counts.c.n == top.c.top_real_count)
+        .group_by(counts.c.gid)
+    ).cte(f"{cte_prefix}_ties")
+
     # agg global par gid (inclut NULL et empty)
     agg = (
         select(
@@ -508,15 +577,17 @@ def _agg_cte_generic(
             cast(func.round(avg_numeric, 0), Integer).label("avg_num_int"),
             func.mode().within_group(vtrim).filter(and_(Answer.value.isnot(None), vtrim != "")).label("mode_text"),
             func.coalesce(top.c.top_real_count, 0).label("top_real_count"),
+            ties.c.tie_values.label("tie_values"),
         )
         .select_from(from_clause)
         .outerjoin(top, top.c.gid == gid_col)
+        .outerjoin(ties, ties.c.gid == gid_col)
         .where(
             Answer.question_uid == q_uid,
             Answer.year == year,
             gid_not_null_filter,
         )
-        .group_by(gid_col, top.c.top_real_count)
+        .group_by(gid_col, top.c.top_real_count, ties.c.tie_values)
     ).cte(f"{cte_prefix}_agg")
 
     return agg
@@ -595,6 +666,7 @@ def _agg_cols(agg: Any) -> list[Any]:
         agg.c.avg_num_int,
         agg.c.mode_text,
         agg.c.top_real_count,
+        agg.c.tie_values,
     ]
 
 
@@ -642,6 +714,32 @@ def _rows_to_features(
 
         if include_geo_year_used:
             props["geo_year_used"] = int(r["geo_year_used"]) if r.get("geo_year_used") is not None else None
+
+        if level != "commune":
+            tie_values = r.get("tie_values") or []
+            if not isinstance(tie_values, (list, tuple)):
+                tie_values = []
+
+            candidates_raw: list[tuple[str, Any]] = []
+
+            # Ex-aequo des vraies valeurs
+            for tv in tie_values:
+                if tv is None:
+                    continue
+                candidates_raw.append(("value", str(tv)))
+
+            # Special/No response si >= top_real_count
+            if top_real_count > 0:
+                if cnt_empty >= top_real_count:
+                    candidates_raw.append(("no_response", ""))
+                if cnt_null >= top_real_count:
+                    candidates_raw.append(("no_data", None))
+
+            candidates = _unique_keep_order(candidates_raw, limit=MAX_CATEGORIES)
+
+            if len(candidates) >= 2:
+                props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
+                props["fill_pattern_opts"] = {"type": "stripes", "angle": 45, "stripe": 6}
 
         feats.append(Feature(geometry=Geometry(**gj), properties=props))
 
