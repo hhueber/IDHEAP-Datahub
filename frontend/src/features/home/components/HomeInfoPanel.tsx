@@ -229,7 +229,7 @@ export default function HomeInfoPanel({
         style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
       >
         <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
-          {t("home.choropleth")}
+          {t("home.choroplethGlobalYear")}
         </h2>
 
         {/* Année global uniquement */}

@@ -36,6 +36,11 @@ init_database:
 	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async
 	@echo "✅  Database ready"
 
+init_demo_database:
+	@echo "🔜 Initialisation of database with demo data- this might take a while"
+	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async -d
+	@echo "✅ Demo Database ready"
+
 # Quick start
 run_backend:
 	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env
@@ -59,6 +64,7 @@ COMPOSE = docker compose
 DB_SERVICE = db
 FRONT_SERVICE = frontend
 INIT_SERVICE = schema_db_init
+INIT_DEMO_SERVICE = schema_db_init_demo
 API_SERVICE = api
 
 # build service DB (db) and api and front + initdb, then display the Postgres logs.
@@ -67,6 +73,12 @@ docker:
 	$(COMPOSE) up -d --build $(INIT_SERVICE) $(FRONT_SERVICE)
 	@echo "✅  Services started"
 	$(COMPOSE) logs -f $(INIT_SERVICE) $(API_SERVICE) $(FRONT_SERVICE)
+
+docker_demo:
+	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
+	$(COMPOSE) up -d --build $(INIT_DEMO_SERVICE) $(FRONT_SERVICE)
+	@echo "✅  Services started"
+	$(COMPOSE) logs -f $(INIT_DEMO_SERVICE) $(API_SERVICE) $(FRONT_SERVICE)
 
 # Stop the project's Docker services and delete the containers + volumes
 docker_clean:
