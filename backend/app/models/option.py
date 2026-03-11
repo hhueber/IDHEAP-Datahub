@@ -37,3 +37,7 @@ class Option(Base):
     @property
     def label(self) -> str:
         return self.label_ or self.value
+
+    @label.setter
+    def label(self, value: Optional[str]) -> None:
+        self.label_ = value

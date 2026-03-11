@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any, List, Optional
 import json
 
 
@@ -9,6 +9,8 @@ from app.models.commune import Commune
 from app.models.commune_map import CommuneMap
 from app.models.district import District
 from app.models.district_map import DistrictMap
+from app.models.option import Option
+from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from app.schemas.choropleth import ChoroplethGranularity, GradientMeta, LegendItem, MapLegend
@@ -204,7 +206,7 @@ async def _compute_global_value(
     return _normalize_value(str(r.get("mode_text")) if r.get("mode_text") is not None else None)
 
 
-def _build_legend_and_colors(features: list[Feature]) -> MapLegend:
+def _build_legend_and_colors(features: list[Feature], options: List[Option]) -> MapLegend:
     raw_values: list[tuple[str, Optional[str]]] = []
     numeric_values: list[float] = []
 
@@ -212,6 +214,7 @@ def _build_legend_and_colors(features: list[Feature]) -> MapLegend:
         k = f.properties.get("value_kind")
         v = f.properties.get("value")
         raw_values.append((k, v))
+        option = next((opt for opt in options if opt.value == str(v)), None)
         if k == "value" and v is not None:
             try:
                 numeric_values.append(float(v))
@@ -238,7 +241,7 @@ def _build_legend_and_colors(features: list[Feature]) -> MapLegend:
     # categorical (<= 12)
     if 0 < n_distinct <= MAX_CATEGORIES:
         colors = _default_colors(n_distinct)
-        items = [LegendItem(label=str(v), color=colors[i], value=v) for i, v in enumerate(distinct)]
+        items = [LegendItem(label=options[i].label, color=colors[i], value=v) for i, v in enumerate(distinct)]
         _append_special(items)
         legend = MapLegend(type="categorical", title="Responses", items=items)
         cmap = {str(v): colors[i] for i, v in enumerate(distinct)}
@@ -677,7 +680,9 @@ async def build_choropleth(
 ) -> tuple["FeatureCollection", "MapLegend", dict[str, Any]]:
 
     years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
-
+    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
+    result = await db.scalars(smt)
+    options = result.all()
     # scope global: question_uid = question_global_uid
     if scope == "global":
         resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
@@ -764,7 +769,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # District
@@ -819,7 +824,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # Canton
@@ -874,7 +879,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # Federal
@@ -961,7 +966,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # fallback

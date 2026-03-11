@@ -7,7 +7,10 @@ from app.models.answer import Answer
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
+from app.models.option import Option
 from app.models.question_global import QuestionGlobal
+from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from sqlalchemy import select
@@ -120,6 +123,7 @@ async def populate_demo_db() -> None:
             session.add(db_question_globale_kant)
             session.add(db_question_globale_spr)
             session.add(db_question_globale_17_23)
+            await session.flush()
 
             for year in tqdm([2017, 2023], total=2, desc="Processing all year"):
                 db_survey = Survey(name=f"GSB{str(year)[2:]}", year=year)
@@ -128,9 +132,9 @@ async def populate_demo_db() -> None:
                 await session.flush()
 
                 if year == 2017:
-                    db_question = QuestionPerSurvey(
-                        code="kant17",
-                        label="kant17",
+                    db_question_kant = QuestionPerSurvey(
+                        code="kant2017",
+                        label="kant2017",
                         survey=db_survey,
                         question_global=db_question_globale_kant,
                         text_de="Kantonszugehörigkeit Gemeinden",
@@ -139,9 +143,9 @@ async def populate_demo_db() -> None:
                         text_it="Appartenenza cantonale Comuni",
                         text_ro="Appartegnientscha al chantun da las vischnancas",
                     )
-                    session.add(db_question)
+                    session.add(db_question_kant)
 
-                    db_question = QuestionPerSurvey(
+                    db_question_spr = QuestionPerSurvey(
                         code="spr17",
                         label="spr17",
                         survey=db_survey,
@@ -152,7 +156,7 @@ async def populate_demo_db() -> None:
                         text_it="Aree linguistiche della Svizzera",
                         text_ro="territoris linguistics da la Svizra",
                     )
-                    session.add(db_question)
+                    session.add(db_question_spr)
                     db_question_globale_17 = QuestionPerSurvey(
                         code="GSB17_Q58",
                         label="GSB17_Q58",
@@ -193,7 +197,7 @@ async def populate_demo_db() -> None:
                     session.add(db_question_unique_17_2)
                 elif year == 2023:
 
-                    db_question = QuestionPerSurvey(
+                    db_question_kant = QuestionPerSurvey(
                         code="kant23",
                         label="kant23",
                         survey=db_survey,
@@ -204,9 +208,9 @@ async def populate_demo_db() -> None:
                         text_it="Appartenenza cantonale Comuni",
                         text_ro="Appartegnientscha al chantun da las vischnancas",
                     )
-                    session.add(db_question)
+                    session.add(db_question_kant)
 
-                    db_question = QuestionPerSurvey(
+                    db_question_spr = QuestionPerSurvey(
                         code="spr23",
                         label="spr23",
                         survey=db_survey,
@@ -217,7 +221,7 @@ async def populate_demo_db() -> None:
                         text_it="Aree linguistiche della Svizzera",
                         text_ro="territoris linguistics da la Svizra",
                     )
-                    session.add(db_question)
+                    session.add(db_question_spr)
                     db_question_globale_23 = QuestionPerSurvey(
                         code="GSB23_Q52",
                         label="GSB23_Q52",
@@ -254,8 +258,38 @@ async def populate_demo_db() -> None:
                     session.add(db_question_globale_23)
                     session.add(db_question_unique_23_1)
                     session.add(db_question_unique_23_2)
+                    await session.flush()
 
-                session.commit()
+                # Option for kant question
+                for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
+                    db_option = Option(value=str(lang["ofs_id"]), label=code.split("-")[1])
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_global_association = QuestionGlobalOptionAssociation(
+                        question=db_question_globale_kant, option=db_option
+                    )
+                    session.add(db_question_global_association)
+
+                    db_question_association = QuestionOptionAssociation(question=db_question_kant, option=db_option)
+                    session.add(db_question_association)
+                    await session.flush()
+
+                # Option for lang question
+                language = ["Deutsch", "Französisch", "Italienisch", "Rätoromanisch"]
+                for index, item in enumerate(language):
+                    db_option = Option(value=str(index + 1), label=item)  # Value option always start at 1
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_global_association = QuestionGlobalOptionAssociation(
+                        question=db_question_globale_spr, option=db_option
+                    )
+                    session.add(db_question_global_association)
+
+                    db_question_association = QuestionOptionAssociation(question=db_question_spr, option=db_option)
+                    session.add(db_question_association)
+                    await session.flush()
 
         # Adding answer
         async with session.begin():
@@ -282,18 +316,15 @@ async def populate_demo_db() -> None:
                     )
                     session.add(db_commune)
                     await session.flush()
-                i = 0
                 for col in crc:
-                    if "kant17" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant17"))
+                    if "kant2017" in col:
+                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant2017"))
                         db_question = result.scalar_one_or_none()
-                        print(i)
                         db_answer = Answer(
                             year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
                         )
                         session.add(db_answer)
                         await session.flush()
-                        i += 1
 
                     elif "spr17" in col:
                         result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr17"))
