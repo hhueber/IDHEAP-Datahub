@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { geoApi, ChoroplethResponse } from "@/features/geo/geoApi";
+import { geoApi, ChoroplethResponse, ChoroplethGranularity } from "@/features/geo/geoApi";
 
 type Params = {
   scope: "per_survey" | "global";
   question_uid: number | null;
   year: number | null;
   bins?: number;
+  granularity?: ChoroplethGranularity;
 };
 
 export function useChoropleth(params: Params) {
@@ -36,6 +37,7 @@ export function useChoropleth(params: Params) {
         scope: params.scope,
         question_uid: params.question_uid as number,
         year: params.year as number,
+        granularity: params.granularity ?? "commune",
        
         }, ctrl.signal)
       .then((res) => {
@@ -59,7 +61,7 @@ export function useChoropleth(params: Params) {
       alive = false;
       ctrl.abort();
     };
-  }, [enabled, params.question_uid, params.year, params.bins]);
+  }, [enabled, params.question_uid, params.year, params.bins, params.granularity]);
 
   return { data, loading, errorKey };
 }
