@@ -28,8 +28,7 @@ NO_DATA_COLOR = "#cccccc"  # gris
 NO_RESPONSE_COLOR = "#f59e0b"  # orange/ambre
 GRAD_START = "#22c55e"  # vert
 GRAD_END = "#3b82f6"  # bleu
-MAX_CATEGORIES = 12  # légende: 12
-MAX_MODE_DISTINCT = 12  # règle: <= 12 => mode, > 12 => moyenne
+MAX_CATEGORIES = 12  # légende: 12 catégories max, sinon gradient ou top12+other
 
 
 def _default_colors(n: int) -> list[str]:
@@ -700,7 +699,7 @@ async def build_choropleth(
         q_uid = question_uid
 
     distinct_cnt = await _global_distinct_non_empty_count(db, q_uid, year)
-    use_mode = distinct_cnt <= MAX_MODE_DISTINCT
+    use_mode = distinct_cnt <= MAX_CATEGORIES
 
     # Commune
     if granularity == "commune":
