@@ -4,6 +4,8 @@ import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
 import type { Entity, ShowResponse, ShowMetaField } from "@/features/pageShow/show_type";
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
+import { useDelete } from "@/shared/useDelete";
+import { ConfirmModal } from "@/utils/ConfirmModal";
 
 type Props = {
   id: number;
@@ -41,6 +43,10 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [data, setData] = React.useState<ShowResponse["data"]>(null);
   const canEdit = meta?.actions?.can_edit ?? false;
   const canDelete = meta?.actions?.can_delete ?? false;
+
+  const [deleteMode, setDeleteMode] = React.useState(false);
+  const [selectedFieldsToClear, setSelectedFieldsToClear] = React.useState<string[]>([]);
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -81,6 +87,25 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
 
   const fields = meta?.fields ?? [];
 
+  const {
+    target: clearTarget,
+    loading: clearLoading,
+    error: clearError,
+    openConfirm: openClearConfirm,
+    confirm: confirmClear,
+    cancel: cancelClear,
+  } = useDelete<{ entity: Entity; id: number; clear_fields: string[] }>((tgt) => ({
+    entity: tgt.entity,
+    filters: [{ field: "uid", value: tgt.id }],
+    clear_fields: tgt.clear_fields,
+  }));
+
+  const toggleField = (key: string) => {
+    setSelectedFieldsToClear((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
   return (
     <div className="w-full h-full" style={{ backgroundColor: background, color: textColor }}>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -100,6 +125,24 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
+                {deleteMode && (
+                  <button
+                    type="button"
+                    disabled={selectedFieldsToClear.length === 0}
+                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                    style={{
+                      backgroundColor: background,
+                      borderColor,
+                      color: textColor,
+                    }}
+                    onClick={() => {
+                      openClearConfirm({ entity, id, clear_fields: selectedFieldsToClear });
+                      setConfirmOpen(true);
+                    }}
+                  >
+                    {t("dashboardSidebar.pageShow.confirmClear")}
+                  </button>
+                )}
                 {canEdit && (
                   <button
                     type="button"
@@ -124,7 +167,13 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                 {canDelete && (
                   <button
                     type="button"
-                    onClick={() => onDelete?.(entity, id)}
+                    onClick={() => {
+                      // Active/désactive le mode sélection
+                      setDeleteMode((v) => !v);
+                      setSelectedFieldsToClear([]);
+                      cancelClear();
+                      setConfirmOpen(false);
+                    }}
                     className="h-9 px-3 rounded-lg border text-sm transition-colors"
                     style={{
                       backgroundColor: background,
@@ -177,16 +226,36 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                     <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
                       {fields
                         .filter((f) => data[f.key] !== undefined)
-                        .map((f) => (
-                          <React.Fragment key={f.key}>
-                            <div className="font-medium" style={{ color: hoverText07 }}>
-                              {f.label}
-                            </div>
-                            <div className="break-words">
-                              {formatValue(f.kind, data[f.key])}
-                            </div>
-                          </React.Fragment>
-                        ))}
+                        .map((f) => {
+                          const isProtected = f.key === "uid" || f.key === "id"; // A adapter selon besoins
+                          const isSelectable = deleteMode && !isProtected;
+
+                          return (
+                            <React.Fragment key={f.key}>
+                              <div className="font-medium flex items-center gap-2" style={{ color: hoverText07 }}>
+                                <span className="inline-flex w-4 justify-center shrink-0">
+                                  <input
+                                    type="checkbox"
+                                    className={[
+                                      "h-4 w-4 transition-opacity",
+                                      isSelectable ? "opacity-100" : "opacity-0 pointer-events-none",
+                                    ].join(" ")}
+                                    checked={selectedFieldsToClear.includes(f.key)}
+                                    onChange={() => toggleField(f.key)}
+                                    tabIndex={isSelectable ? 0 : -1}
+                                    aria-hidden={!isSelectable}
+                                  />
+                                </span>
+
+                                {f.label}
+                              </div>
+
+                              <div className="break-words">
+                                {formatValue(f.kind, data[f.key])}
+                              </div>
+                            </React.Fragment>
+                          );
+                        })}
                     </div>
                   </div>
 
@@ -208,7 +277,20 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
 
                           return (
                             <React.Fragment key={l.key}>
-                              <div className="font-medium" style={{ color: hoverText07 }}>
+                              <div className="font-medium flex items-center gap-2" style={{ color: hoverText07 }}>
+                                <span className="inline-flex w-4 justify-center shrink-0">
+                                  <input
+                                    type="checkbox"
+                                    className={[
+                                      "h-4 w-4 transition-opacity",
+                                      deleteMode ? "opacity-100" : "opacity-0 pointer-events-none",
+                                    ].join(" ")}
+                                    checked={selectedFieldsToClear.includes(key)}
+                                    onChange={() => toggleField(key)}
+                                    tabIndex={deleteMode ? 0 : -1}
+                                    aria-hidden={!deleteMode}
+                                  />
+                                </span>
                                 {t("dashboardSidebar.pageShow.text")} ({l.label})
                               </div>
                               <div className="italic">{renderEmpty(data[key])}</div>
@@ -275,6 +357,39 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
           </div>
         </aside>
       </div>
+      {clearError && (
+        <div className="text-sm mb-2" style={{ color: "rgb(220,38,38)" }}>
+          {t("dashboardSidebar.pageShow.deleteError")} {clearError}
+        </div>
+      )}
+
+      <ConfirmModal
+        open={confirmOpen}
+        title={t("dashboardSidebar.pageShow.confirmDeleteTitle")}
+        message={
+          selectedFieldsToClear.length === 0
+            ? t("dashboardSidebar.pageShow.noSelection")
+            : t("dashboardSidebar.pageShow.confirmClearMessage", {
+                fields: selectedFieldsToClear.join("\n- "),
+              })
+        }
+        confirmLabel={
+          clearLoading
+            ? t("dashboardSidebar.pageShow.deleting")
+            : t("dashboardSidebar.pageShow.delete")
+        }
+        cancelLabel={t("common.cancel")}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={async () => {
+          const ok = await confirmClear();
+          if (!ok) return;
+
+          setConfirmOpen(false);
+          setDeleteMode(false);
+          setSelectedFieldsToClear([]);
+          void load();
+        }}
+      />
     </div>
   );
 }
