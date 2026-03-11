@@ -1,3 +1,7 @@
+# Service de carte choroplèthe.
+# Une carte choroplèthe est une carte thématique où des zones géographiques
+# (par exemple des communes) sont colorées en fonction d'une valeur de données
+# (statistique, réponse à un sondage, score numérique, etc.).
 from typing import Any, Optional
 import json
 
@@ -24,8 +28,7 @@ NO_DATA_COLOR = "#cccccc"  # gris
 NO_RESPONSE_COLOR = "#f59e0b"  # orange/ambre
 GRAD_START = "#22c55e"  # vert
 GRAD_END = "#3b82f6"  # bleu
-MAX_CATEGORIES = 12  # légende: 12
-MAX_MODE_DISTINCT = 12  # règle: <= 12 => mode, > 12 => moyenne, si besoin de valeur différentes
+MAX_CATEGORIES = 12  # légende: 12 catégories max, sinon gradient ou top12+other
 
 
 def _default_colors(n: int) -> list[str]:
@@ -112,7 +115,7 @@ def _apply_fill_colors(
                     return (categorical_map or {}).get(vv, "#999999")
 
                 colors: list[str] = []
-                for c in cands[:MAX_MODE_DISTINCT]:
+                for c in cands[:MAX_CATEGORIES]:
                     if not isinstance(c, dict):
                         continue
                     ck = str(c.get("kind"))
@@ -274,6 +277,7 @@ def _build_legend_and_colors(features: list[Feature]) -> MapLegend:
     has_no_response = any(k == "no_response" for (k, _) in raw_values)
     has_no_data = any(k == "no_data" for (k, _) in raw_values)
 
+    # Détecter "principalement numérique" (utile seulement si >12 distinct)
     numeric_count = len(numeric_values)
     real_count = len(real_values)
     mostly_numeric = (real_count > 0) and (numeric_count / real_count >= 0.8)
@@ -449,7 +453,6 @@ def _special_dominates(cnt_null: int, cnt_empty: int, top_real_count: int) -> bo
     """
     True si (NULL + vides) > (meilleure vraie valeur non-vide).
     """
-    # TODO: utiliser plus tard pour détecter si les reponse doivent etre couleur special car egaliter ou reponse null dominent
     return (cnt_null + cnt_empty) > top_real_count
 
 
@@ -732,7 +735,7 @@ def _rows_to_features(
                 if cnt_null >= top_real_count:
                     candidates_raw.append(("no_data", None))
 
-            candidates = _unique_keep_order(candidates_raw, limit=MAX_MODE_DISTINCT)
+            candidates = _unique_keep_order(candidates_raw, limit=MAX_CATEGORIES)
 
             if len(candidates) >= 2:
                 props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
@@ -794,7 +797,7 @@ async def build_choropleth(
         q_uid = question_uid
 
     distinct_cnt = await _global_distinct_non_empty_count(db, q_uid, year)
-    use_mode = distinct_cnt <= MAX_MODE_DISTINCT
+    use_mode = distinct_cnt <= MAX_CATEGORIES
 
     # Commune
     if granularity == "commune":

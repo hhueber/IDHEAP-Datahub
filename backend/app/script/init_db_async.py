@@ -10,13 +10,14 @@ from app.models import Base
 from app.repositories.user_repo import any_admin_exists, create_user
 from app.script.populate_config import populate_config_if_empty
 from app.script.populate_db import populate_db
+from app.script.populate_demo_db import populate_demo_db
 from app.script.populate_geo_db import populate_async_geo
 
 
 logger = logging.getLogger(__name__)
 
 
-async def create_schema() -> None:
+async def create_schema(is_demo: bool) -> None:
     try:
         await ensure_extensions()
     except Exception as e:
@@ -56,14 +57,22 @@ async def create_schema() -> None:
     await populate_config_if_empty()
     logger.info("Config table initialized (if empty).")
 
-    # Populate la base de donnée
-    await populate_db()
-    logger.info("Database populated successfully.")
+    if is_demo:
+        await populate_demo_db()
+        logger.info("Database populated successfully with demo data.")
+    else:  # Populate la base de donnée
+        await populate_db()
+        logger.info("Database populated successfully.")
 
-    await populate_async_geo()
+    await populate_async_geo(is_demo)
     logger.info("Database populated successfully with geo data.")
 
 
 if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", dest="demo", action="store_true")
+    args = parser.parse_args()
     configure_logging()
-    asyncio.run(create_schema())
+    asyncio.run(create_schema(args.demo))
