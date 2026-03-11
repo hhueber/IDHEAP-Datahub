@@ -85,7 +85,7 @@ export default function HomeInfoPanel({
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 px-3 py-2">
       {/* État global */}
       {(loading || error) && (
         <section className="rounded-2xl shadow-sm  p-3" 
@@ -123,6 +123,48 @@ export default function HomeInfoPanel({
             placeholder={t("home.chooseYear")}
             globalLabel={t("home.globalOption")}
           />
+        </div>
+      </section>
+
+      {/* Carte granularité */}
+      <section
+        className="rounded-2xl shadow-sm p-4"
+        style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
+      >
+        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
+          {t("home.granularity")}
+        </h2>
+
+        <div className="grid grid-cols-2 gap-2">
+          {granularityItems.map((it) => {
+            const active = granularity === it.key;
+
+            return (
+              <button
+                key={it.key}
+                type="button"
+                onClick={() => onGranularityChange(it.key)}
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = hoverPrimary04;
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = background;
+                }}
+                className="
+                  rounded-xl px-3 py-2 border text-sm font-medium
+                  transition-colors duration-150
+                  active:translate-y-[1px]
+                "
+                style={{
+                  borderColor,
+                  backgroundColor: active ? hoverPrimary04 : background,
+                  color: textColor,
+                }}
+              >
+                {it.label}
+              </button>
+            );
+          })}
         </div>
       </section>
 
@@ -181,6 +223,7 @@ export default function HomeInfoPanel({
         </div>
       </section>
 
+<<<<<<< HEAD
       {/* Carte granularité */}
       <section
         className="rounded-2xl shadow-sm p-4"
@@ -223,13 +266,19 @@ export default function HomeInfoPanel({
         </div>
       </section>
 
+=======
+>>>>>>> main
       {/* Controls choropleth a refaire mieux */}
       <section
         className="rounded-2xl shadow-sm p-4 relative overflow-visible"
         style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
       >
         <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
+<<<<<<< HEAD
           {t("home.choropleth")}
+=======
+          {t("home.choroplethGlobalYear")}
+>>>>>>> main
         </h2>
 
         {/* Année global uniquement */}

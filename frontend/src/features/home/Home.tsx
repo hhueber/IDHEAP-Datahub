@@ -6,6 +6,10 @@ import { useBootstrap } from "@/features/home/hooks/useBootstrap";
 import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
+<<<<<<< HEAD
+=======
+import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
+>>>>>>> main
 
 const GLOBAL_UID = -1;
 
@@ -42,7 +46,15 @@ export default function Home() {
   const choroplethScope = isGlobal ? "global" : "per_survey";
 
   // choropleth : année = activeYear
+<<<<<<< HEAD
   const { data: choropleth } = useChoropleth({
+=======
+  const {
+    data: choropleth,
+    loading: choroplethLoading,
+    errorKey: choroplethErrorKey,
+  } = useChoropleth({
+>>>>>>> main
     scope: choroplethScope,
     question_uid: selectedQuestionUid,
     year: activeYear,
@@ -61,6 +73,10 @@ export default function Home() {
           choropleth={choropleth}
           panelOpen={panelOpen}
         />
+<<<<<<< HEAD
+=======
+        {choroplethLoading && <MapLoadingOverlay />}
+>>>>>>> main
       </div>
 
       {/* Bouton flottant (ouvre/ferme uniquement) */}

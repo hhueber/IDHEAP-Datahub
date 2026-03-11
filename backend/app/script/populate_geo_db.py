@@ -22,7 +22,7 @@ transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 async def populate_async_geo(is_demo: bool) -> None:
     has_country_populated = False
     if is_demo:
-        years = [2017, 2023]
+        years = [2008, 2017, 2023]
     else:
         years = [1988, 1994, 1998, 2005, 2009, 2017, 2023]
     async with SessionLocal() as session:

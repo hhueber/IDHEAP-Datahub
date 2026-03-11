@@ -33,7 +33,6 @@ services:
     working_dir: /app/backend
     volumes:
       - ./backend:/app/backend:z
-    
     restart: "always"
   
   frontend:
