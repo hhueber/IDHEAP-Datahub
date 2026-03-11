@@ -10,6 +10,10 @@ import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
 import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { useTheme } from "@/theme/useTheme";
+import type { ChoroplethResponse } from "@/features/geo/geoApi";
+import MapLegendOverlay from "@/components/map/MapLegendOverlay";
+import L from "leaflet";
+import "leaflet.pattern";
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -38,14 +42,20 @@ function ExposeMapOnWindow() {
 
 type Props = {
   className?: string;
+  year?: number | null; // année pour charger les couches "by_year"
+  choropleth?: ChoroplethResponse | null; // overlay communes colorées
   baseImageUrl?: string;
-  baseImageOpacity?: number; // 0..1
+  baseImageOpacity?: number;
+  panelOpen?: boolean;
 };
 
 export default function GeoJsonMap({
   className = "absolute inset-0",
+  year = null,
+  choropleth = null,
   baseImageUrl,
   baseImageOpacity = 1,
+  panelOpen = true,
 }: Props) {
   const { t } = useTranslation();
   const [bundle, setBundle] = useState<GeoBundle | null>(null);
@@ -53,18 +63,57 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores } = useTheme();
+  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores, borderColor } = useTheme();
 
+  const patternCacheRef = useRef<Map<string, any>>(new Map());
+
+  // Crée ou récupère un pattern de rayures multicolores (pour les choropleth catégorielles avec ex-aequo)
+  function getMultiStripePattern(map: any, colors: string[], angle = 45, stripe = 6) {
+    const cols = colors.filter(Boolean).slice(0, 12);
+    const key = `${cols.join("|")}|${angle}|${stripe}`;
+    const cache = patternCacheRef.current;
+    const existing = cache.get(key);
+    if (existing) return existing;
+
+    const n = cols.length;
+    const w = stripe * n;
+    const h = stripe * n;
+
+    const pattern = new (L as any).Pattern({
+      width: w,
+      height: h,
+      patternUnits: "userSpaceOnUse",
+      angle,
+    });
+
+    cols.forEach((col, i) => {
+      const rect = new (L as any).PatternRect({
+        x: i * stripe,
+        y: 0,
+        width: stripe,
+        height: h,
+        fill: true,
+        fillColor: col,
+        fillOpacity: 1,
+        stroke: false,
+      });
+      pattern.addShape(rect);
+    });
+
+    pattern.addTo(map);
+    cache.set(key, pattern);
+    return pattern;
+  }
 
   /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
     const ctrl = new AbortController();
     let alive = true; // évite setState après unmount
 
-    const currentYear = new Date().getFullYear();
+    const y = typeof year === "number" ? year : new Date().getFullYear();
 
     geoApi
-      .getByYear(currentYear, ctrl.signal, {
+      .getByYear(y, ctrl.signal, {
         layers: ["country", "lakes", "cantons", "districts"],
         clearOthers: false,
       }
@@ -175,7 +224,7 @@ const communesStyle = useMemo(() => ({
         <Pane name="pane-country"  style={{ zIndex: 200 }}>
           {country   && <GeoJSON data={country as any}   style={() => countryStyle} pane="pane-country"  />}
         </Pane>
-        <Pane name="pane-lakes"    style={{ zIndex: 300 }}>
+        <Pane name="pane-lakes"    style={{ zIndex: 700 }}>
           {lakes     && <GeoJSON data={lakes as any}     style={() => lakesStyle} pane="pane-lakes"    />}
         </Pane>
         <Pane name="pane-communes" style={{ zIndex: 400 }}>
@@ -187,6 +236,69 @@ const communesStyle = useMemo(() => ({
         <Pane name="pane-cantons"  style={{ zIndex: 600 }}>
           {cantons   && <GeoJSON data={cantons as any}   style={() => cantonsStyle} onEachFeature={onEachCanton} pane="pane-cantons"  />}
         </Pane>
+        {choropleth?.feature_collection && (
+          <>
+            <Pane name="choropleth" style={{ zIndex: 650 }} />
+            <GeoJSON
+              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}-${choropleth.granularity}`}
+              data={choropleth.feature_collection as any}
+              pane="choropleth"
+              style={(feat: any) => {
+                const props = feat?.properties ?? {};
+                const fill = props.fill_color ?? "#cccccc";
+                const pat = props.fill_pattern;
+                const map = (window as any).__leafletMap;
+
+                const base: any = {
+                  weight: 1,
+                  opacity: 1,
+                  color: borderColor,
+                };
+
+                // Si le backend a fourni un pattern (catégoriel + tie), on l'applique
+                if (
+                  map &&
+                  pat?.type === "stripes" &&
+                  Array.isArray(pat.colors) &&
+                  pat.colors.length >= 2
+                ) {
+                  const angle = typeof pat.angle === "number" ? pat.angle : 45;
+                  const stripe = typeof pat.stripe === "number" ? pat.stripe : 6;
+
+                  const p = getMultiStripePattern(map, pat.colors, angle, stripe);
+
+                  return {
+                    ...base,
+                    fillOpacity: 1,    // important: le pattern fait le rendu
+                    fillPattern: p,
+                  };
+                }
+
+                // fallback normal
+                return {
+                  ...base,
+                  fillOpacity: 0.75,
+                  fillColor: fill,
+                };
+              }}
+              onEachFeature={(feature: any, layer: any) => {
+                const props = feature?.properties ?? {};
+                const v = props.value ?? null;
+
+                // Si gradient: pas de nom de commune
+                if (choropleth.legend.type === "gradient") {
+                  layer.bindTooltip(`${v ?? "No data"}`, { sticky: true });
+                } else {
+                  const name = props.name ?? props.code ?? "";
+                  layer.bindTooltip(`${name}${name ? " — " : ""}${v ?? "No data"}`, { sticky: true });
+                }
+              }}
+            />
+
+            {/* Légende */}
+            <MapLegendOverlay choropleth={choropleth} panelOpen={panelOpen} />
+          </>
+        )}
         {/* Points villes et labels */}
         <PlaceOfInterestLayer />
       </MapContainer>

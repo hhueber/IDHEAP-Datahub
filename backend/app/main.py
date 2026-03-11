@@ -11,7 +11,6 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-print("lol")
 app = FastAPI(title="IDHEAP Data Hub API")
 
 setup_middlewares(app)

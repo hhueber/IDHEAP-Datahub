@@ -1,4 +1,4 @@
-import React, { useEffect, useState, DragEvent, ChangeEvent } from "react";
+import React, { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
 import { useTranslation } from "react-i18next";
 import {
   fetchThemeConfig,
@@ -25,6 +25,13 @@ import {
 import { saveThemeConfig as saveThemeConfigToStorage } from "@/theme/themeStorage";
 import { useThemeMode } from "@/theme/ThemeContext";
 
+// Logo par défaut local (fallback final).
+const DEFAULT_LOGO = "/img/idheap-dh.png";
+
+type PendingLogoFileInfo = {
+  name: string;
+  size: number;
+};
 
 export default function ThemeConfigPage() {
   const { t } = useTranslation();
@@ -38,11 +45,19 @@ export default function ThemeConfigPage() {
   // Data URL en attente : on n’envoie le fichier au backend qu’au moment de sauvegarder.
   const [pendingLogoDataUrl, setPendingLogoDataUrl] = useState<string | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, cfg } = useTheme();
+  // Infos du fichier en attente (à afficher uniquement avant save / avant reload).
+  const [pendingLogoFileInfo, setPendingLogoFileInfo] = useState<PendingLogoFileInfo | null>(null);
+
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, hoverPrimary10, hoverPrimary15, cfg } = useTheme();
   // Logo actuel en cache (thème local) pour fallback si le backend ne renvoie rien.
   const logoUrlRaw = cfg.logo_url;
   // Permet de rafraîchir le thème après sauvegarde (ex: reload des tokens/couleurs).
   const { refreshTheme } = useThemeMode();
+
+  // Drag and drop logo
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [isDragReject, setIsDragReject] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Charger la config au montage
   useEffect(() => {
@@ -99,6 +114,21 @@ export default function ThemeConfigPage() {
     });
   };
 
+  const MAX_LOGO_MB = 3;
+  const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+
+  // Valide un fichier logo (type + tailles)
+  function validateLogoFile(file: File): string | null {
+    if (!ACCEPTED_MIME.includes(file.type)) {
+      return t("admin.config.themeConfigPage.logoInvalidType");
+    }
+    const maxBytes = MAX_LOGO_MB * 1024 * 1024;
+    if (file.size > maxBytes) {
+      return t("admin.config.themeConfigPage.logoTooLarge", {size: MAX_LOGO_MB});
+    }
+    return null;
+  }
+
   // Convertit un fichier en data URL (data:image/...;base64,...) pour preview et upload.
   function readFileAsDataUrl(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -117,28 +147,50 @@ export default function ThemeConfigPage() {
     });
   }
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+
   // Gestion du drag & drop logo
   const handleLogoUrlDrop = async (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    setIsDragActive(false);
+    setIsDragReject(false);
+
     const text = e.dataTransfer.getData("text/plain");
 
     // Cas 1 : URL directe -> pas d'upload backend
     if (text && (text.startsWith("http://") || text.startsWith("https://") || text.startsWith("/"))) {
-      setPendingLogoDataUrl(null);
-      updateField("logo_url", text.trim());
-      return;
+        setPendingLogoDataUrl(null);
+        setPendingLogoFileInfo(null);
+        updateField("logo_url", text.trim());
+        return;
     }
 
-    // Cas fichier : on lit en data URL pour preview, puis on upload au moment du save.
     const file = e.dataTransfer.files?.[0];
     if (file) {
-      try {
+        const err = validateLogoFile(file);
+        if (err) {
+        setError(err);
+        return;
+        }
+
+        try {
         const dataUrl = await readFileAsDataUrl(file);
         setPendingLogoDataUrl(dataUrl);
-      } catch (err) {
+        setPendingLogoFileInfo({
+          name: file.name,
+          size: file.size,
+        });
+        setError(null);
+        } catch (err) {
         console.error(err);
         setError(t("admin.config.themeConfigPage.logoUploadError"));
-      }
+        }
     }
   };
 
@@ -147,18 +199,61 @@ export default function ThemeConfigPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const err = validateLogoFile(file);
+    if (err) {
+        setError(err);
+        e.target.value = ""; // permet de re-choisir le même fichier
+        return;
+    }
+
     try {
-      const dataUrl = await readFileAsDataUrl(file);
-      setPendingLogoDataUrl(dataUrl);
+        const dataUrl = await readFileAsDataUrl(file);
+        setPendingLogoDataUrl(dataUrl);
+        setPendingLogoFileInfo({
+          name: file.name,
+          size: file.size,
+        });
+        setError(null);
     } catch (err) {
-      console.error(err);
-      setError(t("admin.config.themeConfigPage.logoUploadError"));
+        console.error(err);
+        setError(t("admin.config.themeConfigPage.logoUploadError"));
+    } finally {
+        e.target.value = "";
     }
   };
 
   // Empêche le navigateur d’ouvrir le fichier quand on drop.
-  const preventDefault = (e: DragEvent<HTMLDivElement>) => {
+  const onDragEnter = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+    e.stopPropagation();
+
+    setIsDragActive(true);
+
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+        const err = validateLogoFile(file);
+        setIsDragReject(!!err);
+    } else {
+        // Si c'est juste du texte/URL, pas un reject
+        setIsDragReject(false);
+    }
+    };
+
+    const onDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragActive(true);
+    };
+
+    const onDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Quand on quitte la zone
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+
+    setIsDragActive(false);
+    setIsDragReject(false);
   };
 
   // Sauvegarde
@@ -185,6 +280,7 @@ export default function ThemeConfigPage() {
         // Met à jour l’UI + reset l’upload pending.
         setConfig(freshCfg);
         setPendingLogoDataUrl(null);
+        setPendingLogoFileInfo(null);
         // Met à jour le localStorage et rafraîchit le thème appliqué.
         saveThemeConfigToStorage(freshCfg as any);
         refreshTheme();
@@ -220,8 +316,6 @@ export default function ThemeConfigPage() {
 
   const defaultMode: ThemeMode = config.theme_default_mode || "light";
 
-  // Logo par défaut local (fallback final).
-  const DEFAULT_LOGO = "/img/idheap-dh.png";
   // Logo brut tel que stocké (peut être vide, URL absolue, chemin relatif...).
   const rawLogo = (config.logo_url ?? "").trim();
 
@@ -301,71 +395,217 @@ export default function ThemeConfigPage() {
           </div>
 
           {/* Logo URL + upload */}
-          <div className="flex flex-col gap-3 md:flex-row">
-            <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium">
-                {t("admin.config.themeConfigPage.logoUrl")}
-              </label>
-              <input
-                type="text"
-                className="w-full rounded border px-3 py-2 text-sm"
+          <div
+            className="rounded-2xl border p-4 md:p-5"
+            style={{
+              backgroundColor: background,
+              borderColor: borderColor,
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
+              {/* Preview panel */}
+              <div
+                className="rounded-2xl border p-4 flex flex-col items-center justify-center min-h-[220px]"
                 style={{
-                  backgroundColor: background,
                   borderColor,
-                  color: textColor,
+                  backgroundColor: background,
                 }}
-                placeholder="https://example.com/logo.png"
-                value={config.logo_url ?? ""}
-                onChange={(e) => updateField("logo_url", e.target.value)}
-              />
-              {/* Preview du logo final (URL résolue ou data URL pending) */}
-              {previewUrl ? (
-                <div className="mt-2 flex items-center gap-2">
-                  <span className="text-xs opacity-70">
-                    {t("admin.config.themeConfigPage.logoPreview")}
-                  </span>
-                  <img
-                    src={previewUrl}
-                    alt="logo preview"
-                    className="h-10 max-w-[160px] object-contain border rounded"
-                    style={{ backgroundColor: logoBackground }}
+              >
+                <div className="mb-3 text-sm font-medium opacity-70">
+                  {t("admin.config.themeConfigPage.logoPreview")}
+                </div>
+
+                <div
+                  className="w-full h-[120px] rounded-xl border flex items-center justify-center overflow-hidden px-4"
+                  style={{
+                    borderColor,
+                    backgroundColor: logoBackground,
+                  }}
+                >
+                  {previewUrl ? (
+                    <img
+                      src={previewUrl}
+                      alt="logo preview"
+                      className="max-h-[80px] max-w-full object-contain"
+                    />
+                  ) : (
+                    <span className="text-xs opacity-50">{t("admin.config.themeConfigPage.noLogo")}</span>
+                  )}
+                </div>
+
+                {pendingLogoFileInfo ? (
+                  <div
+                    className="mt-4 w-full rounded-xl border px-3 py-2 text-left"
+                    style={{ borderColor, backgroundColor: hoverPrimary10 }}
+                  >
+                    <p className="text-xs font-medium truncate">
+                      {pendingLogoFileInfo.name}
+                    </p>
+                    <p className="text-[11px] opacity-70">
+                      {formatFileSize(pendingLogoFileInfo.size)}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="mt-4 text-[11px] opacity-60 text-center">
+                    {t("admin.config.themeConfigPage.logoFormats", { size: MAX_LOGO_MB })}
+                  </div>
+                )}
+              </div>
+
+              {/* Controls */}
+              <div className="space-y-4">
+                {/* URL input */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium opacity-80">
+                    {t("admin.config.themeConfigPage.logoUrl")}
+                  </label>
+                  <input
+                    type="text"
+                    className="w-full rounded-xl border px-4 py-3 text-sm outline-none transition"
+                    style={{
+                      backgroundColor: background,
+                      borderColor,
+                      color: textColor,
+                    }}
+                    placeholder="https://example.com/logo.png"
+                    value={config.logo_url ?? ""}
+                    onChange={(e) => updateField("logo_url", e.target.value)}
                   />
                 </div>
-              ) : null}
-            </div>
 
-            {/* Dropzone upload */}
-            <div className="flex-1 space-y-2">
-              <label className="text-sm font-medium">
-                {t("admin.config.themeConfigPage.logoUpload")}
-              </label>
-              <div
-                className="flex flex-col items-center justify-center border rounded-lg px-3 py-4 text-xs text-center cursor-pointer"
-                style={{ borderColor: borderColor }}
-                onDrop={handleLogoUrlDrop}
-                onDragOver={preventDefault}
-                onDragEnter={preventDefault}
-                onDragLeave={preventDefault}
-              >
-                <p className="mb-2">
-                  {t("admin.config.themeConfigPage.logoDropZone")}
-                </p>
-                <p className="mb-2 opacity-70">
-                  {t("admin.config.themeConfigPage.logoDropHint")}
-                </p>
-                {/* Bouton "Parcourir" */}
-                <label
-                  className="inline-flex items-center justify-center rounded-md border px-3 py-1 text-xs font-medium"
-                  style={{ borderColor }}
-                >
-                  <span>{t("admin.config.themeConfigPage.logoBrowse")}</span>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleLogoFileChange}
-                  />
-                </label>
+                {/* Dropzone */}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium opacity-80">
+                    {t("admin.config.themeConfigPage.logoUpload")}
+                  </label>
+
+                  <div
+                    className={[
+                      "group relative rounded-2xl border p-6 transition-all duration-200 cursor-pointer overflow-hidden",
+                      "hover:-translate-y-[1px] hover:shadow-md",
+                      isDragActive ? "scale-[1.01]" : "scale-100",
+                    ].join(" ")}
+                    style={{
+                      borderColor: isDragReject
+                        ? "#ef4444"
+                        : isDragActive
+                          ? primary
+                          : borderColor,
+                      backgroundColor: isDragActive ? hoverPrimary10 : background,
+                      boxShadow: isDragActive
+                        ? `0 0 0 3px ${hoverPrimary15}`
+                        : "0 1px 2px rgba(0,0,0,0.04)",
+                    }}
+                    onClick={() => fileInputRef.current?.click()}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    onDrop={handleLogoUrlDrop}
+                    onDragEnter={onDragEnter}
+                    onDragOver={onDragOver}
+                    onDragLeave={onDragLeave}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={t("admin.config.themeConfigPage.logoDropZone")}
+                  >
+                    {isDragActive && (
+                      <div
+                        className="absolute inset-0 flex items-center justify-center"
+                        style={{ backgroundColor: hoverPrimary10 }}
+                        aria-hidden
+                      >
+                        <div
+                          className="rounded-full border px-4 py-2 text-sm font-semibold shadow-sm"
+                          style={{
+                            borderColor: isDragReject ? "#ef4444" : primary,
+                            color: isDragReject ? "#ef4444" : primary,
+                            backgroundColor: background,
+                          }}
+                        >
+                          {isDragReject
+                            ? t("admin.config.themeConfigPage.logoDropReject")
+                            : t("admin.config.themeConfigPage.logoDropActive")}
+                        </div>
+                      </div>
+                    )}
+
+                    <div
+                      className={[
+                        "flex flex-col items-center justify-center text-center transition-all duration-200",
+                        isDragActive ? "opacity-0 scale-95" : "opacity-100 scale-100",
+                      ].join(" ")}
+                    >
+                      <div
+                        className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border text-lg font-semibold transition-transform duration-200 group-hover:scale-110"
+                        style={{
+                          borderColor,
+                          backgroundColor: hoverPrimary10,
+                          color: primary,
+                        }}
+                      >
+                        ↑
+                      </div>
+
+                      <p className="text-sm font-medium">
+                        {t("admin.config.themeConfigPage.logoDropZone")}
+                      </p>
+                      <p className="mt-1 text-xs opacity-60">
+                        {t("admin.config.themeConfigPage.logoDropHint")}
+                      </p>
+
+                      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
+                          style={{
+                            borderColor,
+                            color: textColor,
+                            backgroundColor: hoverPrimary10,
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            fileInputRef.current?.click();
+                          }}
+                        >
+                          {t("admin.config.themeConfigPage.logoBrowse")}
+                        </button>
+
+                        {pendingLogoDataUrl && (
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
+                            style={{
+                              borderColor,
+                              color: textColor,
+                              backgroundColor: background,
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPendingLogoDataUrl(null);
+                              setPendingLogoFileInfo(null);
+                            }}
+                          >
+                            {t("common.clear")}
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="mt-3 text-[11px] opacity-50">
+                        {t("admin.config.themeConfigPage.logoFormats", { size: MAX_LOGO_MB })}
+                      </div>
+                    </div>
+
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleLogoFileChange}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
