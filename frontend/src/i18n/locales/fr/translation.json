@@ -64,7 +64,8 @@
     "close": "Fermer",
     "unknown": "Erreur inconnue",
     "confirm": "Confirmer",
-    "cancel": "Annuler"
+    "cancel": "Annuler",
+    "clear": "Retirer"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -277,7 +278,12 @@
           "logoUrl": "URL du logo",
           "logoPreview": "Aperçu du logo",
           "logoUpload": "Importer un logo",
+          "logoInvalidType": "Format non supporté. Utilise PNG/JPG/WebP/SVG.",
+          "logoTooLarge": "Fichier trop volumineux (maximum {{size}} MB).",
           "logoDropZone": "Zone de dépot du logo",
+          "logoDropReject": "Fichier non supporté.",
+          "logoDropActive": "Relâchez pour déposer",
+          "logoFormats": "PNG / JPG / WebP / SVG · {{size}} MB max",
           "logoDropHint": "Glisser une image ici ou cliquer pour sélectionner un fichier",
           "logoBrowse": "Importer...",
           "currentMode": "Mode actuel : {{mode}}",
@@ -312,6 +318,7 @@
           "logoUploadError": "Une erreur est survenue lors du chargement de l'image du logo.",
           "loadError": "Impossible de charger la configuration du thème.",
           "saveError": "Une erreur est survenue lors de l'enregistrement de la configuration.",
+          "noLogo": "Aucun logo",
           "previewPanel": {
             "text": "Lorem ipsum — simple text",
             "buttonPrimary": "Bouton primaire",
@@ -442,7 +449,13 @@
       "insights": "Insights",
       "insightsHint": "Carte / stats / infos",
       "text": "Texte",
-      "noChildren": "Aucune données"
+      "noChildren": "Aucune données",
+      "confirmClear": "Confirmer",
+      "deleteError": "Erreur de suppression",
+      "confirmDeleteTitle": "Confirmer la suppression",
+      "noSelection": "Aucun champ sélectionné.",
+      "confirmClearMessage": "Vous allez effacer les champs suivants :\n- {{fields}}",
+      "deleting": "Suppression..."    
     }
   },
   "roles": {

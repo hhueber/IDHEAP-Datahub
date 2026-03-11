@@ -217,6 +217,7 @@ const communesStyle = useMemo(() => ({
                 const props = feature?.properties ?? {};
                 const v = props.value ?? null;
 
+                // Si gradient: pas de nom de commune
                 if (choropleth.legend.type === "gradient") {
                   layer.bindTooltip(`${v ?? "No data"}`, { sticky: true });
                 } else {

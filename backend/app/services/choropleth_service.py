@@ -1,3 +1,7 @@
+# Service de carte choroplèthe.
+# Une carte choroplèthe est une carte thématique où des zones géographiques
+# (par exemple des communes) sont colorées en fonction d'une valeur de données
+# (statistique, réponse à un sondage, score numérique, etc.).
 from typing import Any, Optional
 import json
 
@@ -225,6 +229,7 @@ def _build_legend_and_colors(features: list[Feature]) -> MapLegend:
     has_no_response = any(k == "no_response" for (k, _) in raw_values)
     has_no_data = any(k == "no_data" for (k, _) in raw_values)
 
+    # Détecter "principalement numérique" (utile seulement si >12 distinct)
     numeric_count = len(numeric_values)
     real_count = len(real_values)
     mostly_numeric = (real_count > 0) and (numeric_count / real_count >= 0.8)
@@ -392,7 +397,6 @@ def _special_dominates(cnt_null: int, cnt_empty: int, top_real_count: int) -> bo
     """
     True si (NULL + vides) > (meilleure vraie valeur non-vide).
     """
-    # TODO: utiliser plus tard pour détecter si les reponse doivent etre couleur special car egaliter ou reponse null dominent
     return (cnt_null + cnt_empty) > top_real_count
 
 
