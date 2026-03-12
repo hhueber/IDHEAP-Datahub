@@ -105,6 +105,110 @@ export default function GeoJsonMap({
     return pattern;
   }
 
+  function TooltipZoomGuard() {
+    const map = useMap();
+
+    useEffect(() => {
+      const tooltipPane = map.getPanes().tooltipPane;
+      let waitingForFreshMouseMove = false;
+
+      const closeAllTooltips = () => {
+        map.eachLayer((layer: any) => {
+          if (layer.closeTooltip) {
+            layer.closeTooltip();
+          }
+        });
+      };
+
+      const hideTooltips = () => {
+        if (tooltipPane) {
+          tooltipPane.style.display = "none";
+        }
+        closeAllTooltips();
+        (map as any).__suspendTooltips = true;
+      };
+
+      const showTooltips = () => {
+        if (tooltipPane) {
+          tooltipPane.style.display = "";
+        }
+        (map as any).__suspendTooltips = false;
+      };
+
+      const suspend = () => {
+        waitingForFreshMouseMove = false;
+        hideTooltips();
+      };
+
+      const releaseButWaitForFreshHover = () => {
+        closeAllTooltips();
+        waitingForFreshMouseMove = true;
+        (map as any).__suspendTooltips = true;
+      };
+
+      const onMouseDown = (e: any) => {
+        if (e.originalEvent?.button === 0) {
+          suspend();
+        }
+      };
+
+      const onMouseUp = (e: any) => {
+        if (e.originalEvent?.button === 0) {
+          releaseButWaitForFreshHover();
+        }
+      };
+
+      const onMouseMove = (e: any) => {
+        const buttons = e.originalEvent?.buttons ?? 0;
+
+        // si clic encore maintenu, on reste bloqué
+        if (buttons !== 0) {
+          return;
+        }
+
+        // après relâchement, on attend un vrai nouveau mouvement
+        if (waitingForFreshMouseMove) {
+          waitingForFreshMouseMove = false;
+          showTooltips();
+          closeAllTooltips();
+        }
+      };
+
+      map.on("mousedown", onMouseDown);
+      map.on("mouseup", onMouseUp);
+      map.on("mousemove", onMouseMove);
+
+      map.on("dragstart", suspend);
+      map.on("movestart", suspend);
+      map.on("zoomstart", suspend);
+
+      map.on("dragend", releaseButWaitForFreshHover);
+      map.on("moveend", releaseButWaitForFreshHover);
+      map.on("zoomend", releaseButWaitForFreshHover);
+
+      return () => {
+        if (tooltipPane) {
+          tooltipPane.style.display = "";
+        }
+        (map as any).__suspendTooltips = false;
+
+        map.off("mousedown", onMouseDown);
+        map.off("mouseup", onMouseUp);
+        map.off("mousemove", onMouseMove);
+
+        map.off("dragstart", suspend);
+        map.off("movestart", suspend);
+        map.off("zoomstart", suspend);
+
+        map.off("dragend", releaseButWaitForFreshHover);
+        map.off("moveend", releaseButWaitForFreshHover);
+        map.off("zoomend", releaseButWaitForFreshHover);
+      };
+    }, [map]);
+
+    return null;
+  }
+
   /** Chargement des couches géo pour l’année courante. */
   useEffect(() => {
     const ctrl = new AbortController();
@@ -196,10 +300,18 @@ const communesStyle = useMemo(() => ({
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
         [data-map-root] .leaflet-container { background: var(--map-bg); }
+
+        [data-map-root] .leaflet-tooltip-pane {
+          z-index: 1000;
+        }
+        [data-map-root] .leaflet-tooltip.choropleth-tooltip {
+          background: rgba(255,255,255,0.58);
+          border-radius: 6px;
+        }
       `}</style>
       <MapContainer
-        center={[46.8182, 8.2275]}
-        zoom={7}
+        center={[46.8182, 9.2]}
+        zoom={8}
         className="w-full h-full"
         scrollWheelZoom
       >
@@ -207,6 +319,7 @@ const communesStyle = useMemo(() => ({
         <ExposeMapOnWindow />
         <InstallScreenshoter showButton={true} />
         <MapSizeFixer host={hostRef.current} />
+        <TooltipZoomGuard />
         <ResetSwissControl position="topleft" />
 
         {/* Raster en fond (zIndex le plus bas) */}
@@ -287,10 +400,10 @@ const communesStyle = useMemo(() => ({
 
                 // Si gradient: pas de nom de commune
                 if (choropleth.legend.type === "gradient") {
-                  layer.bindTooltip(`${v ?? "No data"}`, { sticky: true });
+                  layer.bindTooltip(`${v ?? "No data"}`, { sticky: true, opacity: 1, className: "choropleth-tooltip" });
                 } else {
                   const name = props.name ?? props.code ?? "";
-                  layer.bindTooltip(`${name}${name ? " — " : ""}${v ?? "No data"}`, { sticky: true });
+                  layer.bindTooltip( `<div>${name}</div><div>${v ?? "No data"}</div>`,{sticky: true, opacity: 1, className: "choropleth-tooltip"});
                 }
               }}
             />
