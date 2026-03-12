@@ -12,11 +12,7 @@ import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { useTheme } from "@/theme/useTheme";
 import type { ChoroplethResponse } from "@/features/geo/geoApi";
 import MapLegendOverlay from "@/components/map/MapLegendOverlay";
-<<<<<<< HEAD
-=======
 import L from "leaflet";
-import "leaflet.pattern";
->>>>>>> main
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -247,16 +243,6 @@ const communesStyle = useMemo(() => ({
               data={choropleth.feature_collection as any}
               pane="choropleth"
               style={(feat: any) => {
-<<<<<<< HEAD
-                const v = feat?.properties?.value ?? null;
-                const fill = feat?.properties?.fill_color ?? "#cccccc"; // actions de secours si fail du backend pour attribuer une couleur
-                return {
-                  weight: 1,
-                  opacity: 1,
-                  fillOpacity: 0.75,
-                  fillColor: fill,
-                  color: borderColor,
-=======
                 const props = feat?.properties ?? {};
                 const fill = props.fill_color ?? "#cccccc";
                 const pat = props.fill_pattern;
@@ -292,17 +278,13 @@ const communesStyle = useMemo(() => ({
                   ...base,
                   fillOpacity: 0.75,
                   fillColor: fill,
->>>>>>> main
                 };
               }}
               onEachFeature={(feature: any, layer: any) => {
                 const props = feature?.properties ?? {};
                 const v = props.value ?? null;
 
-<<<<<<< HEAD
-=======
                 // Si gradient: pas de nom de commune
->>>>>>> main
                 if (choropleth.legend.type === "gradient") {
                   layer.bindTooltip(`${v ?? "No data"}`, { sticky: true });
                 } else {

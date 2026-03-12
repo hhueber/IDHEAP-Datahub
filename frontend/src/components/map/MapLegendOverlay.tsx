@@ -26,11 +26,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
     <div
       className="
         absolute z-[1200]
-<<<<<<< HEAD
-        right-4 top-1/2
-=======
         right-4 top-4
->>>>>>> main
         w-[200px]
         rounded-2xl shadow-lg
         p-3
@@ -38,11 +34,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
         transition-transform duration-300 ease-out
       "
       style={{
-<<<<<<< HEAD
-        transform: panelOpen ? `translate(${drawerShift}, -50%)` : "translate(0, -50%)",
-=======
         transform: panelOpen ? `translate(${drawerShift})` : "translate(0)",
->>>>>>> main
         backgroundColor: background,
         borderWidth: 1,
         borderStyle: "solid",

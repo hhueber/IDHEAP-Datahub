@@ -223,7 +223,6 @@ export default function HomeInfoPanel({
         </div>
       </section>
 
-<<<<<<< HEAD
       {/* Carte granularité */}
       <section
         className="rounded-2xl shadow-sm p-4"
@@ -266,19 +265,13 @@ export default function HomeInfoPanel({
         </div>
       </section>
 
-=======
->>>>>>> main
       {/* Controls choropleth a refaire mieux */}
       <section
         className="rounded-2xl shadow-sm p-4 relative overflow-visible"
         style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
       >
         <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
-<<<<<<< HEAD
-          {t("home.choropleth")}
-=======
           {t("home.choroplethGlobalYear")}
->>>>>>> main
         </h2>
 
         {/* Année global uniquement */}

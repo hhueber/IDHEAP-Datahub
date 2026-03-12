@@ -2,7 +2,7 @@
 # Une carte choroplèthe est une carte thématique où des zones géographiques
 # (par exemple des communes) sont colorées en fonction d'une valeur de données
 # (statistique, réponse à un sondage, score numérique, etc.).
-from typing import Any, Optional
+from typing import Any, List, Optional
 import json
 
 
@@ -782,6 +782,9 @@ async def build_choropleth(
 ) -> tuple["FeatureCollection", "MapLegend", dict[str, Any]]:
 
     years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
+    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
+    result = await db.scalars(smt)
+    options = result.all()
     # scope global: question_uid = question_global_uid
     if scope == "global":
         resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
@@ -868,7 +871,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # District
@@ -923,7 +926,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # Canton
@@ -978,7 +981,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # Federal
@@ -1065,7 +1068,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats)
+        legend = _build_legend_and_colors(feats, options)
         return FeatureCollection(features=feats), legend, years_meta
 
     # fallback
