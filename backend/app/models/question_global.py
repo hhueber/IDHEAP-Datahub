@@ -28,3 +28,7 @@ class QuestionGlobal(Base):
     questions_linked: Mapped[List["QuestionPerSurvey"]] = relationship(
         "QuestionPerSurvey", back_populates="question_global"
     )
+
+    option_association: Mapped[List["QuestionGlobalOptionAssociation"]] = relationship(
+        "QuestionGlobalOptionAssociation", back_populates="question", cascade="all, delete-orphan"
+    )

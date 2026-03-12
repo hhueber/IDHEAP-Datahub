@@ -37,3 +37,7 @@ class QuestionPerSurvey(Base):
     )
 
     answers: Mapped[List["Answer"]] = relationship("Answer", back_populates="question")
+
+    option_association: Mapped[List["QuestionOptionAssociation"]] = relationship(
+        "QuestionOptionAssociation", back_populates="question", cascade="all, delete-orphan"
+    )

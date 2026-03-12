@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 
 
 from sqlalchemy import ForeignKey, String
@@ -14,9 +14,6 @@ class Option(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     value: Mapped[str] = mapped_column(String)
 
-    question_category_uid: Mapped[int] = mapped_column(ForeignKey("question_category.uid", ondelete="CASCADE"))
-    question_category: Mapped["QuestionCategory"] = relationship("QuestionCategory", back_populates="options")
-
     label_: Mapped[Optional[str]] = mapped_column("label", String, nullable=True)
 
     text_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
@@ -25,8 +22,22 @@ class Option(Base):
     text_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
-    answers: Mapped[list["Answer"]] = relationship("Answer", back_populates="option")
+    question_association: Mapped[List["QuestionOptionAssociation"]] = relationship(
+        "QuestionOptionAssociation", back_populates="option", cascade="all, delete-orphan"
+    )
+
+    question_global_association: Mapped[List["QuestionGlobalOptionAssociation"]] = relationship(
+        "QuestionGlobalOptionAssociation", back_populates="option", cascade="all, delete-orphan"
+    )
+
+    question_category_association: Mapped[List["QuestionCategoryOptionAssociation"]] = relationship(
+        "QuestionCategoryOptionAssociation", back_populates="option", cascade="all, delete-orphan"
+    )
 
     @property
     def label(self) -> str:
         return self.label_ or self.value
+
+    @label.setter
+    def label(self, value: Optional[str]) -> None:
+        self.label_ = value
