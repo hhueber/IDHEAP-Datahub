@@ -223,48 +223,6 @@ export default function HomeInfoPanel({
         </div>
       </section>
 
-      {/* Carte granularité */}
-      <section
-        className="rounded-2xl shadow-sm p-4"
-        style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
-      >
-        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
-          {t("home.granularity")}
-        </h2>
-
-        <div className="grid grid-cols-2 gap-2">
-          {granularityItems.map((it) => {
-            const active = granularity === it.key;
-
-            return (
-              <button
-                key={it.key}
-                type="button"
-                onClick={() => onGranularityChange(it.key)}
-                onMouseEnter={(e) => {
-                  if (!active) e.currentTarget.style.backgroundColor = hoverPrimary04;
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) e.currentTarget.style.backgroundColor = background;
-                }}
-                className="
-                  rounded-xl px-3 py-2 border text-sm font-medium
-                  transition-colors duration-150
-                  active:translate-y-[1px]
-                "
-                style={{
-                  borderColor,
-                  backgroundColor: active ? hoverPrimary04 : background,
-                  color: textColor,
-                }}
-              >
-                {it.label}
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
       {/* Controls choropleth a refaire mieux */}
       <section
         className="rounded-2xl shadow-sm p-4 relative overflow-visible"

@@ -294,7 +294,21 @@ def _build_legend_and_colors(features: list[Feature], options: List[Option]) -> 
     # categorical (<= 12)
     if 0 < n_distinct <= MAX_CATEGORIES:
         colors = _default_colors(n_distinct)
-        items = [LegendItem(label=options[i].label, color=colors[i], value=v) for i, v in enumerate(distinct)]
+        option_by_value = {str(opt.value): opt for opt in options}
+
+        items: list[LegendItem] = []
+        for i, v in enumerate(distinct):
+            opt = option_by_value.get(str(v))
+            label = opt.label if opt is not None and opt.label else str(v)
+
+            items.append(
+                LegendItem(
+                    label=label,
+                    color=colors[i],
+                    value=v,
+                )
+            )
+
         _append_special(items)
         legend = MapLegend(type="categorical", title="Responses", items=items)
         cmap = {str(v): colors[i] for i, v in enumerate(distinct)}
@@ -456,7 +470,6 @@ def _special_dominates(cnt_null: int, cnt_empty: int, top_real_count: int) -> bo
     """
     True si (NULL + vides) > (meilleure vraie valeur non-vide).
     """
-    # TODO: utiliser plus tard pour détecter si les reponse doivent etre couleur special car egaliter ou reponse null dominent
     return (cnt_null + cnt_empty) > top_real_count
 
 
