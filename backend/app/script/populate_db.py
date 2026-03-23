@@ -188,6 +188,7 @@ async def populate_db() -> None:
 
                 for col in crc:
                     if "GSB" in col:
+                        break
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
@@ -208,7 +209,6 @@ async def populate_db() -> None:
         # Answer for 2023 data (separate file)
         async with session.begin():
             GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
-
             for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
                 if pd.isna(row["BFS_2023"]):
                     continue
@@ -229,7 +229,7 @@ async def populate_db() -> None:
                     await session.flush()
 
                 for col in GSB_2023:
-                    if "GSB" in col:
+                    if "GSB23_Q" in col:
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
@@ -240,7 +240,7 @@ async def populate_db() -> None:
                         if db_question is None:
                             raise RuntimeError("Question not found")
                         db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=year, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
                         )
                         session.add(db_answer)
                         await session.flush()
