@@ -5,8 +5,8 @@ import type {
 } from "@/features/questions/types/questionCollections";
 import { buildStoredQuestionKey } from "@/features/questions/types/questionCollections";
 
-const FAVORITES_KEY = "question_favorites_v1";
-const SAVED_KEY = "question_saved_v1";
+const FAVORITES_KEY = "question_favorites";
+const SAVED_KEY = "question_saved";
 
 const DEFAULT_STATE: QuestionCollectionsState = {
   favorites: [],
