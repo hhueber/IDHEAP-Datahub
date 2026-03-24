@@ -180,7 +180,7 @@ export default function DraggableQuestionCard({
                     : background;
                 }}
             >
-              {"\u2605"}
+              {"\u2605"} {/* Unicode star symbol */}
             </button>
           )}
 
@@ -204,7 +204,7 @@ export default function DraggableQuestionCard({
                     : background;
                 }}
             >
-              {"\u2398"}
+              {"\u2398"} {/* copier / save icon */}
             </button>
           )}
 
@@ -226,7 +226,7 @@ export default function DraggableQuestionCard({
               }}
               title={t("home.question_card.remove")}
             >
-              {"\u2715"}
+              {"\u2715"} {/* croix */}
             </button>
           )}
         </div>

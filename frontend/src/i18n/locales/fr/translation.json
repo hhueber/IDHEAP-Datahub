@@ -39,8 +39,8 @@
         "description": "Accés rapide"
       },
       "saved": {
-        "title": "Sauvegardées",
-        "description": "Sauvegardées pour plus tard"
+        "title": "Questions sauvegardées",
+        "description": "Questions sauvegardées pour plus tard"
       }
     },
     "question_drop_zone": {
@@ -49,12 +49,12 @@
     },
     "question_card": {
       "favorite": "Favoris",
-      "saved": "Sauvegardées",
+      "saved": "Questions sauvegardées",
       "drag": "Glisser",
       "removeFavorite": "Retirer des favoris",
       "addFavorite": "Ajouter aux favoris",
-      "removeSaved": "Retirer des sauvegardées",
-      "addSaved": "Ajouter aux sauvegardées",
+      "removeSaved": "Retirer des questions sauvegardées",
+      "addSaved": "Ajouter aux questions sauvegardées",
       "remove": "Retirer de la sélection"
     }
   },
