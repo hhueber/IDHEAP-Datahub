@@ -9,6 +9,8 @@ export type StoredQuestionItem = {
   primary: string;
   scope: QuestionOriginScope;
   surveyUid: number | null;
+
+  year?: number;      // per_survey
 };
 
 export type QuestionCollectionsState = {

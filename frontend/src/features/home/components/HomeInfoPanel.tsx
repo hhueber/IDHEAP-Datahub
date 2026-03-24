@@ -136,6 +136,8 @@ export default function HomeInfoPanel({
     addToCollection(kind, item);
   };
 
+  const surveyYear = data?.surveys?.find(s => s.uid === selectedSurveyUid)?.year;
+
   return (
     <div className="space-y-4 px-3 py-2">
       {/* État global */}
@@ -312,6 +314,7 @@ export default function HomeInfoPanel({
                           primary: q.text || q.label,
                           scope: questionScope,
                           surveyUid: selectedSurveyUid,
+                          year: surveyYear,
                         };
 
                         return (
