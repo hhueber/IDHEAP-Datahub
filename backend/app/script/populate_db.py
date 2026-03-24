@@ -188,7 +188,6 @@ async def populate_db() -> None:
 
                 for col in crc:
                     if "GSB" in col:
-                        break
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
