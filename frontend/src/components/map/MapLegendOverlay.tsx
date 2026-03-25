@@ -101,13 +101,7 @@ function useOutsideClick(
 }
 
 export default function MapLegendOverlay({ choropleth, panelOpen = false }: Props) {
-  const {
-    background,
-    borderColor,
-    textColor,
-    hoverText07,
-    hoverPrimary04,
-  } = useTheme();
+  const { background, borderColor, textColor, hoverText07, hoverPrimary04 } = useTheme();
 
   const legend = choropleth.legend as any;
   const { t } = useTranslation();
@@ -175,7 +169,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
       className="
         absolute z-[1200]
         right-4 top-4
-        w-[220px]
+        w-[200px]
         rounded-2xl shadow-lg
         p-3
         overflow-visible
@@ -190,7 +184,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
         color: textColor,
         backdropFilter: "blur(8px)",
         WebkitBackdropFilter: "blur(8px)",
-        opacity: 0.97,
+        opacity: 0.95,
       }}
     >
       <div className="flex items-start justify-between gap-2 mb-3">
@@ -301,6 +295,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
       {isGradient && g ? (
         <>
           <div className="flex gap-4">
+            {/* Ticks */}
             <div className="relative h-72 w-20">
               {Array.isArray(g.ticks) &&
                 g.ticks.map((t: number, i: number) => {
@@ -323,6 +318,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
                 })}
             </div>
 
+            {/* Barre gradient */}
             <div
               className="h-72 w-8 rounded-xl"
               style={{
@@ -334,6 +330,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
             />
           </div>
 
+          {/* Items spéciaux sous la barre (No data / No response) */}
           {Array.isArray(legend.items) && legend.items.length > 0 && (
             <div
               className="mt-4 pt-3 space-y-2"
@@ -344,7 +341,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
                   <span
                     className="inline-block h-4 w-4 rounded-md"
                     style={{
-                      backgroundColor: it.color,
+                      backgroundColor: it.color, // vient du backend
                       borderWidth: 1,
                       borderStyle: "solid",
                       borderColor: borderColor,
@@ -357,6 +354,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
           )}
         </>
       ) : (
+        /* Categorical */
         <div className="space-y-2">
           {Array.isArray(legend.items) &&
             legend.items.map((it: any, idx: number) => (
@@ -364,7 +362,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
                 <span
                   className="inline-block h-4 w-4 rounded-md shrink-0"
                   style={{
-                    backgroundColor: it.color,
+                    backgroundColor: it.color, // vient du backend
                     borderWidth: 1,
                     borderStyle: "solid",
                     borderColor: borderColor,
