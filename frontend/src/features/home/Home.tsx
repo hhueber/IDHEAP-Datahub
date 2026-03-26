@@ -7,11 +7,19 @@ import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
+import BottomStatsPanel from "@/features/home/components/BottomStatsPanel";
 
 const GLOBAL_UID = -1;
 
+type SelectedArea = {
+  uid: number;
+  name?: string;
+  level: "commune" | "district" | "canton";
+} | null;
+
 export default function Home() {
   const { t } = useTranslation();
+  const [selectedArea, setSelectedArea] = useState<SelectedArea>(null);
 
   // Menu ouvert par défaut
   const [panelOpen, setPanelOpen] = useState(true);
@@ -65,6 +73,9 @@ export default function Home() {
           year={activeYear}
           choropleth={choropleth}
           panelOpen={panelOpen}
+          granularity={granularity}
+          selectedArea={selectedArea}
+          onSelectArea={setSelectedArea}
         />
         {choroplethLoading && <MapLoadingOverlay />}
       </div>
@@ -146,6 +157,11 @@ export default function Home() {
           />
         </div>
       </aside>
+      {/* ✅ PANEL BAS */}
+      <BottomStatsPanel
+        selectedArea={selectedArea}
+        onClose={() => setSelectedArea(null)}
+      />
     </section>
   );
 }
