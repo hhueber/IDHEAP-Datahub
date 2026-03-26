@@ -157,7 +157,7 @@ export default function Home() {
           />
         </div>
       </aside>
-      {/* ✅ PANEL BAS */}
+      {/* Pop up bas */}
       <BottomStatsPanel
         selectedArea={selectedArea}
         onClose={() => setSelectedArea(null)}
