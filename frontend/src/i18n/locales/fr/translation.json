@@ -51,6 +51,14 @@
 
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
     },
+    "legend": {
+      "showStats": "Afficher les statistiques",
+      "distribution": "Répartition des réponses",
+      "unitsWithResponse_one": "{{count}} unité avec réponse",
+      "unitsWithResponse_other": "{{count}} unités avec réponse",
+      "noData": "Pas de données",
+      "noResponse": "Pas de réponse"
+    },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
       "network": "Problème de réseau. Vérifiez votre connexion.",
