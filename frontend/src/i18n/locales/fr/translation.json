@@ -54,7 +54,8 @@
     "legend": {
       "showStats": "Afficher les statistiques",
       "distribution": "Répartition des réponses",
-      "unitsWithResponse": "{{count}} unités avec réponse",
+      "unitsWithResponse_one": "{{count}} unité avec réponse",
+      "unitsWithResponse_other": "{{count}} unités avec réponse",
       "noData": "Pas de données",
       "noResponse": "Pas de réponse"
     },
