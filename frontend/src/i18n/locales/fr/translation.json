@@ -34,13 +34,9 @@
     "choroplethGlobalYear": "Date pour question globale",
     "granularity": "Granularité",
     "question_collections": {
-      "favorites": {
-        "title": "Favoris",
-        "description": "Accés rapide"
-      },
       "saved": {
-        "title": "Questions sauvegardées",
-        "description": "Questions sauvegardées pour plus tard"
+        "title": "Accès rapide",
+        "description": "Vos questions sauvegardées"
       }
     },
     "question_drop_zone": {
@@ -48,11 +44,8 @@
       "release_to_add": "Relâchez pour ajouter cette question"
     },
     "question_card": {
-      "favorite": "Favoris",
       "saved": "Questions sauvegardées",
       "drag": "Glisser",
-      "removeFavorite": "Retirer des favoris",
-      "addFavorite": "Ajouter aux favoris",
       "removeSaved": "Retirer des questions sauvegardées",
       "addSaved": "Ajouter aux questions sauvegardées",
       "remove": "Retirer de la sélection"

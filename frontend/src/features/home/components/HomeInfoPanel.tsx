@@ -54,11 +54,9 @@ export default function HomeInfoPanel({
   const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
   const {
-    favorites,
     saved,
     addToCollection,
     removeFromCollection,
-    isFavorite,
     isSaved,
   } = useQuestionCollections();
 
@@ -126,7 +124,7 @@ export default function HomeInfoPanel({
     kind: QuestionCollectionKind,
     item: StoredQuestionItem
   ): void => {
-    const exists = kind === "favorites" ? isFavorite(item) : isSaved(item);
+    const exists = isSaved(item);
 
     if (exists) {
       removeFromCollection(kind, item);
@@ -238,7 +236,6 @@ export default function HomeInfoPanel({
 
         <div className="space-y-4">
           <QuestionCollectionsPanel
-            favorites={favorites}
             saved={saved}
             onDropQuestion={handleDropQuestion}
             onRemoveQuestion={handleRemoveQuestion}
@@ -288,9 +285,7 @@ export default function HomeInfoPanel({
                           onClick={() => onQuestionSelect(q.uid)}
                           scope={questionScope}
                           surveyUid={null}
-                          isFavorite={isFavorite(item)}
                           isSaved={isSaved(item)}
-                          onQuickFavoriteToggle={() => toggleQuestionInCollection("favorites", item)}
                           onQuickSavedToggle={() => toggleQuestionInCollection("saved", item)}
                         />
                       );
@@ -328,9 +323,7 @@ export default function HomeInfoPanel({
                             onClick={() => onQuestionSelect(q.uid)}
                             scope={questionScope}
                             surveyUid={selectedSurveyUid}
-                            isFavorite={isFavorite(item)}
                             isSaved={isSaved(item)}
-                            onQuickFavoriteToggle={() => toggleQuestionInCollection("favorites", item)}
                             onQuickSavedToggle={() => toggleQuestionInCollection("saved", item)}
                           />
                         );
