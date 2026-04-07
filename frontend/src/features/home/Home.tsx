@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import GeoJsonMap from "@/components/GeoJsonMap";
 import HomeInfoPanel from "@/features/home/components/HomeInfoPanel";
@@ -7,6 +7,8 @@ import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
+import { createPortal } from "react-dom";
+import GreetingModal from "./components/GreetingModal";
 
 const GLOBAL_UID = -1;
 
@@ -15,6 +17,9 @@ export default function Home() {
 
   // Menu ouvert par défaut
   const [panelOpen, setPanelOpen] = useState(true);
+
+  // Etat de la modal
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // état sélection
   const [selectedSurveyUid, setSelectedSurveyUid] = useState<number>(GLOBAL_UID);
@@ -32,6 +37,8 @@ export default function Home() {
 
   const isGlobal = selectedSurveyUid === GLOBAL_UID;
 
+  const closeModal = () => setIsModalOpen(false)
+
   // année utilisée pour la carte (et pour la choropleth si survey)
   const surveyYear = useMemo(() => {
     if (!data?.surveys?.length) return null;
@@ -41,6 +48,15 @@ export default function Home() {
 
   const activeYear = isGlobal ? globalYear : surveyYear;
   const choroplethScope = isGlobal ? "global" : "per_survey";
+
+
+  useEffect(() => {
+    const hasBeenHiden = localStorage.getItem('hideWelcomeModal')
+
+    if(!hasBeenHiden){
+      setIsModalOpen(true)
+    }
+  },[])
 
   // choropleth : année = activeYear
   const {
@@ -146,6 +162,9 @@ export default function Home() {
           />
         </div>
       </aside>
+      {isModalOpen && createPortal(
+        <GreetingModal onClose={closeModal}></GreetingModal>, document.body
+      )}
     </section>
   );
 }
