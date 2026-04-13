@@ -30,8 +30,12 @@
     "availableYears": "Années disponibles pour cette question",
     "noAvailableYears": "Acune année disponible",
     "selectYear": "Selectionner une année",
-    "choroplethGlobalYear": "Date pour question globale",
-    "granularity": "Granularité"
+    "choroplethGlobalYear": "Années disponibles pour cette question",
+    "granularity": "Granularité",
+    "timelineAvailable": "Sélectionnable",
+    "timelineUnavailable": "Indisponible",
+    "selectQuestionFirst": "Choisissez une question",
+    "selectDate": "Choisissez une date"
   },
   "map": {
     "placeOfInterest": {
