@@ -83,7 +83,6 @@ export default function Home() {
           choropleth={choropleth}
           panelOpen={panelOpen}
         />
-        {/* {choroplethLoading && <MapLoadingOverlay />} */}
         {(missingQuestion || missingDate || choroplethLoading) && (
           <MapLoadingOverlay
             label={overlayLabel}
