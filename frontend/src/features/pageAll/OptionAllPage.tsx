@@ -9,7 +9,7 @@ export default function OptionAllPage() {
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
       { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.value", "Value") },
+      { key: "code", label: t("dashboardSidebar.pageAll.value") },
       { key: "name", label: t("dashboardSidebar.pageAll.label") },
       { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
     ],

@@ -442,7 +442,10 @@
       "confirmDeleteTitle": "Confirmer la suppression",
       "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
       "deleting": "Suppression",
-      "deleteError": "Erreur de suppression : "
+      "deleteError": "Erreur de suppression : ",
+      "year": "Année",
+      "questionUid": "Question UID",
+      "communeUid": "commune UID"
     },
     "pageShow": {
       "loading": "Chargement",
