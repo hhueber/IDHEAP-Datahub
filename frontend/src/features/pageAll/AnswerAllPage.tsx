@@ -9,10 +9,10 @@ export default function AnswerAllPage() {
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
       { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "year", label: t("dashboardSidebar.pageAll.year", "Year") },
-      { key: "question_uid", label: t("dashboardSidebar.pageAll.questionUid", "Question UID") },
-      { key: "commune_uid", label: t("dashboardSidebar.pageAll.communeUid", "Commune UID") },
-      { key: "value", label: t("dashboardSidebar.pageAll.value", "Value") },
+      { key: "year", label: t("dashboardSidebar.pageAll.year") },
+      { key: "question_uid", label: t("dashboardSidebar.pageAll.questionUid") },
+      { key: "commune_uid", label: t("dashboardSidebar.pageAll.communeUid") },
+      { key: "value", label: t("dashboardSidebar.pageAll.value") },
       { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
     ],
     [t]
@@ -26,7 +26,7 @@ export default function AnswerAllPage() {
 
   return (
     <PageAll
-      title={t("dashboardSidebar.answer._", "Answers")}
+      title={t("dashboardSidebar.answer._")}
       entity="answer"
       initialPerPage={20}
       columns={columns}
