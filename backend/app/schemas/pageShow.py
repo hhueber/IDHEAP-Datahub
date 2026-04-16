@@ -67,6 +67,7 @@ class ShowResponse(BaseModel):
     data: Optional[Dict[str, Any]] = None
 
 
+# réponse paginée pour un child
 class ShowChildrenData(BaseModel):
     items: List[Dict[str, Any]]
     total: int
