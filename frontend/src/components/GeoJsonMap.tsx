@@ -63,7 +63,7 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores, borderColor } = useTheme();
+  const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor } = useTheme();
 
   const patternCacheRef = useRef<Map<string, any>>(new Map());
 
@@ -263,7 +263,7 @@ const lakesStyle = useMemo(() => ({
   fillOpacity: 0.85,
 }), []);
 const cantonsStyle = useMemo(() => ({
-  color: cantonClores,      // rouge
+  color: cantonColores,      // rouge
   weight: 1.2,
   fillOpacity: 0,
 }), []);

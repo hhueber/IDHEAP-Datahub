@@ -8,6 +8,9 @@ import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useEdit } from "@/shared/useEdit";
 import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
+import InsightsPanel from "@/features/pageShow/InsightsPanel";
+import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
+import type { ShowInsights, ShowInsightsResponse } from "@/features/pageShow/show_type";
 
 type Props = {
   id: number;
@@ -49,6 +52,10 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState<ShowResponse["meta"]>(null);
   const [data, setData] = React.useState<ShowResponse["data"]>(null);
+
+  const [insights, setInsights] = React.useState<ShowInsights | null>(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const [insightsError, setInsightsError] = React.useState<string | null>(null);
 
   const canEdit = meta?.actions?.can_edit ?? false;
   const canDelete = meta?.actions?.can_delete ?? false;
@@ -92,9 +99,35 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     }
   }, [entity, id, t]);
 
+  const loadInsights = React.useCallback(async () => {
+    setInsightsLoading(true);
+    setInsightsError(null);
+
+    try {
+      const json = await apiFetch<ShowInsightsResponse>(`/show/${entity}/${id}/insights`, {
+        method: "GET",
+        auth: true,
+      });
+
+      if (!json.success) {
+        setInsights(null);
+        setInsightsError(json.detail || t("common.error"));
+        return;
+      }
+
+      setInsights(json.data ?? null);
+    } catch (e: any) {
+      setInsights(null);
+      setInsightsError(e?.message ?? t("common.error"));
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [entity, id, t]);
+
   React.useEffect(() => {
     void load();
-  }, [load]);
+    void loadInsights();
+  }, [load, loadInsights]);
 
   // Hook edit -> /edit
   const {
@@ -543,7 +576,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
         {/* RIGHT */}
         <aside className="w-full lg:w-[360px] shrink-0">
           <div
-            className="rounded-2xl border shadow-sm h-full"
+            className="relative rounded-2xl border shadow-sm h-full"
             style={{ borderColor, backgroundColor: background }}
           >
             <div className="px-6 py-4 border-b" style={{ borderColor }}>
@@ -554,8 +587,17 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                 {t("dashboardSidebar.pageShow.insightsHint")}
               </div>
             </div>
-            <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
-              (À brancher plus tard)
+
+            <div className="px-6 py-5 relative min-h-[180px]">
+              {insightsLoading && <InsightsLoadingOverlay />}
+
+              {insightsError ? (
+                <div className="text-sm" style={{ color: "rgb(220,38,38)" }}>
+                  {insightsError}
+                </div>
+              ) : (
+                <InsightsPanel insights={insights} />
+              )}
             </div>
           </div>
         </aside>
