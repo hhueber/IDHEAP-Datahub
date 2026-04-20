@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 
 
 from pydantic import BaseModel
@@ -33,7 +33,18 @@ class ShowMetaChild(BaseModel):
     key: str
     title: str
     entity: str
-    fk_field: str
+
+    relation_type: Literal["direct", "association"] = "direct"
+
+    # direct relation
+    fk_field: Optional[str] = None
+
+    # association relation
+    association_table: Optional[str] = None
+    association_source_field: Optional[str] = None
+    association_target_field: Optional[str] = None
+    target_uid_field: str = "uid"
+
     per_page: int = 10
     columns: List[ShowChildColumn]
     actions: ShowMetaChildActions = ShowMetaChildActions()
@@ -56,7 +67,12 @@ class ShowResponse(BaseModel):
     data: Optional[Dict[str, Any]] = None
 
 
-# réponse paginée pour un child
+class ShowInsightsResponse(BaseModel):
+    success: bool
+    detail: str
+    data: Optional[Dict[str, Any]] = None
+
+
 class ShowChildrenData(BaseModel):
     items: List[Dict[str, Any]]
     total: int

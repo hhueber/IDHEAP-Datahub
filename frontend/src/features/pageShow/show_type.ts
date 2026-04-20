@@ -8,6 +8,7 @@ export enum Entity {
   QuestionGlobal = "question_global",
   QuestionCategory = "question_category",
   Option = "option",
+  Answer = "answer",
 }
 
 export type ShowChildColumn = {
@@ -55,11 +56,33 @@ export type ShowMeta = {
   children?: ShowChildMeta[];
 };
 
+export type InsightMap = {
+  type: "geo-focus";
+  level: "commune" | "district" | "canton";
+  focus_feature: any;
+  context_features: any[];
+};
+
+export type InsightStats = {
+  items: { label_key: string; value: any }[];
+};
+
+export type ShowInsights = {
+  map?: InsightMap | null;
+  stats?: InsightStats | null;
+};
+
 export type ShowResponse = {
   success: boolean;
   detail: string;
   meta: ShowMeta | null;
   data: Record<string, any> | null;
+};
+
+export type ShowInsightsResponse = {
+  success: boolean;
+  detail: string;
+  data: ShowInsights | null;
 };
 
 export type ShowChildrenResponse = {

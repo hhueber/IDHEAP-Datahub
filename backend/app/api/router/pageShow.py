@@ -3,8 +3,9 @@ from app.db import get_db
 from app.repositories.pageShow_children_repo import get_children_paginated
 from app.repositories.pageShow_repo import get_by_uid
 from app.schemas.pageAll import EntityEnum
-from app.schemas.pageShow import ShowChildrenResponse, ShowResponse
+from app.schemas.pageShow import ShowChildrenResponse, ShowInsightsResponse, ShowResponse
 from app.schemas.user import UserPublic
+from app.services.pageShow_insight_service import build_insights
 from app.services.pageShow_meta import get_meta_for_entity
 from app.services.pageShow_service import serialize_columns
 from fastapi import APIRouter, Depends, Query
@@ -57,9 +58,9 @@ async def show_children(
 
     child_entity = EntityEnum(child.entity)  # ex: "district"
     items, total = await get_children_paginated(
-        db,
+        db=db,
         child_entity=child_entity,
-        fk_field=child.fk_field,
+        child_meta=child,
         parent_uid=uid,
         page=page,
         per_page=per_page,
@@ -79,4 +80,29 @@ async def show_children(
             "per_page": per_page,
             "pages": pages,
         },
+    }
+
+
+@router.get("/{entity}/{uid}/insights", response_model=ShowInsightsResponse)
+async def show_entity_insights(
+    entity: EntityEnum,
+    uid: int,
+    db: AsyncSession = Depends(get_db),
+    _user: UserPublic = Depends(get_current_user),
+):
+    obj = await get_by_uid(db, entity=entity, uid=uid)
+
+    if obj is None:
+        return {
+            "success": True,
+            "detail": "None",
+            "data": None,
+        }
+
+    insights = await build_insights(entity, obj, db)
+
+    return {
+        "success": True,
+        "detail": "OK",
+        "data": insights,
     }

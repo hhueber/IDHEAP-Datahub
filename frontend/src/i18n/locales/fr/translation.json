@@ -442,7 +442,10 @@
       "confirmDeleteTitle": "Confirmer la suppression",
       "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
       "deleting": "Suppression",
-      "deleteError": "Erreur de suppression : "
+      "deleteError": "Erreur de suppression : ",
+      "year": "Année",
+      "questionUid": "Question UID",
+      "communeUid": "commune UID"
     },
     "pageShow": {
       "loading": "Chargement",
@@ -455,7 +458,7 @@
       "children": "Entités associées",
       "childrenHint": "Relations / tables associées",
       "insights": "Insights",
-      "insightsHint": "Carte / stats / infos",
+      "insightsHint": "Carte / stats",
       "text": "Texte",
       "noChildren": "Aucune données",
       "confirm": "Confirmer",
@@ -468,7 +471,42 @@
       "saving": "Enregistrement...",
       "save": "Enregistrer",
       "confirmEditTitle": "Confirmer l'édition",
-      "confirmEditMessage": "Vous allez éditer les champs suivants :\n- {{fields}}"
+      "confirmEditMessage": "Vous allez éditer les champs suivants :\n- {{fields}}",
+      "insightsPanel": {
+        "noInsights": "Aucune information n'est disponible pour cette entité.",
+        "mapContext": "Les cantons suisses en contexte, l'entité sélectionnée est mise en évidence",
+        "stats": "Statistiques",
+        "map": "Carte",
+        "stat": {
+          "code": "Code",
+          "district_uid": "UID du district",
+          "canton_uid": "UID du canton",
+          "ofs_id": "ID OFS",
+          "year": "Année",
+          "survey_uid": "UID du sondage",
+          "survey_year": "Année du sondage",
+          "private": "Privée",
+          "category_uid": "UID de la catégorie",
+          "question_uid": "UID de la question",
+          "commune_uid": "UID de la commune",
+          "value": "Valeur",
+          "label": "Libellé",
+          "answers_count": "Nombre de réponses",
+          "communes_count": "Nombre de communes",
+          "districts_count": "Nombre de districts",
+          "questions_count": "Nombre de questions",
+          "options_count": "Nombre d’options",
+          "distinct_answer_values": "Nombre de valeurs de réponse distinctes",
+          "linked_survey_questions": "Questions de sondage liées",
+          "global_questions_count": "Nombre de questions globales",
+          "survey_questions_count": "Nombre de questions de sondage",
+          "question_links": "Liens vers questions",
+          "global_question_links": "Liens vers questions globales",
+          "category_links": "Liens vers catégories",
+          "answers_same_question_year": "Réponses pour la même question/année",
+          "same_value_count": "Même valeur de réponse"
+        }
+      }
     }
   },
   "roles": {

@@ -20,12 +20,8 @@ export default function ShowPage() {
       id={id}
       entity={entity}
       onEdit={(e, i) => {
-        // TODO: plus tard: route edit dédiée
-        console.log("EDIT", e, i);
       }}
       onDelete={(e, i) => {
-        // TODO: plus tard: confirm modal + delete endpoint
-        console.log("DELETE", e, i);
       }}
     />
   );

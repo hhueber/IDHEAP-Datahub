@@ -30,7 +30,7 @@ export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
 
   const countryColors = pickThemeValue(cfg, mode, "country_light", "country_dark");
   const lakesColores = pickThemeValue(cfg, mode, "lakes_light", "lakes_dark");
-  const cantonClores = pickThemeValue(cfg, mode, "canton_light", "canton_dark");
+  const cantonColores = pickThemeValue(cfg, mode, "canton_light", "canton_dark");
   const districtColores = pickThemeValue(cfg, mode, "district_light", "district_dark");
   const communesColores = pickThemeValue(cfg, mode, "communes_light", "communes_dark");
 
@@ -43,7 +43,7 @@ export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
     logoBackground,
     countryColors,
     lakesColores,
-    cantonClores,
+    cantonColores,
     districtColores,
     communesColores,
   };
