@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
-import type { Entity, ShowResponse, ShowMetaField } from "@/features/pageShow/show_type";
+import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsResponse } from "@/features/pageShow/show_type";
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
@@ -10,7 +10,7 @@ import { useEdit } from "@/shared/useEdit";
 import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
 import InsightsPanel from "@/features/pageShow/InsightsPanel";
 import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
-import type { ShowInsights, ShowInsightsResponse } from "@/features/pageShow/show_type";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   id: number;
@@ -45,6 +45,7 @@ function normalizeToString(v: any): string {
 }
 
 export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
@@ -128,6 +129,10 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     void load();
     void loadInsights();
   }, [load, loadInsights]);
+
+  const handleChildShow = React.useCallback((childEntity: Entity, childUid: number) => {
+    navigate(`/admin/places/show/${childEntity}/${childUid}`);
+  }, [navigate]);
 
   // Hook edit -> /edit
   const {
@@ -596,7 +601,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                   {insightsError}
                 </div>
               ) : (
-                <InsightsPanel insights={insights} />
+                <InsightsPanel 
+                  insights={insights}
+                  onChildShow={handleChildShow}/>
               )}
             </div>
           </div>

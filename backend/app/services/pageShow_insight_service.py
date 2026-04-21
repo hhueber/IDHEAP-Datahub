@@ -23,6 +23,8 @@ from app.repositories.pageShow_insights_repo import (
     count_same_value_answers_for_question_year,
     count_survey_questions_for_category,
     get_all_canton_features,
+    get_all_commune_features_for_district,
+    get_all_district_features_for_canton,
     get_canton_focus_feature,
     get_commune_focus_feature,
     get_district_focus_feature,
@@ -49,6 +51,7 @@ async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Opt
             "level": "commune",
             "focus_feature": focus,
             "context_features": await get_all_canton_features(db),
+            "child_layers": [],
         }
 
     if e == "district":
@@ -61,6 +64,7 @@ async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Opt
             "level": "district",
             "focus_feature": focus,
             "context_features": await get_all_canton_features(db),
+            "child_layers": await build_child_layers(entity, obj, db),
         }
 
     if e == "canton":
@@ -73,6 +77,7 @@ async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Opt
             "level": "canton",
             "focus_feature": focus,
             "context_features": await get_all_canton_features(db),
+            "child_layers": await build_child_layers(entity, obj, db),
         }
 
     if e == "answer":
@@ -85,6 +90,7 @@ async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Opt
             "level": "commune",
             "focus_feature": focus,
             "context_features": await get_all_canton_features(db),
+            "child_layers": [],
         }
 
     return None
@@ -216,6 +222,42 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     return {"items": []}
+
+
+def _is_geo_entity(entity: str) -> bool:
+    return entity in {"commune", "district", "canton"}
+
+
+async def build_child_layers(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> list[dict]:
+    e = _entity_value(entity)
+
+    layers: list[dict] = []
+
+    if e == "district":
+        features = await get_all_commune_features_for_district(db, obj.uid)
+        if features:
+            layers.append(
+                {
+                    "child_key": "communes",
+                    "child_title": "Communes",
+                    "child_entity": "commune",
+                    "features": features,
+                }
+            )
+
+    if e == "canton":
+        features = await get_all_district_features_for_canton(db, obj.uid)
+        if features:
+            layers.append(
+                {
+                    "child_key": "districts",
+                    "child_title": "Districts",
+                    "child_entity": "district",
+                    "features": features,
+                }
+            )
+
+    return layers
 
 
 async def build_insights(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Optional[Dict[str, Any]]:

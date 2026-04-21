@@ -384,3 +384,89 @@ async def count_same_value_answers_for_question_year(
     )
     result = await db.execute(stmt)
     return int(result.scalar_one() or 0)
+
+
+async def get_all_commune_features_for_district(db: AsyncSession, district_uid: int) -> list[dict]:
+    map_year = await _latest_year(db, CommuneMap)
+    if map_year is None:
+        return []
+
+    stmt = (
+        select(
+            Commune.uid.label("uid"),
+            Commune.name.label("name"),
+            Commune.code.label("code"),
+            _geojson_col(CommuneMap.geometry).label("geojson"),
+        )
+        .join(
+            CommuneMap,
+            and_(CommuneMap.commune_uid == Commune.uid, CommuneMap.year == map_year),
+        )
+        .where(Commune.district_uid == district_uid)
+        .order_by(Commune.uid.asc())
+    )
+    rows = (await db.execute(stmt)).mappings().all()
+
+    features: list[dict] = []
+    for row in rows:
+        if not row["geojson"]:
+            continue
+
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": json.loads(row["geojson"]),
+                "properties": {
+                    "uid": row["uid"],
+                    "name": row["name"],
+                    "code": row["code"],
+                    "entity": "commune",
+                    "level": "commune",
+                },
+            }
+        )
+
+    return features
+
+
+async def get_all_district_features_for_canton(db: AsyncSession, canton_uid: int) -> list[dict]:
+    map_year = await _latest_year(db, DistrictMap)
+    if map_year is None:
+        return []
+
+    stmt = (
+        select(
+            District.uid.label("uid"),
+            District.name.label("name"),
+            District.code.label("code"),
+            _geojson_col(DistrictMap.geometry).label("geojson"),
+        )
+        .join(
+            DistrictMap,
+            and_(DistrictMap.district_id == District.uid, DistrictMap.year == map_year),
+        )
+        .where(District.canton_uid == canton_uid)
+        .order_by(District.uid.asc())
+    )
+    rows = (await db.execute(stmt)).mappings().all()
+
+    features: list[dict] = []
+    for row in rows:
+        if not row["geojson"]:
+            continue
+
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": json.loads(row["geojson"]),
+                "properties": {
+                    "uid": row["uid"],
+                    "name": row["name"],
+                    "code": row["code"],
+                    "entity": "district",
+                    "level": "district",
+                },
+            }
+        )
+
+    return features

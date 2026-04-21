@@ -142,7 +142,7 @@ export function MapPreviewPanel({
   const rows: { label: string; color: MaybeColor; fallback: string }[] = [
     { label: "Communes",  color: communeColor,  fallback: baseTokens.communesColores },
     { label: "Districts", color: districtColor, fallback: baseTokens.districtColores },
-    { label: "Cantons",   color: cantonColor,   fallback: baseTokens.cantonClores },
+    { label: "Cantons",   color: cantonColor,   fallback: baseTokens.cantonColores },
     { label: "Country",   color: countryColor,  fallback: baseTokens.countryColors },
     { label: "Lakes",     color: lakesColor,    fallback: baseTokens.lakesColores },
   ];

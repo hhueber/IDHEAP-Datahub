@@ -1,16 +1,17 @@
 import React from "react";
 import { useTheme } from "@/theme/useTheme";
-import type { ShowInsights } from "@/features/pageShow/show_type";
-import InsightsMiniMap from "@/features/pageShow/InsightsMiniMap";
+import type { Entity, ShowInsights } from "@/features/pageShow/show_type";
+import InsightsMiniMap from "@/features/maps/miniMap/InsightsMiniMap";
 import { useTranslation } from "react-i18next";
 
 type Props = {
   insights?: ShowInsights | null;
+  onChildShow?: (entity: Entity, uid: number) => void;
 };
 
 type TabKey = "map" | "stats";
 
-export default function InsightsPanel({ insights }: Props) {
+export default function InsightsPanel({ insights, onChildShow }: Props) {
   const { t } = useTranslation();
   const { background, borderColor, textColor, hoverPrimary04, hoverText07 } = useTheme();
 
@@ -61,52 +62,57 @@ export default function InsightsPanel({ insights }: Props) {
           style={{ borderColor, backgroundColor: background }}
         >
           <div className="px-4 py-3 border-b" style={{ borderColor }}>
-            <div className="text-sm font-semibold">{t("dashboardSidebar.pageShow.insightsPanel.map")}</div>
+            <div className="text-sm font-semibold">
+              {t("dashboardSidebar.pageShow.insightsPanel.map")}
+            </div>
             <div className="text-xs" style={{ color: hoverText07 }}>
               {t("dashboardSidebar.pageShow.insightsPanel.mapContext")}
             </div>
           </div>
 
           <div className="h-[320px]">
-            <InsightsMiniMap mapData={insights.map} />
+            <InsightsMiniMap
+              mapData={insights.map}
+              onChildClick={onChildShow}
+            />
           </div>
         </div>
       )}
 
       {tab === "stats" && hasStats && (
         <div
-            className="rounded-xl border p-4"
-            style={{ borderColor, backgroundColor: hoverPrimary04 }}
+          className="rounded-xl border p-4"
+          style={{ borderColor, backgroundColor: hoverPrimary04 }}
         >
-            <div className="text-sm font-semibold mb-3">
+          <div className="text-sm font-semibold mb-3">
             {t("dashboardSidebar.pageShow.insightsPanel.stats")}
-            </div>
+          </div>
 
-            <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2">
             {insights?.stats?.items?.map((item, index) => (
-                <div
+              <div
                 key={`${item.label_key}-${index}`}
                 className="flex items-center justify-between gap-4 rounded-lg px-3 py-2"
                 style={{
-                    backgroundColor: background,
-                    border: `1px solid ${borderColor}`,
+                  backgroundColor: background,
+                  border: `1px solid ${borderColor}`,
                 }}
-                >
+              >
                 <span className="text-sm" style={{ color: hoverText07 }}>
-                    {t(`dashboardSidebar.pageShow.insightsPanel.stat.${item.label_key}`)}
+                  {t(`dashboardSidebar.pageShow.insightsPanel.stat.${item.label_key}`)}
                 </span>
                 <span className="text-sm font-medium" style={{ color: textColor }}>
-                    {typeof item.value === "boolean"
+                  {typeof item.value === "boolean"
                     ? item.value
-                        ? t("common.yes")
-                        : t("common.no")
+                      ? t("common.yes")
+                      : t("common.no")
                     : item.value === null || item.value === undefined || item.value === ""
                     ? "—"
                     : String(item.value)}
                 </span>
-                </div>
+              </div>
             ))}
-            </div>
+          </div>
         </div>
       )}
     </div>
