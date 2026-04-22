@@ -315,7 +315,7 @@ export default function PageAll({
                         }>
                       {columns.map((col) => {
                         const value = (row as any)[col.key];
-                        const content = col.render ? col.render(row) : value;
+                        const content = col.render ? col.render(row) : (value ?? "—");
                         const alignClass =
                           col.align === "center"
                             ? "text-center"
