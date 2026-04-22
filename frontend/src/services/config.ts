@@ -1,4 +1,5 @@
 import { apiFetch } from "@/shared/apiFetch";
+import type { ThemeMapPreviewBundle } from "@/features/admin/components/theme/themeMapPreview.types";
 
 export type ThemeMode = "light" | "dark";
 
@@ -80,4 +81,26 @@ export async function uploadThemeLogo(dataUrl: string): Promise<string> {
   }
 
   return res.data.url;
+}
+
+type ApiEnvelope<T> = {
+  success: boolean;
+  detail: string;
+  data: T;
+};
+
+export async function fetchThemeMapPreview(): Promise<ThemeMapPreviewBundle> {
+  const res = await apiFetch<ApiEnvelope<ThemeMapPreviewBundle>>(
+    "/config/theme/map-preview",
+    {
+      method: "GET",
+      auth: true,
+    }
+  );
+
+  if (!res.success) {
+    throw new Error(res.detail || "Failed to load theme map preview");
+  }
+
+  return res.data;
 }
