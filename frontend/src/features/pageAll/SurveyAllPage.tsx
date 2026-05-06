@@ -8,12 +8,21 @@ export default function SurveyAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "name", label: t("dashboardSidebar.pageAll.name") },
-      { key: "year", label: t("dashboardSidebar.pageAll.year", "Year")},
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
+      {
+        key: "name",
+        labelKey: "dashboardSidebar.pageAll.name",
+        sortKey: "name",
+        truncate: true,
+        maxWidthClassName: "max-w-[360px]",
+      },
+      {
+        key: "year",
+        labelKey: "dashboardSidebar.pageAll.year",
+        sortKey: "year",
+        align: "right",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -29,6 +38,8 @@ export default function SurveyAllPage() {
       initialPerPage={10}
       columns={columns}
       actions={actions}
+      defaultSortBy="year"
+      defaultSortDir="desc"
     />
   );
 }
