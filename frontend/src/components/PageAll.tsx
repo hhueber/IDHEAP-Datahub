@@ -27,6 +27,8 @@ type PageAllProps = {
   initialPerPage?: number;
   columns: ColumnConfig[];
   actions?: ActionsConfig;
+  defaultSortBy?: SortBy;
+  defaultSortDir?: SortDir;
 };
 
 export default function PageAll({
@@ -35,6 +37,8 @@ export default function PageAll({
   initialPerPage = 20,
   columns,
   actions,
+  defaultSortBy,
+  defaultSortDir = "asc",
 }: PageAllProps) {
   const { t, i18n } = useTranslation();
   const [page, setPage] = React.useState(1);
@@ -47,9 +51,10 @@ export default function PageAll({
   // État de tri générique basé sur les colonnes affichées
   const firstSortableColumn = columns.find((col) => col.sortable !== false);
   const [sortBy, setSortBy] = React.useState<SortBy>(
-    (firstSortableColumn?.sortKey ?? firstSortableColumn?.key ?? "name") as SortBy
+    defaultSortBy ??
+      ((firstSortableColumn?.sortKey ?? firstSortableColumn?.key ?? "name") as SortBy)
   );
-  const [sortDir, setSortDir] = React.useState<SortDir>("asc");
+  const [sortDir, setSortDir] = React.useState<SortDir>(defaultSortDir);
 
   const lang = React.useMemo(() => getPageAllLang(i18n.language), [i18n.language]);
 

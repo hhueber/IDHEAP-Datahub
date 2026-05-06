@@ -53,7 +53,7 @@ export default function AnswerAllPage() {
       columns={columns}
       actions={actions}
       defaultSortBy="year"
-      defaultSortDir="desc"
+      defaultSortDir="desc" // force le tri desc
     />
   );
 }
