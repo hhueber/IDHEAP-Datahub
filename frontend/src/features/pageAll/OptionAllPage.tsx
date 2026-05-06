@@ -8,12 +8,22 @@ export default function OptionAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.value") },
-      { key: "name", label: t("dashboardSidebar.pageAll.label") },
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
+      {
+        key: "code",
+        labelKey: "dashboardSidebar.pageAll.value",
+        sortKey: "value",
+        truncate: true,
+        maxWidthClassName: "max-w-[180px]",
+      },
+      {
+        key: "name",
+        labelKey: "dashboardSidebar.pageAll.label",
+        sortKey: "name",
+        truncate: true,
+        maxWidthClassName: "max-w-[420px]",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -29,6 +39,7 @@ export default function OptionAllPage() {
       initialPerPage={20}
       columns={columns}
       actions={actions}
+      defaultSortBy="name"
     />
   );
 }

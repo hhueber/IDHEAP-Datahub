@@ -8,14 +8,35 @@ export default function AnswerAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "year", label: t("dashboardSidebar.pageAll.year") },
-      { key: "question_uid", label: t("dashboardSidebar.pageAll.questionUid") },
-      { key: "commune_uid", label: t("dashboardSidebar.pageAll.communeUid") },
-      { key: "value", label: t("dashboardSidebar.pageAll.value") },
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
+      {
+        key: "year",
+        labelKey: "dashboardSidebar.pageAll.year",
+        align: "right",
+        sortKey: "year",
+      },
+      {
+        key: "question",
+        labelKey: "dashboardSidebar.pageAll.question",
+        sortKey: "question",
+        truncate: true,
+        maxWidthClassName: "max-w-[460px]",
+      },
+      {
+        key: "commune",
+        labelKey: "dashboardSidebar.pageAll.commune",
+        sortKey: "commune",
+        truncate: true,
+        maxWidthClassName: "max-w-[260px]",
+      },
+      {
+        key: "value",
+        labelKey: "dashboardSidebar.pageAll.value",
+        sortKey: "value",
+        truncate: true,
+        maxWidthClassName: "max-w-[220px]",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -26,11 +47,13 @@ export default function AnswerAllPage() {
 
   return (
     <PageAll
-      title={t("dashboardSidebar.answer._")}
+      title={t("dashboardSidebar.qa.answer._")}
       entity="answer"
       initialPerPage={20}
       columns={columns}
       actions={actions}
+      defaultSortBy="year"
+      defaultSortDir="desc"
     />
   );
 }

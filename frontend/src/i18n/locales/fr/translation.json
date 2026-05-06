@@ -424,6 +424,8 @@
       "name": "Nom",
       "code": "Code",
       "entity": "Entité",
+      "question": "Enquête",
+      "commune": "Commune",
       "noData": "pas de données",
       "asc": "Asc",
       "desc": "Desc",
