@@ -181,11 +181,6 @@ export default function PageAll({
     setPage(1);
   };
 
-  // const toggleSortDir = () => {
-  //   setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-  //   setPage(1);
-  // };
-
   const hasActions = !!actions && (actions.show || actions.edit || actions.delete);
 
   // Constante pour UI

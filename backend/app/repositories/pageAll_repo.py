@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Tuple, Type
+from typing import Any, Dict, List, Optional, Tuple, Type
 
 
 from app.models.answer import Answer
@@ -12,8 +12,9 @@ from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from app.schemas.pageAll import AllItem, EntityEnum, OrderByEnum, OrderDirEnum, PageAllLangEnum
-from sqlalchemy import and_, case, cast, func, Integer, or_, select, String
+from sqlalchemy import and_, case, cast, func, Integer, Numeric, or_, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 
 ModelType = Type[Base]
@@ -30,7 +31,7 @@ def _safe_lang(lang: PageAllLangEnum | str) -> str:
     return "fr"
 
 
-def _not_empty(column):
+def _not_empty(column: Any) -> Any:
     """
     Transforme une chaîne vide en NULL.
 
@@ -40,7 +41,7 @@ def _not_empty(column):
     return func.nullif(column, "")
 
 
-def _coalesce_not_empty(*columns):
+def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     """
     Retourne le premier champ non NULL et non vide.
     """
@@ -52,7 +53,7 @@ def _coalesce_not_empty(*columns):
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
-def _localized_text_or_label(model: ModelType, lang: PageAllLangEnum | str):
+def _localized_text_or_label(model: ModelType, lang: PageAllLangEnum | str) -> Any | None:
     """
     Pour les questions et options.
 
@@ -97,7 +98,7 @@ def _localized_text_or_label(model: ModelType, lang: PageAllLangEnum | str):
     )
 
 
-def _localized_name(model: ModelType, lang: PageAllLangEnum | str):
+def _localized_name(model: ModelType, lang: PageAllLangEnum | str) -> Any | None:
     """
     Pour les entités géographiques.
 
@@ -243,7 +244,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
 }
 
 
-def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str):
+def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> Any | None:
     if entity in {
         EntityEnum.commune,
         EntityEnum.district,
@@ -268,7 +269,7 @@ def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str):
     return None
 
 
-def _build_columns_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str):
+def _build_columns_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> list[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
@@ -304,7 +305,7 @@ def _build_columns_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str):
     return columns
 
 
-def _build_base_stmt(entity: EntityEnum, lang: PageAllLangEnum | str):
+def _build_base_stmt(entity: EntityEnum, lang: PageAllLangEnum | str) -> Select[Any]:
     columns = _build_columns_for_entity(entity, lang)
 
     if entity == EntityEnum.answer:
@@ -318,7 +319,7 @@ def _build_base_stmt(entity: EntityEnum, lang: PageAllLangEnum | str):
     return select(*columns)
 
 
-def _build_count_stmt(entity: EntityEnum):
+def _build_count_stmt(entity: EntityEnum) -> Select[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
@@ -329,7 +330,7 @@ def _order_column_for_entity(
     entity: EntityEnum,
     order_by: OrderByEnum,
     lang: PageAllLangEnum | str,
-):
+) -> Any | None:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
@@ -359,13 +360,25 @@ def _order_exprs_for_entity(
     order_by: OrderByEnum,
     order_dir: OrderDirEnum,
     lang: PageAllLangEnum | str,
-):
+) -> list[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
     if order_by == OrderByEnum.code and cfg.code_attr:
         code_col = getattr(model, cfg.code_attr)
         order_columns = _natural_code_order_columns(code_col)
+
+        if order_dir == OrderDirEnum.asc:
+            return [col.asc() for col in order_columns]
+
+        return [col.desc() for col in order_columns]
+
+    if order_by == OrderByEnum.value and entity in {
+        EntityEnum.option,
+        EntityEnum.answer,
+    }:
+        value_col = Option.value if entity == EntityEnum.option else Answer.value
+        order_columns = _natural_value_order_columns(value_col)
 
         if order_dir == OrderDirEnum.asc:
             return [col.asc() for col in order_columns]
@@ -413,7 +426,36 @@ def _row_to_all_item(row, entity: EntityEnum) -> AllItem:
     )
 
 
-def _natural_code_order_columns(code_col):
+def _natural_value_order_columns(value_col: Any) -> list[Any]:
+    """
+    Construit un tri naturel pour les valeurs stockées en texte.
+
+    Objectif :
+    - les valeurs numériques sont triées comme des nombres
+    - évite le mauvais ordre : 1, 1.0, 10, 11, 20, 3, 4
+
+    Exemples :
+    - 1, 1.0, 3, 4, 10, 11, 20
+    - 1.5, 2.0, 2.5, 10
+    """
+    value_as_text = cast(value_col, String)
+    normalized_value = func.replace(value_as_text, ",", ".")
+
+    is_numeric_only = normalized_value.op("~")(r"^-?\d+(\.\d+)?$")
+
+    numeric_value = case(
+        (is_numeric_only, cast(normalized_value, Numeric)),
+        else_=None,
+    )
+
+    return [
+        case((is_numeric_only, 0), else_=1),
+        numeric_value,
+        normalized_value,
+    ]
+
+
+def _natural_code_order_columns(code_col: Any) -> list[Any]:
     """
     Construit un tri naturel pour les codes.
 
@@ -472,11 +514,6 @@ async def get_pageAll_paginated(
 
     total_stmt = _build_count_stmt(entity)
     total = (await db.execute(total_stmt)).scalar_one()
-
-    order_column = _order_column_for_entity(entity, order_by, lang)
-
-    if order_column is None:
-        order_column = _order_column_for_entity(entity, cfg.default_sort, lang)
 
     order_exprs = _order_exprs_for_entity(entity, order_by, order_dir, lang)
 
