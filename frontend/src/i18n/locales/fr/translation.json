@@ -508,6 +508,10 @@
           "answers_same_question_year": "Réponses pour la même question/année",
           "same_value_count": "Même valeur de réponse"
         }
+      },
+      "visibility": {
+        "private": "Privée",
+        "public": "Public"
       }
     }
   },
