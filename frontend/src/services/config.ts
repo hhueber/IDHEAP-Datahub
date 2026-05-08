@@ -1,4 +1,5 @@
 import { apiFetch } from "@/shared/apiFetch";
+import type { ThemeMapPreviewBundle } from "@/features/admin/components/theme/themeMapPreview.types";
 
 export type ThemeMode = "light" | "dark";
 
@@ -13,6 +14,7 @@ export interface ThemeConfigDto {
   colour_light_text?: string | null;
   navbar_overlay_light_bg?: string | null;
   logoBackground_light?: string | null;
+  selection_light?: string | null;
 
   communes_light?: string | null;
   district_light?: string | null;
@@ -27,6 +29,7 @@ export interface ThemeConfigDto {
   colour_dark_text?: string | null;
   navbar_overlay_dark_bg?: string | null;
   logoBackground_dark?: string | null;
+  selection_dark?: string | null;
 
   communes_dark?: string | null;
   district_dark?: string | null;
@@ -78,4 +81,26 @@ export async function uploadThemeLogo(dataUrl: string): Promise<string> {
   }
 
   return res.data.url;
+}
+
+type ApiEnvelope<T> = {
+  success: boolean;
+  detail: string;
+  data: T;
+};
+
+export async function fetchThemeMapPreview(): Promise<ThemeMapPreviewBundle> {
+  const res = await apiFetch<ApiEnvelope<ThemeMapPreviewBundle>>(
+    "/config/theme/map-preview",
+    {
+      method: "GET",
+      auth: true,
+    }
+  );
+
+  if (!res.success) {
+    throw new Error(res.detail || "Failed to load theme map preview");
+  }
+
+  return res.data;
 }

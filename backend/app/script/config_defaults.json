@@ -9,6 +9,7 @@
 
   "navbar_overlay_light_bg": "rgba(0,0,0,0.30)",
   "logoBackground_light": "#FFFFFF",
+  "selection_light": "#FFD700",
 
   "communes_light": "#16a34a",
   "district_light": "#7c3aed",
@@ -23,6 +24,7 @@
 
   "navbar_overlay_dark_bg": "rgba(15,23,42,0.85)",
   "logoBackground_dark": "#FFFFFF",
+  "selection_dark": "#FFD700",
 
   "communes_dark": "#22c55e",
   "district_dark": "#a855f7",
