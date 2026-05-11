@@ -14,6 +14,7 @@ class EntityEnum(str, Enum):
     question_category = "question_category"
     option = "option"
     survey = "survey"
+    answer = "answer"
 
 
 class OrderByEnum(str, Enum):
