@@ -8,16 +8,14 @@ from app.schemas.pageShow import (
 )
 
 
-LANG_MAP = {"de": "Deutsch", "fr": "Français", "en": "English", "it": "Italiano", "ro": "Rumantsch"}
-
 ENTITY_META = {
     "commune": ShowMeta(
         entity="commune",
         title_key="name",
         hide_keys=["uid"],
         fields=[
-            ShowMetaField(key="code", label="Code", kind="text"),
-            ShowMetaField(key="name", label="Name", kind="text"),
+            ShowMetaField(key="code", label="Code"),
+            ShowMetaField(key="name", label="Name"),
         ],
         languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "ro": "name_ro"},
         actions=ShowMetaActions(can_edit=False, can_delete=False),
@@ -37,6 +35,7 @@ ENTITY_META = {
                 key="communes",
                 title="Communes",
                 entity="commune",
+                relation_type="direct",
                 fk_field="district_uid",
                 per_page=10,
                 columns=[
@@ -44,7 +43,7 @@ ENTITY_META = {
                     ShowChildColumn(key="code", label="Code"),
                     ShowChildColumn(key="name", label="Name"),
                 ],
-                actions=ShowMetaChildActions(show=True, edit=False, delete=False),
+                actions=ShowMetaChildActions(show=True),
             )
         ],
     ),
@@ -64,6 +63,7 @@ ENTITY_META = {
                 key="districts",
                 title="Districts",
                 entity="district",
+                relation_type="direct",
                 fk_field="canton_uid",
                 per_page=10,
                 columns=[
@@ -71,7 +71,7 @@ ENTITY_META = {
                     ShowChildColumn(key="code", label="Code"),
                     ShowChildColumn(key="name", label="Name"),
                 ],
-                actions=ShowMetaChildActions(show=True, edit=False, delete=False),
+                actions=ShowMetaChildActions(show=True),
             )
         ],
     ),
@@ -90,6 +90,7 @@ ENTITY_META = {
                 key="questions",
                 title="Questions per survey",
                 entity="question_per_survey",
+                relation_type="direct",
                 fk_field="survey_uid",
                 per_page=10,
                 columns=[
@@ -121,14 +122,30 @@ ENTITY_META = {
                 key="answers",
                 title="Answers",
                 entity="answer",
+                relation_type="direct",
                 fk_field="question_uid",
                 per_page=10,
                 columns=[
                     ShowChildColumn(key="uid", label="UID", kind="number"),
                     ShowChildColumn(key="year", label="Year", kind="year"),
                     ShowChildColumn(key="commune_uid", label="Commune uid", kind="number"),
-                    ShowChildColumn(key="option_uid", label="Option uid", kind="number"),
                     ShowChildColumn(key="value", label="Value"),
+                ],
+                actions=ShowMetaChildActions(show=True, edit=True, delete=True),
+            ),
+            ShowMetaChild(
+                key="options",
+                title="Options",
+                entity="option",
+                relation_type="association",
+                association_table="question_option_association",
+                association_source_field="question_uid",
+                association_target_field="option_uid",
+                per_page=10,
+                columns=[
+                    ShowChildColumn(key="uid", label="UID", kind="number"),
+                    ShowChildColumn(key="value", label="Value"),
+                    ShowChildColumn(key="label", label="Label"),
                 ],
                 actions=ShowMetaChildActions(show=True, edit=True, delete=True),
             ),
@@ -149,6 +166,7 @@ ENTITY_META = {
                 key="questions_linked",
                 title="Linked questions (per survey)",
                 entity="question_per_survey",
+                relation_type="direct",
                 fk_field="question_global_uid",
                 per_page=10,
                 columns=[
@@ -159,7 +177,23 @@ ENTITY_META = {
                     ShowChildColumn(key="survey_uid", label="Survey uid", kind="number"),
                 ],
                 actions=ShowMetaChildActions(show=True, edit=True, delete=True),
-            )
+            ),
+            ShowMetaChild(
+                key="options",
+                title="Options",
+                entity="option",
+                relation_type="association",
+                association_table="question_global_option_association",
+                association_source_field="question_uid",
+                association_target_field="option_uid",
+                per_page=10,
+                columns=[
+                    ShowChildColumn(key="uid", label="UID", kind="number"),
+                    ShowChildColumn(key="value", label="Value"),
+                    ShowChildColumn(key="label", label="Label"),
+                ],
+                actions=ShowMetaChildActions(show=True, edit=True, delete=True),
+            ),
         ],
     ),
     "question_category": ShowMeta(
@@ -176,7 +210,10 @@ ENTITY_META = {
                 key="options",
                 title="Options",
                 entity="option",
-                fk_field="question_category_uid",
+                relation_type="association",
+                association_table="question_category_option_association",
+                association_source_field="question_uid",
+                association_target_field="option_uid",
                 per_page=10,
                 columns=[
                     ShowChildColumn(key="uid", label="UID", kind="number"),
@@ -189,6 +226,7 @@ ENTITY_META = {
                 key="questions_global",
                 title="Global questions",
                 entity="question_global",
+                relation_type="direct",
                 fk_field="question_category_uid",
                 per_page=10,
                 columns=[
@@ -201,6 +239,7 @@ ENTITY_META = {
                 key="questions_per_survey",
                 title="Questions per survey",
                 entity="question_per_survey",
+                relation_type="direct",
                 fk_field="question_category_uid",
                 per_page=10,
                 columns=[
@@ -221,37 +260,18 @@ ENTITY_META = {
         fields=[
             ShowMetaField(key="value", label="Value"),
             ShowMetaField(key="label", label="Label"),
-            ShowMetaField(key="question_category_uid", label="Category uid", kind="number"),
         ],
         languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "ro": "text_ro"},
         actions=ShowMetaActions(can_edit=True, can_delete=True),
-        children=[
-            ShowMetaChild(
-                key="answers",
-                title="Answers",
-                entity="answer",
-                fk_field="option_uid",
-                per_page=10,
-                columns=[
-                    ShowChildColumn(key="uid", label="UID", kind="number"),
-                    ShowChildColumn(key="year", label="Year", kind="year"),
-                    ShowChildColumn(key="question_uid", label="Question uid", kind="number"),
-                    ShowChildColumn(key="commune_uid", label="Commune uid", kind="number"),
-                    ShowChildColumn(key="value", label="Value"),
-                ],
-                actions=ShowMetaChildActions(show=True, edit=True, delete=True),
-            ),
-        ],
     ),
     "answer": ShowMeta(
         entity="answer",
-        title_key="uid",  # ou "year"
+        title_key="uid",
         hide_keys=["uid"],
         fields=[
             ShowMetaField(key="year", label="Year", kind="year"),
             ShowMetaField(key="question_uid", label="Question uid", kind="number"),
             ShowMetaField(key="commune_uid", label="Commune uid", kind="number"),
-            ShowMetaField(key="option_uid", label="Option uid", kind="number"),
             ShowMetaField(key="value", label="Value"),
         ],
         languages=None,

@@ -17,6 +17,7 @@ class ThemeConfig(BaseModel):
     colour_light_text: Optional[str] = None
     navbar_overlay_light_bg: Optional[str] = None
     logoBackground_light: Optional[str] = None
+    selection_light: Optional[str] = None
 
     communes_light: Optional[str] = None
     district_light: Optional[str] = None
@@ -31,6 +32,7 @@ class ThemeConfig(BaseModel):
     colour_dark_text: Optional[str] = None
     navbar_overlay_dark_bg: Optional[str] = None
     logoBackground_dark: Optional[str] = None
+    selection_dark: Optional[str] = None
 
     communes_dark: Optional[str] = None
     district_dark: Optional[str] = None

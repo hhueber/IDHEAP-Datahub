@@ -2,11 +2,16 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
-import type { Entity, ShowResponse, ShowMetaField } from "@/features/pageShow/show_type";
+import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsResponse } from "@/features/pageShow/show_type";
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useEdit } from "@/shared/useEdit";
+import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
+import InsightsPanel from "@/features/pageShow/InsightsPanel";
+import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
+import { useNavigate } from "react-router-dom";
+import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 
 type Props = {
   id: number;
@@ -40,14 +45,120 @@ function normalizeToString(v: any): string {
   return String(v);
 }
 
+type RelationDisplayItem = {
+  uidKey: string;
+  displayKey: string;
+  labelKey: string;
+  value: string;
+};
+
+const RELATION_DISPLAY_CONFIG: {
+  uidKey: string;
+  displayKeys: string[];
+  labelKey: string;
+}[] = [
+  {
+    uidKey: "commune_uid",
+    displayKeys: ["commune_name", "commune"],
+    labelKey: "dashboardSidebar.pageShow.relations.commune",
+  },
+  {
+    uidKey: "district_uid",
+    displayKeys: ["district_name", "district"],
+    labelKey: "dashboardSidebar.pageShow.relations.district",
+  },
+  {
+    uidKey: "canton_uid",
+    displayKeys: ["canton_name", "canton"],
+    labelKey: "dashboardSidebar.pageShow.relations.canton",
+  },
+  {
+    uidKey: "survey_uid",
+    displayKeys: ["survey_name", "survey"],
+    labelKey: "dashboardSidebar.pageShow.relations.survey",
+  },
+  {
+    uidKey: "question_uid",
+    displayKeys: ["question_name", "question"],
+    labelKey: "dashboardSidebar.pageShow.relations.question",
+  },
+  {
+    uidKey: "question_global_uid",
+    displayKeys: ["question_global_name", "question_global"],
+    labelKey: "dashboardSidebar.pageShow.relations.questionGlobal",
+  },
+  {
+    uidKey: "question_category_uid",
+    displayKeys: ["question_category_name", "question_category"],
+    labelKey: "dashboardSidebar.pageShow.relations.questionCategory",
+  },
+  {
+    uidKey: "option_uid",
+    displayKeys: ["option_name", "option"],
+    labelKey: "dashboardSidebar.pageShow.relations.option",
+  },
+];
+
+function getFirstNonEmptyValue(
+  data: Record<string, any>,
+  keys: string[]
+): { key: string; value: string } | null {
+  for (const key of keys) {
+    const value = data[key];
+
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      return {
+        key,
+        value: String(value),
+      };
+    }
+  }
+
+  return null;
+}
+
+function getRelationDisplayItems(
+  data: Record<string, any> | null
+): RelationDisplayItem[] {
+  if (!data) return [];
+
+  return RELATION_DISPLAY_CONFIG.flatMap((config) => {
+    const uid = data[config.uidKey];
+
+    if (uid === null || uid === undefined) {
+      return [];
+    }
+
+    const display = getFirstNonEmptyValue(data, config.displayKeys);
+
+    if (!display) {
+      return [];
+    }
+
+    return [
+      {
+        uidKey: config.uidKey,
+        displayKey: display.key,
+        labelKey: config.labelKey,
+        value: display.value,
+      },
+    ];
+  });
+}
+
 export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
-  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { t, i18n  } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [meta, setMeta] = React.useState<ShowResponse["meta"]>(null);
   const [data, setData] = React.useState<ShowResponse["data"]>(null);
+
+  const [insights, setInsights] = React.useState<ShowInsights | null>(null);
+  const [insightsLoading, setInsightsLoading] = React.useState(false);
+  const [insightsError, setInsightsError] = React.useState<string | null>(null);
 
   const canEdit = meta?.actions?.can_edit ?? false;
   const canDelete = meta?.actions?.can_delete ?? false;
@@ -61,6 +172,12 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [editMode, setEditMode] = React.useState(false);
   const [draft, setDraft] = React.useState<Record<string, string>>({});
   const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
+  const { castUpdates } = useTypedUpdates(meta);
+
+  const lang = React.useMemo(
+    () => getPageAllLang(i18n.language),
+    [i18n.language]
+  );
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -70,6 +187,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
       const json = await apiFetch<ShowResponse>(`/show/${entity}/${id}`, {
         method: "GET",
         auth: true,
+        query: {
+          lang,
+        },
       });
 
       setMeta(json.meta ?? null);
@@ -90,9 +210,39 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     }
   }, [entity, id, t]);
 
+  const loadInsights = React.useCallback(async () => {
+    setInsightsLoading(true);
+    setInsightsError(null);
+
+    try {
+      const json = await apiFetch<ShowInsightsResponse>(`/show/${entity}/${id}/insights`, {
+        method: "GET",
+        auth: true,
+      });
+
+      if (!json.success) {
+        setInsights(null);
+        setInsightsError(json.detail || t("common.error"));
+        return;
+      }
+
+      setInsights(json.data ?? null);
+    } catch (e: any) {
+      setInsights(null);
+      setInsightsError(e?.message ?? t("common.error"));
+    } finally {
+      setInsightsLoading(false);
+    }
+  }, [entity, id, lang, t]);
+
   React.useEffect(() => {
     void load();
-  }, [load]);
+    void loadInsights();
+  }, [load, loadInsights]);
+
+  const handleChildShow = React.useCallback((childEntity: Entity, childUid: number) => {
+    navigate(`/admin/places/show/${childEntity}/${childUid}`);
+  }, [navigate]);
 
   // Hook edit -> /edit
   const {
@@ -100,7 +250,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     error: editError,
     confirmWith: confirmEditWith,
     cancel: cancelEdit,
-  } = useEdit<{ entity: Entity; id: number; updates: Record<string, string> }>((tgt) => ({
+  } = useEdit<{ entity: Entity; id: number; updates: Record<string, any> }>((tgt) => ({
     entity: tgt.entity,
     filters: [{ field: "uid", value: tgt.id }],
     updates: tgt.updates,
@@ -125,6 +275,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
       : `${entity} #${id}`;
 
   const fields = meta?.fields ?? [];
+
+  const relationDisplayItems = React.useMemo(
+    () => getRelationDisplayItems(data),
+    [data]
+  );
 
   const toggleClearField = (key: string) => {
     setSelectedFieldsToClear((prev) =>
@@ -179,27 +334,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
 
-  const getChangedUpdates = (): Record<string, string> => {
+  const getChangedUpdates = (): Record<string, any> => {
     if (!data) return {};
-
-    const updates: Record<string, string> = {};
-
-    for (const [key, value] of Object.entries(draft)) {
-      if (isProtectedField(key)) continue;
-
-      // compare avec valeur d'origine (en string)
-      const original = normalizeToString(data[key]);
-
-      // si identique => ignore
-      if (value === original) continue;
-
-      // refuse vide
-      if (value.trim() === "") continue;
-
-      updates[key] = value;
-    }
-
-    return updates;
+    return castUpdates(draft, data, isProtectedField);
   };
 
   const hasAnyValidChange = () => {
@@ -407,12 +544,36 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                       backgroundColor: background,
                                     }}
                                   >
-                                    <input
-                                      value={draft[f.key] ?? normalizeToString(data[f.key])}
-                                      onChange={(e) => updateDraft(f.key, e.target.value)}
-                                      className={editableInputClass}
-                                      style={{ color: textColor }}
-                                    />
+                                    {/* BOOL */}
+                                    {f.kind === "bool" ? (
+                                      <input
+                                        type="checkbox"
+                                        checked={draft[f.key] === "true"}
+                                        onChange={(e) =>
+                                          updateDraft(f.key, e.target.checked ? "true" : "false")
+                                        }
+                                      />
+                                    ) : 
+                                    /* NUMBER */
+                                    f.kind === "number" || f.kind === "year" ? (
+                                      <input
+                                        type="number"
+                                        value={draft[f.key] ?? ""}
+                                        onChange={(e) => updateDraft(f.key, e.target.value)}
+                                        className={editableInputClass}
+                                        style={{ color: textColor }}
+                                      />
+                                    ) : (
+                                    /* TEXT DEFAULT */
+                                      <input
+                                        type="text"
+                                        value={draft[f.key] ?? ""}
+                                        onChange={(e) => updateDraft(f.key, e.target.value)}
+                                        className={editableInputClass}
+                                        style={{ color: textColor }}
+                                      />
+                                    )}
+
                                     <span className={pencilIconClass} style={{ color: hoverText07 }}>
                                       {"\u270E"}
                                     </span>
@@ -423,6 +584,36 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                           );
                         })}
                     </div>
+
+                    {/* RELATED READ-ONLY INFO */}
+                    {relationDisplayItems.length > 0 && (
+                      <>
+                        <div className="my-4 border-t" style={{ borderColor }} />
+
+                        <div className="text-sm font-medium mb-3">
+                          {t("dashboardSidebar.pageShow.relatedInfo")}
+                        </div>
+
+                        <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+                          {relationDisplayItems.map((item) => (
+                            <React.Fragment key={item.uidKey}>
+                              <div className="font-medium min-w-0" style={{ color: hoverText07 }}>
+                                {t(item.labelKey)}
+                              </div>
+
+                              <div className="min-w-0">
+                                <span
+                                  title={item.value}
+                                  className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                                >
+                                  {renderEmpty(item.value)}
+                                </span>
+                              </div>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      </>
+                    )}    
                   </div>
 
                   {/* LANGUAGES */}
@@ -535,7 +726,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
         {/* RIGHT */}
         <aside className="w-full lg:w-[360px] shrink-0">
           <div
-            className="rounded-2xl border shadow-sm h-full"
+            className="relative rounded-2xl border shadow-sm h-full"
             style={{ borderColor, backgroundColor: background }}
           >
             <div className="px-6 py-4 border-b" style={{ borderColor }}>
@@ -546,8 +737,19 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                 {t("dashboardSidebar.pageShow.insightsHint")}
               </div>
             </div>
-            <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
-              (À brancher plus tard)
+
+            <div className="px-6 py-5 relative min-h-[180px]">
+              {insightsLoading && <InsightsLoadingOverlay />}
+
+              {insightsError ? (
+                <div className="text-sm" style={{ color: "rgb(220,38,38)" }}>
+                  {insightsError}
+                </div>
+              ) : (
+                <InsightsPanel 
+                  insights={insights}
+                  onChildShow={handleChildShow}/>
+              )}
             </div>
           </div>
         </aside>

@@ -1,11 +1,13 @@
 from app.api.dependencies import get_current_user
 from app.db import get_db
-from app.repositories.pageShow_children_repo import get_children_paginated
+from app.repositories.pageShow_children_repo import enrich_children_display_names, get_children_paginated
 from app.repositories.pageShow_repo import get_by_uid
-from app.schemas.pageAll import EntityEnum
-from app.schemas.pageShow import ShowChildrenResponse, ShowResponse
+from app.schemas.pageAll import EntityEnum, PageAllLangEnum
+from app.schemas.pageShow import ShowChildrenResponse, ShowInsightsResponse, ShowResponse
 from app.schemas.user import UserPublic
+from app.services.pageShow_insight_service import build_insights
 from app.services.pageShow_meta import get_meta_for_entity
+from app.services.pageShow_relation_display_service import enrich_show_relation_display_names
 from app.services.pageShow_service import serialize_columns
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,6 +20,7 @@ router = APIRouter()
 async def show_entity(
     entity: EntityEnum,
     uid: int,
+    lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
     _user: UserPublic = Depends(get_current_user),
 ):
@@ -30,6 +33,12 @@ async def show_entity(
     exclude = set(meta.hide_keys) if meta else {"uid"}
     data = serialize_columns(obj, exclude=exclude)
 
+    data = await enrich_show_relation_display_names(
+        db=db,
+        data=data,
+        lang=lang,
+    )
+
     return {"success": True, "detail": "OK", "meta": meta, "data": data}
 
 
@@ -40,6 +49,7 @@ async def show_children(
     child_key: str,
     page: int = Query(1, ge=1),
     per_page: int = Query(10, ge=1, le=100),
+    lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
     _user: UserPublic = Depends(get_current_user),
 ):
@@ -57,9 +67,9 @@ async def show_children(
 
     child_entity = EntityEnum(child.entity)  # ex: "district"
     items, total = await get_children_paginated(
-        db,
+        db=db,
         child_entity=child_entity,
-        fk_field=child.fk_field,
+        child_meta=child,
         parent_uid=uid,
         page=page,
         per_page=per_page,
@@ -68,6 +78,11 @@ async def show_children(
 
     # on sérialise les colonnes
     serialized = [serialize_columns(x, exclude=set()) for x in items]
+    serialized = await enrich_children_display_names(
+        db=db,
+        rows=serialized,
+        lang=lang,
+    )
 
     return {
         "success": True,
@@ -79,4 +94,29 @@ async def show_children(
             "per_page": per_page,
             "pages": pages,
         },
+    }
+
+
+@router.get("/{entity}/{uid}/insights", response_model=ShowInsightsResponse)
+async def show_entity_insights(
+    entity: EntityEnum,
+    uid: int,
+    db: AsyncSession = Depends(get_db),
+    _user: UserPublic = Depends(get_current_user),
+):
+    obj = await get_by_uid(db, entity=entity, uid=uid)
+
+    if obj is None:
+        return {
+            "success": True,
+            "detail": "None",
+            "data": None,
+        }
+
+    insights = await build_insights(entity, obj, db)
+
+    return {
+        "success": True,
+        "detail": "OK",
+        "data": insights,
     }

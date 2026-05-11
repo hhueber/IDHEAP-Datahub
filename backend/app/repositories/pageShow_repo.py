@@ -1,6 +1,7 @@
 from typing import Any, Dict, Optional, Type
 
 
+from app.models.answer import Answer
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
@@ -23,6 +24,7 @@ ENTITY_MODEL_MAP: Dict[EntityEnum, Type[Any]] = {
     EntityEnum.question_global: QuestionGlobal,
     EntityEnum.question_category: QuestionCategory,
     EntityEnum.option: Option,
+    EntityEnum.answer: Answer,
 }
 
 
