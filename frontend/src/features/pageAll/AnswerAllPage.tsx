@@ -26,7 +26,7 @@ export default function AnswerAllPage() {
 
   return (
     <PageAll
-      title={t("dashboardSidebar.answer._", "Answers")}
+      title={t("dashboardSidebar.qa.answer._")}
       entity="answer"
       initialPerPage={20}
       columns={columns}
