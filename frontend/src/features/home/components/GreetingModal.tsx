@@ -20,10 +20,10 @@ export default function GreetingModal({onClose}) {
             
             <div className="p-8">
                 <h3 className="text-center text-2xl font-semibold text-gray-900">
-                    lorem ipsum
+                   {t("first-modal.title")}
                 </h3>
                 <p className="mt-2 text-center text-gray-500">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi neque quis illo ipsam eius. Laboriosam sequi voluptas delectus nihil. Odio cum est ad perspiciatis temporibus aut assumenda nostrum facere explicabo.
+                    {t("first-modal.content")}
                 </p>
             </div>
 
@@ -38,7 +38,7 @@ export default function GreetingModal({onClose}) {
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer" 
                     />
                     <span className="text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
-                        Ne plus me rappeler
+                        {t("first-modal.reminder")}
                     </span>
                 </label>
 
@@ -53,7 +53,7 @@ export default function GreetingModal({onClose}) {
                     bg-[var(--qc-bg)]
                     hover:bg-[var(--qc-hover-bg)]
                 `} onClick={handleClose}>
-                    Fermer
+                    {t("first-modal.close")}
                 </button>
             </div>
             
