@@ -331,6 +331,7 @@
           "textColourLabel": "Couleur du texte",
           "navbarOverlayLabel": "Opacité de la barre de navigation",
           "logoBackgroundLabel": "Couleur de fond du logo",
+          "selectionColourLabel": "Couleur de sélection",
           "communesColourLabel": "Couleur des communes",
           "districtColourLabel": "Couleur des districts",
           "cantonColourLabel": "Couleur des cantons",
@@ -348,7 +349,8 @@
           "previewPanel": {
             "text": "Lorem ipsum — simple text",
             "buttonPrimary": "Bouton primaire",
-            "secondaryFrame": "Cadre secondaire"
+            "secondaryFrame": "Cadre secondaire",
+            "selection": "Élément sélectionné"
           }
         },
         "configEditor": {
