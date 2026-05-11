@@ -22,6 +22,7 @@
     "close": "Fermer",
     "sectionDates": "Dates",
     "sectionQuestions": "Questions",
+    "selectionQuestions": "Sélection de questions",
     "chooseYear": "Choisir une année",
     "globalOption": "Global",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
@@ -35,7 +36,24 @@
     "timelineAvailable": "Sélectionnable",
     "timelineUnavailable": "Indisponible",
     "selectQuestionFirst": "Choisissez une question",
-    "selectDate": "Choisissez une date"
+    "selectDate": "Choisissez une date",
+    "question_collections": {
+      "saved": {
+        "title": "Accès rapide",
+        "description": "Vos questions sauvegardées"
+      }
+    },
+    "question_drop_zone": {
+      "drag_question": "Glissez une question ici",
+      "release_to_add": "Relâchez pour ajouter cette question"
+    },
+    "question_card": {
+      "saved": "Questions sauvegardées",
+      "drag": "Glisser",
+      "removeSaved": "Retirer des questions sauvegardées",
+      "addSaved": "Ajouter aux questions sauvegardées",
+      "remove": "Retirer de la sélection"
+    }
   },
   "map": {
     "placeOfInterest": {
@@ -317,6 +335,7 @@
           "textColourLabel": "Couleur du texte",
           "navbarOverlayLabel": "Opacité de la barre de navigation",
           "logoBackgroundLabel": "Couleur de fond du logo",
+          "selectionColourLabel": "Couleur de sélection",
           "communesColourLabel": "Couleur des communes",
           "districtColourLabel": "Couleur des districts",
           "cantonColourLabel": "Couleur des cantons",
@@ -334,7 +353,8 @@
           "previewPanel": {
             "text": "Lorem ipsum — simple text",
             "buttonPrimary": "Bouton primaire",
-            "secondaryFrame": "Cadre secondaire"
+            "secondaryFrame": "Cadre secondaire",
+            "selection": "Élément sélectionné"
           }
         },
         "configEditor": {

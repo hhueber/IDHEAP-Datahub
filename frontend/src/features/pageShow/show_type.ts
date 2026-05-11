@@ -8,6 +8,7 @@ export enum Entity {
   QuestionGlobal = "question_global",
   QuestionCategory = "question_category",
   Option = "option",
+  Answer = "answer",
 }
 
 export type ShowChildColumn = {

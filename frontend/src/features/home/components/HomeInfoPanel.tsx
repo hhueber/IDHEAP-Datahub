@@ -8,6 +8,14 @@ import { useTheme } from "@/theme/useTheme";
 import { useQuestionYears } from "@/features/questions/hooks/useQuestionYears";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import GlobalQuestionTimeline from "@/features/home/components/GlobalQuestionTimeline";
+import QuestionCollectionsPanel from "@/features/questions/components/QuestionCollectionsPanel";
+import DraggableQuestionCard from "@/features/questions/components/DraggableQuestionCard";
+import { useQuestionCollections } from "@/features/questions/hooks/useQuestionCollections";
+import type {
+  QuestionCollectionKind,
+  StoredQuestionItem,
+  QuestionOriginScope,
+} from "@/features/questions/types/questionCollections";
 
 const GLOBAL_UID = -1;
 
@@ -45,6 +53,13 @@ export default function HomeInfoPanel({
 
   const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
+  const {
+    saved,
+    addToCollection,
+    removeFromCollection,
+    isSaved,
+  } = useQuestionCollections();
+
   const surveysWithGlobal = useMemo(
     () => [{ uid: GLOBAL_UID, year: Number.NaN }, ...(data?.surveys ?? [])],
     [data?.surveys]
@@ -63,6 +78,16 @@ export default function HomeInfoPanel({
   const { years, loading: loadingYears } = useQuestionYears(yearsQuestionUid, yearsScope);
   
 
+  const visibleQuestions = useMemo(() => {
+    if (showGlobals) {
+      return data?.globals?.items ?? [];
+    }
+
+    return bySurvey ?? [];
+  }, [showGlobals, data?.globals?.items, bySurvey]);
+
+  const questionScope: QuestionOriginScope = showGlobals ? "global" : "per_survey";
+
   // auto-set globalYear sur la dernière année dispo si vide
   const latestYear = years.length ? years[years.length - 1] : null;
   if (showGlobals && selectedQuestionUid != null && globalYear == null && latestYear != null) {
@@ -74,6 +99,33 @@ export default function HomeInfoPanel({
     { key: "canton" as const, label: "Cantonal" },
     { key: "federal" as const, label: "Federal" },
   ];
+
+  const handleDropQuestion = (kind: QuestionCollectionKind, item: StoredQuestionItem): void => {
+    addToCollection(kind, item);
+  };
+
+  const handleRemoveQuestion = (
+    kind: QuestionCollectionKind,
+    item: StoredQuestionItem
+  ): void => {
+    removeFromCollection(kind, item);
+  };
+
+  const toggleQuestionInCollection = (
+    kind: QuestionCollectionKind,
+    item: StoredQuestionItem
+  ): void => {
+    const exists = isSaved(item);
+
+    if (exists) {
+      removeFromCollection(kind, item);
+      return;
+    }
+
+    addToCollection(kind, item);
+  };
+
+  const surveyYear = data?.surveys?.find(s => s.uid === selectedSurveyUid)?.year;
 
   return (
     <div className="space-y-4 px-3 py-2">
@@ -194,98 +246,125 @@ export default function HomeInfoPanel({
       </section>
 
       {/* Carte questions */}
-      <section className="rounded-2xl shadow-sm p-4"
-          style={{
-            backgroundColor: background,
-            borderWidth: 1,
-            borderStyle: "solid",
-            borderColor: borderColor,
-          }}>
+      <section
+        className="rounded-2xl shadow-sm p-4"
+        style={{
+          backgroundColor: background,
+          borderWidth: 1,
+          borderStyle: "solid",
+          borderColor,
+        }}
+      >
         <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
           {t("home.sectionQuestions")}
         </h2>
 
-        <div className="max-h-72 overflow-y-auto grid grid-cols-1 gap-2">
-          {showGlobals ? (
-            !loading && !error && (
-              data?.globals?.items?.length ? (
-                data.globals.items.map((q) => (
-                  <QuestionCard
-                    key={q.uid}
-                    primary={q.text || q.label}
-                    selected={selectedQuestionUid === q.uid}
-                    onClick={() => onQuestionSelect(q.uid)}
-                  />
-                ))
-              ) : (
-                <EmptyHint text={t("home.noGlobalQuestions")} />
-              )
-            )
-          ) : (
-            <>
-              {loadingS && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
-              {errorKeyS && (
-                <p className="text-red-600">
-                  {t(errorKeyS)}
-                </p>
-              )}
-              {!loadingS && !errorKeyS && (
-                bySurvey?.length ? (
-                  bySurvey.map((q) => (
-                    <QuestionCard
-                      key={q.uid}
-                      primary={q.text || q.label}
-                      selected={selectedQuestionUid === q.uid}
-                      onClick={() => onQuestionSelect(q.uid)}
-                    />
-                  ))
-                ) : (
-                  <EmptyHint text={t("home.noQuestionsForSelection")} />
+        <div className="space-y-4">
+          <QuestionCollectionsPanel
+            saved={saved}
+            onDropQuestion={handleDropQuestion}
+            onRemoveQuestion={handleRemoveQuestion}
+            onSelectQuestion={onQuestionSelect}
+            selectedQuestionUid={selectedQuestionUid}
+          />
+
+          <div
+            className="rounded-2xl border p-3"
+            style={{
+              backgroundColor: background,
+              borderColor,
+              borderWidth: 1,
+              borderStyle: "solid",
+            }}
+          >
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold" style={{ color: textColor }}>
+                  {t("home.selectionQuestions")}
+                </h3>
+              </div>
+            </div>
+
+            <div className="max-h-72 overflow-y-auto grid grid-cols-1 gap-2">
+              {showGlobals ? (
+                !loading && !error && (
+                  visibleQuestions.length ? (
+                    visibleQuestions.map((q) => {
+                      const item: StoredQuestionItem = {
+                        uid: q.uid,
+                        label: q.label,
+                        text: q.text,
+                        primary: q.text || q.label,
+                        scope: questionScope,
+                        surveyUid: null,
+                      };
+
+                      return (
+                        <DraggableQuestionCard
+                          key={q.uid}
+                          uid={q.uid}
+                          label={q.label}
+                          text={q.text}
+                          primary={q.text || q.label}
+                          selected={selectedQuestionUid === q.uid}
+                          onClick={() => onQuestionSelect(q.uid)}
+                          scope={questionScope}
+                          surveyUid={null}
+                          isSaved={isSaved(item)}
+                          onQuickSavedToggle={() => toggleQuestionInCollection("saved", item)}
+                        />
+                      );
+                    })
+                  ) : (
+                    <EmptyHint text={t("home.noGlobalQuestions")} />
+                  )
                 )
+              ) : (
+                <>
+                  {loadingS && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
+                  {errorKeyS && <p className="text-red-600">{t(errorKeyS)}</p>}
+
+                  {!loadingS && !errorKeyS && (
+                    visibleQuestions.length ? (
+                      visibleQuestions.map((q) => {
+                        const item: StoredQuestionItem = {
+                          uid: q.uid,
+                          label: q.label,
+                          text: q.text,
+                          primary: q.text || q.label,
+                          scope: questionScope,
+                          surveyUid: selectedSurveyUid,
+                          year: surveyYear,
+                        };
+
+                        return (
+                          <DraggableQuestionCard
+                            key={q.uid}
+                            uid={q.uid}
+                            label={q.label}
+                            text={q.text}
+                            primary={q.text || q.label}
+                            selected={selectedQuestionUid === q.uid}
+                            onClick={() => onQuestionSelect(q.uid)}
+                            scope={questionScope}
+                            surveyUid={selectedSurveyUid}
+                            isSaved={isSaved(item)}
+                            onQuickSavedToggle={() => toggleQuestionInCollection("saved", item)}
+                          />
+                        );
+                      })
+                    ) : (
+                      <EmptyHint text={t("home.noQuestionsForSelection")} />
+                    )
+                  )}
+                </>
               )}
-            </>
-          )}
+            </div>
+          </div>
         </div>
       </section>
       <MapExportButtons />
     </div>
-  );
-}
-
-function QuestionCard({ primary, selected, onClick, }: { primary: string; selected: boolean; onClick: () => void; }) {
-  const { textColor, background, borderColor, hoverPrimary06 } = useTheme();
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`
-        text-left w-full
-        rounded-xl px-3 py-2
-        shadow-sm
-        active:translate-y-[1px]
-        transition
-        border
-        hover:shadow-md
-        bg-[var(--qc-bg)]
-        hover:bg-[var(--qc-hover-bg)]
-      `}
-      style={
-        {
-          // on passe les couleurs au CSS via des variables
-          "--qc-bg": selected ? hoverPrimary06 : background,
-          "--qc-hover-bg": hoverPrimary06,
-          borderColor: selected ? hoverPrimary06 : borderColor,
-          color: textColor,
-          boxShadow: selected ? "0 0 0 2px rgba(0,0,0,0.06)" : undefined,
-        } as React.CSSProperties
-      }
-    >
-      {/* Texte localisé (ou label si fallback déjà fait côté API) */}
-      <div className="text-sm font-medium">
-        {primary}
-      </div>
-    </button>
   );
 }
 
