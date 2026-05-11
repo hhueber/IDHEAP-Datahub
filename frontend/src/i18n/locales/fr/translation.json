@@ -477,5 +477,11 @@
   },
   "pagination": {
     "page": "Page"
+  },
+  "first-modal":{
+    "title": "Bienvenue",
+    "content": "Bienvenue sur l'IDHEAP Datahub",
+    "close": "Fermer",
+    "reminder": "Ne plus me rappeler"
   }
 }
