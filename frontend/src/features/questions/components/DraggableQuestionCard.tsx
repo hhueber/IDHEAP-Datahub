@@ -16,12 +16,10 @@ type Props = {
   onClick: () => void;
   scope: QuestionOriginScope;
   surveyUid: number | null;
-  isFavorite?: boolean;
   isSaved?: boolean;
   compact?: boolean;
   removable?: boolean;
   onRemove?: () => void;
-  onQuickFavoriteToggle?: () => void;
   onQuickSavedToggle?: () => void;
 };
 
@@ -38,12 +36,10 @@ export default function DraggableQuestionCard({
   onClick,
   scope,
   surveyUid,
-  isFavorite = false,
   isSaved = false,
   compact = false,
   removable = false,
   onRemove,
-  onQuickFavoriteToggle,
   onQuickSavedToggle,
 }: Props) {
   const {
@@ -126,14 +122,6 @@ export default function DraggableQuestionCard({
                 className={`mt-1 flex flex-wrap gap-1 ${compact ? "text-[10px]" : "text-[11px]"}`}
                 style={{ color: hoverText07 }}
               >
-                {isFavorite && (
-                  <span
-                    className="rounded-full px-2 py-0.5 border"
-                    style={{ borderColor, backgroundColor: hoverPrimary04 }}
-                  >
-                    {t("home.question_card.favorite")}
-                  </span>
-                )}
                 {isSaved && (
                   <span
                     className="rounded-full px-2 py-0.5 border"
@@ -160,30 +148,6 @@ export default function DraggableQuestionCard({
         </button>
 
         <div className="flex flex-col gap-1 shrink-0">
-          {onQuickFavoriteToggle && (
-            <button
-              type="button"
-              onClick={onQuickFavoriteToggle}
-              className="rounded-lg border px-2 py-1 text-[11px] transition-all duration-150 hover:scale-105 hover:shadow-sm active:scale-95"
-              style={{
-                borderColor,
-                backgroundColor: isFavorite ? hoverPrimary04 : background,
-                color: textColor,
-              }}
-              title={isFavorite ? t("home.question_card.removeFavorite") : t("home.question_card.addFavorite")}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = hoverPrimary04;
-                }}
-                onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = isFavorite
-                    ? hoverPrimary04
-                    : background;
-                }}
-            >
-              {"\u2605"}
-            </button>
-          )}
-
           {onQuickSavedToggle && (
             <button
               type="button"
@@ -204,7 +168,7 @@ export default function DraggableQuestionCard({
                     : background;
                 }}
             >
-              {"\u2398"}
+              {"\u2605"} {/* Unicode star symbol */}
             </button>
           )}
 
@@ -226,7 +190,7 @@ export default function DraggableQuestionCard({
               }}
               title={t("home.question_card.remove")}
             >
-              {"\u2715"}
+              {"\u2715"} {/* croix */}
             </button>
           )}
         </div>

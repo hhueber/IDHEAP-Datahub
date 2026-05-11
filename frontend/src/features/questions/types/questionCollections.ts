@@ -1,4 +1,4 @@
-export type QuestionCollectionKind = "favorites" | "saved";
+export type QuestionCollectionKind = "saved";
 
 export type QuestionOriginScope = "global" | "per_survey";
 
@@ -14,7 +14,6 @@ export type StoredQuestionItem = {
 };
 
 export type QuestionCollectionsState = {
-  favorites: StoredQuestionItem[];
   saved: StoredQuestionItem[];
 };
 

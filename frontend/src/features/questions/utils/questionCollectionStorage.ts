@@ -5,11 +5,9 @@ import type {
 } from "@/features/questions/types/questionCollections";
 import { buildStoredQuestionKey } from "@/features/questions/types/questionCollections";
 
-const FAVORITES_KEY = "question_favorites";
 const SAVED_KEY = "question_saved";
 
 const DEFAULT_STATE: QuestionCollectionsState = {
-  favorites: [],
   saved: [],
 };
 
@@ -35,16 +33,11 @@ function sanitizeState(raw: unknown): QuestionCollectionsState {
 
   const maybe = raw as Partial<QuestionCollectionsState>;
 
-  const favorites = Array.isArray(maybe.favorites)
-    ? maybe.favorites.filter(isStoredQuestionItem)
-    : [];
-
   const saved = Array.isArray(maybe.saved)
     ? maybe.saved.filter(isStoredQuestionItem)
     : [];
 
   return {
-    favorites: dedupeItems(favorites),
     saved: dedupeItems(saved),
   };
 }
@@ -65,11 +58,9 @@ export function loadQuestionCollections(): QuestionCollectionsState {
   if (typeof window === "undefined") return DEFAULT_STATE;
 
   try {
-    const favRaw = localStorage.getItem(FAVORITES_KEY);
     const savedRaw = localStorage.getItem(SAVED_KEY);
 
     return sanitizeState({
-      favorites: favRaw ? JSON.parse(favRaw) : [],
       saved: savedRaw ? JSON.parse(savedRaw) : [],
     });
   } catch {
@@ -81,7 +72,6 @@ export function saveQuestionCollections(state: QuestionCollectionsState): void {
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(FAVORITES_KEY, JSON.stringify(state.favorites));
     localStorage.setItem(SAVED_KEY, JSON.stringify(state.saved));
   } catch {}
 }

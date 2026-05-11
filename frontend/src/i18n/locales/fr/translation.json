@@ -34,13 +34,9 @@
     "choroplethGlobalYear": "Date pour question globale",
     "granularity": "Granularité",
     "question_collections": {
-      "favorites": {
-        "title": "Favoris",
-        "description": "Accés rapide"
-      },
       "saved": {
-        "title": "Sauvegardées",
-        "description": "Sauvegardées pour plus tard"
+        "title": "Accès rapide",
+        "description": "Vos questions sauvegardées"
       }
     },
     "question_drop_zone": {
@@ -48,13 +44,10 @@
       "release_to_add": "Relâchez pour ajouter cette question"
     },
     "question_card": {
-      "favorite": "Favoris",
-      "saved": "Sauvegardées",
+      "saved": "Questions sauvegardées",
       "drag": "Glisser",
-      "removeFavorite": "Retirer des favoris",
-      "addFavorite": "Ajouter aux favoris",
-      "removeSaved": "Retirer des sauvegardées",
-      "addSaved": "Ajouter aux sauvegardées",
+      "removeSaved": "Retirer des questions sauvegardées",
+      "addSaved": "Ajouter aux questions sauvegardées",
       "remove": "Retirer de la sélection"
     }
   },
@@ -75,6 +68,14 @@
       "noLocalPlaceOfInterest": "Aucun lieu d'intérêt supplémentaire défini.",
 
       "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
+    },
+    "legend": {
+      "showStats": "Afficher les statistiques",
+      "distribution": "Répartition des réponses",
+      "unitsWithResponse_one": "{{count}} unité avec réponse",
+      "unitsWithResponse_other": "{{count}} unités avec réponse",
+      "noData": "Pas de données",
+      "noResponse": "Pas de réponse"
     },
     "errors": {
       "loadGeometry": "Impossible de charger les couches géographiques.",
@@ -342,6 +343,7 @@
           "textColourLabel": "Couleur du texte",
           "navbarOverlayLabel": "Opacité de la barre de navigation",
           "logoBackgroundLabel": "Couleur de fond du logo",
+          "selectionColourLabel": "Couleur de sélection",
           "communesColourLabel": "Couleur des communes",
           "districtColourLabel": "Couleur des districts",
           "cantonColourLabel": "Couleur des cantons",
@@ -359,7 +361,8 @@
           "previewPanel": {
             "text": "Lorem ipsum — simple text",
             "buttonPrimary": "Bouton primaire",
-            "secondaryFrame": "Cadre secondaire"
+            "secondaryFrame": "Cadre secondaire",
+            "selection": "Élément sélectionné"
           }
         },
         "configEditor": {

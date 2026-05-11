@@ -43,8 +43,6 @@ export function useQuestionCollections() {
 
   const helpers = useMemo(
     () => ({
-      isFavorite: (item: Pick<StoredQuestionItem, "uid" | "scope" | "surveyUid">) =>
-        isQuestionInCollection(state, "favorites", item),
       isSaved: (item: Pick<StoredQuestionItem, "uid" | "scope" | "surveyUid">) =>
         isQuestionInCollection(state, "saved", item),
     }),
@@ -52,7 +50,6 @@ export function useQuestionCollections() {
   );
 
   return {
-    favorites: state.favorites,
     saved: state.saved,
     addToCollection,
     removeFromCollection,

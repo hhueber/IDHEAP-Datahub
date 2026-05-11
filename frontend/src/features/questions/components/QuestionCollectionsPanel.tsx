@@ -6,7 +6,6 @@ import type {
 import { useTranslation } from "react-i18next";
 
 type Props = {
-  favorites: StoredQuestionItem[];
   saved: StoredQuestionItem[];
   onDropQuestion: (kind: QuestionCollectionKind, item: StoredQuestionItem) => void;
   onRemoveQuestion: (kind: QuestionCollectionKind, item: StoredQuestionItem) => void;
@@ -15,7 +14,6 @@ type Props = {
 };
 
 export default function QuestionCollectionsPanel({
-  favorites,
   saved,
   onDropQuestion,
   onRemoveQuestion,
@@ -25,18 +23,6 @@ export default function QuestionCollectionsPanel({
   const { t } = useTranslation();
   return (
     <div className="space-y-4">
-      {/* FAVORITES */}
-      <QuestionDropZone
-        kind="favorites"
-        title={t("home.question_collections.favorites.title")}
-        description={t("home.question_collections.favorites.description")}
-        items={favorites}
-        onDropQuestion={onDropQuestion}
-        onRemoveQuestion={onRemoveQuestion}
-        onSelectQuestion={onSelectQuestion}
-        selectedQuestionUid={selectedQuestionUid}
-      />
-
       {/* SAVED */}
       <QuestionDropZone
         kind="saved"
