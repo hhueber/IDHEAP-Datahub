@@ -22,6 +22,7 @@
     "close": "Fermer",
     "sectionDates": "Dates",
     "sectionQuestions": "Questions",
+    "selectionQuestions": "Sélection de questions",
     "chooseYear": "Choisir une année",
     "globalOption": "Global",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
@@ -31,7 +32,24 @@
     "noAvailableYears": "Acune année disponible",
     "selectYear": "Selectionner une année",
     "choroplethGlobalYear": "Date pour question globale",
-    "granularity": "Granularité"
+    "granularity": "Granularité",
+    "question_collections": {
+      "saved": {
+        "title": "Accès rapide",
+        "description": "Vos questions sauvegardées"
+      }
+    },
+    "question_drop_zone": {
+      "drag_question": "Glissez une question ici",
+      "release_to_add": "Relâchez pour ajouter cette question"
+    },
+    "question_card": {
+      "saved": "Questions sauvegardées",
+      "drag": "Glisser",
+      "removeSaved": "Retirer des questions sauvegardées",
+      "addSaved": "Ajouter aux questions sauvegardées",
+      "remove": "Retirer de la sélection"
+    }
   },
   "map": {
     "placeOfInterest": {
