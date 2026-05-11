@@ -72,7 +72,7 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { background, countryColors, lakesColores, cantonClores, districtColores, communesColores, borderColor } = useTheme();
+  const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor, selectionColor } = useTheme();
 
   const patternCacheRef = useRef<Map<string, any>>(new Map());
 
@@ -259,30 +259,30 @@ export default function GeoJsonMap({
 
   // Styles (couleurs/épaisseurs/fill) des différentes couches
   const countryStyle = useMemo(() => ({
-    color: countryColors,      // frontière pays en noir
+    color: countryColors,      // couleur frontière du pays
     weight: 1,
-    fillColor: background,  // fond blanc
+    fillColor: background,  // fond couleur du background general
     fillOpacity: 1,
   }), []);
   const lakesStyle = useMemo(() => ({
-    color: lakesColores,      // bleu
+    color: lakesColores,      // couleur lacs
     weight: 1.2,
     // si préfère uniquement le contour mettre fillOpacity: 0
     fillColor: lakesColores,
     fillOpacity: 0.85,
   }), []);
   const cantonsStyle = useMemo(() => ({
-    color: cantonClores,      // rouge
+    color: cantonColores,      // couleur canton
     weight: 1.2,
     fillOpacity: 0,
   }), []);
   const districtsStyle = useMemo(() => ({
-    color: districtColores,      // violet bleuter
+    color: districtColores,      // couleur district
     weight: 0.9,
     fillOpacity: 0,
   }), []);
   const communesStyle = useMemo(() => ({
-    color: communesColores,       // green
+    color: communesColores,       // couleur commune
     weight: 0.6,
     fillOpacity: 0,
   }), []);
@@ -393,7 +393,7 @@ export default function GeoJsonMap({
                 const base: any = {
                   weight: isSelected ? 3 : 1,
                   opacity: 1,
-                  color: isSelected ? "#FFD700" : borderColor, // couleur jaune
+                  color: isSelected ? selectionColor : borderColor, // couleur jaune
                 };
 
                 // Si le backend a fourni un pattern (catégoriel + tie), on l'applique

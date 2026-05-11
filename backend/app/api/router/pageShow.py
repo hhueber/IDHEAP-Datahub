@@ -57,9 +57,9 @@ async def show_children(
 
     child_entity = EntityEnum(child.entity)  # ex: "district"
     items, total = await get_children_paginated(
-        db,
+        db=db,
         child_entity=child_entity,
-        fk_field=child.fk_field,
+        child_meta=child,
         parent_uid=uid,
         page=page,
         per_page=per_page,
