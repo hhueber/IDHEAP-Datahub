@@ -121,6 +121,24 @@
       "rateLimited": "Trop de tentatives. Réessayez plus tard."
     }
   },
+  "stats": {
+    "context": {
+      "commune": "Commune",
+      "district": "District",
+      "canton": "Canton",
+      "communePlural": "communes"
+    },
+    "loading": "Chargement des statistiques",
+    "noData": "pas de données disponibles",
+    "selectedValue": "Valeur sélectionnée",
+    "sameAnswer": "de même réponse",
+    "countText": "{{count}} sur {{total}} {{unit}} partagent cette valeur",
+    "selected": "Selectionné",
+    "others": "Autres",
+    "value": "Valeur:",
+    "count": "Nombre:",
+    "share": "Part:"
+  },
   "export": {
     "title": "Export",
     "pngLabel": "PNG",

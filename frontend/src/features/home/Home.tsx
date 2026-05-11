@@ -63,6 +63,14 @@ export default function Home() {
     granularity,
   });
 
+  const selectedSurvey = data?.surveys?.find(
+        (s) => s.uid === selectedSurveyUid
+      );
+
+  const statsYear = selectedSurveyUid === GLOBAL_UID
+    ? globalYear
+    : selectedSurvey?.year;
+
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
     <section className="absolute inset-0">
@@ -161,6 +169,9 @@ export default function Home() {
       <BottomStatsPanel
         selectedArea={selectedArea}
         onClose={() => setSelectedArea(null)}
+        questionUid={selectedQuestionUid}
+        year={statsYear}
+        scope={selectedSurveyUid === GLOBAL_UID ? "global" : "per_survey"}
       />
     </section>
   );
