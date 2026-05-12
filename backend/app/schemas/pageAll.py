@@ -34,6 +34,9 @@ class AllItem(BaseModel):
     name: str
     entity: EntityEnum
     year: Optional[int] = None
+    value: Optional[str] = None
+    question_uid: Optional[int] = None
+    commune_uid: Optional[int] = None
 
     class Config:
         orm_mode = True

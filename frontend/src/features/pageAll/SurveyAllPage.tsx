@@ -10,7 +10,7 @@ export default function SurveyAllPage() {
     () => [
       { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
       { key: "name", label: t("dashboardSidebar.pageAll.name") },
-      { key: "year", label: t("dashboardSidebar.pageAll.year", "Year")},
+      { key: "year", label: t("dashboardSidebar.pageAll.year")},
       { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
     ],
     [t]

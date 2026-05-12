@@ -1,3 +1,5 @@
+import React from "react";
+
 export type Entity =
   | "commune"
   | "district"
@@ -6,7 +8,8 @@ export type Entity =
   | "question_global"
   | "question_category"
   | "option"
-  | "survey";
+  | "survey"
+  | "answer";
 
 export type AllItem = {
   uid: number;
@@ -14,6 +17,9 @@ export type AllItem = {
   name: string;
   entity: Entity;
   year?: number | null;
+  value?: string | null;
+  question_uid?: number | null;
+  commune_uid?: number | null;
 };
 
 export type AllPayload = {
@@ -34,7 +40,15 @@ export type SortBy = "uid" | "name";
 export type SortDir = "asc" | "desc";
 
 // Colonnes possibles sur la réponse
-export type ColumnKey = "uid" | "code" | "name" | "entity" | "year";
+export type ColumnKey =
+  | "uid"
+  | "code"
+  | "name"
+  | "entity"
+  | "year"
+  | "value"
+  | "question_uid"
+  | "commune_uid";
 
 export type ColumnConfig = {
   key: ColumnKey;
