@@ -70,8 +70,12 @@
       "addPlaceOfInterestPlaceholder": "Tapez au moins 3 lettres…",
       "loadingSuggestions": "Chargement des suggestions...",
       "noLocalPlaceOfInterest": "Aucun lieu d'intérêt supplémentaire défini.",
-
-      "placeholder": "Ce menu sera complété ultérieurement avec des options globales."
+      "placeholder": "Ce menu sera complété ultérieurement avec des options globales.",
+      "placeOfInterestTypes": {
+        "commune": "Commune",
+        "district": "District",
+        "canton": "Canton"
+      }
     },
     "legend": {
       "showStats": "Afficher les statistiques",
@@ -466,7 +470,10 @@
       "confirmDeleteTitle": "Confirmer la suppression",
       "confirmDeleteMessage": "Êtes-vous sûr·e de vouloir supprimer l'élément « {{name}} » ?",
       "deleting": "Suppression",
-      "deleteError": "Erreur de suppression : "
+      "deleteError": "Erreur de suppression : ",
+      "year": "Année",
+      "questionUid": "Question UID",
+      "communeUid": "commune UID"
     },
     "pageShow": {
       "loading": "Chargement",
