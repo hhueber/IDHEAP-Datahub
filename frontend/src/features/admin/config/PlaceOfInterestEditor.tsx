@@ -1,22 +1,12 @@
 import React, { useState } from "react";
 import { PlaceOfInterestDTO, PlaceOfInterestAPI } from "@/services/placeOfInterest";
-import { suggestCommunes, getCommunePoint } from "@/services/communes";
+import { GeoSuggestion, suggestGeo, getGeoPoint } from "@/services/geoSearch";
 import { ConfigEditorModal } from "./ConfigEditorModal";
 import AutocompleteField from "../components/AutocompleteField";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
 
-type CommuneSuggestion = {
-  uid: number;
-  code: string;
-  name: string;
-  name_fr?: string;
-  name_de?: string;
-  name_it?: string;
-  name_ro?: string;
-  name_en?: string;
-};
 
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 const round4 = (n: number) => Math.round(n * 10000) / 10000;
@@ -90,23 +80,31 @@ export default function PlaceOfInterestEditor({
   };
 
   // Choisit une commune dans l'autocomplete
-  const pickCommune = async (c: CommuneSuggestion) => {
-    const r = await getCommunePoint(c.uid);
-    const pos = r.data ? [round4(r.data.lat), round4(r.data.lon)] : form.pos;
+  const getGeoTypeLabel = (type: GeoSuggestion["type"]) => {
+    if (type === "commune") return "Commune";
+    if (type === "district") return "District";
+    return "Canton";
+  };
+
+  const pickGeoSuggestion = async (item: GeoSuggestion) => {
+    const r = await getGeoPoint(item.type, item.uid);
+
+    const pos = r.data
+      ? [round4(r.data.lat), round4(r.data.lon)]
+      : form.pos;
 
     setForm({
       ...form,
-      // Remplit le nom canonique + les traductions si dispo
-      default_name: c.name || form.default_name,
-      name_fr: c.name_fr ?? form.name_fr,
-      name_de: c.name_de ?? form.name_de,
-      name_it: c.name_it ?? form.name_it,
-      name_ro: c.name_ro ?? form.name_ro,
-      name_en: c.name_en ?? form.name_en,
+      default_name: item.name || form.default_name,
+      name_fr: item.name_fr ?? form.name_fr,
+      name_de: item.name_de ?? form.name_de,
+      name_it: item.name_it ?? form.name_it,
+      name_ro: item.name_ro ?? form.name_ro,
+      name_en: item.name_en ?? form.name_en,
       pos: pos as [number, number],
     });
 
-    setSearch(""); // Efface la recherche après sélection
+    setSearch("");
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -136,21 +134,41 @@ export default function PlaceOfInterestEditor({
           color: textColor,
         }}>
         <div className="font-medium mb-2" style={{ color: textColor }}>{t("admin.config.placeOfInterestEditor.importFromCommunes")}</div>
-        <AutocompleteField<CommuneSuggestion>
+        <AutocompleteField<GeoSuggestion>
           value={search}
           onChange={setSearch}
           minLength={3}
           debounceMs={250}
           placeholder={t("admin.config.placeOfInterestEditor.searchPlaceholder")}
           fetchItems={async (q) => {
-            const r = await suggestCommunes(q, 10);
+            const r = await suggestGeo(q, 20);
             return r.data ?? [];
           }}
-          renderItem={(c) => <span className="font-medium" style={{ color: textColor }}>{c.name}</span>}
-          onPick={pickCommune}
-          renderLoading={() => <LoadingDots label={t("admin.config.placeOfInterestEditor.search")} />}
+          renderItem={(item) => (
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium truncate" style={{ color: textColor }}>
+                {item.name}
+              </span>
+
+              <span
+                className="shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium"
+                style={{
+                  borderColor,
+                  color: hoverText07,
+                }}
+              >
+                {getGeoTypeLabel(item.type)}
+              </span>
+            </div>
+          )}
+          onPick={pickGeoSuggestion}
+          renderLoading={() => (
+            <LoadingDots label={t("admin.config.placeOfInterestEditor.search")} />
+          )}
           renderEmpty={(q) =>
-            q.trim().length >= 3 ? <>{t("admin.config.placeOfInterestEditor.empty")}</> : null
+            q.trim().length >= 3 ? (
+              <>{t("admin.config.placeOfInterestEditor.empty")}</>
+            ) : null
           }
         />
       </div>

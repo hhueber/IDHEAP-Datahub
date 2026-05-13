@@ -13,7 +13,7 @@ export type PlaceOfInterestSuggestResponse = {
 
 export const communesApi = {
   suggest: (q: string, signal?: AbortSignal, limit = 10) =>
-    apiFetch<PlaceOfInterestSuggestResponse>("communes/suggest/public", {
+    apiFetch<PlaceOfInterestSuggestResponse>("geoSearch/suggest/public", {
       method: "GET",
       signal,
       query: { q, limit },
