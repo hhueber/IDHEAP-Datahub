@@ -70,6 +70,23 @@ export default function Home() {
   const statsYear = selectedSurveyUid === GLOBAL_UID
     ? globalYear
     : selectedSurvey?.year;
+  
+  const missingQuestion = !selectedQuestionUid;
+  const missingDate = isGlobal && selectedQuestionUid && !globalYear;
+
+  let overlayType: "loading" | "action" = "loading";
+  let overlayLabel: string | undefined;
+
+  if (missingQuestion) {
+    overlayType = "action";
+    overlayLabel = t("home.selectQuestionFirst");
+  } else if (missingDate) {
+    overlayType = "action";
+    overlayLabel = t("home.selectDate");
+  } else if (choroplethLoading) {
+    overlayType = "loading";
+    overlayLabel = t("common.loading");
+  }
 
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
@@ -85,7 +102,12 @@ export default function Home() {
           selectedArea={selectedArea}
           onSelectArea={setSelectedArea}
         />
-        {choroplethLoading && <MapLoadingOverlay />}
+        {(missingQuestion || missingDate || choroplethLoading) && (
+          <MapLoadingOverlay
+            label={overlayLabel}
+            type={overlayType}
+          />
+        )}
       </div>
 
       {/* Bouton flottant (ouvre/ferme uniquement) */}
@@ -155,6 +177,7 @@ export default function Home() {
               setSelectedSurveyUid(uid);
               // reset question quand on change de scope
               setSelectedQuestionUid(null);
+              setGlobalYear(null);
             }}
             selectedQuestionUid={selectedQuestionUid}
             onQuestionSelect={(uid) => setSelectedQuestionUid(uid)}
