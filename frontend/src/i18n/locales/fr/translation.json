@@ -145,10 +145,10 @@
       "description": "Sélectionnez les questions enregistrées et exportez leurs données au format CSV.",
       "selectAll": "Tout sélectionner",
       "clear": "Effacer",
-      "selected": "sélectionné",
+      "selected": "Sélectionné",
       "noSavedQuestions": "Aucune question enregistrée n'est disponible",
       "global": "Global",
-      "survey": "enquête",
+      "survey": "Enquête",
       "loading": "Exporter",
       "download": "Télécharger le fichier CSV"
     }
