@@ -143,6 +143,18 @@
       "mapUnavailable": "Carte indisponible.",
       "pngFailed": "Export PNG impossible.",
       "pdfFailed": "Export PDF impossible."
+    },
+    "data": {
+      "title": "Exporter les données",
+      "description": "Sélectionnez les questions enregistrées et exportez leurs données au format CSV.",
+      "selectAll": "Tout sélectionner",
+      "clear": "Effacer",
+      "selected": "Sélectionné",
+      "noSavedQuestions": "Aucune question enregistrée n'est disponible",
+      "global": "Global",
+      "survey": "Enquête",
+      "loading": "Exporter",
+      "download": "Télécharger le fichier CSV"
     }
   },
   "dashboard": {
