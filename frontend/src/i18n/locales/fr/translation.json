@@ -126,7 +126,8 @@
       "commune": "Commune",
       "district": "District",
       "canton": "Canton",
-      "communePlural": "communes"
+      "communes_one": "{{count}} Commune",
+      "communes_other": "{{count}} Communes"
     },
     "loading": "Chargement des statistiques",
     "noData": "pas de données disponibles",

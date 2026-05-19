@@ -450,7 +450,7 @@ export default function BottomStatsPanel({
 
                 {data.context.nb_communes && (
                   <div>
-                    {data.context.nb_communes} {t("stats.context.communePlural")}
+                    {t("stats.context.communes", {count: data.context.nb_communes})}
                   </div>
                 )}
                 </div>
