@@ -1,7 +1,8 @@
 import React from "react";
 import { ThemeConfigDto } from "@/services/config";
 import { ColorField } from "./ColorField";
-import { MapPreviewPanel } from "@/features/admin/components/theme/ThemePreviewPanels";
+import MapPreviewPanel from "@/features/admin/components/theme/MapPreviewPanel";
+import { useTranslation } from "react-i18next";
 
 type ColorFieldDef = {
   key: keyof ThemeConfigDto;
@@ -45,6 +46,8 @@ export function MapColorsSection({
     variant === "light" ? "country_light" : "country_dark";
   const lakesKey = variant === "light" ? "lakes_light" : "lakes_dark";
 
+  const { t } = useTranslation();
+
   return (
     <div
       className="space-y-3 lg:flex lg:gap-6"
@@ -68,10 +71,11 @@ export function MapColorsSection({
           variant={variant}
           title={
             variant === "light"
-              ? "Map light preview"
-              : "Map dark preview"
+              ? t("admin.config.themeConfigPage.mapLightPreview")
+              : t("admin.config.themeConfigPage.mapDarkPreview")
           }
           backgroundColor={backgroundColor}
+          borderColor={cardBorder}
           communeColor={config[communeKey] ?? undefined}
           districtColor={config[districtKey] ?? undefined}
           cantonColor={config[cantonKey] ?? undefined}
