@@ -3,14 +3,16 @@ import { useTranslation } from "react-i18next";
 import PageAll from "@/components/PageAll";
 import type { ColumnConfig, ActionsConfig } from "@/features/pageAll/all_types";
 
-export default function OptionAllPage() {
+export default function AnswerAllPage() {
   const { t } = useTranslation();
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
       { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.value") },
-      { key: "name", label: t("dashboardSidebar.pageAll.label") },
+      { key: "year", label: t("dashboardSidebar.pageAll.year") },
+      { key: "question_uid", label: t("dashboardSidebar.pageAll.questionUid") },
+      { key: "commune_uid", label: t("dashboardSidebar.pageAll.communeUid") },
+      { key: "value", label: t("dashboardSidebar.pageAll.value") },
       { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
     ],
     [t]
@@ -24,8 +26,8 @@ export default function OptionAllPage() {
 
   return (
     <PageAll
-      title={t("dashboardSidebar.qa.option._")}
-      entity="option"
+      title={t("dashboardSidebar.qa.answer._")}
+      entity="answer"
       initialPerPage={20}
       columns={columns}
       actions={actions}

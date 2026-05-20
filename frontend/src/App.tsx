@@ -24,6 +24,7 @@ import SurveyAllPage from "@/features/pageAll/SurveyAllPage";
 import OptionAllPage from "@/features/pageAll/OptionAllPage";
 import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
+import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
 import ExportDataPage from "@/features/export/ExportDataPage"
 
 
@@ -57,6 +58,15 @@ export default function App() {
             element={
               <RequireRole roles={[ADMIN, MEMBER]}>
                 <SurveyAllPage />
+              </RequireRole>
+            }
+          />
+
+          <Route
+            path="/admin/answers"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <AnswerAllPage />
               </RequireRole>
             }
           />
@@ -108,7 +118,7 @@ export default function App() {
           <Route
             path="/admin/places/show/:entity/:id"
             element={
-              <RequireRole roles={["ADMIN", "MEMBER"]}>
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <ShowPage />
               </RequireRole>
             }
@@ -153,7 +163,7 @@ export default function App() {
           <Route
             path="/admin/config/theme"
             element={
-              <RequireRole roles={["ADMIN"]}>
+              <RequireRole roles={[ADMIN]}>
                 <ThemeConfigPage />
               </RequireRole>
             }

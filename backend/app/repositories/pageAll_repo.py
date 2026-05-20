@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional, Tuple, Type
 
 
+from app.models.answer import Answer
 from app.models.base import Base
 from app.models.canton import Canton
 from app.models.commune import Commune
@@ -66,6 +67,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
     EntityEnum.option: EntityConfig(Option, "value", "label_"),
     # Survey : pas de code, name = name, + year
     EntityEnum.survey: EntityConfig(Survey, None, "name"),
+    EntityEnum.answer: EntityConfig(Answer, None, "value"),
 }
 
 
@@ -75,6 +77,15 @@ def _build_columns_for_entity(entity: EntityEnum, cfg: EntityConfig):
     Réutilisé par la pagination et la recherche.
     """
     model = cfg.model
+    if entity == EntityEnum.answer:
+        return [
+            model.uid,
+            model.value.label("name"),
+            model.value.label("value"),
+            model.year.label("year"),
+            model.question_uid.label("question_uid"),
+            model.commune_uid.label("commune_uid"),
+        ]
     name_col = getattr(model, cfg.name_attr).label("name")
     columns = [model.uid, name_col]
 
@@ -138,18 +149,27 @@ async def get_pageAll_paginated(
         code_value = getattr(row, "code", None)
         name_value = row.name
         year_value = getattr(row, "year", None)
+        value_value = getattr(row, "value", None)
+        question_uid_value = getattr(row, "question_uid", None)
+        commune_uid_value = getattr(row, "commune_uid", None)
 
         # cas spécial Option : si label_ est NULL -> fallback sur value (= code)
         if entity == EntityEnum.option and not name_value:
             name_value = code_value or ""
 
+        if entity == EntityEnum.answer and not name_value:
+            name_value = value_value or ""
+
         items.append(
             AllItem(
                 uid=row.uid,
                 code=code_value,
-                name=name_value,
+                name=name_value or "",
                 entity=entity,
                 year=year_value,
+                value=value_value,
+                question_uid=question_uid_value,
+                commune_uid=commune_uid_value,
             )
         )
 
@@ -213,17 +233,26 @@ async def suggest_pageAll_prefix(
         code_value = getattr(row, "code", None)
         name_value = row.name
         year_value = getattr(row, "year", None)
+        value_value = getattr(row, "value", None)
+        question_uid_value = getattr(row, "question_uid", None)
+        commune_uid_value = getattr(row, "commune_uid", None)
 
         if entity == EntityEnum.option and not name_value:
             name_value = code_value or ""
+
+        if entity == EntityEnum.answer and not name_value:
+            name_value = value_value or ""
 
         items.append(
             AllItem(
                 uid=row.uid,
                 code=code_value,
-                name=name_value,
+                name=name_value or "",
                 entity=entity,
                 year=year_value,
+                value=value_value,
+                question_uid=question_uid_value,
+                commune_uid=commune_uid_value,
             )
         )
 
