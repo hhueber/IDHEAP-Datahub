@@ -11,6 +11,7 @@ type Props = {
   onSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onClearSearch: () => void;
   onSuggestionClick: (item: AllItem) => void;
+  onSearchSubmit: (term: string) => void;
 };
 
 export function SearchBar({
@@ -20,10 +21,12 @@ export function SearchBar({
   onSearchChange,
   onClearSearch,
   onSuggestionClick,
+  onSearchSubmit,
 }: Props) {
   const { t } = useTranslation();
 
   const { primary, background, borderColor, textColor, hoverPrimary06, hoverText07 } = useTheme();
+  const showDropdown = search.trim().length > 0 && (searchLoading || suggestions.length > 0);
 
   return (
     <div className="relative w-full sm:w-64">
@@ -32,6 +35,16 @@ export function SearchBar({
           type="text"
           value={search}
           onChange={onSearchChange}
+          onKeyDown={(e) => {
+            if (e.key !== "Enter") return;
+
+            e.preventDefault();
+
+            const term = search.trim();
+            if (!term) return;
+
+            onSearchSubmit(term);
+          }}
           className="h-9 w-full rounded border px-2 text-sm"
           placeholder={t("dashboardSidebar.pageAll.searchPlaceholder")}
           style={{
@@ -56,22 +69,23 @@ export function SearchBar({
           </button>
         )}
       </div>
-      {searchLoading && (
-        <div className="text-xs" style={{ color: hoverText07 }}>
-          <LoadingDots label={t("dashboardSidebar.pageAll.searching")} />
-        </div>
-      )}
 
-      {suggestions.length > 0 && (
+      {showDropdown && (
         <div
-          className="absolute left-0 right-0 mt-1 border rounded max-h-56 overflow-y-auto text-sm shadow-sm z-50"
+          className="absolute left-0 right-0 top-full mt-1 border rounded max-h-56 overflow-y-auto text-sm shadow-sm z-50"
           style={{
             backgroundColor: background,
             borderColor: borderColor,
             color: textColor,
           }}
         >
-          {suggestions.map((s) => (
+          {searchLoading && (
+            <div className="px-3 py-2 text-xs" style={{ color: hoverText07 }}>
+              <LoadingDots label={t("dashboardSidebar.pageAll.searching")} />
+            </div>
+          )}
+          {!searchLoading &&
+            suggestions.map((s) => (
             <button
               key={s.uid}
               type="button"

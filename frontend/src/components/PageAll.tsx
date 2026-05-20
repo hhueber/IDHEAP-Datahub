@@ -58,6 +58,8 @@ export default function PageAll({
 
   const lang = React.useMemo(() => getPageAllLang(i18n.language), [i18n.language]);
 
+  const [activeSearch, setActiveSearch] = React.useState("");
+
   const sortableColumns = React.useMemo(
     () => columns.filter((col) => col.sortable !== false),
     [columns]
@@ -83,6 +85,7 @@ export default function PageAll({
     handleSearchChange,
     handleSuggestionClick,
     clearSearch,
+    clearSuggestions,
   } = usePageAllSearch(entity);
 
   const {
@@ -151,6 +154,7 @@ export default function PageAll({
             order_by: sortBy,
             order_dir: sortDir,
             lang,
+            q: activeSearch || undefined,
           },
         });
 
@@ -167,7 +171,7 @@ export default function PageAll({
         setLoading(false);
       }
     },
-    [entity, perPage, sortBy, sortDir, lang, t]
+    [entity, perPage, sortBy, sortDir, lang, activeSearch, t]
   );
 
   React.useEffect(() => {
@@ -223,12 +227,20 @@ export default function PageAll({
           suggestions={suggestions}
           onSearchChange={handleSearchChange}
           onClearSearch={() => {
+            // clearSearch();
             clearSearch();
+            setActiveSearch("");
+            setPage(1);
           }}
           onSuggestionClick={async (item) => {
             handleSuggestionClick(item);        // met à jour selectedUid
             const targetPage = await findPageForUid(item.uid);
             setPage(targetPage);                // déclenche loadPage(targetPage)
+          }}
+          onSearchSubmit={(term) => {
+            clearSuggestions();
+            setActiveSearch(term);
+            setPage(1);
           }}
         />
 

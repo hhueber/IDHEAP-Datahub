@@ -12,7 +12,11 @@ type UsePageAllSearchReturn = {
   handleSearchChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleSuggestionClick: (item: AllItem) => void;
   clearSearch: () => void;
+  clearSuggestions: () => void;
 };
+
+const MIN_SEARCH_LENGTH = 1;
+const SEARCH_DEBOUNCE_MS = 300;
 
 export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
   const { i18n } = useTranslation();
@@ -60,6 +64,8 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
+    const trimmedValue = value.trim();
+
     setSearch(value);
 
     // reset du debounce
@@ -67,16 +73,17 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
       window.clearTimeout(timeoutRef.current);
     }
 
-    // si moins de 3 caractères -> on annule la recherche et on réinitialise
-    if (value.trim().length < 3) {
+    // si moins de MIN_SEARCH_LENGTH caractères -> on annule la recherche et on réinitialise
+    if (trimmedValue.length < MIN_SEARCH_LENGTH) {
       setSuggestions([]);
       setSelectedUid(null);
+      setSearchLoading(false);
       return;
     }
 
     timeoutRef.current = window.setTimeout(() => {
-      void fetchSuggestions(value.trim());
-    }, 300);
+      void fetchSuggestions(trimmedValue);
+    }, SEARCH_DEBOUNCE_MS);
   };
 
   const handleSuggestionClick = (item: AllItem) => {
@@ -87,9 +94,23 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
   };
 
   const clearSearch = () => {
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
+
     setSearch("");
     setSuggestions([]);
     setSelectedUid(null);
+    setSearchLoading(false);
+  };
+
+  const clearSuggestions = () => {
+    if (timeoutRef.current !== null) {
+      window.clearTimeout(timeoutRef.current);
+    }
+
+    setSuggestions([]);
+    setSearchLoading(false);
   };
 
   return {
@@ -100,5 +121,6 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
     handleSearchChange,
     handleSuggestionClick,
     clearSearch,
+    clearSuggestions,
   };
 }
