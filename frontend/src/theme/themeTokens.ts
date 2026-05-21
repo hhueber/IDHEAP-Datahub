@@ -34,6 +34,8 @@ export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
   const districtColores = pickThemeValue(cfg, mode, "district_light", "district_dark");
   const communesColores = pickThemeValue(cfg, mode, "communes_light", "communes_dark");
 
+  const selectionColor = pickThemeValue(cfg, mode, "selection_light", "selection_dark");
+
   return {
     primary,
     textColor,
@@ -46,5 +48,6 @@ export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {
     cantonColores,
     districtColores,
     communesColores,
+    selectionColor,
   };
 }
