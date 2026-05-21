@@ -63,6 +63,14 @@ export default function Home() {
     granularity,
   });
 
+  const selectedSurvey = data?.surveys?.find(
+        (s) => s.uid === selectedSurveyUid
+      );
+
+  const statsYear = selectedSurveyUid === GLOBAL_UID
+    ? globalYear
+    : selectedSurvey?.year;
+  
   const missingQuestion = !selectedQuestionUid;
   const missingDate = isGlobal && selectedQuestionUid && !globalYear;
 
@@ -184,6 +192,9 @@ export default function Home() {
       <BottomStatsPanel
         selectedArea={selectedArea}
         onClose={() => setSelectedArea(null)}
+        questionUid={selectedQuestionUid}
+        year={statsYear}
+        scope={selectedSurveyUid === GLOBAL_UID ? "global" : "per_survey"}
       />
     </section>
   );

@@ -166,8 +166,8 @@ export default function Navbar() {
                 >
                   {t("nav.home")}
                 </Link>
-                <button
-                  type="button"
+                <Link
+                  to="/export-data"
                   className="
                     w-full text-left px-3 py-2 rounded-lg font-medium transition
                     hover:[background-color:var(--navbar-link-hover-bg)]
@@ -179,7 +179,7 @@ export default function Navbar() {
                   onClick={() => setOpen(false)}
                 >
                   {t("nav.data", "Data")}
-                </button>
+                </Link>
               </div>
             </div>
           
