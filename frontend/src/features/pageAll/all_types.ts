@@ -1,4 +1,5 @@
 import React from "react";
+import type { PageAllLang } from "@/features/pageAll/pageAllLang";
 
 export type Entity =
   | "commune"
@@ -57,6 +58,8 @@ export type ColumnKey =
   | "question"
   | "commune";
 
+export type EditableKind = "text" | "number" | "bool" | "year";
+
 export type ColumnConfig = {
   key: ColumnKey;
   labelKey?: string;
@@ -68,6 +71,15 @@ export type ColumnConfig = {
   truncate?: boolean;
   maxWidthClassName?: string;
   render?: (row: AllItem) => React.ReactNode;
+  // Active ou désactive l'édition inline pour cette colonne.
+  editable?: boolean;
+  // Nom réel du champ envoyé au backend dans updates.
+  // Peut être :
+  //  - une string fixe : "value", "year", "label_"
+  //  - une fonction dynamique selon la langue : (lang) => `text_${lang}`
+  editKey?: keyof AllItem | string | ((lang: PageAllLang) => string);
+  // Type utilisé pour caster la valeur avant l'envoi au backend.
+  kind?: EditableKind;
 };
 
 export type ActionsConfig = {

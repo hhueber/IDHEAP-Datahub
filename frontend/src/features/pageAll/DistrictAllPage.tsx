@@ -12,6 +12,7 @@ export default function DistrictAllPage() {
         key: "code",
         labelKey: "dashboardSidebar.pageAll.code",
         sortKey: "code",
+        editable: false,
       },
       {
         key: "name",
@@ -19,6 +20,7 @@ export default function DistrictAllPage() {
         sortKey: "name",
         truncate: true,
         maxWidthClassName: "max-w-[320px]",
+        editable: false,
       },
     ],
     []

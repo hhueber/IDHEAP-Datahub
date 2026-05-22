@@ -20,6 +20,9 @@ import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTheme } from "@/theme/useTheme";
 import { useNavigate } from "react-router-dom";
 import { getPageAllLang } from "@/features/pageAll/pageAllLang";
+import { usePageAllInlineEdit } from "@/features/pageAll/edit/usePageAllInlineEdit";
+import PageAllEditableCell from "@/features/pageAll/edit/PageAllEditableCell";
+import { getColumnEditKey } from "@/features/pageAll/edit/pageAllEditUtils";
 
 type PageAllProps = {
   title: string;
@@ -59,6 +62,7 @@ export default function PageAll({
   const lang = React.useMemo(() => getPageAllLang(i18n.language), [i18n.language]);
 
   const [activeSearch, setActiveSearch] = React.useState("");
+  const [editConfirmTarget, setEditConfirmTarget] = React.useState<AllItem | null>(null);
 
   const sortableColumns = React.useMemo(
     () => columns.filter((col) => col.sortable !== false),
@@ -173,6 +177,15 @@ export default function PageAll({
     },
     [entity, perPage, sortBy, sortDir, lang, activeSearch, t]
   );
+
+  const inlineEdit = usePageAllInlineEdit({
+    entity,
+    columns,
+    lang,
+    onSuccess: async () => {
+      await loadPage(page);
+    },
+  });
 
   React.useEffect(() => {
     void loadPage(page);
@@ -301,6 +314,12 @@ export default function PageAll({
             {deleteError}
           </div>
         )}
+        {inlineEdit.error && (
+          <div className="text-sm text-red-500 mb-2">
+            {t("dashboardSidebar.pageAll.editError")}{" "}
+            {inlineEdit.error}
+          </div>
+        )}
 
         {/* table avec scroll horizontal si besoin */}
         <div className="overflow-auto border rounded"
@@ -394,16 +413,19 @@ export default function PageAll({
                             className={`border-b px-3 py-2 whitespace-nowrap ${alignClass}`}
                             style={{ borderColor, color: textColor }}
                           >
-                            {col.truncate && typeof content === "string" ? (
-                              <span
-                                title={content}
-                                className={`block overflow-hidden text-ellipsis whitespace-nowrap ${col.maxWidthClassName ?? "max-w-[280px]"}`}
-                              >
-                                {content}
-                              </span>
-                            ) : (
-                              content
-                            )}
+                            <PageAllEditableCell
+                              row={row}
+                              col={col}
+                              lang={lang}
+                              content={content}
+                              isEditing={inlineEdit.isEditingRow(row) && inlineEdit.canEditColumn(col)}
+                              draftValue={inlineEdit.draft[getColumnEditKey(col, lang)] ?? ""}
+                              textColor={textColor}
+                              background={background}
+                              borderColor={borderColor}
+                              hoverText07={hoverText07}
+                              onChange={inlineEdit.updateDraft}
+                            />
                           </td>
                         );
                       })}
@@ -427,6 +449,10 @@ export default function PageAll({
                                   } as React.CSSProperties
                                 }
                                 onClick={() => {
+                                  if (inlineEdit.isEditingRow(row)) {
+                                    inlineEdit.cancelEditing();
+                                  }
+
                                   navigate(`/admin/places/show/${entity}/${row.uid}`);
                                 }}
                               >
@@ -436,9 +462,14 @@ export default function PageAll({
                             {actions?.edit && (
                               <button
                                 type="button"
+                                disabled={
+                                  inlineEdit.isEditingRow(row) &&
+                                  (!inlineEdit.hasChanges(row) || inlineEdit.loading)
+                                }
                                 className={`
                                   px-2 py-1 text-xs rounded border
                                   hover:[background-color:var(--pageall-btn-hover-bg)]
+                                  disabled:opacity-60
                                 `}
                                 style={
                                   {
@@ -449,20 +480,50 @@ export default function PageAll({
                                   } as React.CSSProperties
                                 }
                                 onClick={() => {
-                                  // TODO: Wiring réel plus tard
-                                  console.log("Edit", entity, row.uid);
+                                  if (inlineEdit.isEditingRow(row)) {
+                                    setEditConfirmTarget(row);
+                                    return;
+                                  }
+
+                                  inlineEdit.startEditing(row);
                                 }}
                               >
-                                {t("dashboardSidebar.pageAll.edit")}
+                                {inlineEdit.isEditingRow(row)
+                                  ? inlineEdit.loading
+                                    ? t("dashboardSidebar.pageAll.saving")
+                                    : t("dashboardSidebar.pageAll.save")
+                                  : t("dashboardSidebar.pageAll.edit")}
                               </button>
                             )}
                             {actions?.delete && (
                               <button
                                 type="button"
-                                className="px-2 py-1 text-xs rounded border text-red-600 border-red-300 hover:bg-red-50"
-                                onClick={() => openDeleteConfirm(row)}
+                                className={
+                                  inlineEdit.isEditingRow(row)
+                                    ? "px-2 py-1 text-xs rounded border"
+                                    : "px-2 py-1 text-xs rounded border text-red-600 border-red-300 hover:bg-red-50"
+                                }
+                                style={
+                                  inlineEdit.isEditingRow(row)
+                                    ? {
+                                        backgroundColor: background,
+                                        borderColor,
+                                        color: textColor,
+                                      }
+                                    : undefined
+                                }
+                                onClick={() => {
+                                  if (inlineEdit.isEditingRow(row)) {
+                                    inlineEdit.cancelEditing();
+                                    return;
+                                  }
+
+                                  openDeleteConfirm(row);
+                                }}
                               >
-                                {t("dashboardSidebar.pageAll.delete")}
+                                {inlineEdit.isEditingRow(row)
+                                  ? t("common.cancel")
+                                  : t("dashboardSidebar.pageAll.delete")}
                               </button>
                             )}
                           </div>
@@ -478,31 +539,55 @@ export default function PageAll({
 
         <Pagination page={page} totalPages={totalPages} onChange={handlePageChange} />
         <ConfirmModal
-        open={!!deleteTarget}
-        title={t("dashboardSidebar.pageAll.confirmDeleteTitle")}
-        message={t(
-          "dashboardSidebar.pageAll.confirmDeleteMessage",
-          {
-            name: deleteTarget?.name ?? "",
+          open={!!deleteTarget}
+          title={t("dashboardSidebar.pageAll.confirmDeleteTitle")}
+          message={t(
+            "dashboardSidebar.pageAll.confirmDeleteMessage",
+            {
+              name: deleteTarget?.name ?? "",
+            }
+          )}
+          confirmLabel={
+            deleteLoading
+              ? t("dashboardSidebar.pageAll.deleting")
+              : t("dashboardSidebar.pageAll.delete")
           }
-        )}
-        confirmLabel={
-          deleteLoading
-            ? t("dashboardSidebar.pageAll.deleting")
-            : t("dashboardSidebar.pageAll.delete")
-        }
-        cancelLabel={t("common.cancel", "Cancel")}
-        onConfirm={async () => {
-          const ok = await confirmDelete();
-          if (!ok) return;
-          if (items.length === 1 && page > 1) {
-            setPage((prev) => Math.max(1, prev - 1));
-          } else {
-             void loadPage(page);
+          cancelLabel={t("common.cancel", "Cancel")}
+          onConfirm={async () => {
+            const ok = await confirmDelete();
+            if (!ok) return;
+            if (items.length === 1 && page > 1) {
+              setPage((prev) => Math.max(1, prev - 1));
+            } else {
+              void loadPage(page);
+            }
+          }}
+          onCancel={cancelDelete}
+        />
+        <ConfirmModal
+          open={!!editConfirmTarget}
+          title={t("dashboardSidebar.pageAll.confirmEditTitle")}
+          message={t("dashboardSidebar.pageAll.confirmEditMessage", {
+            name: editConfirmTarget?.name ?? "",
+          })}
+          confirmLabel={
+            inlineEdit.loading
+              ? t("dashboardSidebar.pageAll.saving")
+              : t("dashboardSidebar.pageAll.save")
           }
-        }}
-        onCancel={cancelDelete}
-      />
+          cancelLabel={t("common.cancel", "Cancel")}
+          onConfirm={async () => {
+            if (!editConfirmTarget) return;
+
+            const ok = await inlineEdit.confirmEditing(editConfirmTarget);
+            if (!ok) return;
+
+            setEditConfirmTarget(null);
+          }}
+          onCancel={() => {
+            setEditConfirmTarget(null);
+          }}
+        />
       </div>
     </div>
   );

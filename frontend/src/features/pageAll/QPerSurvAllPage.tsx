@@ -14,6 +14,9 @@ export default function QuestionPerSurveyAllPage() {
         sortKey: "code",
         truncate: true,
         maxWidthClassName: "max-w-[180px]",
+        kind: "text",
+        editable: true,
+        editKey: "code",
       },
       {
         key: "name",
@@ -21,6 +24,9 @@ export default function QuestionPerSurveyAllPage() {
         sortKey: "name",
         truncate: true,
         maxWidthClassName: "max-w-[460px]",
+        kind: "text",
+        editable: true,
+        editKey: (lang) => `text_${lang}`,
       },
     ],
     []

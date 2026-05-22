@@ -13,6 +13,9 @@ export default function AnswerAllPage() {
         labelKey: "dashboardSidebar.pageAll.year",
         align: "right",
         sortKey: "year",
+        kind: "year",
+        editable: true,
+        editKey: "year",
       },
       {
         key: "question",
@@ -20,6 +23,7 @@ export default function AnswerAllPage() {
         sortKey: "question",
         truncate: true,
         maxWidthClassName: "max-w-[460px]",
+        editable: false,
       },
       {
         key: "commune",
@@ -27,6 +31,7 @@ export default function AnswerAllPage() {
         sortKey: "commune",
         truncate: true,
         maxWidthClassName: "max-w-[260px]",
+        editable: false,
       },
       {
         key: "value",
@@ -34,6 +39,9 @@ export default function AnswerAllPage() {
         sortKey: "value",
         truncate: true,
         maxWidthClassName: "max-w-[220px]",
+        kind: "text",
+        editable: true,
+        editKey: "value",
       },
     ],
     []
