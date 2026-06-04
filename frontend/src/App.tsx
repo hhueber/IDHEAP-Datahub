@@ -9,7 +9,6 @@ import RequireAuth from "@/components/RequireAuth";
 import PrivateLayout from "@/components/PrivateLayout";
 import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
-import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
 import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
@@ -24,6 +23,7 @@ import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
 import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
 import RequirePermission from "@/components/RequirePermission";
+import AdminUsersPage from "@/features/admin/users/AdminUsersPage";
 
 
 export default function App() {
@@ -148,7 +148,14 @@ export default function App() {
               </RequirePermission>
             }
           />
-          <Route path="/admin/users/delete" element={<RequirePermission scope="PROJECT" level="WRITE"><DeleteMemberPage /></RequirePermission>} />
+          <Route
+            path="/admin/users"
+            element={
+              <RequirePermission scope="PROJECT" level="READ">
+                <AdminUsersPage />
+              </RequirePermission>
+            }
+          />
           <Route
             path="/admin/config/placeOfInterest"
             element={

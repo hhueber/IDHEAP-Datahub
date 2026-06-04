@@ -191,37 +191,6 @@
     }
   },
   "admin": {
-    "deleteMember": {
-      "title": "Supprimer un membre",
-
-      "firstNameLabel": "Prénom",
-      "firstNamePlaceholder": "Entrez le prénom",
-      "lastNameLabel": "Nom",
-      "lastNamePlaceholder": "Entrez le nom",
-      "emailLabel": "Email",
-      "emailPlaceholder": "Entrez l'email",
-      "roleLabel": "Rôle",
-
-      "roles": {
-        "member": "Membre",
-        "admin": "Admin"
-      },
-
-      "submit": "Supprimer",
-      "submitting": "Suppression",
-
-      "success": "Utilisateur·trice supprimé·e.",
-      "fail": "Échec de suppression.",
-
-      "errors": {
-        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
-        "notFound": "Utilisateur·trice introuvable.",
-        "forbidden": "Action interdite.",
-        "generic": "Une erreur est survenue.",
-        "notAllowedRole": "Vous n’avez pas le droit de supprimer un utilisateur avec ce rôle.",
-        "noDeletableRoles": "Vous ne pouvez supprimer aucun utilisateur avec les rôles disponibles."
-      }
-    },
     "addMember": {
       "title": "Ajouter un membre",
 
@@ -378,6 +347,23 @@
           "deleteFailed": "Échec de la suppression.",
           "network": "Problème de réseau."
         }
+      },
+      "users": {
+        "title": "Utilisateurs privés",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "role": "Rôle",
+        "createdAt": "Créé le",
+        "updated": "Utilisateur modifié",
+        "deleted": "Utilisateur supprimé",
+        "confirmDeleteTitle": "Supprimer l'utilisateur",
+        "confirmDeleteMessage": "Voulez-vous vraiment supprimer {{name}} ?",
+        "errors": {
+          "updateFailed": "Impossible de modifier l'utilisateur",
+          "deleteFailed": "Impossible de supprimer l'utilisateur",
+          "notAllowedRole": "Vous n'avez pas le droit d'attribuer ce rôle"
+        }
       }
   },
   "dashboardSidebar": {
@@ -443,7 +429,8 @@
       "users": {
         "_": "Utilisateur·trice·s",
         "add": "Ajouter un·e membre",
-        "delete": "Supprimer un·e membre"
+        "delete": "Supprimer un·e membre",
+        "list": "Liste des membres"
       },
       "config": {
         "_": "Configuration",

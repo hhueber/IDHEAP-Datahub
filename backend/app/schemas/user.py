@@ -4,7 +4,8 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from typing import Literal, Optional
+from datetime import datetime
+from typing import List, Literal, Optional
 
 
 from app.config.roles import PermissionRole
@@ -73,3 +74,44 @@ class PasswordChangeIn(BaseModel):
         if self.confirm is not None and self.new_password != self.confirm:
             raise ValueError("La confirmation du mot de passe ne correspond pas")
         return self
+
+
+class AdminUserItem(BaseModel):
+    """Ligne affichée dans la page admin des utilisateurs."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    email: EmailStr
+    first_name: str
+    last_name: str
+    role: PermissionRole
+    created_at: Optional[datetime] = None
+
+
+class AdminUserListPayload(BaseModel):
+    items: List[AdminUserItem]
+    total: int
+    page: int
+    per_page: int
+    pages: int
+
+
+class AdminUserListResponse(BaseModel):
+    success: bool
+    detail: str
+    data: AdminUserListPayload
+
+
+class AdminUserUpdateIn(BaseModel):
+    """Payload de modification inline côté admin."""
+
+    first_name: Optional[NameFirstStr] = None
+    last_name: Optional[NameLastStr] = None
+    email: Optional[EmailStr] = None
+    role: Optional[PermissionRole] = None
+
+
+class AdminUserActionResponse(BaseModel):
+    success: bool
+    detail: str

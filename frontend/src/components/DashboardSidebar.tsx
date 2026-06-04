@@ -268,7 +268,7 @@ export default function DashboardSidebar() {
           permission: { scope: "PROJECT", level: "READ" },
           children: [
             { key: "admin-users-new", labelKey: "dashboardSidebar.administration.users.add",    to: "/admin/users/new",    permission: { scope: "PROJECT", level: "WRITE" } },
-            { key: "admin-users-del", labelKey: "dashboardSidebar.administration.users.delete", to: "/admin/users/delete", permission: { scope: "PROJECT", level: "MANAGE" } },
+            { key: "admin-users-list", labelKey: "dashboardSidebar.administration.users.list", to: "/admin/users", permission: { scope: "PROJECT", level: "READ" } },
           ],
         },
         {
