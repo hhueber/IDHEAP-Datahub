@@ -24,6 +24,7 @@ import ShowPage from "@/features/pageShow/ShowPage";
 import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
 import RequirePermission from "@/components/RequirePermission";
 import AdminUsersPage from "@/features/admin/users/AdminUsersPage";
+import DataImportPage from "@/features/dataImport/DataImportPage";
 
 
 export default function App() {
@@ -55,6 +56,14 @@ export default function App() {
             element={
               <RequirePermission scope="DATASET" level="READ">
                 <SurveyAllPage />
+              </RequirePermission>
+            }
+          />
+          <Route
+            path="/admin/surveys/new"
+            element={
+              <RequirePermission scope="DATASET" level="MANAGE">
+                <DataImportPage />
               </RequirePermission>
             }
           />

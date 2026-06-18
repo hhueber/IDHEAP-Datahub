@@ -1,0 +1,172 @@
+from app.api.permissions import require_permission
+from app.config.roles import PermissionLevel, PermissionScope
+from app.db import get_db
+from app.schemas.data_import import (
+    DataImportAnalyzeResponse,
+    DataImportCellPatch,
+    DataImportColumnPatch,
+    DataImportColumnTransformPatch,
+    DataImportDeleteResponse,
+    DataImportListResponse,
+    DataImportPatchResponse,
+    DataImportPatchWithAnalysisResponse,
+    DataImportPreviewResponse,
+    DataImportUploadResponse,
+    ImportSectionEnum,
+)
+from app.services.data_import.data_import_patch_service import (
+    patch_import_cell,
+    patch_import_column,
+    patch_import_column_transform,
+)
+from app.services.data_import.data_import_service import (
+    analyze_import_file,
+    delete_import_job,
+    get_import_summary,
+    list_import_jobs,
+    preview_import_section,
+    save_import_upload,
+)
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+router = APIRouter()
+
+
+@router.post("/upload", response_model=DataImportUploadResponse)
+async def upload_data_file(
+    file: UploadFile = File(...),
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await save_import_upload(file)
+
+    return {
+        "success": True,
+        "detail": "File uploaded",
+        "data": data,
+    }
+
+
+@router.post("/{import_id}/analyze", response_model=DataImportAnalyzeResponse)
+async def analyze_data_file(
+    import_id: str,
+    db: AsyncSession = Depends(get_db),
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await analyze_import_file(db, import_id=import_id)
+
+    return {
+        "success": True,
+        "detail": "File analyzed",
+        "data": data,
+    }
+
+
+@router.get("/{import_id}/preview", response_model=DataImportPreviewResponse)
+async def preview_data_file(
+    import_id: str,
+    section: ImportSectionEnum = Query(ImportSectionEnum.responses),
+    page: int = Query(1, ge=1),
+    per_page: int = Query(50, ge=10, le=200),
+    issues_only: bool = Query(False),
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await preview_import_section(
+        import_id=import_id,
+        section=section,
+        page=page,
+        per_page=per_page,
+        issues_only=issues_only,
+    )
+
+    return {
+        "success": True,
+        "detail": "Preview loaded",
+        "data": data,
+    }
+
+
+@router.patch("/{import_id}/cell", response_model=DataImportPatchWithAnalysisResponse)
+async def update_import_cell(
+    import_id: str,
+    payload: DataImportCellPatch,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    analysis = await patch_import_cell(import_id=import_id, payload=payload)
+
+    return {
+        "success": True,
+        "detail": "Cell updated",
+        "data": analysis,
+    }
+
+
+@router.patch("/{import_id}/column", response_model=DataImportPatchWithAnalysisResponse)
+async def update_import_column(
+    import_id: str,
+    payload: DataImportColumnPatch,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    analysis = await patch_import_column(import_id=import_id, payload=payload)
+
+    return {
+        "success": True,
+        "detail": "Column updated",
+        "data": analysis,
+    }
+
+
+@router.patch("/{import_id}/column-transform", response_model=DataImportPatchWithAnalysisResponse)
+async def update_import_column_transform(
+    import_id: str,
+    payload: DataImportColumnTransformPatch,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    analysis = await patch_import_column_transform(import_id=import_id, payload=payload)
+
+    return {
+        "success": True,
+        "detail": "Column transformed",
+        "data": analysis,
+    }
+
+
+@router.get("", response_model=DataImportListResponse)
+async def list_data_imports(
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await list_import_jobs()
+
+    return {
+        "success": True,
+        "detail": "Imports loaded",
+        "data": data,
+    }
+
+
+@router.get("/{import_id}/summary", response_model=DataImportAnalyzeResponse)
+async def get_data_import_summary(
+    import_id: str,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await get_import_summary(import_id)
+
+    return {
+        "success": True,
+        "detail": "Import summary loaded",
+        "data": data,
+    }
+
+
+@router.delete("/{import_id}", response_model=DataImportDeleteResponse)
+async def delete_data_import(
+    import_id: str,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    await delete_import_job(import_id)
+
+    return {
+        "success": True,
+        "detail": "Import deleted",
+    }

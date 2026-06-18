@@ -99,7 +99,10 @@
     "unknown": "Erreur inconnue",
     "confirm": "Confirmer",
     "cancel": "Annuler",
-    "clear": "Retirer"
+    "clear": "Retirer",
+    "refresh": "Rafraîchir",
+    "next": "Suivant",
+    "previous": "Precédent"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -556,5 +559,99 @@
   },
   "pagination": {
     "page": "Page"
+  },
+  "dataImport": {
+    "title": "Importation de données",
+    "description": "Importez un fichier CSV ou Excel, analysez-le, corrigez les problèmes détectés, puis validez-le avant de l'insérer dans la base de données.",
+    "edit": "Éditer",
+    "dropzone": {
+      "label": "Fichier de données",
+      "title": "Déposez un fichier CSV ou Excel ici",
+      "description": "Ou cliquez pour choisir un fichier depuis votre ordinateur.",
+      "browse": "Choisir un fichier",
+      "formats": "Formats acceptés : CSV, XLSX, XLS",
+      "dropActive": "Déposez le fichier ici",
+      "dropReject": "Ce fichier n’est pas accepté"
+    },
+    "loading": {
+      "upload": "Tèlechargement du fichier...",
+      "analyze": "Analyse du fichier...",
+      "preview": "Previsualisation des données..."
+    },
+    "summary": {
+      "rows": "Lignes",
+      "columns": "Colonnes",
+      "cells": "Cellules",
+      "issues": "Problèmes détectés",
+      "survey": "Données d'enquête",
+      "unknown": "Inconnue",
+      "col": "Cols",
+      "errors": "Erreurs"
+    },
+    "sections": {
+      "dataset": "Jeu de données",
+      "questions": "Questions",
+      "responses": "Réponses",
+      "choices": "Choix de réponse",
+      "municipalities": "Communes",
+      "metadata": "Métadonnées",
+      "unclassified": "Non classées",
+      "ignored": "Ignorées"
+    },
+    "types": {
+      "integer": "Entier",
+      "float": "Float",
+      "boolean": "Boolean",
+      "date": "Date",
+      "datetime": "Date et heure",
+      "text": "Text",
+      "empty": "Vide",
+      "mixed": "Mixte"
+    },
+    "actions": {
+      "showIssuesOnly": "Afficher uniquement les problèmes",
+      "showAllRows": "Afficher toutes les lignes",
+      "changeFile": "Changer de fichier"
+    },
+    "issues": {
+      "typeMismatch": "Prévu {{expected}}, reçu {{value}}"
+    },
+    "columnActions": {
+      "title": "Correction colonne",
+      "trim": "Supprimer les espaces",
+      "commaToDot": "Remplacer , par .",
+      "dotToComma": "Remplacer . par ,",
+      "emptyToNull": "Vides vers null",
+      "normalizeDatetime": "Normaliser date + heure",
+      "datetimeToDate": "Garder uniquement la date"
+    },
+    "sectionDescriptions": {
+      "dataset": "Informations générales du jeu de données.",
+      "questions": "Colonnes détectées comme questions ou libellés.",
+      "responses": "Valeurs par commune et par question.",
+      "choices": "Colonnes avec peu de valeurs distinctes, probablement des choix fermés.",
+      "municipalities": "Colonnes utilisées pour reconnaître les communes.",
+      "metadata": "Colonnes techniques comme dates, durée, langue ou progression.",
+      "unclassified": "Colonnes que le système n’a pas encore réussi à classer.",
+      "ignored": "Colonnes exclues de l’import."
+    },
+    "jobs": {
+      "title": "Travaux d’import en cours",
+      "resume": "Reprendre",
+      "delete": "Supprimer",
+      "notAnalyzed": "Pas encore analysé",
+      "show": "Afficher les travaux",
+      "hide": "Masquer les travaux",
+      "available": "travaux disponibles",
+      "current": "Ouvert",
+      "deleteTitle": "Supprimer l’import",
+      "confirmDelete": "Voulez-vous vraiment supprimer l’import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés."
+    },
+    "analysis": {
+      "title": "Analyse du fichier"
+    },
+    "preview": {
+      "title": "Prévisualisation des données"
+    }
   }
 }
