@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-from app.api.router import auth, communes, config, delete, edit, export, geo, home, pageAll, pageShow, questions, user
+from app.api.router import auth, config, delete, edit, geo, geoSearch, home, pageAll, pageShow, questions, user
 from app.core.middleware import setup_middlewares
 from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
 from app.db import get_db
@@ -21,7 +21,7 @@ app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(questions.router, prefix="/questions", tags=["questions"])
 app.include_router(geo.router, prefix="/geo", tags=["geo"])
 app.include_router(config.router, prefix="/config", tags=["config"])
-app.include_router(communes.router, prefix="/communes", tags=["communes"])
+app.include_router(geoSearch.router, prefix="/geoSearch", tags=["geoSearch"])
 app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
 app.include_router(pageShow.router, prefix="/show", tags=["pageShow"])
