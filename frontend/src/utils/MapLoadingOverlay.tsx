@@ -16,7 +16,7 @@ export default function MapLoadingOverlay({ label, type = "loading" }: Props) {
 
   return (
     <div
-      className="absolute inset-0 z-[3400] flex items-center justify-center"
+      className="absolute inset-0 z-[3200] flex items-center justify-center"
       style={{
         backgroundColor: `${background}CC`,
         backdropFilter: "blur(2px)",
