@@ -82,7 +82,7 @@ export default function Navbar() {
         className={[
           "fixed top-3 left-3 inline-flex items-center justify-center",
           "w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-transparent",
-          open ? "opacity-0 pointer-events-none z-40" : "opacity-100 z-50",
+          open ? "opacity-0 pointer-events-none z-[3400]" : "opacity-100 z-[3450]",
         ].join(" ")}
         // décale les contrôles Leaflet sous le bouton (utile même quand le bouton est masqué)
         style={{ "--leaflet-top-offset": "96px" } as React.CSSProperties}
@@ -104,7 +104,7 @@ export default function Navbar() {
 
       {/* Drawer + Overlay (au-dessus du reste de la map) */}
       {open && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-[3450]">
           <div className="absolute inset-0" style={{ backgroundColor: navbarOverlayBg }} onClick={() => setOpen(false)} aria-hidden />
           <div
             ref={panelRef}
