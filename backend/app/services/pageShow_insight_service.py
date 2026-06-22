@@ -1,27 +1,19 @@
 from typing import Any, Dict, Optional
 
 
+from app.models.answer import Answer
+from app.models.commune import Commune
+from app.models.district import District
+from app.models.question_category_option_association import QuestionCategoryOptionAssociation
+from app.models.question_global import QuestionGlobal
+from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_option_association import QuestionOptionAssociation
+from app.models.question_per_survey import QuestionPerSurvey
 from app.repositories.pageShow_insights_repo import (
-    count_answers_for_commune,
-    count_answers_for_question,
-    count_answers_in_canton,
-    count_answers_in_district,
-    count_communes_in_canton,
-    count_communes_in_district,
-    count_distinct_answer_values_for_question,
-    count_districts_in_canton,
-    count_global_questions_for_category,
-    count_linked_questions_for_question_global,
-    count_options_for_category,
-    count_options_for_question,
-    count_options_for_question_global,
-    count_question_category_links_for_option,
-    count_question_global_links_for_option,
-    count_question_links_for_option,
-    count_questions_in_survey,
-    count_same_answers_for_question_year,
-    count_same_value_answers_for_question_year,
-    count_survey_questions_for_category,
+    count_by_column,
+    count_by_columns,
+    count_distinct_by_column,
+    count_with_joins,
     get_all_canton_features,
     get_canton_focus_feature,
     get_commune_focus_feature,
@@ -101,7 +93,13 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
     e = _entity_value(entity)
 
     if e == "commune":
-        answers_count = await count_answers_for_commune(db, obj.uid)
+        answers_count = await count_by_column(
+            db,
+            Answer,
+            Answer.commune_uid,
+            obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("code", obj.code),
@@ -111,8 +109,21 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "district":
-        communes_count = await count_communes_in_district(db, obj.uid)
-        answers_count = await count_answers_in_district(db, obj.uid)
+        communes_count = await count_by_column(
+            db,
+            Commune,
+            Commune.district_uid,
+            obj.uid,
+        )
+
+        answers_count = await count_with_joins(
+            db,
+            Answer,
+            joins=((Commune, Commune.uid == Answer.commune_uid),),
+            filter_column=Commune.district_uid,
+            filter_value=obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("code", obj.code),
@@ -123,9 +134,32 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "canton":
-        districts_count = await count_districts_in_canton(db, obj.uid)
-        communes_count = await count_communes_in_canton(db, obj.uid)
-        answers_count = await count_answers_in_canton(db, obj.uid)
+        districts_count = await count_by_column(
+            db,
+            District,
+            District.canton_uid,
+            obj.uid,
+        )
+
+        communes_count = await count_with_joins(
+            db,
+            Commune,
+            joins=((District, District.uid == Commune.district_uid),),
+            filter_column=District.canton_uid,
+            filter_value=obj.uid,
+        )
+
+        answers_count = await count_with_joins(
+            db,
+            Answer,
+            joins=(
+                (Commune, Commune.uid == Answer.commune_uid),
+                (District, District.uid == Commune.district_uid),
+            ),
+            filter_column=District.canton_uid,
+            filter_value=obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("code", obj.code),
@@ -137,7 +171,13 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "survey":
-        questions_count = await count_questions_in_survey(db, obj.uid)
+        questions_count = await count_by_column(
+            db,
+            QuestionPerSurvey,
+            QuestionPerSurvey.survey_uid,
+            obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("year", obj.year),
@@ -147,9 +187,28 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
 
     if e == "question_per_survey":
         survey_year = await get_survey_year_by_uid(db, obj.survey_uid)
-        answers_count = await count_answers_for_question(db, obj.uid)
-        options_count = await count_options_for_question(db, obj.uid)
-        distinct_values = await count_distinct_answer_values_for_question(db, obj.uid)
+
+        answers_count = await count_by_column(
+            db,
+            Answer,
+            Answer.question_uid,
+            obj.uid,
+        )
+
+        options_count = await count_by_column(
+            db,
+            QuestionOptionAssociation,
+            QuestionOptionAssociation.question_uid,
+            obj.uid,
+        )
+
+        distinct_values = await count_distinct_by_column(
+            db,
+            Answer,
+            Answer.value,
+            Answer.question_uid,
+            obj.uid,
+        )
 
         return {
             "items": [
@@ -164,8 +223,20 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "question_global":
-        linked_questions = await count_linked_questions_for_question_global(db, obj.uid)
-        options_count = await count_options_for_question_global(db, obj.uid)
+        linked_questions = await count_by_column(
+            db,
+            QuestionPerSurvey,
+            QuestionPerSurvey.question_global_uid,
+            obj.uid,
+        )
+
+        options_count = await count_by_column(
+            db,
+            QuestionGlobalOptionAssociation,
+            QuestionGlobalOptionAssociation.question_uid,
+            obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("category_uid", obj.question_category_uid),
@@ -175,9 +246,27 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "question_category":
-        global_questions = await count_global_questions_for_category(db, obj.uid)
-        survey_questions = await count_survey_questions_for_category(db, obj.uid)
-        options_count = await count_options_for_category(db, obj.uid)
+        global_questions = await count_by_column(
+            db,
+            QuestionGlobal,
+            QuestionGlobal.question_category_uid,
+            obj.uid,
+        )
+
+        survey_questions = await count_by_column(
+            db,
+            QuestionPerSurvey,
+            QuestionPerSurvey.question_category_uid,
+            obj.uid,
+        )
+
+        options_count = await count_by_column(
+            db,
+            QuestionCategoryOptionAssociation,
+            QuestionCategoryOptionAssociation.question_uid,
+            obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("global_questions_count", global_questions),
@@ -187,9 +276,27 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "option":
-        linked_questions = await count_question_links_for_option(db, obj.uid)
-        linked_global = await count_question_global_links_for_option(db, obj.uid)
-        linked_categories = await count_question_category_links_for_option(db, obj.uid)
+        linked_questions = await count_by_column(
+            db,
+            QuestionOptionAssociation,
+            QuestionOptionAssociation.option_uid,
+            obj.uid,
+        )
+
+        linked_global = await count_by_column(
+            db,
+            QuestionGlobalOptionAssociation,
+            QuestionGlobalOptionAssociation.option_uid,
+            obj.uid,
+        )
+
+        linked_categories = await count_by_column(
+            db,
+            QuestionCategoryOptionAssociation,
+            QuestionCategoryOptionAssociation.option_uid,
+            obj.uid,
+        )
+
         return {
             "items": [
                 stat_item("value", obj.value),
@@ -201,8 +308,24 @@ async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> D
         }
 
     if e == "answer":
-        total_same_question_year = await count_same_answers_for_question_year(db, obj.question_uid, obj.year)
-        same_value_count = await count_same_value_answers_for_question_year(db, obj.question_uid, obj.year, obj.value)
+        total_same_question_year = await count_by_columns(
+            db,
+            Answer,
+            filters=(
+                (Answer.question_uid, obj.question_uid),
+                (Answer.year, obj.year),
+            ),
+        )
+
+        same_value_count = await count_by_columns(
+            db,
+            Answer,
+            filters=(
+                (Answer.question_uid, obj.question_uid),
+                (Answer.year, obj.year),
+                (Answer.value, obj.value),
+            ),
+        )
 
         return {
             "items": [
