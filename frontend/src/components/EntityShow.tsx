@@ -7,6 +7,7 @@ import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useEdit } from "@/shared/useEdit";
+import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
 
 type Props = {
   id: number;
@@ -61,6 +62,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [editMode, setEditMode] = React.useState(false);
   const [draft, setDraft] = React.useState<Record<string, string>>({});
   const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
+  const { castUpdates } = useTypedUpdates(meta);
 
   const load = React.useCallback(async () => {
     setLoading(true);
@@ -100,7 +102,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     error: editError,
     confirmWith: confirmEditWith,
     cancel: cancelEdit,
-  } = useEdit<{ entity: Entity; id: number; updates: Record<string, string> }>((tgt) => ({
+  } = useEdit<{ entity: Entity; id: number; updates: Record<string, any> }>((tgt) => ({
     entity: tgt.entity,
     filters: [{ field: "uid", value: tgt.id }],
     updates: tgt.updates,
@@ -179,27 +181,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     setDraft((prev) => ({ ...prev, [key]: value }));
   };
 
-  const getChangedUpdates = (): Record<string, string> => {
+  const getChangedUpdates = (): Record<string, any> => {
     if (!data) return {};
-
-    const updates: Record<string, string> = {};
-
-    for (const [key, value] of Object.entries(draft)) {
-      if (isProtectedField(key)) continue;
-
-      // compare avec valeur d'origine (en string)
-      const original = normalizeToString(data[key]);
-
-      // si identique => ignore
-      if (value === original) continue;
-
-      // refuse vide
-      if (value.trim() === "") continue;
-
-      updates[key] = value;
-    }
-
-    return updates;
+    return castUpdates(draft, data, isProtectedField);
   };
 
   const hasAnyValidChange = () => {
@@ -407,12 +391,36 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                       backgroundColor: background,
                                     }}
                                   >
-                                    <input
-                                      value={draft[f.key] ?? normalizeToString(data[f.key])}
-                                      onChange={(e) => updateDraft(f.key, e.target.value)}
-                                      className={editableInputClass}
-                                      style={{ color: textColor }}
-                                    />
+                                    {/* BOOL */}
+                                    {f.kind === "bool" ? (
+                                      <input
+                                        type="checkbox"
+                                        checked={draft[f.key] === "true"}
+                                        onChange={(e) =>
+                                          updateDraft(f.key, e.target.checked ? "true" : "false")
+                                        }
+                                      />
+                                    ) : 
+                                    /* NUMBER */
+                                    f.kind === "number" || f.kind === "year" ? (
+                                      <input
+                                        type="number"
+                                        value={draft[f.key] ?? ""}
+                                        onChange={(e) => updateDraft(f.key, e.target.value)}
+                                        className={editableInputClass}
+                                        style={{ color: textColor }}
+                                      />
+                                    ) : (
+                                    /* TEXT DEFAULT */
+                                      <input
+                                        type="text"
+                                        value={draft[f.key] ?? ""}
+                                        onChange={(e) => updateDraft(f.key, e.target.value)}
+                                        className={editableInputClass}
+                                        style={{ color: textColor }}
+                                      />
+                                    )}
+
                                     <span className={pencilIconClass} style={{ color: hoverText07 }}>
                                       {"\u270E"}
                                     </span>

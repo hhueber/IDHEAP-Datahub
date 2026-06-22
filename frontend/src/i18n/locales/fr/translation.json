@@ -129,6 +129,25 @@
       "rateLimited": "Trop de tentatives. Réessayez plus tard."
     }
   },
+  "stats": {
+    "context": {
+      "commune": "Commune",
+      "district": "District",
+      "canton": "Canton",
+      "communes_one": "{{count}} Commune",
+      "communes_other": "{{count}} Communes"
+    },
+    "loading": "Chargement des statistiques",
+    "noData": "pas de données disponibles",
+    "selectedValue": "Valeur sélectionnée",
+    "sameAnswer": "de même réponse",
+    "countText": "{{count}} sur {{total}} {{unit}} partagent cette valeur",
+    "selected": "Selectionné",
+    "others": "Autres",
+    "value": "Valeur:",
+    "count": "Nombre:",
+    "share": "Part:"
+  },
   "export": {
     "title": "Export",
     "pngLabel": "PNG",
@@ -147,6 +166,18 @@
       "mapUnavailable": "Carte indisponible.",
       "pngFailed": "Export PNG impossible.",
       "pdfFailed": "Export PDF impossible."
+    },
+    "data": {
+      "title": "Exporter les données",
+      "description": "Sélectionnez les questions enregistrées et exportez leurs données au format CSV.",
+      "selectAll": "Tout sélectionner",
+      "clear": "Effacer",
+      "selected": "Sélectionné",
+      "noSavedQuestions": "Aucune question enregistrée n'est disponible",
+      "global": "Global",
+      "survey": "Enquête",
+      "loading": "Exporter",
+      "download": "Télécharger le fichier CSV"
     }
   },
   "dashboard": {
@@ -473,7 +504,7 @@
       "deleteError": "Erreur de suppression : ",
       "year": "Année",
       "questionUid": "Question UID",
-      "communeUid": "commune UID"
+      "communeUid": "Commune UID"
     },
     "pageShow": {
       "loading": "Chargement",

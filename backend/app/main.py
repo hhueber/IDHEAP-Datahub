@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-from app.api.router import auth, config, delete, edit, geo, geoSearch, home, pageAll, pageShow, questions, user
+from app.api.router import auth, config, delete, edit, export, geo, geoSearch, home, pageAll, pageShow, questions, user
 from app.core.middleware import setup_middlewares
 from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
 from app.db import get_db
@@ -26,6 +26,7 @@ app.include_router(pageAll.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
 app.include_router(pageShow.router, prefix="/show", tags=["pageShow"])
 app.include_router(edit.router, prefix="/edit", tags=["edit"])
+app.include_router(export.router, prefix="/export", tags=["export"])
 
 
 STATIC_FS_ROOT.mkdir(parents=True, exist_ok=True)
