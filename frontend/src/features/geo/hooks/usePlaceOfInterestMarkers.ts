@@ -34,10 +34,59 @@ type UsePlaceOfInterestMarkersResult = {
 /** Cache en mémoire : évite de re-fetch à chaque fois pour la même langue. */
 const backendCacheByLang: Record<string, PlaceOfInterestMarker[]> = {};
 
+const LOCAL_PLACE_OF_INTEREST_STORAGE_KEY = "map_extra_place_of_interest";
+
+const isValidLocalPlaceOfInterest = (value: unknown): value is PlaceOfInterestMarker => {
+  if (!value || typeof value !== "object") return false;
+
+  const item = value as PlaceOfInterestMarker;
+  const pos = item.pos as unknown;
+
+  return (
+    typeof item.code === "string" &&
+    typeof item.name === "string" &&
+    item.source === "local" &&
+    Array.isArray(pos) &&
+    pos.length === 2 &&
+    typeof pos[0] === "number" &&
+    typeof pos[1] === "number" &&
+    Number.isFinite(pos[0]) &&
+    Number.isFinite(pos[1])
+  );
+};
+
+const loadLocalPlaceOfInterest = (): PlaceOfInterestMarker[] => {
+  try {
+    const raw = window.localStorage.getItem(LOCAL_PLACE_OF_INTEREST_STORAGE_KEY);
+
+    if (!raw) return [];
+
+    const parsed = JSON.parse(raw);
+
+    if (!Array.isArray(parsed)) return [];
+
+    return parsed.filter(isValidLocalPlaceOfInterest);
+  } catch {
+    return [];
+  }
+};
+
+const saveLocalPlaceOfInterest = (items: PlaceOfInterestMarker[]) => {
+  try {
+    window.localStorage.setItem(
+      LOCAL_PLACE_OF_INTEREST_STORAGE_KEY,
+      JSON.stringify(items)
+    );
+  } catch {
+    // On ignore volontairement l'erreur pour ne pas casser la carte
+    // si le localStorage est indisponible.
+  }
+};
+
 export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarkersResult {
   const { t } = useTranslation();
   const [backendPlaceOfInterest, setBackendPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
-  const [extraPlaceOfInterest, setExtraPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
+  const [extraPlaceOfInterest, setExtraPlaceOfInterest] = useState<PlaceOfInterestMarker[]>(() => loadLocalPlaceOfInterest());
   const [hideAllBackend, setHideAllBackend] = useState(false);
   const [hiddenCodes, setHiddenCodes] = useState<Set<string>>(new Set());
 
@@ -45,6 +94,10 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
   const [error, setError] = useState<string | null>(null);
 
   const abortRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    saveLocalPlaceOfInterest(extraPlaceOfInterest);
+  }, [extraPlaceOfInterest]);
 
   useEffect(() => {
     const normLang = (lang || "en").toLowerCase();
