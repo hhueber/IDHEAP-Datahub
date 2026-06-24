@@ -472,7 +472,7 @@
   },
   "first-modal":{
     "title": "Bienvenue",
-    "content": "Bienvenue sur l'IDHEAP Datahub",
+    "content": "Bienvenue !",
     "close": "Fermer",
     "reminder": "Ne plus me rappeler"
   }
