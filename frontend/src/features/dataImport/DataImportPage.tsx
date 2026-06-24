@@ -4,28 +4,39 @@ import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
 import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
 import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
+import type { DataImportWorkflowStep } from "@/features/dataImport/dataImportWorkflowTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
-import { DataImportPreviewTable } from "@/features/dataImport/components/DataImportPreviewTable";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
-import { DataImportAnalysisPanel } from "@/features/dataImport/components/DataImportAnalysisPanel";
+import { DataImportWorkflowHeader } from "@/features/dataImport/components/DataImportWorkflowHeader";
+import { DataImportStepTabs } from "@/features/dataImport/components/DataImportStepTabs";
+import { DataImportStepPlaceholder } from "@/features/dataImport/components/DataImportStepPlaceholder";
+import { DataImportExploreStep } from "@/features/dataImport/components/explore/DataImportExploreStep";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 
 type LoadingStep = "idle" | "upload" | "analyze" | "preview";
 
 export default function DataImportPage() {
   const { t } = useTranslation();
-  const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
+  const { textColor, background, borderColor } = useTheme();
 
-  const [jobToDelete, setJobToDelete] = React.useState<DataImportJobSummary | null>(null);
+  const [jobToDelete, setJobToDelete] =
+    React.useState<DataImportJobSummary | null>(null);
+
   const [jobs, setJobs] = React.useState<DataImportJobSummary[]>([]);
   const [showJobs, setShowJobs] = React.useState(true);
   const [showDropzone, setShowDropzone] = React.useState(true);
 
   const [importId, setImportId] = React.useState<string | null>(null);
-  const [analysis, setAnalysis] = React.useState<DataImportAnalyzeResponse["data"] | null>(null);
-  const [preview, setPreview] = React.useState<DataImportPreviewResponse["data"] | null>(null);
+  const [analysis, setAnalysis] =
+    React.useState<DataImportAnalyzeResponse["data"] | null>(null);
+  const [preview, setPreview] =
+    React.useState<DataImportPreviewResponse["data"] | null>(null);
 
-  const [selectedSection, setSelectedSection] = React.useState<ImportSection>("responses");
+  const [activeStep, setActiveStep] =
+    React.useState<DataImportWorkflowStep>("explore");
+
+  const [selectedSection, setSelectedSection] =
+    React.useState<ImportSection>("responses");
   const [page, setPage] = React.useState(1);
   const [issuesOnly, setIssuesOnly] = React.useState(false);
 
@@ -123,6 +134,7 @@ export default function DataImportPage() {
       setSelectedSection(firstSection);
       setPage(1);
       setIssuesOnly(false);
+      setActiveStep("explore");
       setShowDropzone(false);
       setShowJobs(false);
 
@@ -141,32 +153,33 @@ export default function DataImportPage() {
   };
 
   const handleDeleteJob = async (job: DataImportJobSummary) => {
-        setJobToDelete(job);
-    };
+    setJobToDelete(job);
+  };
 
-    const confirmDeleteJob = async () => {
+  const confirmDeleteJob = async () => {
     if (!jobToDelete) return;
 
     try {
-        const json = await deleteDataImportJob(jobToDelete.import_id);
+      const json = await deleteDataImportJob(jobToDelete.import_id);
 
-        if (!json.success) {
-          throw new Error(json.detail || t("common.error"));
-        }
+      if (!json.success) {
+        throw new Error(json.detail || t("common.error"));
+      }
 
-        if (importId === jobToDelete.import_id) {
-          setImportId(null);
-          setAnalysis(null);
-          setPreview(null);
-          setShowDropzone(true);
-          setShowJobs(true);
-        }
+      if (importId === jobToDelete.import_id) {
+        setImportId(null);
+        setAnalysis(null);
+        setPreview(null);
+        setActiveStep("explore");
+        setShowDropzone(true);
+        setShowJobs(true);
+      }
 
-        setJobToDelete(null);
-        await loadJobs();
+      setJobToDelete(null);
+      await loadJobs();
     } catch (err: any) {
-        console.error(err);
-        setError(err?.message || t("common.error"));
+      console.error(err);
+      setError(err?.message || t("common.error"));
     }
   };
 
@@ -179,6 +192,7 @@ export default function DataImportPage() {
     setError(null);
     setAnalysis(null);
     setPreview(null);
+    setActiveStep("explore");
 
     try {
       const uploadJson = await uploadDataImportFile(file);
@@ -220,10 +234,17 @@ export default function DataImportPage() {
     await loadPreview(importId, selectedSection, 1, nextValue);
   };
 
+  const reloadCurrentPreview = async () => {
+    if (!importId) return;
+
+    await loadPreview(importId, selectedSection, page, issuesOnly);
+  };
+
   const resetCurrentImportView = () => {
     setImportId(null);
     setAnalysis(null);
     setPreview(null);
+    setActiveStep("explore");
     setSelectedSection("responses");
     setPage(1);
     setIssuesOnly(false);
@@ -236,80 +257,13 @@ export default function DataImportPage() {
       className="mx-auto flex w-full max-w-7xl flex-col gap-6 p-4 sm:p-6"
       style={{ color: textColor }}
     >
-      <header
-        className="overflow-hidden rounded-3xl border p-5 sm:p-6"
-        style={{ backgroundColor: background, borderColor }}
-      >
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div
-              className="mb-3 inline-flex rounded-full border px-3 py-1 text-xs font-medium"
-              style={{ borderColor, backgroundColor: hoverPrimary04, color: primary }}
-            >
-              {t("dataImport.title")}
-            </div>
-
-            <h1 className="text-2xl font-bold sm:text-3xl">
-              {t("dataImport.title")}
-            </h1>
-
-            <p className="mt-2 max-w-3xl text-sm leading-6 opacity-75">
-              {t("dataImport.description")}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={() => setShowJobs((value) => !value)}
-              className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80"
-              style={{ borderColor, backgroundColor: hoverPrimary04 }}
-            >
-              {showJobs
-                ? t("dataImport.jobs.hide")
-                : t("dataImport.jobs.show")}
-            </button>
-
-            {analysis && (
-              <button
-                type="button"
-                onClick={resetCurrentImportView}
-                className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80"
-                style={{ borderColor, backgroundColor: hoverPrimary04 }}
-              >
-                {t("dataImport.actions.changeFile")}
-              </button>
-            )}
-          </div>
-        </div>
-
-        {currentJob && analysis && (
-          <div
-            className="mt-5 flex flex-col gap-2 rounded-2xl border px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
-            style={{ borderColor, backgroundColor: hoverPrimary04 }}
-          >
-            <div className="min-w-0">
-              <div className="truncate font-semibold">
-                {currentJob.filename}
-              </div>
-              <div className="text-xs opacity-70">
-                {analysis.rows} {t("dataImport.summary.rows")} ·{" "}
-                {analysis.columns} {t("dataImport.summary.columns")} ·{" "}
-                {analysis.total_issues} {t("dataImport.summary.issues")}
-              </div>
-            </div>
-
-            {analysis.detected_survey.name && analysis.detected_survey.year && (
-              <div
-                className="w-fit rounded-full border px-3 py-1 text-xs font-medium"
-                style={{ borderColor }}
-              >
-                {analysis.detected_survey.name} {analysis.detected_survey.year}
-              </div>
-            )}
-          </div>
-        )}
-      </header>
+      <DataImportWorkflowHeader
+        currentJob={currentJob}
+        analysis={analysis}
+        showJobs={showJobs}
+        onToggleJobs={() => setShowJobs((value) => !value)}
+        onChangeFile={resetCurrentImportView}
+      />
 
       {loading && (
         <div
@@ -334,7 +288,10 @@ export default function DataImportPage() {
           className="rounded-3xl border p-4 sm:p-6"
           style={{ backgroundColor: background, borderColor }}
         >
-          <DataImportDropzone disabled={loading} onFileSelected={handleFileSelected} />
+          <DataImportDropzone
+            disabled={loading}
+            onFileSelected={handleFileSelected}
+          />
         </section>
       )}
 
@@ -349,34 +306,50 @@ export default function DataImportPage() {
         />
       )}
 
-      {analysis && (
-        <DataImportAnalysisPanel
-          analysis={analysis}
-          selectedSection={selectedSection}
-          issuesOnly={issuesOnly}
-          loading={loading}
-          onSectionChange={handleSectionChange}
-          onToggleIssuesOnly={handleIssuesOnlyChange}
-        />
+      {analysis && importId && (
+        <>
+          <DataImportStepTabs
+            activeStep={activeStep}
+            disabled={loading}
+            onChange={setActiveStep}
+          />
+
+          {activeStep === "explore" && (
+            <DataImportExploreStep
+              importId={importId}
+              analysis={analysis}
+              preview={preview}
+              selectedSection={selectedSection}
+              page={page}
+              perPage={perPage}
+              issuesOnly={issuesOnly}
+              loading={loading}
+              onSectionChange={handleSectionChange}
+              onToggleIssuesOnly={handleIssuesOnlyChange}
+              onPageChange={handlePageChange}
+              onReloadPreview={reloadCurrentPreview}
+              onAnalysisUpdated={setAnalysis}
+            />
+          )}
+
+          {activeStep === "improve" && (
+            <DataImportStepPlaceholder step="improve" />
+          )}
+
+          {activeStep === "validate" && (
+            <DataImportStepPlaceholder step="validate" />
+          )}
+        </>
       )}
 
-      {preview && importId && (
-        <DataImportPreviewTable
-          importId={importId}
-          data={preview}
-          page={page}
-          perPage={perPage}
-          onPageChange={handlePageChange}
-          onReload={() => loadPreview(importId, selectedSection, page, issuesOnly)}
-          onAnalysisUpdated={setAnalysis}
-        />
-      )}
       <ConfirmModal
         open={!!jobToDelete}
         title={t("dataImport.jobs.deleteTitle")}
         message={
-            jobToDelete
-            ? t("dataImport.jobs.confirmDelete", { filename: jobToDelete.filename })
+          jobToDelete
+            ? t("dataImport.jobs.confirmDelete", {
+                filename: jobToDelete.filename,
+              })
             : ""
         }
         confirmLabel={t("dataImport.jobs.delete")}

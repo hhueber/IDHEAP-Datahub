@@ -652,6 +652,27 @@
     },
     "preview": {
       "title": "Prévisualisation des données"
+    },
+    "workflow": {
+      "status": {
+        "analyzed": "Analysé"
+      },
+      "explore": {
+        "title": "Explorer",
+        "description": "Consulter le dataset uploadé, les sections détectées, les colonnes, les lignes et les problèmes actuels."
+      },
+      "improve": {
+        "title": "Améliorer",
+        "description": "Regrouper les problèmes, appliquer des corrections et comparer le dataset avant/après.",
+        "placeholderTitle": "L’amélioration du dataset sera ajoutée ensuite",
+        "placeholderDescription": "Cette étape contiendra les problèmes groupés, les suggestions automatiques et les previews avant/après. Pour l’instant, cette PR prépare uniquement la structure du workflow."
+      },
+      "validate": {
+        "title": "Valider",
+        "description": "Vérifier le schema final, le score de qualité et décider quand le dataset est prêt à être importé.",
+        "placeholderTitle": "La validation du dataset sera ajoutée ensuite",
+        "placeholderDescription": "Cette étape contiendra le schema final, la checklist de validation, le score de qualité et l’action d’import définitif. Pour l’instant, cette PR prépare uniquement la structure du workflow."
+      }
     }
   }
 }
