@@ -14,6 +14,7 @@ class EntityEnum(str, Enum):
     question_category = "question_category"
     option = "option"
     survey = "survey"
+    answer = "answer"
 
 
 class OrderByEnum(str, Enum):
@@ -33,6 +34,9 @@ class AllItem(BaseModel):
     name: str
     entity: EntityEnum
     year: Optional[int] = None
+    value: Optional[str] = None
+    question_uid: Optional[int] = None
+    commune_uid: Optional[int] = None
 
     class Config:
         orm_mode = True

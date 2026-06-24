@@ -315,7 +315,7 @@ export default function PageAll({
                         }>
                       {columns.map((col) => {
                         const value = (row as any)[col.key];
-                        const content = col.render ? col.render(row) : value;
+                        const content = col.render ? col.render(row) : (value ?? "\u2014"); // symbole unicode pour cela "—"
                         const alignClass =
                           col.align === "center"
                             ? "text-center"

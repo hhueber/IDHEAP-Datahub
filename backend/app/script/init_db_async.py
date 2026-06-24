@@ -17,14 +17,12 @@ from app.script.populate_geo_db import populate_async_geo
 logger = logging.getLogger(__name__)
 
 
-async def create_schema(is_demo: bool) -> None:
+async def create_schema(is_demo: bool, delete_force: bool) -> None:
     try:
         await ensure_extensions()
     except Exception as e:
         logger.warning("Could not ensure extensions (unaccent/postgis): %s", e)
-
-    confirm = input("Do you want to drop the database and start from scratch? [y/N] > ")
-    if confirm.lower() == "y":
+    if delete_force:
         async with engine.begin() as conn:
             # Drop toute les tables pour repartir de 0
             logger.warning("Dropping all tables (destructive operation).")
@@ -73,6 +71,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-d", dest="demo", action="store_true")
+    parser.add_argument("-f", dest="force", action="store_true")
     args = parser.parse_args()
     configure_logging()
-    asyncio.run(create_schema(args.demo))
+    asyncio.run(create_schema(args.demo, args.force))
