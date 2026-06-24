@@ -1,7 +1,7 @@
 from pathlib import Path
 
 
-from app.api.router import auth, config, delete, edit, geo, geoSearch, home, pageAll, pageShow, questions, user
+from app.api.router import auth, config, delete, edit, export, geo, geoSearch, home, pageAll, pageShow, questions, user
 from app.core.middleware import setup_middlewares
 from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
 from app.db import get_db
