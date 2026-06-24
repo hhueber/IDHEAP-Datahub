@@ -108,6 +108,9 @@ export default function Home() {
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
     <section className="absolute inset-0">
+      {isModalOpen && createPortal(
+        <GreetingModal onClose={closeModal}></GreetingModal>, document.body
+      )}
       {/* Carte en plein écran */}
       <div className="absolute inset-0">
         <GeoJsonMap
@@ -205,9 +208,7 @@ export default function Home() {
           />
         </div>
       </aside>
-      {isModalOpen && createPortal(
-        <GreetingModal onClose={closeModal}></GreetingModal>, document.body
-      )}
+      
       {/* Pop up bas */}
       <BottomStatsPanel
         selectedArea={selectedArea}
