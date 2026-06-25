@@ -68,7 +68,7 @@ export function DataImportJobsPanel({
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="truncate font-semibold">
-                      {job.filename}
+                      {job.display_name || job.filename}
                     </h3>
 
                     {active && (
@@ -80,6 +80,12 @@ export function DataImportJobsPanel({
                       </span>
                     )}
                   </div>
+
+                  {job.display_name && (
+                    <div className="mt-1 truncate text-xs opacity-60">
+                        {job.filename}
+                    </div>
+                  )}
 
                   <div className="mt-2 flex flex-wrap gap-2 text-xs opacity-75">
                     {job.analyzed ? (

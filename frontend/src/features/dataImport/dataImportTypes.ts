@@ -26,6 +26,7 @@ export type DataImportUploadResponse = {
   data: {
     import_id: string;
     filename: string;
+    display_name: string | null;
     size: number;
   };
 };
@@ -132,6 +133,7 @@ export type DataImportPatchWithAnalysisResponse = {
 export type DataImportJobSummary = {
   import_id: string;
   filename: string;
+  display_name: string | null;
   size: number;
   created_at: string | null;
   analyzed: boolean;
@@ -151,4 +153,14 @@ export type DataImportListResponse = {
 export type DataImportDeleteResponse = {
   success: boolean;
   detail: string;
+};
+
+export type DataImportNamePatchResponse = {
+  success: boolean;
+  detail: string;
+  data: {
+    import_id: string;
+    filename: string;
+    display_name: string | null;
+  };
 };

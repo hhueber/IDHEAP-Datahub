@@ -53,6 +53,7 @@ async def save_import_upload(file: UploadFile) -> dict[str, Any]:
     metadata = {
         "import_id": import_id,
         "filename": filename,
+        "display_name": None,
         "size": len(content),
         "raw_path": str(raw_path),
         "created_at": datetime.now(timezone.utc).isoformat(),
@@ -63,6 +64,7 @@ async def save_import_upload(file: UploadFile) -> dict[str, Any]:
     return {
         "import_id": import_id,
         "filename": filename,
+        "display_name": None,
         "size": len(content),
     }
 
@@ -88,6 +90,7 @@ async def list_import_jobs() -> list[dict[str, Any]]:
             {
                 "import_id": metadata.get("import_id"),
                 "filename": metadata.get("filename"),
+                "display_name": metadata.get("display_name"),
                 "size": int(metadata.get("size") or 0),
                 "created_at": metadata.get("created_at"),
                 "analyzed": analysis is not None,
@@ -100,6 +103,31 @@ async def list_import_jobs() -> list[dict[str, Any]]:
         )
 
     return jobs
+
+
+async def update_import_display_name(
+    import_id: str,
+    display_name: str | None,
+) -> dict[str, Any]:
+    import_dir = get_import_dir(import_id)
+    metadata = read_metadata(import_dir)
+
+    clean_display_name = display_name.strip() if display_name else None
+
+    if clean_display_name == "":
+        clean_display_name = None
+
+    if clean_display_name and len(clean_display_name) > 120:
+        raise ValueError("Dataset name is too long")
+
+    metadata["display_name"] = clean_display_name
+    write_metadata(import_dir, metadata)
+
+    return {
+        "import_id": metadata.get("import_id"),
+        "filename": metadata.get("filename"),
+        "display_name": metadata.get("display_name"),
+    }
 
 
 async def get_import_summary(import_id: str) -> dict[str, Any]:

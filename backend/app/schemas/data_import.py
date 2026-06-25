@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Literal, Optional
 
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class ImportOrientationEnum(str, Enum):
@@ -36,6 +36,7 @@ class DetectedTypeEnum(str, Enum):
 class DataImportUploadData(BaseModel):
     import_id: str
     filename: str
+    display_name: str | None = None
     size: int
 
 
@@ -173,6 +174,7 @@ class DataImportPatchWithAnalysisResponse(BaseModel):
 class DataImportJobSummary(BaseModel):
     import_id: str
     filename: str
+    display_name: str | None = None
     size: int
     created_at: Optional[str] = None
     analyzed: bool
@@ -192,3 +194,19 @@ class DataImportListResponse(BaseModel):
 class DataImportDeleteResponse(BaseModel):
     success: bool
     detail: str
+
+
+class DataImportNamePatch(BaseModel):
+    display_name: str | None = Field(default=None, max_length=120)
+
+
+class DataImportNameResponseData(BaseModel):
+    import_id: str
+    filename: str
+    display_name: str | None = None
+
+
+class DataImportNameResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportNameResponseData

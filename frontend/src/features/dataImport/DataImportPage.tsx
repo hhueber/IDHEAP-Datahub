@@ -261,8 +261,23 @@ export default function DataImportPage() {
         currentJob={currentJob}
         analysis={analysis}
         showJobs={showJobs}
+        loading={loading}
         onToggleJobs={() => setShowJobs((value) => !value)}
         onChangeFile={resetCurrentImportView}
+        onDisplayNameSaved={(displayName) => {
+            if (!importId) return;
+
+            setJobs((previousJobs) =>
+            previousJobs.map((job) =>
+                job.import_id === importId
+                ? {
+                    ...job,
+                    display_name: displayName,
+                    }
+                : job
+            )
+            );
+        }}
       />
 
       {loading && (
@@ -348,7 +363,7 @@ export default function DataImportPage() {
         message={
           jobToDelete
             ? t("dataImport.jobs.confirmDelete", {
-                filename: jobToDelete.filename,
+                filename: jobToDelete.display_name || jobToDelete.filename,
               })
             : ""
         }

@@ -8,6 +8,8 @@ from app.schemas.data_import import (
     DataImportColumnTransformPatch,
     DataImportDeleteResponse,
     DataImportListResponse,
+    DataImportNamePatch,
+    DataImportNameResponse,
     DataImportPatchResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
@@ -26,6 +28,7 @@ from app.services.data_import.data_import_service import (
     list_import_jobs,
     preview_import_section,
     save_import_upload,
+    update_import_display_name,
 )
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -44,6 +47,24 @@ async def upload_data_file(
     return {
         "success": True,
         "detail": "File uploaded",
+        "data": data,
+    }
+
+
+@router.patch("/{import_id}/name", response_model=DataImportNameResponse)
+async def update_data_import_name(
+    import_id: str,
+    payload: DataImportNamePatch,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await update_import_display_name(
+        import_id=import_id,
+        display_name=payload.display_name,
+    )
+
+    return {
+        "success": True,
+        "detail": "Import name updated",
         "data": data,
     }
 

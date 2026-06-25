@@ -4,21 +4,26 @@ import type {
   DataImportAnalyzeResponse,
   DataImportJobSummary,
 } from "@/features/dataImport/dataImportTypes";
+import { DataImportDisplayNameEditor } from "@/features/dataImport/components/DataImportDisplayNameEditor";
 
 type DataImportWorkflowHeaderProps = {
   currentJob: DataImportJobSummary | null;
   analysis: DataImportAnalyzeResponse["data"] | null;
   showJobs: boolean;
+  loading?: boolean;
   onToggleJobs: () => void;
   onChangeFile: () => void;
+  onDisplayNameSaved: (displayName: string | null) => void;
 };
 
 export function DataImportWorkflowHeader({
   currentJob,
   analysis,
   showJobs,
+  loading = false,
   onToggleJobs,
   onChangeFile,
+  onDisplayNameSaved,
 }: DataImportWorkflowHeaderProps) {
   const { t } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
@@ -77,14 +82,18 @@ export function DataImportWorkflowHeader({
           style={{ borderColor, backgroundColor: hoverPrimary04 }}
         >
           <div className="min-w-0">
-            <div className="truncate font-semibold">
-              {currentJob.filename}
-            </div>
+            <DataImportDisplayNameEditor
+                importId={currentJob.import_id}
+                filename={currentJob.filename}
+                displayName={currentJob.display_name}
+                disabled={loading}
+                onSaved={onDisplayNameSaved}
+            />
 
             <div className="mt-1 text-xs opacity-70">
-              {analysis.rows} {t("dataImport.summary.rows")} ·{" "}
-              {analysis.columns} {t("dataImport.summary.columns")} ·{" "}
-              {analysis.total_issues} {t("dataImport.summary.issues")}
+                {analysis.rows} {t("dataImport.summary.rows")} ·{" "}
+                {analysis.columns} {t("dataImport.summary.columns")} ·{" "}
+                {analysis.total_issues} {t("dataImport.summary.issues")}
             </div>
           </div>
 

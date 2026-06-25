@@ -9,6 +9,7 @@ import type {
   DataImportPatchWithAnalysisResponse,
   DataImportDeleteResponse,
   DataImportListResponse,
+  DataImportNamePatchResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -131,4 +132,20 @@ export async function deleteDataImportJob(importId: string) {
     method: "DELETE",
     auth: true,
   });
+}
+
+export async function patchDataImportDisplayName(params: {
+  importId: string;
+  displayName: string | null;
+}) {
+  return apiFetch<DataImportNamePatchResponse>(
+    `/data-import/${params.importId}/name`,
+    {
+      method: "PATCH",
+      auth: true,
+      body: {
+        display_name: params.displayName,
+      },
+    }
+  );
 }

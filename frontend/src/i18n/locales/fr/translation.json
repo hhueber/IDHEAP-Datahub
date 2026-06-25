@@ -102,7 +102,9 @@
     "clear": "Retirer",
     "refresh": "Rafraîchir",
     "next": "Suivant",
-    "previous": "Precédent"
+    "previous": "Precédent",
+    "save": "Enregistrer",
+    "saving": "Enregistrement..."
   },
   "notFound": {
     "message": "Page introuvable."
@@ -673,6 +675,9 @@
         "placeholderTitle": "La validation du dataset sera ajoutée ensuite",
         "placeholderDescription": "Cette étape contiendra le schema final, la checklist de validation, le score de qualité et l’action d’import définitif. Pour l’instant, cette PR prépare uniquement la structure du workflow."
       }
+    },
+    "displayName": {
+      "edit": "Renommer"
     }
   }
 }
