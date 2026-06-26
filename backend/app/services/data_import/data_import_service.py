@@ -186,6 +186,11 @@ async def preview_import_section(
     page: int,
     per_page: int,
     issues_only: bool,
+    search: str | None = None,
+    detected_type: str | None = None,
+    column_index: int | None = None,
+    sort_column_index: int | None = None,
+    sort_direction: str = "asc",
 ) -> dict[str, Any]:
     import_dir = get_import_dir(import_id)
 
@@ -195,6 +200,11 @@ async def preview_import_section(
         page=page,
         per_page=per_page,
         issues_only=issues_only,
+        search=search,
+        detected_type=detected_type,
+        column_index=column_index,
+        sort_column_index=sort_column_index,
+        sort_direction=sort_direction,
         df=read_frame(import_dir),
         analysis=read_analysis(import_dir),
         issues_by_column=read_issues(import_dir),

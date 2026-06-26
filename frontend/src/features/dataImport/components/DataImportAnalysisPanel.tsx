@@ -6,19 +6,15 @@ import type { DataImportAnalyzeResponse, ImportSection } from "@/features/dataIm
 type DataImportAnalysisPanelProps = {
   analysis: DataImportAnalyzeResponse["data"];
   selectedSection: ImportSection;
-  issuesOnly: boolean;
   loading: boolean;
   onSectionChange: (section: ImportSection) => Promise<void>;
-  onToggleIssuesOnly: () => Promise<void>;
 };
 
 export function DataImportAnalysisPanel({
   analysis,
   selectedSection,
-  issuesOnly,
   loading,
   onSectionChange,
-  onToggleIssuesOnly,
 }: DataImportAnalysisPanelProps) {
   const { t } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
@@ -38,22 +34,6 @@ export function DataImportAnalysisPanel({
             {t(`dataImport.sectionDescriptions.${selectedSection}`)}
           </p>
         </div>
-
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => void onToggleIssuesOnly()}
-          className="w-fit rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
-          style={{
-            borderColor: issuesOnly ? primary : borderColor,
-            backgroundColor: issuesOnly ? hoverPrimary04 : background,
-            color: issuesOnly ? primary : textColor,
-          }}
-        >
-          {issuesOnly
-            ? t("dataImport.actions.showAllRows")
-            : t("dataImport.actions.showIssuesOnly")}
-        </button>
       </div>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -143,11 +123,21 @@ function SummaryCard({
         borderColor: danger ? "#ef4444" : borderColor,
       }}
     >
-      <div className={["text-xs uppercase tracking-wide", danger ? "text-red-700" : "opacity-60"].join(" ")}>
+      <div
+        className={[
+          "text-xs uppercase tracking-wide",
+          danger ? "text-red-700" : "opacity-60",
+        ].join(" ")}
+      >
         {label}
       </div>
 
-      <div className={["mt-1 text-xl font-bold", danger ? "text-red-700" : ""].join(" ")}>
+      <div
+        className={[
+          "mt-1 text-xl font-bold",
+          danger ? "text-red-700" : "",
+        ].join(" ")}
+      >
         {value}
       </div>
     </div>

@@ -164,3 +164,15 @@ export type DataImportNamePatchResponse = {
     display_name: string | null;
   };
 };
+
+export type DataImportPreviewDetectedTypeFilter = DetectedType | "all";
+
+export type DataImportPreviewSortDirection = "asc" | "desc";
+
+export type DataImportPreviewFilters = {
+  search: string;
+  detectedType: DataImportPreviewDetectedTypeFilter;
+  columnIndex: number | null;
+  sortColumnIndex: number | null;
+  sortDirection: DataImportPreviewSortDirection;
+};

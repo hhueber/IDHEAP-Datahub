@@ -104,7 +104,8 @@
     "next": "Suivant",
     "previous": "Precédent",
     "save": "Enregistrer",
-    "saving": "Enregistrement..."
+    "saving": "Enregistrement...",
+    "search": "Rechercher"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -678,6 +679,20 @@
     },
     "displayName": {
       "edit": "Renommer"
+    },
+    "previewToolbar": {
+      "searchPlaceholder": "Rechercher dans les valeurs...",
+      "type": "Type",
+      "column": "Colonne",
+      "sortBy": "Trier par",
+      "order": "Ordre",
+      "allTypes": "Tous les types",
+      "allColumns": "Toutes les colonnes",
+      "noSort": "Aucun tri",
+      "asc": "Ascendant",
+      "desc": "Descendant",
+      "reset": "Réinitialiser",
+      "noResults": "Aucune ligne ne correspond aux filtres actuels."
     }
   }
 }

@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
 import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
-import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
+import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewFilters, DataImportPreviewResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
 import type { DataImportWorkflowStep } from "@/features/dataImport/dataImportWorkflowTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
@@ -14,6 +14,14 @@ import { DataImportExploreStep } from "@/features/dataImport/components/explore/
 import { ConfirmModal } from "@/utils/ConfirmModal";
 
 type LoadingStep = "idle" | "upload" | "analyze" | "preview";
+
+const DEFAULT_PREVIEW_FILTERS: DataImportPreviewFilters = {
+  search: "",
+  detectedType: "all",
+  columnIndex: null,
+  sortColumnIndex: null,
+  sortDirection: "asc",
+};
 
 export default function DataImportPage() {
   const { t } = useTranslation();
@@ -43,6 +51,9 @@ export default function DataImportPage() {
   const [loadingStep, setLoadingStep] = React.useState<LoadingStep>("idle");
   const [error, setError] = React.useState<string | null>(null);
 
+  const [previewFilters, setPreviewFilters] =
+    React.useState<DataImportPreviewFilters>(DEFAULT_PREVIEW_FILTERS);
+
   const perPage = 50;
   const loading = loadingStep !== "idle";
 
@@ -65,34 +76,40 @@ export default function DataImportPage() {
 
   const loadPreview = React.useCallback(
     async (
-      nextImportId: string,
-      section: ImportSection,
-      nextPage: number,
-      onlyIssues: boolean
+        nextImportId: string,
+        section: ImportSection,
+        nextPage: number,
+        onlyIssues: boolean,
+        filters: DataImportPreviewFilters
     ) => {
-      setLoadingStep("preview");
-      setError(null);
+        setLoadingStep("preview");
+        setError(null);
 
-      try {
+        try {
         const json = await fetchDataImportPreview({
-          importId: nextImportId,
-          section,
-          page: nextPage,
-          perPage,
-          issuesOnly: onlyIssues,
+            importId: nextImportId,
+            section,
+            page: nextPage,
+            perPage,
+            issuesOnly: onlyIssues,
+            search: filters.search,
+            detectedType: filters.detectedType,
+            columnIndex: filters.columnIndex,
+            sortColumnIndex: filters.sortColumnIndex,
+            sortDirection: filters.sortDirection,
         });
 
         if (!json.success) {
-          throw new Error(json.detail || t("common.unknown"));
+            throw new Error(json.detail || t("common.unknown"));
         }
 
         setPreview(json.data);
-      } catch (err: any) {
+        } catch (err: any) {
         console.error(err);
         setError(err?.message || t("common.error"));
-      } finally {
+        } finally {
         setLoadingStep("idle");
-      }
+        }
     },
     [t]
   );
@@ -134,11 +151,12 @@ export default function DataImportPage() {
       setSelectedSection(firstSection);
       setPage(1);
       setIssuesOnly(false);
+      setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
       setActiveStep("explore");
       setShowDropzone(false);
       setShowJobs(false);
 
-      await loadPreview(nextImportId, firstSection, 1, false);
+      await loadPreview(nextImportId, firstSection, 1, false, DEFAULT_PREVIEW_FILTERS);
       await loadJobs();
     } catch (err: any) {
       console.error(err);
@@ -215,14 +233,22 @@ export default function DataImportPage() {
 
     setSelectedSection(section);
     setPage(1);
-    await loadPreview(importId, section, 1, issuesOnly);
+
+    const nextFilters: DataImportPreviewFilters = {
+      ...previewFilters,
+      columnIndex: null,
+      sortColumnIndex: null,
+    };
+
+    setPreviewFilters(nextFilters);
+    await loadPreview(importId, section, 1, issuesOnly, nextFilters);
   };
 
   const handlePageChange = async (nextPage: number) => {
     if (!importId || nextPage < 1 || loading) return;
 
     setPage(nextPage);
-    await loadPreview(importId, selectedSection, nextPage, issuesOnly);
+    await loadPreview(importId, selectedSection, nextPage, issuesOnly, previewFilters);
   };
 
   const handleIssuesOnlyChange = async () => {
@@ -231,13 +257,39 @@ export default function DataImportPage() {
     const nextValue = !issuesOnly;
     setIssuesOnly(nextValue);
     setPage(1);
-    await loadPreview(importId, selectedSection, 1, nextValue);
+    await loadPreview(importId, selectedSection, 1, nextValue, previewFilters);
+  };
+
+  const handlePreviewFiltersChange = async (
+    filters: DataImportPreviewFilters
+    ) => {
+    if (!importId || loading) return;
+
+    setPreviewFilters(filters);
+    setPage(1);
+    await loadPreview(importId, selectedSection, 1, issuesOnly, filters);
+  };
+
+  const handlePreviewFiltersReset = async () => {
+    if (!importId || loading) return;
+
+    setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
+    setIssuesOnly(false);
+    setPage(1);
+
+    await loadPreview(
+        importId,
+        selectedSection,
+        1,
+        false,
+        DEFAULT_PREVIEW_FILTERS
+    );
   };
 
   const reloadCurrentPreview = async () => {
     if (!importId) return;
 
-    await loadPreview(importId, selectedSection, page, issuesOnly);
+    await loadPreview(importId, selectedSection, page, issuesOnly, previewFilters);
   };
 
   const resetCurrentImportView = () => {
@@ -248,6 +300,7 @@ export default function DataImportPage() {
     setSelectedSection("responses");
     setPage(1);
     setIssuesOnly(false);
+    setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
     setShowDropzone(true);
     setShowJobs(true);
   };
@@ -338,9 +391,12 @@ export default function DataImportPage() {
               page={page}
               perPage={perPage}
               issuesOnly={issuesOnly}
+              filters={previewFilters}
               loading={loading}
               onSectionChange={handleSectionChange}
               onToggleIssuesOnly={handleIssuesOnlyChange}
+              onFiltersChange={handlePreviewFiltersChange}
+              onResetFilters={handlePreviewFiltersReset}
               onPageChange={handlePageChange}
               onReloadPreview={reloadCurrentPreview}
               onAnalysisUpdated={setAnalysis}

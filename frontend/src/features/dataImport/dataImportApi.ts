@@ -36,6 +36,11 @@ export async function fetchDataImportPreview(params: {
   page: number;
   perPage: number;
   issuesOnly: boolean;
+  search?: string;
+  detectedType?: DetectedType | "all";
+  columnIndex?: number | null;
+  sortColumnIndex?: number | null;
+  sortDirection?: "asc" | "desc";
 }) {
   return apiFetch<DataImportPreviewResponse>(`/data-import/${params.importId}/preview`, {
     method: "GET",
@@ -45,6 +50,14 @@ export async function fetchDataImportPreview(params: {
       page: params.page,
       per_page: params.perPage,
       issues_only: params.issuesOnly,
+      search: params.search?.trim() || undefined,
+      detected_type:
+        params.detectedType && params.detectedType !== "all"
+          ? params.detectedType
+          : undefined,
+      column_index: params.columnIndex ?? undefined,
+      sort_column_index: params.sortColumnIndex ?? undefined,
+      sort_direction: params.sortDirection ?? "asc",
     },
   });
 }

@@ -91,6 +91,11 @@ async def preview_data_file(
     page: int = Query(1, ge=1),
     per_page: int = Query(50, ge=10, le=200),
     issues_only: bool = Query(False),
+    search: str | None = Query(None, max_length=120),
+    detected_type: str | None = Query(None),
+    column_index: int | None = Query(None, ge=0),
+    sort_column_index: int | None = Query(None, ge=0),
+    sort_direction: str = Query("asc", pattern="^(asc|desc)$"),
     _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     data = await preview_import_section(
@@ -99,6 +104,11 @@ async def preview_data_file(
         page=page,
         per_page=per_page,
         issues_only=issues_only,
+        search=search,
+        detected_type=detected_type,
+        column_index=column_index,
+        sort_column_index=sort_column_index,
+        sort_direction=sort_direction,
     )
 
     return {

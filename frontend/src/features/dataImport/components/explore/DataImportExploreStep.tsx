@@ -1,10 +1,12 @@
 import type {
   DataImportAnalyzeResponse,
+  DataImportPreviewFilters,
   DataImportPreviewResponse,
   ImportSection,
 } from "@/features/dataImport/dataImportTypes";
 import { DataImportAnalysisPanel } from "@/features/dataImport/components/DataImportAnalysisPanel";
 import { DataImportPreviewTable } from "@/features/dataImport/components/DataImportPreviewTable";
+import { DataImportPreviewToolbar } from "@/features/dataImport/components/explore/DataImportPreviewToolbar";
 
 type DataImportExploreStepProps = {
   importId: string;
@@ -14,9 +16,12 @@ type DataImportExploreStepProps = {
   page: number;
   perPage: number;
   issuesOnly: boolean;
+  filters: DataImportPreviewFilters;
   loading: boolean;
   onSectionChange: (section: ImportSection) => Promise<void>;
   onToggleIssuesOnly: () => Promise<void>;
+  onFiltersChange: (filters: DataImportPreviewFilters) => Promise<void>;
+  onResetFilters: () => Promise<void>;
   onPageChange: (page: number) => Promise<void>;
   onReloadPreview: () => Promise<void>;
   onAnalysisUpdated: (analysis: DataImportAnalyzeResponse["data"]) => void;
@@ -30,9 +35,12 @@ export function DataImportExploreStep({
   page,
   perPage,
   issuesOnly,
+  filters,
   loading,
   onSectionChange,
   onToggleIssuesOnly,
+  onFiltersChange,
+  onResetFilters,
   onPageChange,
   onReloadPreview,
   onAnalysisUpdated,
@@ -42,10 +50,8 @@ export function DataImportExploreStep({
       <DataImportAnalysisPanel
         analysis={analysis}
         selectedSection={selectedSection}
-        issuesOnly={issuesOnly}
         loading={loading}
         onSectionChange={onSectionChange}
-        onToggleIssuesOnly={onToggleIssuesOnly}
       />
 
       {preview && (
@@ -54,6 +60,18 @@ export function DataImportExploreStep({
           data={preview}
           page={page}
           perPage={perPage}
+          toolbar={
+            <DataImportPreviewToolbar
+              section={selectedSection}
+              columns={analysis.columns_summary}
+              filters={filters}
+              issuesOnly={issuesOnly}
+              loading={loading}
+              onFiltersChange={onFiltersChange}
+              onToggleIssuesOnly={onToggleIssuesOnly}
+              onResetFilters={onResetFilters}
+            />
+          }
           onPageChange={onPageChange}
           onReload={onReloadPreview}
           onAnalysisUpdated={onAnalysisUpdated}
