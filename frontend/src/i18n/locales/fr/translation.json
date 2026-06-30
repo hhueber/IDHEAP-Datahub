@@ -693,6 +693,21 @@
       "desc": "Descendant",
       "reset": "Réinitialiser",
       "noResults": "Aucune ligne ne correspond aux filtres actuels."
+    },
+    "columnProfile": {
+      "badge": "Profil de colonne",
+      "description": "Statistiques calculées sur cette colonne afin de comprendre sa complétude, ses valeurs vides, ses valeurs uniques et ses valeurs fréquentes.",
+      "open": "Afficher le profil de la colonne",
+      "sampleValues": "Exemples",
+      "mostCommonValues": "Valeurs fréquentes",
+      "noSampleValues": "Aucun exemple disponible",
+      "noMostCommonValues": "Aucune valeur fréquente",
+      "metrics": {
+        "completeness": "Complétude",
+        "empty": "Vides",
+        "unique": "Uniques",
+        "nonEmpty": "Non vides"
+      }
     }
   }
 }

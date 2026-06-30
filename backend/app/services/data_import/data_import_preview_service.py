@@ -108,6 +108,11 @@ def _build_preview_column(column: dict[str, Any]) -> dict[str, Any]:
         "section": column.get("section"),
         "detected_type": column.get("detected_type"),
         "issue_count": int(column.get("issue_count") or 0),
+        "empty_count": int(column.get("empty_count") or 0),
+        "non_empty_count": int(column.get("non_empty_count") or 0),
+        "unique_count": int(column.get("unique_count") or 0),
+        "sample_values": column.get("sample_values") or [],
+        "most_common_values": column.get("most_common_values") or [],
     }
 
 

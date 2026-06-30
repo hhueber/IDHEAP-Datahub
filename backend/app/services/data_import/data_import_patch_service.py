@@ -9,6 +9,7 @@ from app.schemas.data_import import (
     DataImportColumnTransformPatch,
     ImportSectionEnum,
 )
+from app.services.data_import.data_import_column_profile_service import enrich_columns_with_profiles
 from app.services.data_import.data_import_detection_service import build_sections_summary, detect_column_type
 from app.services.data_import.data_import_issue_service import detect_single_column_issues_vectorized
 from app.services.data_import.data_import_storage_service import (
@@ -33,8 +34,6 @@ async def patch_import_cell(
     df = read_frame(import_dir)
 
     df.iat[payload.row_index, payload.column_index] = payload.value
-
-    write_frame(import_dir, df)
 
     return recalculate_after_column_change(
         import_dir=import_dir,
@@ -72,8 +71,6 @@ async def patch_import_column(
         target_column["detected_type"] = payload.detected_type.value
         target_column["confidence"] = 1.0
 
-    write_analysis(import_dir, analysis)
-
     return recalculate_after_column_change(
         import_dir=import_dir,
         df=df,
@@ -98,8 +95,6 @@ async def patch_import_column_transform(
         search=payload.search,
         replacement=payload.replacement,
     )
-
-    write_frame(import_dir, df)
 
     return recalculate_after_column_change(
         import_dir=import_dir,
@@ -131,6 +126,16 @@ def recalculate_after_column_change(
         target_column["detected_type"] = detected_type.value
         target_column["confidence"] = confidence
 
+    analysis["columns_summary"] = enrich_columns_with_profiles(
+        df,
+        analysis["columns_summary"],
+    )
+
+    target_column = get_column_summary(
+        analysis["columns_summary"],
+        column_index,
+    )
+
     column_issues = detect_single_column_issues_vectorized(
         df=df,
         column_summary=target_column,
@@ -146,6 +151,7 @@ def recalculate_after_column_change(
         issues_by_column=issues_by_column,
     )
 
+    write_frame(import_dir, df)
     write_analysis(import_dir, analysis)
     write_issues(import_dir, issues_by_column)
 

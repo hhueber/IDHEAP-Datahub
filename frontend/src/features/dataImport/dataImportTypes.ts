@@ -39,6 +39,11 @@ export type ImportSectionSummary = {
   issues: number;
 };
 
+export type ImportMostCommonValue = {
+  value: string | null;
+  count: number;
+};
+
 export type ImportColumnSummary = {
   index: number;
   original_name: string;
@@ -47,6 +52,12 @@ export type ImportColumnSummary = {
   detected_type: DetectedType;
   confidence: number;
   issue_count: number;
+
+  empty_count?: number | null;
+  non_empty_count?: number | null;
+  unique_count?: number | null;
+  sample_values?: string[] | null;
+  most_common_values?: ImportMostCommonValue[] | null;
 };
 
 export type DataImportAnalyzeResponse = {
@@ -87,6 +98,12 @@ export type ImportPreviewColumn = {
   section: ImportSection;
   detected_type: DetectedType;
   issue_count: number;
+
+  empty_count?: number | null;
+  non_empty_count?: number | null;
+  unique_count?: number | null;
+  sample_values?: string[] | null;
+  most_common_values?: ImportMostCommonValue[] | null;
 };
 
 export type ImportPreviewRow = {

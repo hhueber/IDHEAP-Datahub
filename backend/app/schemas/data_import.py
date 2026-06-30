@@ -62,6 +62,11 @@ class ImportSectionSummary(BaseModel):
     issues: int
 
 
+class ImportMostCommonValue(BaseModel):
+    value: str | None = None
+    count: int
+
+
 class ImportColumnSummary(BaseModel):
     index: int
     original_name: str
@@ -70,6 +75,12 @@ class ImportColumnSummary(BaseModel):
     detected_type: DetectedTypeEnum
     confidence: float
     issue_count: int
+
+    empty_count: int = 0
+    non_empty_count: int = 0
+    unique_count: int = 0
+    sample_values: list[str] = []
+    most_common_values: list[ImportMostCommonValue] = []
 
 
 class DataImportAnalyzeData(BaseModel):
@@ -106,6 +117,12 @@ class ImportPreviewColumn(BaseModel):
     section: ImportSectionEnum
     detected_type: DetectedTypeEnum
     issue_count: int
+
+    empty_count: int = 0
+    non_empty_count: int = 0
+    unique_count: int = 0
+    sample_values: list[str] = []
+    most_common_values: list[ImportMostCommonValue] = []
 
 
 class ImportPreviewRow(BaseModel):

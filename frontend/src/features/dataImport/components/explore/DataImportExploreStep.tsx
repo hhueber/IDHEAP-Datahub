@@ -58,6 +58,7 @@ export function DataImportExploreStep({
         <DataImportPreviewTable
           importId={importId}
           data={preview}
+          columnsSummary={analysis.columns_summary}
           page={page}
           perPage={perPage}
           toolbar={

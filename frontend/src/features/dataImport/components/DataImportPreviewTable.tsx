@@ -1,13 +1,16 @@
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
 import { patchDataImportColumn, patchDataImportColumnTransform } from "@/features/dataImport/dataImportApi";
-import type { ColumnTransformAction, DataImportAnalyzeResponse, DataImportPreviewResponse, DetectedType, ImportSection } from "@/features/dataImport/dataImportTypes";
+import type { ColumnTransformAction, DataImportAnalyzeResponse, DataImportPreviewResponse, DetectedType, ImportColumnSummary, ImportSection } from "@/features/dataImport/dataImportTypes";
 import { EditableImportCell } from "@/features/dataImport/components/EditableImportCell";
 import type { ReactNode } from "react";
+import React from "react";
+import { DataImportColumnProfilePanel } from "@/features/dataImport/components/explore/DataImportColumnProfilePanel";
 
 type DataImportPreviewTableProps = {
   importId: string;
   data: DataImportPreviewResponse["data"];
+  columnsSummary: ImportColumnSummary[];
   page: number;
   perPage: number;
   toolbar?: ReactNode;
@@ -41,6 +44,7 @@ const SECTION_OPTIONS: ImportSection[] = [
 export function DataImportPreviewTable({
   importId,
   data,
+  columnsSummary,
   page,
   perPage,
   toolbar,
@@ -52,6 +56,8 @@ export function DataImportPreviewTable({
   const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
 
   const totalPages = Math.max(1, Math.ceil(data.total_rows / perPage));
+
+  const [profileColumnIndex, setProfileColumnIndex] = React.useState<number | null>(null);
 
   const handleColumnTypeChange = async (
     columnIndex: number,
@@ -103,6 +109,84 @@ export function DataImportPreviewTable({
 
     await onReload();
   };
+
+  const profileColumn = React.useMemo(() => {
+    if (profileColumnIndex === null) {
+        return null;
+    }
+
+    const columnFromPreview = data.columns.find(
+        (column) => Number(column.index) === Number(profileColumnIndex)
+    );
+
+    const columnFromAnalysis = columnsSummary.find(
+        (column) => Number(column.index) === Number(profileColumnIndex)
+    );
+
+    if (!columnFromPreview && !columnFromAnalysis) {
+        return null;
+    }
+
+    return {
+        index: columnFromPreview?.index ?? columnFromAnalysis?.index ?? profileColumnIndex,
+        original_name:
+        columnFromAnalysis?.original_name ??
+        columnFromPreview?.name ??
+        "",
+        normalized_name:
+        columnFromAnalysis?.normalized_name ??
+        columnFromPreview?.name ??
+        "",
+        section:
+        columnFromPreview?.section ??
+        columnFromAnalysis?.section ??
+        "unclassified",
+        detected_type:
+        columnFromPreview?.detected_type ??
+        columnFromAnalysis?.detected_type ??
+        "text",
+        confidence:
+        columnFromAnalysis?.confidence ??
+        0,
+        issue_count:
+        columnFromPreview?.issue_count ??
+        columnFromAnalysis?.issue_count ??
+        0,
+
+        empty_count:
+        columnFromPreview?.empty_count ??
+        columnFromAnalysis?.empty_count ??
+        0,
+        non_empty_count:
+        columnFromPreview?.non_empty_count ??
+        columnFromAnalysis?.non_empty_count ??
+        0,
+        unique_count:
+        columnFromPreview?.unique_count ??
+        columnFromAnalysis?.unique_count ??
+        0,
+        sample_values:
+        columnFromPreview?.sample_values ??
+        columnFromAnalysis?.sample_values ??
+        [],
+        most_common_values:
+        columnFromPreview?.most_common_values ??
+        columnFromAnalysis?.most_common_values ??
+        [],
+    };
+  }, [columnsSummary, data.columns, profileColumnIndex]);
+
+  React.useEffect(() => {
+    if (profileColumnIndex === null) return;
+
+    const columnStillVisible = data.columns.some(
+        (column) => column.index === profileColumnIndex
+    );
+
+    if (!columnStillVisible) {
+        setProfileColumnIndex(null);
+    }
+  }, [data.columns, profileColumnIndex]);
 
   return (
     <section
@@ -171,6 +255,10 @@ export function DataImportPreviewTable({
           {toolbar}
         </div>
       )}
+      <DataImportColumnProfilePanel
+        column={profileColumn}
+        onClose={() => setProfileColumnIndex(null)}
+      />
       </div>
 
       {data.rows.length === 0 ? (
@@ -215,6 +303,37 @@ export function DataImportPreviewTable({
                             {column.issue_count}
                           </span>
                         )}
+                        <button
+                            type="button"
+                            onClick={() => {
+                            const previewColumn = data.columns.find(
+                                (item) => Number(item.index) === Number(column.index)
+                            );
+
+                            const analysisColumn = columnsSummary.find(
+                                (item) => Number(item.index) === Number(column.index)
+                            );
+
+                            console.log("Preview column profile:", previewColumn);
+                            console.log("Analysis column profile:", analysisColumn);
+
+                            setProfileColumnIndex((current) =>
+                                current === column.index ? null : column.index
+                            );
+                            }}
+                            className="rounded-lg border px-2 py-1 text-xs font-semibold transition hover:opacity-80"
+                            style={{
+                                borderColor:
+                                profileColumnIndex === column.index ? primary : borderColor,
+                                backgroundColor:
+                                profileColumnIndex === column.index ? hoverPrimary04 : background,
+                                color:
+                                profileColumnIndex === column.index ? primary : textColor,
+                            }}
+                            title={t("dataImport.columnProfile.open")}
+                            >
+                            {"\u2630"} {/* Signe Unicode pour ce symbole ☰ */}
+                        </button>
                       </div>
 
                       <div className="grid gap-2">

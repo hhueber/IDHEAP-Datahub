@@ -6,6 +6,10 @@ import uuid
 
 
 from app.schemas.data_import import ImportOrientationEnum, ImportSectionEnum
+from app.services.data_import.data_import_column_profile_service import (
+    columns_have_valid_profiles,
+    enrich_columns_with_profiles,
+)
 from app.services.data_import.data_import_detection_service import (
     analyze_columns,
     build_analysis_payload,
@@ -137,7 +141,7 @@ async def get_import_summary(import_id: str) -> dict[str, Any]:
     if not analysis_path.exists():
         raise ValueError("Import has not been analyzed yet")
 
-    return read_analysis(import_dir)
+    return ensure_analysis_has_column_profiles(import_id)
 
 
 async def delete_import_job(import_id: str) -> None:
@@ -172,9 +176,37 @@ async def analyze_import_file(
         issues_by_column=issues_by_column,
     )
 
+    analysis["columns_summary"] = enrich_columns_with_profiles(
+        df,
+        analysis.get("columns_summary") or [],
+    )
+
     write_frame(import_dir, df)
     write_analysis(import_dir, analysis)
     write_issues(import_dir, issues_by_column)
+
+    return analysis
+
+
+def ensure_analysis_has_column_profiles(import_id: str) -> dict[str, Any]:
+    import_dir = get_import_dir(import_id)
+
+    df = read_frame(import_dir)
+    analysis = read_analysis(import_dir)
+    columns_summary = analysis.get("columns_summary") or []
+
+    if columns_have_valid_profiles(
+        df=df,
+        columns_summary=columns_summary,
+    ):
+        return analysis
+
+    analysis["columns_summary"] = enrich_columns_with_profiles(
+        df,
+        columns_summary,
+    )
+
+    write_analysis(import_dir, analysis)
 
     return analysis
 
@@ -206,6 +238,6 @@ async def preview_import_section(
         sort_column_index=sort_column_index,
         sort_direction=sort_direction,
         df=read_frame(import_dir),
-        analysis=read_analysis(import_dir),
+        analysis=ensure_analysis_has_column_profiles(import_id),
         issues_by_column=read_issues(import_dir),
     )
