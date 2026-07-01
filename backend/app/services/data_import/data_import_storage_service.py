@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Any
 import json
 import shutil
+import tarfile
 
 
 from app.services.data_import.data_import_reader_service import read_import_file
@@ -13,13 +14,34 @@ UPLOAD_DIR = Path("tmp/data_imports")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# TODO: modifier la logique de stockage par la suite en .parquet ou autres formats
 def get_import_dir(import_id: str) -> Path:
     import_dir = UPLOAD_DIR / import_id
-
     if not import_dir.exists():
         raise ValueError("Import not found")
 
+    return import_dir
+
+
+def create_archive(import_id: str):
+    import_dir = get_import_dir(import_id)
+    tar_filename = import_dir / "content.tar.gz"
+    with tarfile.open(tar_filename, "w:gz") as tar:
+        for file in import_dir.iterdir():
+            if file.name != "metadata.json" and file.name != tar_filename.name:
+                tar.add(file, arcname=file.name)
+                file.unlink()
+
+
+def extract_archive(import_id: str) -> Path:
+    import_dir = get_import_dir(import_id)
+    tar_filename = import_dir / "content.tar.gz"
+    if not tar_filename.exists():
+        raise ValueError("Archived version doesn't exist")
+
+    with tarfile.open(tar_filename, "r:gz") as tar:
+        tar.extractall(import_dir)
+
+    tar_filename.unlink()
     return import_dir
 
 

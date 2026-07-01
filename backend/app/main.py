@@ -1,3 +1,4 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 
@@ -17,14 +18,28 @@ from app.api.router import (
 )
 from app.core.middleware import setup_middlewares
 from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
+from app.core.task import compress_work_directory
 from app.db import get_db
+from apscheduler.schedulers.background import BackgroundScheduler
 from fastapi import Depends, FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-app = FastAPI(title="IDHEAP Data Hub API")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # At startup
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(compress_work_directory, "interval", hours=2)
+    scheduler.start()
+    # Start to handle request
+    yield
+    # At shutdown
+    scheduler.shutdown()
+
+
+app = FastAPI(title="IDHEAP Data Hub API", lifespan=lifespan)
 
 setup_middlewares(app)
 
