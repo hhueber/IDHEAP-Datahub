@@ -17,7 +17,9 @@ from app.services.data_import.data_import_normalizer_service import normalize_da
 from app.services.data_import.data_import_preview_service import build_preview_payload
 from app.services.data_import.data_import_reader_service import read_import_file
 from app.services.data_import.data_import_storage_service import (
+    create_archive,
     delete_import_dir,
+    extract_archive,
     get_import_dir,
     read_analysis,
     read_frame,
@@ -32,6 +34,15 @@ from app.services.data_import.data_import_storage_service import (
 )
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
+import pandas as pd
+
+
+async def save_compress_upload(import_id: str) -> bool:
+    try:
+        create_archive(import_id)
+        return True
+    except:
+        return False
 
 
 async def save_import_upload(file: UploadFile) -> dict[str, Any]:
@@ -50,12 +61,17 @@ async def save_import_upload(file: UploadFile) -> dict[str, Any]:
     content = await file.read()
     raw_path.write_bytes(content)
 
+    df = read_import_file(raw_path)
+    rows, columns = df.shape
+
     metadata = {
         "import_id": import_id,
         "filename": filename,
         "size": len(content),
         "raw_path": str(raw_path),
         "created_at": datetime.now(timezone.utc).isoformat(),
+        "columns": columns,
+        "rows": rows,
     }
 
     write_metadata(import_dir, metadata)
@@ -91,8 +107,8 @@ async def list_import_jobs() -> list[dict[str, Any]]:
                 "size": int(metadata.get("size") or 0),
                 "created_at": metadata.get("created_at"),
                 "analyzed": analysis is not None,
-                "rows": analysis.get("rows") if analysis else None,
-                "columns": analysis.get("columns") if analysis else None,
+                "rows": metadata.get("rows"),
+                "columns": metadata.get("columns"),
                 "total_issues": analysis.get("total_issues") if analysis else None,
                 "detected_survey_name": detected_survey.get("name"),
                 "detected_survey_year": detected_survey.get("year"),
@@ -105,6 +121,10 @@ async def list_import_jobs() -> list[dict[str, Any]]:
 async def get_import_summary(import_id: str) -> dict[str, Any]:
     import_dir = get_import_dir(import_id)
     analysis_path = import_dir / "analysis.json"
+    tar_filename = import_dir / "content.tar.gz"
+    if tar_filename.exists():
+
+        extract_archive(import_id)
 
     if not analysis_path.exists():
         raise ValueError("Import has not been analyzed yet")
@@ -122,6 +142,9 @@ async def analyze_import_file(
     import_id: str,
 ) -> dict[str, Any]:
     import_dir = get_import_dir(import_id)
+    archive_file = import_dir / "content.tar.gz"
+    if archive_file.exists():
+        extract_archive(import_id)
     metadata = read_metadata(import_dir)
 
     df = read_import_file(Path(metadata["raw_path"]))

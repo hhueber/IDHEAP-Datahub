@@ -39,3 +39,6 @@ pyproj==3.7.2
 
 # HTTP / Networking
 requests==2.32.5
+
+#Job schuleduling
+APScheduler==3.11.3
