@@ -180,7 +180,10 @@ def _row_has_issue(
     column_indices: list[int],
     issue_lookup: dict[tuple[int, int], dict[str, Any]],
 ) -> bool:
-    return any((row_index, column_index) in issue_lookup for column_index in column_indices)
+    return any(
+        (row_index, column_index) in issue_lookup or (-1, column_index) in issue_lookup
+        for column_index in column_indices
+    )
 
 
 def _row_matches_search(
@@ -297,7 +300,7 @@ def _build_preview_row(
 
     for column_index in column_indices:
         value = df.iat[row_index, column_index]
-        issue = issue_lookup.get((row_index, column_index))
+        issue = issue_lookup.get((row_index, column_index)) or issue_lookup.get((-1, column_index))
 
         cells[str(column_index)] = {
             "value": None if _is_empty(value) else _stringify_value(value),

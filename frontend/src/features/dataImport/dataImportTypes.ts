@@ -193,3 +193,36 @@ export type DataImportPreviewFilters = {
   sortColumnIndex: number | null;
   sortDirection: DataImportPreviewSortDirection;
 };
+
+export type ImportIssueGroupSample = {
+  value: string | null;
+  count: number;
+};
+
+export type ImportIssueGroup = {
+  id: string;
+  code: string;
+  severity: "warning" | "error";
+  message_key: string;
+  section: ImportSection;
+  column_index: number;
+  column_name: string;
+  detected_type: DetectedType;
+  expected_type: DetectedType | null;
+  count: number;
+  affected_rows: number;
+  sample_values: ImportIssueGroupSample[];
+};
+
+export type DataImportIssuesResponse = {
+  success: boolean;
+  detail: string;
+  data: {
+    import_id: string;
+    total_groups: number;
+    total_issues: number;
+    blocking_issues: number;
+    warning_issues: number;
+    groups: ImportIssueGroup[];
+  };
+};

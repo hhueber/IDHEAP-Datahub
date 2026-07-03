@@ -2,8 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
-import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
-import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewFilters, DataImportPreviewResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
+import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, patchDataImportColumn, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
+import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewFilters, DataImportPreviewResponse, ImportIssueGroup, ImportSection } from "@/features/dataImport/dataImportTypes";
 import type { DataImportWorkflowStep } from "@/features/dataImport/dataImportWorkflowTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
@@ -12,6 +12,7 @@ import { DataImportStepTabs } from "@/features/dataImport/components/DataImportS
 import { DataImportStepPlaceholder } from "@/features/dataImport/components/DataImportStepPlaceholder";
 import { DataImportExploreStep } from "@/features/dataImport/components/explore/DataImportExploreStep";
 import { ConfirmModal } from "@/utils/ConfirmModal";
+import { DataImportImproveStep } from "@/features/dataImport/components/improve/DataImportImproveStep";
 
 type LoadingStep = "idle" | "upload" | "analyze" | "preview";
 
@@ -172,6 +173,63 @@ export default function DataImportPage() {
 
   const handleDeleteJob = async (job: DataImportJobSummary) => {
     setJobToDelete(job);
+  };
+
+  const handleOpenIssueGroup = async (group: ImportIssueGroup) => {
+    if (!importId || loading) return;
+
+    const nextFilters: DataImportPreviewFilters = {
+        search: "",
+        detectedType: "all",
+        columnIndex: group.column_index,
+        sortColumnIndex: null,
+        sortDirection: "asc",
+    };
+
+    setSelectedSection(group.section);
+    setIssuesOnly(true);
+    setPreviewFilters(nextFilters);
+    setPage(1);
+    setActiveStep("explore");
+
+    await loadPreview(
+        importId,
+        group.section,
+        1,
+        true,
+        nextFilters
+    );
+  };
+
+  const handleConfirmColumnIssue = async (group: ImportIssueGroup) => {
+    if (!importId || loading) return;
+
+    try {
+        const json = await patchDataImportColumn({
+        importId,
+        columnIndex: group.column_index,
+        section: group.section,
+        });
+
+        if (!json.success) {
+        throw new Error(json.detail || t("common.error"));
+        }
+
+        setAnalysis(json.data);
+
+        await loadPreview(
+        importId,
+        selectedSection,
+        page,
+        issuesOnly,
+        previewFilters
+        );
+
+        await loadJobs();
+    } catch (err: any) {
+        console.error(err);
+        setError(err?.message || t("common.error"));
+    }
   };
 
   const confirmDeleteJob = async () => {
@@ -404,7 +462,12 @@ export default function DataImportPage() {
           )}
 
           {activeStep === "improve" && (
-            <DataImportStepPlaceholder step="improve" />
+            <DataImportImproveStep
+                importId={importId}
+                loading={loading}
+                onOpenIssueGroup={handleOpenIssueGroup}
+                onConfirmColumnIssue={handleConfirmColumnIssue}
+            />
           )}
 
           {activeStep === "validate" && (

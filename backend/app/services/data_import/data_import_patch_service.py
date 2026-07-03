@@ -71,11 +71,14 @@ async def patch_import_column(
         target_column["detected_type"] = payload.detected_type.value
         target_column["confidence"] = 1.0
 
+    write_analysis(import_dir, analysis)
+
     return recalculate_after_column_change(
         import_dir=import_dir,
         df=df,
         column_index=payload.column_index,
         redetect_type=False,
+        analysis=analysis,
     )
 
 
@@ -110,8 +113,10 @@ def recalculate_after_column_change(
     df: pd.DataFrame,
     column_index: int,
     redetect_type: bool,
+    analysis: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    analysis = read_analysis(import_dir)
+    if analysis is None:
+        analysis = read_analysis(import_dir)
     issues_by_column = read_issues(import_dir)
 
     target_column = get_column_summary(

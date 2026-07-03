@@ -7,6 +7,7 @@ from app.schemas.data_import import (
     DataImportColumnPatch,
     DataImportColumnTransformPatch,
     DataImportDeleteResponse,
+    DataImportIssuesResponse,
     DataImportListResponse,
     DataImportNamePatch,
     DataImportNameResponse,
@@ -24,6 +25,7 @@ from app.services.data_import.data_import_patch_service import (
 from app.services.data_import.data_import_service import (
     analyze_import_file,
     delete_import_job,
+    get_import_issue_groups,
     get_import_summary,
     list_import_jobs,
     preview_import_section,
@@ -172,6 +174,20 @@ async def list_data_imports(
     return {
         "success": True,
         "detail": "Imports loaded",
+        "data": data,
+    }
+
+
+@router.get("/{import_id}/issues", response_model=DataImportIssuesResponse)
+async def get_data_import_issues(
+    import_id: str,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await get_import_issue_groups(import_id)
+
+    return {
+        "success": True,
+        "detail": "Import issues loaded",
         "data": data,
     }
 

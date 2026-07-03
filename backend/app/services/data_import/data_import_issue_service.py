@@ -30,6 +30,55 @@ def detect_single_column_issues_vectorized(
     df: pd.DataFrame,
     column_summary: dict[str, Any],
 ) -> list[dict[str, Any]]:
+    issues: list[dict[str, Any]] = []
+
+    issues.extend(
+        detect_column_confirmation_warnings(
+            column_summary=column_summary,
+        )
+    )
+
+    issues.extend(
+        detect_type_mismatch_errors(
+            df=df,
+            column_summary=column_summary,
+        )
+    )
+
+    return issues
+
+
+def detect_column_confirmation_warnings(
+    *,
+    column_summary: dict[str, Any],
+) -> list[dict[str, Any]]:
+    column_index = int(column_summary["index"])
+    section = str(column_summary.get("section") or "unclassified")
+
+    if section == "ignored":
+        return []
+
+    if not bool(column_summary.get("section_needs_user_confirmation")):
+        return []
+
+    return [
+        {
+            "row_index": -1,
+            "column_index": column_index,
+            "code": "SECTION_NEEDS_CONFIRMATION",
+            "severity": "warning",
+            "message_key": "dataImport.issues.sectionNeedsConfirmation",
+            "expected_type": column_summary.get("detected_type"),
+            "actual_value": section,
+        }
+    ]
+
+
+def detect_type_mismatch_errors(
+    *,
+    df: pd.DataFrame,
+    column_summary: dict[str, Any],
+) -> list[dict[str, Any]]:
     column_index = int(column_summary["index"])
     column_name = df.columns[column_index]
     detected_type = DetectedTypeEnum(column_summary["detected_type"])

@@ -616,8 +616,9 @@
       "showAllRows": "Afficher toutes les lignes",
       "changeFile": "Changer de fichier"
     },
-    "issues": {
-      "typeMismatch": "Prévu {{expected}}, reçu {{value}}"
+    "issues": {      
+      "sectionNeedsConfirmation": "Cette colonne a été classée automatiquement. Vérifie si la section proposée est correcte.",
+      "typeMismatch": "Certaines valeurs ne correspondent pas au type attendu. Prévu {{expected}}, reçu {{value}}"
     },
     "columnActions": {
       "title": "Correction colonne",
@@ -665,7 +666,7 @@
         "description": "Consulter le dataset uploadé, les sections détectées, les colonnes, les lignes et les problèmes actuels."
       },
       "improve": {
-        "title": "Améliorer",
+        "title": "Corriger",
         "description": "Regrouper les problèmes, appliquer des corrections et comparer le dataset avant/après.",
         "placeholderTitle": "L’amélioration du dataset sera ajoutée ensuite",
         "placeholderDescription": "Cette étape contiendra les problèmes groupés, les suggestions automatiques et les previews avant/après. Pour l’instant, cette PR prépare uniquement la structure du workflow."
@@ -707,6 +708,41 @@
         "empty": "Vides",
         "unique": "Uniques",
         "nonEmpty": "Non vides"
+      }
+    },
+    "improve": {
+      "badge": "Improve",
+      "title": "Problèmes détectés",
+      "description": "Les problèmes sont regroupés par colonne, type d’erreur et sévérité afin de faciliter l’analyse avant correction.",
+      "loading": "Chargement des problèmes détectés...",
+      "searchPlaceholder": "Rechercher une colonne ou un type d’erreur...",
+      "severity": "Sévérité",
+      "openInPreview": "Voir dans la preview",
+      "sampleValues": "Exemples de valeurs",
+      "noSampleValues": "Aucun exemple disponible",
+      "noFilteredResults": "Aucun groupe d’erreurs ne correspond aux filtres actuels.",
+      "emptyTitle": "Aucun problème détecté",
+      "emptyDescription": "Le dataset ne contient actuellement aucun problème détecté par les règles de validation de cette étape.",
+      "confirmColumn": "Confirmer",
+      "confirmColumnHint": "La section détectée doit être confirmée.",
+      "stats": {
+        "groups": "Groupes",
+        "errors": "Erreurs",
+        "warnings": "Warnings"
+      },
+      "filters": {
+        "all": "Toutes",
+        "errors": "Erreurs",
+        "warnings": "Warnings"
+      },
+      "severities": {
+        "error": "Erreur",
+        "warning": "Warning"
+      },
+      "metrics": {
+        "issues": "Issues",
+        "rows": "Lignes",
+        "expected": "Attendu"
       }
     }
   }

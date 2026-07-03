@@ -10,6 +10,7 @@ import type {
   DataImportDeleteResponse,
   DataImportListResponse,
   DataImportNamePatchResponse,
+  DataImportIssuesResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -161,4 +162,11 @@ export async function patchDataImportDisplayName(params: {
       },
     }
   );
+}
+
+export async function fetchDataImportIssues(importId: string) {
+  return apiFetch<DataImportIssuesResponse>(`/data-import/${importId}/issues`, {
+    method: "GET",
+    auth: true,
+  });
 }

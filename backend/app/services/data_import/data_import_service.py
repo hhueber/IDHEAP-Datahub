@@ -16,6 +16,7 @@ from app.services.data_import.data_import_detection_service import (
     detect_orientation,
     transpose_with_first_row_as_header,
 )
+from app.services.data_import.data_import_issue_group_service import build_issue_groups
 from app.services.data_import.data_import_issue_service import detect_issues_vectorized
 from app.services.data_import.data_import_normalizer_service import normalize_dataframe_values
 from app.services.data_import.data_import_preview_service import build_preview_payload
@@ -240,4 +241,17 @@ async def preview_import_section(
         df=read_frame(import_dir),
         analysis=ensure_analysis_has_column_profiles(import_id),
         issues_by_column=read_issues(import_dir),
+    )
+
+
+async def get_import_issue_groups(import_id: str) -> dict[str, Any]:
+    import_dir = get_import_dir(import_id)
+
+    analysis = ensure_analysis_has_column_profiles(import_id)
+    issues_by_column = read_issues(import_dir)
+
+    return build_issue_groups(
+        import_id=import_id,
+        analysis=analysis,
+        issues_by_column=issues_by_column,
     )

@@ -227,3 +227,38 @@ class DataImportNameResponse(BaseModel):
     success: bool
     detail: str
     data: DataImportNameResponseData
+
+
+class ImportIssueGroupSample(BaseModel):
+    value: str | None = None
+    count: int
+
+
+class ImportIssueGroup(BaseModel):
+    id: str
+    code: str
+    severity: Literal["warning", "error"]
+    message_key: str
+    section: ImportSectionEnum
+    column_index: int
+    column_name: str
+    detected_type: DetectedTypeEnum
+    expected_type: Optional[DetectedTypeEnum] = None
+    count: int
+    affected_rows: int
+    sample_values: list[ImportIssueGroupSample] = Field(default_factory=list)
+
+
+class DataImportIssuesData(BaseModel):
+    import_id: str
+    total_groups: int
+    total_issues: int
+    blocking_issues: int
+    warning_issues: int
+    groups: list[ImportIssueGroup]
+
+
+class DataImportIssuesResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportIssuesData
