@@ -20,19 +20,6 @@ type Props = {
   removeExtraPlaceOfInterest: (code: string) => void;
 };
 
-// petite fonction pour générer un code local à partir du nom
-const slugify = (s: string): string => {
-  return (
-    s
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "") || "placeOfInterest"
-  );
-};
-
 export default function PlaceOfInterestMenuModal({
   isOpen,
   onClose,
@@ -53,6 +40,12 @@ export default function PlaceOfInterestMenuModal({
   const abortRef = useRef<AbortController | null>(null);
 
   const { textColor, background, borderColor, navbarOverlayBg, hoverText07, hoverPrimary06 } = useTheme();
+
+  const getSuggestionTypeLabel = (
+    type: PlaceOfInterestSuggestDTO["type"]
+  ): string => {
+    return t(`map.menu.placeOfInterestTypes.${type}`);
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -106,10 +99,7 @@ export default function PlaceOfInterestMenuModal({
   };
 
   const handleAddSuggestion = (s: PlaceOfInterestSuggestDTO) => {
-    const base = slugify(s.default_name);
-    const code = `local-${base}-${Math.round(s.pos[0] * 1000)}-${Math.round(
-      s.pos[1] * 1000
-    )}`;
+    const code = `local-${s.type}-${s.uid}`;
 
     addExtraPlaceOfInterest({
       code,
@@ -277,17 +267,19 @@ export default function PlaceOfInterestMenuModal({
             </p>
           )}
           {suggestions.length > 0 && (
-            <ul className="max-h-32 overflow-auto text-sm border rounded"
+            <ul
+              className="max-h-32 overflow-auto text-sm border rounded"
               style={
                 {
                   borderColor,
                   backgroundColor: background,
                   color: textColor,
                 } as React.CSSProperties
-              }>
-              {suggestions.map((s, idx) => (
+              }
+            >
+              {suggestions.map((s) => (
                 <li
-                  key={`${s.default_name}-${idx}`}
+                  key={`${s.type}-${s.uid}`}
                   className="px-2 py-1 cursor-pointer flex items-center justify-between gap-2 hover:[background-color:var(--poi-suggest-hover-bg)]"
                   onClick={() => handleAddSuggestion(s)}
                   style={
@@ -296,9 +288,16 @@ export default function PlaceOfInterestMenuModal({
                     } as React.CSSProperties
                   }
                 >
-                  <span>{s.default_name}</span>
-                  <span className="text-[10px]" style={{ color: hoverText07 }}>
-                    {s.pos[0].toFixed(3)}, {s.pos[1].toFixed(3)}
+                  <span className="truncate font-medium">{s.default_name}</span>
+
+                  <span
+                    className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                    style={{
+                      borderColor,
+                      color: hoverText07,
+                    }}
+                  >
+                    {getSuggestionTypeLabel(s.type)}
                   </span>
                 </li>
               ))}

@@ -31,7 +31,7 @@ export class ApiError extends Error {
 const AUTH_VIA_COOKIE = true;
 
 function resolveBaseUrl(): string {
-  const im = (import.meta as any)?.env ?? {};
+  const im = import.meta.env;
   return (
     im.VITE_API_BASE_URL
   );
