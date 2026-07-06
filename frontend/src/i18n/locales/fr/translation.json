@@ -22,6 +22,7 @@
     "close": "Fermer",
     "sectionDates": "Dates",
     "sectionQuestions": "Questions",
+    "selectionQuestions": "Sélection de questions",
     "chooseYear": "Choisir une année",
     "globalOption": "Global",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
@@ -30,8 +31,29 @@
     "availableYears": "Années disponibles pour cette question",
     "noAvailableYears": "Acune année disponible",
     "selectYear": "Selectionner une année",
-    "choroplethGlobalYear": "Date pour question globale",
-    "granularity": "Granularité"
+    "choroplethGlobalYear": "Années disponibles pour cette question",
+    "granularity": "Granularité",
+    "timelineAvailable": "Sélectionnable",
+    "timelineUnavailable": "Indisponible",
+    "selectQuestionFirst": "Choisissez une question",
+    "selectDate": "Choisissez une date",
+    "question_collections": {
+      "saved": {
+        "title": "Accès rapide",
+        "description": "Vos questions sauvegardées"
+      }
+    },
+    "question_drop_zone": {
+      "drag_question": "Glissez une question ici",
+      "release_to_add": "Relâchez pour ajouter cette question"
+    },
+    "question_card": {
+      "saved": "Questions sauvegardées",
+      "drag": "Glisser",
+      "removeSaved": "Retirer des questions sauvegardées",
+      "addSaved": "Ajouter aux questions sauvegardées",
+      "remove": "Retirer de la sélection"
+    }
   },
   "map": {
     "placeOfInterest": {
@@ -103,6 +125,25 @@
       "rateLimited": "Trop de tentatives. Réessayez plus tard."
     }
   },
+  "stats": {
+    "context": {
+      "commune": "Commune",
+      "district": "District",
+      "canton": "Canton",
+      "communes_one": "{{count}} Commune",
+      "communes_other": "{{count}} Communes"
+    },
+    "loading": "Chargement des statistiques",
+    "noData": "pas de données disponibles",
+    "selectedValue": "Valeur sélectionnée",
+    "sameAnswer": "de même réponse",
+    "countText": "{{count}} sur {{total}} {{unit}} partagent cette valeur",
+    "selected": "Selectionné",
+    "others": "Autres",
+    "value": "Valeur:",
+    "count": "Nombre:",
+    "share": "Part:"
+  },
   "export": {
     "title": "Export",
     "pngLabel": "PNG",
@@ -121,6 +162,18 @@
       "mapUnavailable": "Carte indisponible.",
       "pngFailed": "Export PNG impossible.",
       "pdfFailed": "Export PDF impossible."
+    },
+    "data": {
+      "title": "Exporter les données",
+      "description": "Sélectionnez les questions enregistrées et exportez leurs données au format CSV.",
+      "selectAll": "Tout sélectionner",
+      "clear": "Effacer",
+      "selected": "Sélectionné",
+      "noSavedQuestions": "Aucune question enregistrée n'est disponible",
+      "global": "Global",
+      "survey": "Enquête",
+      "loading": "Exporter",
+      "download": "Télécharger le fichier CSV"
     }
   },
   "dashboard": {
@@ -313,6 +366,7 @@
           "textColourLabel": "Couleur du texte",
           "navbarOverlayLabel": "Opacité de la barre de navigation",
           "logoBackgroundLabel": "Couleur de fond du logo",
+          "selectionColourLabel": "Couleur de sélection",
           "communesColourLabel": "Couleur des communes",
           "districtColourLabel": "Couleur des districts",
           "cantonColourLabel": "Couleur des cantons",
@@ -330,7 +384,8 @@
           "previewPanel": {
             "text": "Lorem ipsum — simple text",
             "buttonPrimary": "Bouton primaire",
-            "secondaryFrame": "Cadre secondaire"
+            "secondaryFrame": "Cadre secondaire",
+            "selection": "Élément sélectionné"
           }
         },
         "configEditor": {
@@ -445,7 +500,7 @@
       "deleteError": "Erreur de suppression : ",
       "year": "Année",
       "questionUid": "Question UID",
-      "communeUid": "commune UID"
+      "communeUid": "Commune UID"
     },
     "pageShow": {
       "loading": "Chargement",
