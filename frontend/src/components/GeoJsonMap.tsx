@@ -12,6 +12,7 @@ import PlaceOfInterestLayer from "@/components/map/PlaceOfInterestLayer";
 import { useTheme } from "@/theme/useTheme";
 import type { ChoroplethResponse } from "@/features/geo/geoApi";
 import MapLegendOverlay from "@/components/map/MapLegendOverlay";
+import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import L from "leaflet";
 import "leaflet.pattern";
 
@@ -47,6 +48,12 @@ type Props = {
   baseImageUrl?: string;
   baseImageOpacity?: number;
   panelOpen?: boolean;
+  granularity?: ChoroplethGranularity;
+  selectedArea?: {
+    uid: number;
+    level: "commune" | "district" | "canton";
+  } | null;
+  onSelectArea?: (area: any) => void;
 };
 
 export default function GeoJsonMap({
@@ -56,6 +63,8 @@ export default function GeoJsonMap({
   baseImageUrl,
   baseImageOpacity = 1,
   panelOpen = true,
+  selectedArea,
+  onSelectArea,
 }: Props) {
   const { t } = useTranslation();
   const [bundle, setBundle] = useState<GeoBundle | null>(null);
@@ -63,7 +72,7 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor } = useTheme();
+  const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor, selectionColor } = useTheme();
 
   const patternCacheRef = useRef<Map<string, any>>(new Map());
 
@@ -250,33 +259,33 @@ export default function GeoJsonMap({
 
   // Styles (couleurs/épaisseurs/fill) des différentes couches
   const countryStyle = useMemo(() => ({
-  color: countryColors,      // frontière pays en noir
-  weight: 1,
-  fillColor: background,  // fond blanc
-  fillOpacity: 1,
-}), []);
-const lakesStyle = useMemo(() => ({
-  color: lakesColores,      // bleu
-  weight: 1.2,
-  // si préfère uniquement le contour mettre fillOpacity: 0
-  fillColor: lakesColores,
-  fillOpacity: 0.85,
-}), []);
-const cantonsStyle = useMemo(() => ({
-  color: cantonColores,      // rouge
-  weight: 1.2,
-  fillOpacity: 0,
-}), []);
-const districtsStyle = useMemo(() => ({
-  color: districtColores,      // violet bleuter
-  weight: 0.9,
-  fillOpacity: 0,
-}), []);
-const communesStyle = useMemo(() => ({
-  color: communesColores,       // green
-  weight: 0.6,
-  fillOpacity: 0,
-}), []);
+    color: countryColors,      // couleur frontière du pays
+    weight: 1,
+    fillColor: background,  // fond couleur du background general
+    fillOpacity: 1,
+  }), []);
+  const lakesStyle = useMemo(() => ({
+    color: lakesColores,      // couleur lacs
+    weight: 1.2,
+    // si préfère uniquement le contour mettre fillOpacity: 0
+    fillColor: lakesColores,
+    fillOpacity: 0.85,
+  }), []);
+  const cantonsStyle = useMemo(() => ({
+    color: cantonColores,      // couleur canton
+    weight: 1.2,
+    fillOpacity: 0,
+  }), []);
+  const districtsStyle = useMemo(() => ({
+    color: districtColores,      // couleur district
+    weight: 0.9,
+    fillOpacity: 0,
+  }), []);
+  const communesStyle = useMemo(() => ({
+    color: communesColores,       // couleur commune
+    weight: 0.6,
+    fillOpacity: 0,
+  }), []);
 
   // Alias pratiques
   const country   = bundle?.country   ?? null;
@@ -284,6 +293,43 @@ const communesStyle = useMemo(() => ({
   const cantons   = bundle?.cantons   ?? null;
   const districts = bundle?.districts ?? null;
   const communes  = (bundle as any)?.communes ?? null;
+
+  const getLegendDisplayValue = (rawValue: any): string => {
+    if (rawValue == null || rawValue === "") {
+      return "No data";
+    }
+
+    const items = (choropleth?.legend as any)?.items;
+
+    if (!Array.isArray(items)) {
+      return String(rawValue);
+    }
+
+    const findLabel = (value: any) => {
+      const strValue = String(value);
+
+      const found = items.find((it: any) => {
+        const optionValue = it?.value ?? it?.label;
+        return String(optionValue) === strValue;
+      });
+
+      return found?.label ?? strValue;
+    };
+
+    if (Array.isArray(rawValue)) {
+      return rawValue.map(findLabel).join(", ");
+    }
+
+    return findLabel(rawValue);
+  };
+
+  const escapeHtml = (value: unknown): string =>
+    String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
 
   return (
     <div ref={hostRef} data-map-root 
@@ -307,6 +353,29 @@ const communesStyle = useMemo(() => ({
         [data-map-root] .leaflet-tooltip.choropleth-tooltip {
           background: rgba(255,255,255,0.58);
           border-radius: 6px;
+        }
+
+        .leaflet-interactive:focus {
+          outline: none !important;
+        }
+
+        .leaflet-interactive {
+          outline: none !important;
+        }
+
+        [data-map-root] .choropleth-tooltip-name {
+          font-weight: 600;
+          margin-bottom: 2px;
+        }
+
+        [data-map-root] .choropleth-tooltip-value {
+          font-size: 12px;
+          line-height: 1.25;
+          opacity: 0.9;
+        }
+
+        path:focus {
+          outline: none !important;
         }
       `}</style>
       <MapContainer
@@ -362,10 +431,17 @@ const communesStyle = useMemo(() => ({
                 const pat = props.fill_pattern;
                 const map = (window as any).__leafletMap;
 
+                const uid = props.unit_uid;
+
+                const isSelected =
+                  selectedArea &&
+                  selectedArea.uid === uid &&
+                  selectedArea.level === choropleth.granularity;
+
                 const base: any = {
-                  weight: 1,
+                  weight: isSelected ? 3 : 1,
                   opacity: 1,
-                  color: borderColor,
+                  color: isSelected ? selectionColor : borderColor, // couleur jaune
                 };
 
                 // Si le backend a fourni un pattern (catégoriel + tie), on l'applique
@@ -398,13 +474,93 @@ const communesStyle = useMemo(() => ({
                 const props = feature?.properties ?? {};
                 const v = props.value ?? null;
 
-                // Si gradient: pas de nom de commune
-                if (choropleth.legend.type === "gradient") {
-                  layer.bindTooltip(`${v ?? "No data"}`, { sticky: true, opacity: 1, className: "choropleth-tooltip" });
-                } else {
-                  const name = props.name ?? props.code ?? "";
-                  layer.bindTooltip( `<div>${name}</div><div>${v ?? "No data"}</div>`,{sticky: true, opacity: 1, className: "choropleth-tooltip"});
+                const uid = props.unit_uid;
+                const level = choropleth.granularity;
+
+                const isSelected = () =>
+                  selectedArea &&
+                  selectedArea.uid === uid &&
+                  selectedArea.level === level;
+
+                layer.on("click", () => {
+                  if (level === "federal") return;
+
+                  onSelectArea?.({
+                    uid,
+                    name: props.name,
+                    level,
+                  });
+
+                  const map = layer._map;
+                  if (!map || !layer.getBounds) return;
+
+                  const bounds = layer.getBounds();
+
+                  // largeur du panel
+                  const panelWidth = panelOpen ? Math.min(window.innerWidth * 0.9, 448) : 0;
+
+                  map.fitBounds(bounds, {
+                    paddingTopLeft: [20, 20],
+                    paddingBottomRight: [panelWidth + 20, 20], // décalage ici
+                    maxZoom: 10,
+                    animate: true,
+                    duration: 0.8,
+                    easeLinearity: 0.25,
+                  });
+                });
+
+                layer.on("mouseover", () => {
+                  if (isSelected()) return;
+
+                  // effet visuel
+                  layer.setStyle({
+                    weight: 4,
+                    fillOpacity: 0.9,
+                    opacity: 1,
+                  });
+
+                  // FORCE redraw 
+                  if (layer._path) {
+                    layer._path.style.transition = "all 0.15s ease";
+                    layer._path.style.filter = "brightness(1.1)";
+                  }
+
+                  layer.bringToFront?.();
+                });
+
+              layer.on("mouseout", () => {
+                if (isSelected()) return;
+
+                layer.setStyle({
+                  weight: 1,
+                  fillOpacity: 0.75,
+                  opacity: 1,
+                });
+
+                if (layer._path) {
+                  layer._path.style.filter = "";
                 }
+              });
+
+                const name = props.name ?? props.code ?? "";
+                const displayValue = getLegendDisplayValue(v);
+
+                layer.bindTooltip(
+                  `
+                    <div class="choropleth-tooltip-name">
+                      ${escapeHtml(name)}
+                    </div>
+                    <div class="choropleth-tooltip-value">
+                      ${escapeHtml(displayValue)}
+                    </div>
+                  `,
+                  {
+                    sticky: true,
+                    opacity: 1,
+                    className: "choropleth-tooltip",
+                    offset: [12, 0],
+                  }
+                );
               }}
             />
 

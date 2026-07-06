@@ -24,6 +24,7 @@ type ThemePreviewPanelProps = {
   textColor?: MaybeColor;
   primaryColor?: MaybeColor;
   secondaryColor?: MaybeColor;
+  selectionColor?: MaybeColor;
 };
 
 export function ThemePreviewPanel({
@@ -35,6 +36,7 @@ export function ThemePreviewPanel({
   textColor,
   primaryColor,
   secondaryColor,
+  selectionColor,
 }: ThemePreviewPanelProps) {
   const baseTokens = getThemeTokens(DEFAULT_THEME_CONFIG, variant);
   // Fallbacks "safe" pour éviter un preview illisible si la config est vide/invalide.
@@ -43,6 +45,7 @@ export function ThemePreviewPanel({
   const secondary = normalizeColor(secondaryColor, baseTokens.borderColor);
   const text = normalizeColor(textColor, baseTokens.textColor);
   const logoBg = normalizeColor(logoBackground, baseTokens.logoBackground);
+  const selection = normalizeColor(selectionColor, baseTokens.selectionColor);
 
   const cardText = getAdaptiveTextColor(bg);
   const { t } = useTranslation();
@@ -107,6 +110,16 @@ export function ThemePreviewPanel({
         >
           {t("admin.config.themeConfigPage.previewPanel.secondaryFrame")}
         </span>
+        <div
+          className="rounded-md px-2 py-2 text-[11px] font-medium"
+          style={{
+            backgroundColor: selection,
+            color: getAdaptiveTextColor(selection),
+            border: `1px solid ${secondary}`,
+          }}
+        >
+          {t("admin.config.themeConfigPage.previewPanel.selection")}
+        </div>
       </div>
     </div>
   );

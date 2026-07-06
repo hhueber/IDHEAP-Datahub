@@ -39,11 +39,10 @@ services:
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
-      args:
-        # Pass the backend API URL as a build argument for React
-        - REACT_APP_API_URL=http://localhost:8000
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     volumes:
       - ./frontend:/app:Z
       - /app/node_modules
