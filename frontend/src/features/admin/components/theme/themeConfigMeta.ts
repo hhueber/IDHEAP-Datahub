@@ -15,6 +15,7 @@ export const LIGHT_FIELDS: ColorFieldDef[] = [
   { key: "colour_light_text", labelKey: "admin.config.themeConfigPage.textColourLabel" },
   { key: "navbar_overlay_light_bg", labelKey: "admin.config.themeConfigPage.navbarOverlayLabel" },
   { key: "logoBackground_light", labelKey: "admin.config.themeConfigPage.logoBackgroundLabel" },
+  { key: "selection_light", labelKey: "admin.config.themeConfigPage.selectionColourLabel" },
 ];
 
 export const DARK_FIELDS: ColorFieldDef[] = [
@@ -24,6 +25,7 @@ export const DARK_FIELDS: ColorFieldDef[] = [
   { key: "colour_dark_text", labelKey: "admin.config.themeConfigPage.textColourLabel" },
   { key: "navbar_overlay_dark_bg", labelKey: "admin.config.themeConfigPage.navbarOverlayLabel" },
   { key: "logoBackground_dark", labelKey: "admin.config.themeConfigPage.logoBackgroundLabel" },
+  { key: "selection_dark", labelKey: "admin.config.themeConfigPage.selectionColourLabel" },
 ];
 
 export const MAP_LIGHT_FIELDS: ColorFieldDef[] = [

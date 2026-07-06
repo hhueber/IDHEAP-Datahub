@@ -7,11 +7,19 @@ import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
+import BottomStatsPanel from "@/features/home/components/BottomStatsPanel";
 
 const GLOBAL_UID = -1;
 
+type SelectedArea = {
+  uid: number;
+  name?: string;
+  level: "commune" | "district" | "canton";
+} | null;
+
 export default function Home() {
   const { t } = useTranslation();
+  const [selectedArea, setSelectedArea] = useState<SelectedArea>(null);
 
   // Menu ouvert par défaut
   const [panelOpen, setPanelOpen] = useState(true);
@@ -55,6 +63,31 @@ export default function Home() {
     granularity,
   });
 
+  const selectedSurvey = data?.surveys?.find(
+        (s) => s.uid === selectedSurveyUid
+      );
+
+  const statsYear = selectedSurveyUid === GLOBAL_UID
+    ? globalYear
+    : selectedSurvey?.year;
+  
+  const missingQuestion = !selectedQuestionUid;
+  const missingDate = isGlobal && selectedQuestionUid && !globalYear;
+
+  let overlayType: "loading" | "action" = "loading";
+  let overlayLabel: string | undefined;
+
+  if (missingQuestion) {
+    overlayType = "action";
+    overlayLabel = t("home.selectQuestionFirst");
+  } else if (missingDate) {
+    overlayType = "action";
+    overlayLabel = t("home.selectDate");
+  } else if (choroplethLoading) {
+    overlayType = "loading";
+    overlayLabel = t("common.loading");
+  }
+
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
     <section className="absolute inset-0">
@@ -65,8 +98,16 @@ export default function Home() {
           year={activeYear}
           choropleth={choropleth}
           panelOpen={panelOpen}
+          granularity={granularity}
+          selectedArea={selectedArea}
+          onSelectArea={setSelectedArea}
         />
-        {choroplethLoading && <MapLoadingOverlay />}
+        {(missingQuestion || missingDate || choroplethLoading) && (
+          <MapLoadingOverlay
+            label={overlayLabel}
+            type={overlayType}
+          />
+        )}
       </div>
 
       {/* Bouton flottant (ouvre/ferme uniquement) */}
@@ -136,6 +177,7 @@ export default function Home() {
               setSelectedSurveyUid(uid);
               // reset question quand on change de scope
               setSelectedQuestionUid(null);
+              setGlobalYear(null);
             }}
             selectedQuestionUid={selectedQuestionUid}
             onQuestionSelect={(uid) => setSelectedQuestionUid(uid)}
@@ -146,6 +188,14 @@ export default function Home() {
           />
         </div>
       </aside>
+      {/* Pop up bas */}
+      <BottomStatsPanel
+        selectedArea={selectedArea}
+        onClose={() => setSelectedArea(null)}
+        questionUid={selectedQuestionUid}
+        year={statsYear}
+        scope={selectedSurveyUid === GLOBAL_UID ? "global" : "per_survey"}
+      />
     </section>
   );
 }
