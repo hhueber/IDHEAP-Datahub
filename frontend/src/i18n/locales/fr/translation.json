@@ -574,5 +574,11 @@
   },
   "pagination": {
     "page": "Page"
+  },
+  "first-modal":{
+    "title": "Bienvenue",
+    "content": "Bienvenue !",
+    "close": "Fermer",
+    "reminder": "Ne plus me rappeler"
   }
 }
