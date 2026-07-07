@@ -56,11 +56,19 @@ export type ShowMeta = {
   children?: ShowChildMeta[];
 };
 
+export type InsightMapChildLayer = {
+  child_key: string;
+  child_title: string;
+  child_entity: Entity;
+  features: any[];
+};
+
 export type InsightMap = {
   type: "geo-focus";
   level: "commune" | "district" | "canton";
   focus_feature: any;
   context_features: any[];
+  child_layers?: InsightMapChildLayer[];
 };
 
 export type InsightStats = {

@@ -85,3 +85,10 @@ class ShowChildrenResponse(BaseModel):
     success: bool
     detail: str
     data: Optional[ShowChildrenData] = None
+
+
+class ShowInsightsMapChildLayer(BaseModel):
+    child_key: str
+    child_title: str
+    child_entity: str
+    features: List[Dict[str, Any]] = []

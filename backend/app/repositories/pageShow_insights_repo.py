@@ -255,3 +255,93 @@ async def count_with_joins(
     stmt = stmt.where(filter_column == filter_value)
 
     return await _count_from_stmt(db, stmt)
+
+
+async def _get_child_features_for_parent(
+    db: AsyncSession,
+    *,
+    child_model: Any,
+    map_model: Any,
+    map_fk_column: Any,
+    child_uid_column: Any,
+    parent_fk_column: Any,
+    parent_uid: int,
+    level: str,
+) -> list[dict]:
+    map_year = await _latest_year(db, map_model)
+    if map_year is None:
+        return []
+
+    stmt = (
+        select(
+            child_model.uid.label("uid"),
+            child_model.name.label("name"),
+            child_model.code.label("code"),
+            _geojson_col(map_model.geometry).label("geojson"),
+        )
+        .join(
+            map_model,
+            and_(
+                map_fk_column == child_uid_column,
+                map_model.year == map_year,
+            ),
+        )
+        .where(parent_fk_column == parent_uid)
+        .order_by(child_model.uid.asc())
+    )
+
+    rows = (await db.execute(stmt)).mappings().all()
+
+    features: list[dict] = []
+    for row in rows:
+        if not row["geojson"]:
+            continue
+
+        features.append(
+            {
+                "type": "Feature",
+                "geometry": json.loads(row["geojson"]),
+                "properties": {
+                    "uid": row["uid"],
+                    "unit_uid": row["uid"],
+                    "name": row["name"],
+                    "code": row["code"],
+                    "entity": level,
+                    "level": level,
+                },
+            }
+        )
+
+    return features
+
+
+async def get_all_commune_features_for_district(
+    db: AsyncSession,
+    district_uid: int,
+) -> list[dict]:
+    return await _get_child_features_for_parent(
+        db,
+        child_model=Commune,
+        map_model=CommuneMap,
+        map_fk_column=CommuneMap.commune_uid,
+        child_uid_column=Commune.uid,
+        parent_fk_column=Commune.district_uid,
+        parent_uid=district_uid,
+        level="commune",
+    )
+
+
+async def get_all_district_features_for_canton(
+    db: AsyncSession,
+    canton_uid: int,
+) -> list[dict]:
+    return await _get_child_features_for_parent(
+        db,
+        child_model=District,
+        map_model=DistrictMap,
+        map_fk_column=DistrictMap.district_id,
+        child_uid_column=District.uid,
+        parent_fk_column=District.canton_uid,
+        parent_uid=canton_uid,
+        level="district",
+    )
