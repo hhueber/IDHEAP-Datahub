@@ -1,3 +1,4 @@
+from typing import List
 import enum
 
 
@@ -28,4 +29,7 @@ class SurveyMetadata(Base):
     description: Mapped[str] = mapped_column(String, nullable=False)
 
     links: Mapped[str] = mapped_column(String, nullable=False)
-    authors: Mapped[list["SurveyAuthor"]] = relationship("SurveyAuthor", back_populates="survey_metadata")
+
+    author_association: Mapped[List["SurveyAuthorAssociation"]] = relationship(
+        "SurveyAuthorAssociation", back_populates="survey_metadata", cascade="all, delete-orphan"
+    )
