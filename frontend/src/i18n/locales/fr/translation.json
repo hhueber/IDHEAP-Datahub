@@ -743,6 +743,15 @@
         "issues": "Issues",
         "rows": "Lignes",
         "expected": "Attendu"
+      },
+      "pagination": {
+        "summary": "{{shown}} affichés sur {{total}} · page {{page}} / {{pages}}"
+      },
+      "selection": {
+        "select": "Sélectionner",
+        "selected": "{{count}} warning(s) sélectionné(s)",
+        "clear": "Vider la sélection",
+        "confirm": "Confirmer la sélection ({{count}})"
       }
     }
   }

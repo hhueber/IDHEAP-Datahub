@@ -170,3 +170,19 @@ export async function fetchDataImportIssues(importId: string) {
     auth: true,
   });
 }
+
+export async function confirmDataImportColumns(params: {
+  importId: string;
+  columnIndexes: number[];
+}) {
+  return apiFetch<DataImportPatchWithAnalysisResponse>(
+    `/data-import/${params.importId}/columns/confirm`,
+    {
+      method: "PATCH",
+      auth: true,
+      body: {
+        column_indexes: params.columnIndexes,
+      },
+    }
+  );
+}

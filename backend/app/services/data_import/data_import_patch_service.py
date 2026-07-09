@@ -11,7 +11,10 @@ from app.schemas.data_import import (
 )
 from app.services.data_import.data_import_column_profile_service import enrich_columns_with_profiles
 from app.services.data_import.data_import_detection_service import build_sections_summary, detect_column_type
-from app.services.data_import.data_import_issue_service import detect_single_column_issues_vectorized
+from app.services.data_import.data_import_issue_service import (
+    detect_issues_vectorized,
+    detect_single_column_issues_vectorized,
+)
 from app.services.data_import.data_import_storage_service import (
     get_import_dir,
     read_analysis,
@@ -168,3 +171,55 @@ def get_column_summary(
     column_index: int,
 ) -> dict[str, Any]:
     return next(column for column in columns_summary if int(column["index"]) == column_index)
+
+
+async def confirm_import_columns(
+    *,
+    import_id: str,
+    column_indexes: list[int],
+) -> dict[str, Any]:
+    import_dir = get_import_dir(import_id)
+    df = read_frame(import_dir)
+    analysis = read_analysis(import_dir)
+
+    selected_indexes = {int(index) for index in column_indexes}
+
+    if not selected_indexes:
+        return analysis
+
+    for column in analysis.get("columns_summary") or []:
+        column_index = int(column.get("index"))
+
+        if column_index not in selected_indexes:
+            continue
+
+        column["section_source"] = "user_confirmed"
+        column["section_confidence"] = 1.0
+        column["section_needs_user_confirmation"] = False
+
+    analysis["columns_summary"] = enrich_columns_with_profiles(
+        df,
+        analysis["columns_summary"],
+    )
+
+    issues_by_column = detect_issues_vectorized(
+        df,
+        analysis["columns_summary"],
+    )
+
+    for column in analysis["columns_summary"]:
+        column["issue_count"] = len(issues_by_column.get(str(column["index"]), []))
+
+    analysis["total_issues"] = sum(len(issues) for issues in issues_by_column.values())
+
+    analysis["sections"] = build_sections_summary(
+        df=df,
+        columns_summary=analysis["columns_summary"],
+        issues_by_column=issues_by_column,
+    )
+
+    write_frame(import_dir, df)
+    write_analysis(import_dir, analysis)
+    write_issues(import_dir, issues_by_column)
+
+    return analysis

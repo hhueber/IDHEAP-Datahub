@@ -262,3 +262,7 @@ class DataImportIssuesResponse(BaseModel):
     success: bool
     detail: str
     data: DataImportIssuesData
+
+
+class DataImportColumnsConfirmPatch(BaseModel):
+    column_indexes: list[int] = Field(default_factory=list)

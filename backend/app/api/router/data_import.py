@@ -5,6 +5,7 @@ from app.schemas.data_import import (
     DataImportAnalyzeResponse,
     DataImportCellPatch,
     DataImportColumnPatch,
+    DataImportColumnsConfirmPatch,
     DataImportColumnTransformPatch,
     DataImportDeleteResponse,
     DataImportIssuesResponse,
@@ -18,6 +19,7 @@ from app.schemas.data_import import (
     ImportSectionEnum,
 )
 from app.services.data_import.data_import_patch_service import (
+    confirm_import_columns,
     patch_import_cell,
     patch_import_column,
     patch_import_column_transform,
@@ -216,4 +218,22 @@ async def delete_data_import(
     return {
         "success": True,
         "detail": "Import deleted",
+    }
+
+
+@router.patch("/{import_id}/columns/confirm", response_model=DataImportPatchWithAnalysisResponse)
+async def confirm_data_import_columns(
+    import_id: str,
+    payload: DataImportColumnsConfirmPatch,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    analysis = await confirm_import_columns(
+        import_id=import_id,
+        column_indexes=payload.column_indexes,
+    )
+
+    return {
+        "success": True,
+        "detail": "Columns confirmed",
+        "data": analysis,
     }
