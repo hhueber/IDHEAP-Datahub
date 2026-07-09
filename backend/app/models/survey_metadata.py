@@ -27,5 +27,5 @@ class SurveyMetadata(Base):
     license: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
 
-    links: Mapped[list["Link"]] = relationship("Link", back_populates="survey_metadata")
+    links: Mapped[str] = mapped_column(String, nullable=False)
     authors: Mapped[list["SurveyAuthor"]] = relationship("SurveyAuthor", back_populates="survey_metadata")

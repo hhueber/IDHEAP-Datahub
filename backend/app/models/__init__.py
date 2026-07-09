@@ -10,7 +10,6 @@ from .district import District
 from .district_map import DistrictMap
 from .lake import Lake
 from .lake_map import LakeMap
-from .link import Link
 from .option import Option
 from .placeOfInterest import PlaceOfInterest
 from .question_category import QuestionCategory
@@ -48,5 +47,4 @@ __all__ = [
     "QuestionCategoryOptionAssociation",
     "SurveyMetadata",
     "SurveyAuthor",
-    "Link",
 ]
