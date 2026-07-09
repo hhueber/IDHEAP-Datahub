@@ -3,6 +3,7 @@ from typing import Optional, Set, Tuple
 import json
 
 
+from app.core.geo_config import THEME_MAP_PREVIEW_CANTON_OFS_ID
 from app.models.canton import Canton
 from app.models.canton_map import CantonMap
 from app.models.commune import Commune
@@ -176,30 +177,47 @@ async def get_geo_by_year_selective(
     return GeoBundle(**bundle_kwargs)
 
 
-THEME_MAP_PREVIEW_CANTON_OFS_ID = 22  # Vaud
-
-
 async def get_geo_by_canton_preview(
     session: AsyncSession,
     canton_ofs_id: int = THEME_MAP_PREVIEW_CANTON_OFS_ID,
     requested_year: Optional[int] = None,
 ) -> GeoBundle:
     """
-    Retourne une preview GeoJSON limitée à un seul canton.
+    Retourne les couches GeoJSON nécessaires à une preview de carte limitée
+    à un seul canton.
 
-    Pour la preview du thème, on ne charge pas toute la Suisse :
-    - canton sélectionné
-    - districts du canton
-    - communes du canton
-    - lacs du canton
+    Cette méthode est utilisée pour la configuration du thème afin d'éviter
+    de charger toutes les géométries de Suisse dans une simple mini-preview.
 
-    Par défaut, canton_ofs_id=22 correspond au canton de Vaud.
+    Elle récupère :
+    - le canton correspondant à l'identifiant OFS demandé
+    - les districts rattachés à ce canton
+    - les communes rattachées aux districts du canton
+    - les lacs qui intersectent la géométrie du canton
+
+    Le canton utilisé par défaut est défini par
+    THEME_MAP_PREVIEW_CANTON_OFS_ID.
+
+    Args:
+        session: Session SQLAlchemy async utilisée pour exécuter les requêtes.
+        canton_ofs_id: Identifiant OFS du canton à afficher dans la preview.
+        requested_year: Année demandée pour les géométries. Si aucune année
+            n'est fournie, l'année courante est utilisée, puis la dernière
+            année disponible inférieure ou égale est sélectionnée par couche.
+
+    Returns:
+        GeoBundle: Bundle GeoJSON contenant uniquement les couches utiles à
+        la preview ciblée.
     """
     y_req = int(requested_year or date.today().year)
 
     canton_uid = (await session.execute(select(Canton.uid).where(Canton.ofs_id == canton_ofs_id))).scalar_one_or_none()
 
     if canton_uid is None:
+        # On retourne volontairement un GeoBundle vide plutôt que de lever une erreur.
+        # La preview de thème est uniquement décorative : si le canton configuré
+        # n'existe pas dans les données, l'UI peut afficher un état "aucune donnée"
+        # sans bloquer le chargement de la page de configuration.
         return GeoBundle(
             year=YearMeta(
                 requested=y_req,
@@ -215,6 +233,7 @@ async def get_geo_by_canton_preview(
             communes=FeatureCollection(features=[]),
         )
 
+    # On prend pour chaque table de géométrie, la dernière année
     y_cantons = await _max_year_leq(session, CantonMap, y_req)
     y_districts = await _max_year_leq(session, DistrictMap, y_req)
     y_communes = await _max_year_leq(session, CommuneMap, y_req)
@@ -226,6 +245,7 @@ async def get_geo_by_canton_preview(
     lakes_fc = FeatureCollection(features=[])
 
     if y_cantons is not None:
+        # Géométrie du canton sélectionné uniquement.
         canton_fc = await _features_from_stmt(
             session,
             select(
@@ -243,6 +263,7 @@ async def get_geo_by_canton_preview(
         )
 
     if y_districts is not None:
+        # Les districts sont directement rattachés au canton via District.canton_uid.
         districts_fc = await _features_from_stmt(
             session,
             select(
@@ -260,6 +281,8 @@ async def get_geo_by_canton_preview(
         )
 
     if y_communes is not None:
+        # Les communes ne sont pas directement rattachées au canton.
+        # On passe donc par leur district pour limiter la preview aux communes du canton.
         communes_fc = await _features_from_stmt(
             session,
             select(
@@ -278,6 +301,9 @@ async def get_geo_by_canton_preview(
         )
 
     if y_lakes is not None and y_cantons is not None:
+        # Les lacs ne sont pas reliés aux cantons par une clé étrangère.
+        # On les sélectionne donc spatialement : tout lac qui intersecte
+        # la géométrie du canton est inclus dans la preview.
         lakes_fc = await _features_from_stmt(
             session,
             select(
