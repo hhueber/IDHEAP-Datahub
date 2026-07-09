@@ -89,18 +89,41 @@ type ApiEnvelope<T> = {
   data: T;
 };
 
+let themeMapPreviewCache: ThemeMapPreviewBundle | null = null;
+let themeMapPreviewPromise: Promise<ThemeMapPreviewBundle> | null = null;
+
 export async function fetchThemeMapPreview(): Promise<ThemeMapPreviewBundle> {
-  const res = await apiFetch<ApiEnvelope<ThemeMapPreviewBundle>>(
+  if (themeMapPreviewCache) {
+    return themeMapPreviewCache;
+  }
+
+  if (themeMapPreviewPromise) {
+    return themeMapPreviewPromise;
+  }
+
+  themeMapPreviewPromise = apiFetch<ApiEnvelope<ThemeMapPreviewBundle>>(
     "/config/theme/map-preview",
     {
       method: "GET",
       auth: true,
     }
-  );
+  )
+    .then((res) => {
+      if (!res.success) {
+        throw new Error(res.detail || "Failed to load theme map preview");
+      }
 
-  if (!res.success) {
-    throw new Error(res.detail || "Failed to load theme map preview");
-  }
+      themeMapPreviewCache = res.data;
+      return res.data;
+    })
+    .finally(() => {
+      themeMapPreviewPromise = null;
+    });
 
-  return res.data;
+  return themeMapPreviewPromise;
+}
+
+export function clearThemeMapPreviewCache() {
+  themeMapPreviewCache = null;
+  themeMapPreviewPromise = null;
 }
