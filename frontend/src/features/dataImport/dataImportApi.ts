@@ -11,9 +11,6 @@ import type {
   DataImportListResponse,
   DataImportNamePatchResponse,
   DataImportIssuesResponse,
-  DataImportActiveResourceResponse,
-  DataImportResourcesResponse,
-  DataImportWorkspaceUploadResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -27,16 +24,11 @@ export async function uploadDataImportFile(file: File) {
   });
 }
 
-export async function analyzeDataImportFile(
-  importId: string
-) {
-  return apiFetch<DataImportAnalyzeResponse>(
-    `/data-import/${importId}/analyze`,
-    {
-      method: "POST",
-      auth: true,
-    }
-  );
+export async function analyzeDataImportFile(importId: string) {
+  return apiFetch<DataImportAnalyzeResponse>(`/data-import/${importId}/analyze`, {
+    method: "POST",
+    auth: true,
+  });
 }
 
 export async function fetchDataImportPreview(params: {
@@ -51,29 +43,24 @@ export async function fetchDataImportPreview(params: {
   sortColumnIndex?: number | null;
   sortDirection?: "asc" | "desc";
 }) {
-  return apiFetch<DataImportPreviewResponse>(
-    `/data-import/${params.importId}/preview`,
-    {
-      method: "GET",
-      auth: true,
-      query: {
-        section: params.section,
-        page: params.page,
-        per_page: params.perPage,
-        issues_only: params.issuesOnly,
-        search: params.search?.trim() || undefined,
-        detected_type:
-          params.detectedType &&
-          params.detectedType !== "all"
-            ? params.detectedType
-            : undefined,
-        column_index: params.columnIndex ?? undefined,
-        sort_column_index:
-          params.sortColumnIndex ?? undefined,
-        sort_direction: params.sortDirection ?? "asc",
-      },
-    }
-  );
+  return apiFetch<DataImportPreviewResponse>(`/data-import/${params.importId}/preview`, {
+    method: "GET",
+    auth: true,
+    query: {
+      section: params.section,
+      page: params.page,
+      per_page: params.perPage,
+      issues_only: params.issuesOnly,
+      search: params.search?.trim() || undefined,
+      detected_type:
+        params.detectedType && params.detectedType !== "all"
+          ? params.detectedType
+          : undefined,
+      column_index: params.columnIndex ?? undefined,
+      sort_column_index: params.sortColumnIndex ?? undefined,
+      sort_direction: params.sortDirection ?? "asc",
+    },
+  });
 }
 
 export async function patchDataImportCell(params: {
@@ -147,16 +134,11 @@ export async function fetchDataImportJobs() {
   });
 }
 
-export async function fetchDataImportSummary(
-  importId: string
-) {
-  return apiFetch<DataImportAnalyzeResponse>(
-    `/data-import/${importId}/summary`,
-    {
-      method: "GET",
-      auth: true,
-    }
-  );
+export async function fetchDataImportSummary(importId: string) {
+  return apiFetch<DataImportAnalyzeResponse>(`/data-import/${importId}/summary`, {
+    method: "GET",
+    auth: true,
+  });
 }
 
 export async function deleteDataImportJob(importId: string) {
@@ -182,16 +164,11 @@ export async function patchDataImportDisplayName(params: {
   );
 }
 
-export async function fetchDataImportIssues(
-  importId: string,
-) {
-  return apiFetch<DataImportIssuesResponse>(
-    `/data-import/${importId}/issues`,
-    {
-      method: "GET",
-      auth: true,
-    }
-  );
+export async function fetchDataImportIssues(importId: string) {
+  return apiFetch<DataImportIssuesResponse>(`/data-import/${importId}/issues`, {
+    method: "GET",
+    auth: true,
+  });
 }
 
 export async function confirmDataImportColumns(params: {
@@ -205,81 +182,6 @@ export async function confirmDataImportColumns(params: {
       auth: true,
       body: {
         column_indexes: params.columnIndexes,
-      },
-    }
-  );
-}
-
-export async function uploadDataImportFiles(params: {
-  files: File[];
-  displayName: string | null;
-}) {
-  const formData = new FormData();
-
-  for (const file of params.files) {
-    formData.append("files", file);
-  }
-
-  if (params.displayName?.trim()) {
-    formData.append(
-      "display_name",
-      params.displayName.trim()
-    );
-  }
-
-  return apiFetch<DataImportWorkspaceUploadResponse>(
-    "/data-import/upload/batch",
-    {
-      method: "POST",
-      auth: true,
-      body: formData,
-    }
-  );
-}
-
-export async function addDataImportFiles(params: {
-  importId: string;
-  files: File[];
-}) {
-  const formData = new FormData();
-
-  for (const file of params.files) {
-    formData.append("files", file);
-  }
-
-  return apiFetch<DataImportWorkspaceUploadResponse>(
-    `/data-import/${params.importId}/files`,
-    {
-      method: "POST",
-      auth: true,
-      body: formData,
-    }
-  );
-}
-
-export async function fetchDataImportResources(
-  importId: string
-) {
-  return apiFetch<DataImportResourcesResponse>(
-    `/data-import/${importId}/files`,
-    {
-      method: "GET",
-      auth: true,
-    }
-  );
-}
-
-export async function selectDataImportResource(params: {
-  importId: string;
-  resourceId: string;
-}) {
-  return apiFetch<DataImportActiveResourceResponse>(
-    `/data-import/${params.importId}/active-resource`,
-    {
-      method: "PATCH",
-      auth: true,
-      body: {
-        resource_id: params.resourceId,
       },
     }
   );

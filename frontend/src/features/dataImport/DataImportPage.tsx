@@ -2,25 +2,8 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
-import {
-  addDataImportFiles,
-  analyzeDataImportFile,
-  confirmDataImportColumns,
-  deleteDataImportJob,
-  fetchDataImportJobs,
-  fetchDataImportPreview,
-  fetchDataImportSummary,
-  patchDataImportColumn,
-  uploadDataImportFiles,
-} from "@/features/dataImport/dataImportApi";
-import type {
-  DataImportAnalyzeResponse,
-  DataImportJobSummary,
-  DataImportPreviewFilters,
-  DataImportPreviewResponse,
-  ImportIssueGroup,
-  ImportSection,
-} from "@/features/dataImport/dataImportTypes";
+import { analyzeDataImportFile, confirmDataImportColumns, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, patchDataImportColumn, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
+import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewFilters, DataImportPreviewResponse, ImportIssueGroup, ImportSection } from "@/features/dataImport/dataImportTypes";
 import type { DataImportWorkflowStep } from "@/features/dataImport/dataImportWorkflowTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
@@ -30,7 +13,6 @@ import { DataImportStepPlaceholder } from "@/features/dataImport/components/Data
 import { DataImportExploreStep } from "@/features/dataImport/components/explore/DataImportExploreStep";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { DataImportImproveStep } from "@/features/dataImport/components/improve/DataImportImproveStep";
-import { DataImportUploadPanel } from "@/features/dataImport/components/upload/DataImportUploadPanel";
 
 type LoadingStep = "idle" | "upload" | "analyze" | "preview";
 
@@ -69,9 +51,6 @@ export default function DataImportPage() {
 
   const [loadingStep, setLoadingStep] = React.useState<LoadingStep>("idle");
   const [error, setError] = React.useState<string | null>(null);
-
-  const [showAddFilesModal, setShowAddFilesModal] =
-    React.useState(false);
 
   const [previewFilters, setPreviewFilters] =
     React.useState<DataImportPreviewFilters>(DEFAULT_PREVIEW_FILTERS);
@@ -122,22 +101,18 @@ export default function DataImportPage() {
         });
 
         if (!json.success) {
-            throw new Error(
-              json.detail || t("common.error")
-            );
+            throw new Error(json.detail || t("common.unknown"));
         }
 
         setPreview(json.data);
         } catch (err: any) {
-          console.error(err);
-        setError(
-            err?.message || t("common.error")
-        );
+        console.error(err);
+        setError(err?.message || t("common.error"));
         } finally {
-          setLoadingStep("idle");
+        setLoadingStep("idle");
         }
     },
-    [perPage, t]
+    [t]
   );
 
   React.useEffect(() => {
@@ -155,63 +130,40 @@ export default function DataImportPage() {
     );
   };
 
-  const openImport = async (
-    nextImportId: string,
-    alreadyAnalyzed: boolean
-  ) => {
-    setLoadingStep("analyze");
+  const openImport = async (nextImportId: string, alreadyAnalyzed: boolean) => {
     setError(null);
-    setImportId(nextImportId);
-    setAnalysis(null);
-    setPreview(null);
+    setLoadingStep("analyze");
 
     try {
-        let json: DataImportAnalyzeResponse;
+      setImportId(nextImportId);
 
-        if (alreadyAnalyzed) {
-          try {
-            json = await fetchDataImportSummary(
-            nextImportId
-            );
-          } catch {
-            json = await analyzeDataImportFile(
-            nextImportId
-            );
-          }
-        } else {
-          json = await analyzeDataImportFile(
-            nextImportId
-          );
-        }
+      const summaryJson = alreadyAnalyzed
+        ? await fetchDataImportSummary(nextImportId)
+        : await analyzeDataImportFile(nextImportId);
 
-        if (!json.success) {
-          throw new Error(
-            json.detail || t("common.error")
-          );
-        }
+      if (!summaryJson.success) {
+        throw new Error(summaryJson.detail || t("common.unknown"));
+      }
 
-        const nextAnalysis = json.data;
-        const firstSection = getDefaultSection(nextAnalysis);
+      const nextAnalysis = summaryJson.data;
+      const firstSection = getDefaultSection(nextAnalysis);
 
-        setAnalysis(nextAnalysis);
-        setSelectedSection(firstSection);
-        setPage(1);
-        setIssuesOnly(false);
-        setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
-        setActiveStep("explore");
-        setShowDropzone(false);
-        setShowJobs(false);
+      setAnalysis(nextAnalysis);
+      setSelectedSection(firstSection);
+      setPage(1);
+      setIssuesOnly(false);
+      setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
+      setActiveStep("explore");
+      setShowDropzone(false);
+      setShowJobs(false);
 
-        await loadPreview(nextImportId, firstSection, 1, false, DEFAULT_PREVIEW_FILTERS);
-
-        await loadJobs();
+      await loadPreview(nextImportId, firstSection, 1, false, DEFAULT_PREVIEW_FILTERS);
+      await loadJobs();
     } catch (err: any) {
-        console.error(err);
-        setError(
-          err?.message || t("common.error")
-        );
+      console.error(err);
+      setError(err?.message || t("common.error"));
     } finally {
-        setLoadingStep("idle");
+      setLoadingStep("idle");
     }
   };
 
@@ -330,11 +282,14 @@ export default function DataImportPage() {
         throw new Error(json.detail || t("common.error"));
       }
 
-      if (
-          importId === jobToDelete.import_id
-        ) {
-          resetCurrentImportView();
-        }
+      if (importId === jobToDelete.import_id) {
+        setImportId(null);
+        setAnalysis(null);
+        setPreview(null);
+        setActiveStep("explore");
+        setShowDropzone(true);
+        setShowJobs(true);
+      }
 
       setJobToDelete(null);
       await loadJobs();
@@ -348,10 +303,7 @@ export default function DataImportPage() {
     setJobToDelete(null);
   };
 
-  const handleCreateImport = async (params: {
-    files: File[];
-    displayName: string | null;
-  }) => {
+  const handleFileSelected = async (file: File) => {
     setLoadingStep("upload");
     setError(null);
     setAnalysis(null);
@@ -359,105 +311,23 @@ export default function DataImportPage() {
     setActiveStep("explore");
 
     try {
-        const uploadJson = await uploadDataImportFiles(params);
+      const uploadJson = await uploadDataImportFile(file);
 
-        if (!uploadJson.success) {
-          throw new Error(
-            uploadJson.detail || t("common.error")
-          );
-        }
+      if (!uploadJson.success) {
+        throw new Error(uploadJson.detail || t("common.unknown"));
+      }
 
-        const nextImportId = uploadJson.data.import_id;
-
-        setImportId(nextImportId);
-
-        const analysisJson = await analyzeDataImportFile(
-          nextImportId
-        );
-
-        if (!analysisJson.success) {
-          throw new Error(
-            analysisJson.detail || t("common.error")
-          );
-        }
-
-        const nextAnalysis = analysisJson.data;
-        const firstSection = getDefaultSection(nextAnalysis);
-
-        setAnalysis(nextAnalysis);
-        setSelectedSection(firstSection);
-        setPage(1);
-        setIssuesOnly(false);
-        setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
-        setShowDropzone(false);
-        setShowJobs(false);
-
-        await loadPreview(nextImportId, firstSection, 1, false, DEFAULT_PREVIEW_FILTERS);
-
-        await loadJobs();
+      await openImport(uploadJson.data.import_id, false);
     } catch (err: any) {
-        console.error(err);
-        setError(
-          err?.message || t("common.error")
-        );
+      console.error(err);
+      setError(err?.message || t("common.error"));
     } finally {
-        setLoadingStep("idle");
-    }
-  };
-
-  const handleAddFiles = async (files: File[]) => {
-    if (!importId || files.length === 0 || loading) return;
-
-    setLoadingStep("upload");
-    setError(null);
-
-    try {
-        const uploadJson = await addDataImportFiles({
-          importId,
-          files,
-        });
-
-        if (!uploadJson.success) {
-          throw new Error(
-            uploadJson.detail || t("common.error")
-          );
-        }
-
-        const analysisJson =
-        await analyzeDataImportFile(importId);
-
-        if (!analysisJson.success) {
-          throw new Error(
-            analysisJson.detail || t("common.error")
-          );
-        }
-
-        const nextAnalysis = analysisJson.data;
-        const firstSection = getDefaultSection(nextAnalysis);
-
-        setAnalysis(nextAnalysis);
-        setSelectedSection(firstSection);
-        setPage(1);
-        setIssuesOnly(false);
-        setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
-        setShowAddFilesModal(false);
-
-        await loadPreview(importId, firstSection, 1, false, DEFAULT_PREVIEW_FILTERS);
-        await loadJobs();
-    } catch (err: any) {
-        console.error(err);
-        setError(
-          err?.message || t("common.error")
-        );
-    } finally {
-        setLoadingStep("idle");
+      setLoadingStep("idle");
     }
   };
 
   const handleSectionChange = async (section: ImportSection) => {
-    if (!importId || loading) {
-        return;
-    }
+    if (!importId || loading) return;
 
     setSelectedSection(section);
     setPage(1);
@@ -480,7 +350,7 @@ export default function DataImportPage() {
   };
 
   const handleIssuesOnlyChange = async () => {
-    if (!importId || loading)  return;
+    if (!importId || loading) return;
 
     const nextValue = !issuesOnly;
     setIssuesOnly(nextValue);
@@ -515,9 +385,7 @@ export default function DataImportPage() {
   };
 
   const reloadCurrentPreview = async () => {
-    if (!importId) {
-        return;
-    }
+    if (!importId) return;
 
     await loadPreview(importId, selectedSection, page, issuesOnly, previewFilters);
   };
@@ -533,7 +401,6 @@ export default function DataImportPage() {
     setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
     setShowDropzone(true);
     setShowJobs(true);
-    setShowAddFilesModal(false);
   };
 
   return (
@@ -587,9 +454,9 @@ export default function DataImportPage() {
           className="rounded-3xl border p-4 sm:p-6"
           style={{ backgroundColor: background, borderColor }}
         >
-          <DataImportUploadPanel
-            loading={loading}
-            onSubmit={handleCreateImport}
+          <DataImportDropzone
+            disabled={loading}
+            onFileSelected={handleFileSelected}
           />
         </section>
       )}
