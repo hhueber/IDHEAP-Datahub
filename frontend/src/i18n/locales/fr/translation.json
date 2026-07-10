@@ -105,7 +105,8 @@
     "previous": "Precédent",
     "save": "Enregistrer",
     "saving": "Enregistrement...",
-    "search": "Rechercher"
+    "search": "Rechercher",
+    "remove": "Retirer"
   },
   "notFound": {
     "message": "Page introuvable."
@@ -571,10 +572,12 @@
       "label": "Fichier de données",
       "title": "Déposez un fichier CSV ou Excel ici",
       "description": "Ou cliquez pour choisir un fichier depuis votre ordinateur.",
-      "browse": "Choisir un fichier",
+      "browse": "Parcourir les fichiers",
       "formats": "Formats acceptés : CSV, XLSX, XLS",
       "dropActive": "Déposez le fichier ici",
-      "dropReject": "Ce fichier n’est pas accepté"
+      "dropReject": "Un ou plusieurs fichiers ne sont pas acceptés",
+      "descriptionMultiple": "Déposez un ou plusieurs fichiers CSV ou Excel.",
+      "dropActiveMultiple": "Déposez le ou les fichiers"
     },
     "loading": {
       "upload": "Tèlechargement du fichier...",
@@ -614,7 +617,8 @@
     "actions": {
       "showIssuesOnly": "Afficher uniquement les problèmes",
       "showAllRows": "Afficher toutes les lignes",
-      "changeFile": "Changer de fichier"
+      "changeFile": "Changer de fichier",
+      "changeImport": "Changer d’import"
     },
     "issues": {      
       "sectionNeedsConfirmation": "Cette colonne a été classée automatiquement. Vérifie si la section proposée est correcte.",
@@ -640,16 +644,27 @@
       "ignored": "Colonnes exclues de l’import."
     },
     "jobs": {
-      "title": "Travaux d’import en cours",
+      "title": "Dossiers d’import",
       "resume": "Reprendre",
       "delete": "Supprimer",
-      "notAnalyzed": "Pas encore analysé",
+      "notAnalyzed": "Dossier non analysé",
       "show": "Afficher les travaux",
       "hide": "Masquer les travaux",
-      "available": "travaux disponibles",
+      "available": "dossiers disponibles",
       "current": "Ouvert",
       "deleteTitle": "Supprimer l’import",
-      "confirmDelete": "Voulez-vous vraiment supprimer l’import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés."
+      "confirmDelete": "Voulez-vous vraiment supprimer l’import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés.",
+      "opened": "Ouvert",
+      "unnamed": "Dossier sans nom",
+      "file": "fichier",
+      "files": "fichiers",
+      "resource": "ressource",
+      "resources": "ressources",
+      "activeResourceSummary": "Ressource actuellement ouverte",
+      "createdAt": "Créé le {{date}}",
+      "generatedName": "Nom généré automatiquement",
+      "availableSingle": "dossier disponible",
+      "folderSummary": "Résumé global du dossier"
     },
     "analysis": {
       "title": "Analyse du fichier"
@@ -753,6 +768,28 @@
         "clear": "Vider la sélection",
         "confirm": "Confirmer la sélection ({{count}})"
       }
+    },
+    "upload": {
+      "title": "Créer un import",
+      "description": "Ajoutez un ou plusieurs fichiers appartenant au même dataset ou à la même étude.",
+      "folderName": "Nom du dossier d’import",
+      "folderNamePlaceholder": "Par exemple : Étude communale 2026",
+      "folderNameHelp": "Ce nom permettra de retrouver facilement cet import plus tard.",
+      "selectedFiles": "Fichiers sélectionnés",
+      "files": "fichiers",
+      "clear": "Tout retirer",
+      "create": "Créer le dossier et importer"
+    },
+    "resources": {
+      "title": "Fichiers et feuilles",
+      "available": "ressources disponibles",
+      "active": "Ouvert",
+      "sheet": "Feuille",
+      "notAnalyzed": "Non analysé",
+      "addFiles": "Ajouter des fichiers",
+      "addFilesDescription": "Les nouveaux fichiers seront ajoutés au dossier courant sans supprimer les données déjà traitées.",
+      "addSelected": "Ajouter les fichiers",
+      "none": "Aucune ressource exploitable n’a été trouvée dans cet import."
     }
   }
 }

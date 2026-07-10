@@ -2,19 +2,19 @@ import { FileDropzone } from "@/utils/FileDropzone";
 
 type DataImportDropzoneProps = {
   disabled?: boolean;
-  onFileSelected: (file: File) => void;
+  onFilesSelected: (files: File[]) => void;
 };
 
 export function DataImportDropzone({
   disabled = false,
-  onFileSelected,
+  onFilesSelected,
 }: DataImportDropzoneProps) {
   return (
     <FileDropzone
       labels={{
         labelKey: "dataImport.dropzone.label",
         dropZoneKey: "dataImport.dropzone.title",
-        dropHintKey: "dataImport.dropzone.description",
+        dropHintKey: "dataImport.dropzone.descriptionMultiple",
         browseKey: "dataImport.dropzone.browse",
         formatsKey: "dataImport.dropzone.formats",
         dropActiveKey: "dataImport.dropzone.dropActive",
@@ -29,9 +29,10 @@ export function DataImportDropzone({
       ]}
       acceptedExtensions={[".csv", ".xlsx", ".xls"]}
       disabled={disabled}
+      multiple
       showFormats
       icon={'\u2191'} // Unicode pour ce symbole ↑
-      onFileAccepted={onFileSelected}
+      onFilesAccepted={onFilesSelected}
     />
   );
 }

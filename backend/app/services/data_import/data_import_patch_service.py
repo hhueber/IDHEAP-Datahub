@@ -36,7 +36,16 @@ async def patch_import_cell(
     import_dir = get_import_dir(import_id)
     df = read_frame(import_dir)
 
-    df.iat[payload.row_index, payload.column_index] = payload.value
+    if payload.row_index < 0 or payload.row_index >= len(df):
+        raise ValueError("Invalid row index")
+
+    if payload.column_index < 0 or payload.column_index >= len(df.columns):
+        raise ValueError("Invalid column index")
+
+    df.iat[
+        payload.row_index,
+        payload.column_index,
+    ] = payload.value
 
     return recalculate_after_column_change(
         import_dir=import_dir,
@@ -153,17 +162,42 @@ def recalculate_after_column_change(
     target_column["issue_count"] = len(column_issues)
 
     analysis["total_issues"] = sum(len(items) for items in issues_by_column.values())
+
     analysis["sections"] = build_sections_summary(
         df=df,
         columns_summary=analysis["columns_summary"],
         issues_by_column=issues_by_column,
     )
 
-    write_frame(import_dir, df)
-    write_analysis(import_dir, analysis)
-    write_issues(import_dir, issues_by_column)
+    write_frame(
+        import_dir,
+        df,
+    )
+
+    write_analysis(
+        import_dir,
+        analysis,
+    )
+
+    write_issues(
+        import_dir,
+        issues_by_column,
+    )
 
     return analysis
+
+
+def validate_cell_coordinates(
+    *,
+    df: pd.DataFrame,
+    row_index: int,
+    column_index: int,
+) -> None:
+    if row_index < 0 or row_index >= len(df):
+        raise ValueError("Invalid row index")
+
+    if column_index < 0 or column_index >= len(df.columns):
+        raise ValueError("Invalid column index")
 
 
 def get_column_summary(

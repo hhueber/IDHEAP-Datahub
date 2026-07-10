@@ -15,7 +15,9 @@ from app.schemas.data_import import (
     DataImportPatchResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
+    DataImportResourcesResponse,
     DataImportUploadResponse,
+    DataImportWorkspaceUploadResponse,
     ImportSectionEnum,
 )
 from app.services.data_import.data_import_patch_service import (
@@ -26,15 +28,17 @@ from app.services.data_import.data_import_patch_service import (
 )
 from app.services.data_import.data_import_service import (
     analyze_import_file,
+    create_import_workspace,
     delete_import_job,
     get_import_issue_groups,
     get_import_summary,
     list_import_jobs,
+    list_import_resources,
     preview_import_section,
     save_import_upload,
     update_import_display_name,
 )
-from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -236,4 +240,65 @@ async def confirm_data_import_columns(
         "success": True,
         "detail": "Columns confirmed",
         "data": analysis,
+    }
+
+
+@router.post("/upload/batch", response_model=DataImportWorkspaceUploadResponse)
+async def upload_data_files(
+    files: list[UploadFile] = File(...),
+    display_name: str | None = Form(None),
+    _current_user=Depends(
+        require_permission(
+            PermissionScope.DATASET,
+            PermissionLevel.MANAGE,
+        )
+    ),
+):
+    data = await create_import_workspace(
+        files=files,
+        display_name=display_name,
+    )
+
+    return {
+        "success": True,
+        "detail": "Files uploaded",
+        "data": data,
+    }
+
+
+@router.post("/{import_id}/files", response_model=DataImportWorkspaceUploadResponse)
+async def get_data_import_files(
+    import_id: str,
+    _current_user=Depends(
+        require_permission(
+            PermissionScope.DATASET,
+            PermissionLevel.MANAGE,
+        )
+    ),
+):
+    data = await list_import_resources(import_id)
+
+    return {
+        "success": True,
+        "detail": "Import resources loaded",
+        "data": data,
+    }
+
+
+@router.get("/{import_id}/files", response_model=DataImportResourcesResponse)
+async def get_data_import_files(
+    import_id: str,
+    _current_user=Depends(
+        require_permission(
+            PermissionScope.DATASET,
+            PermissionLevel.MANAGE,
+        )
+    ),
+):
+    data = await list_import_resources(import_id)
+
+    return {
+        "success": True,
+        "detail": "Import resources loaded",
+        "data": data,
     }

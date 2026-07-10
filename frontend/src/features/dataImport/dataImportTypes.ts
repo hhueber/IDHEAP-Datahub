@@ -69,6 +69,8 @@ export type DataImportAnalyzeResponse = {
     columns: number;
     cells: number;
     orientation: ImportOrientation;
+    files_count?: number;
+    resources_count?: number;
     detected_survey: {
       name: string | null;
       year: number | null;
@@ -122,6 +124,7 @@ export type DataImportPreviewResponse = {
   detail: string;
   data: {
     import_id: string;
+    resource_id?: string | null;
     section: ImportSection;
     page: number;
     per_page: number;
@@ -159,6 +162,8 @@ export type DataImportJobSummary = {
   total_issues: number | null;
   detected_survey_name: string | null;
   detected_survey_year: number | null;
+  files_count: number;
+  resources_count: number;
 };
 
 export type DataImportListResponse = {
@@ -219,10 +224,63 @@ export type DataImportIssuesResponse = {
   detail: string;
   data: {
     import_id: string;
+    resource_id?: string | null;
     total_groups: number;
     total_issues: number;
     blocking_issues: number;
     warning_issues: number;
     groups: ImportIssueGroup[];
+  };
+};
+
+export type DataImportResourceSummary = {
+  resource_id: string;
+  source_id: string;
+  filename: string;
+  sheet_name: string | null;
+  display_name: string;
+  raw_path: string;
+  created_at: string | null;
+  analyzed?: boolean;
+  rows?: number | null;
+  columns?: number | null;
+  readable?: boolean | null;
+};
+
+export type DataImportWorkspaceUploadData = {
+  import_id: string;
+  display_name: string | null;
+  size: number;
+  files_count: number;
+  resources_count: number;
+  active_resource_id: string;
+  resources: DataImportResourceSummary[];
+  added_resources: DataImportResourceSummary[];
+};
+
+export type DataImportWorkspaceUploadResponse = {
+  success: boolean;
+  detail: string;
+  data: DataImportWorkspaceUploadData;
+};
+
+export type DataImportResourcesData = {
+  import_id: string;
+  resources: DataImportResourceSummary[];
+};
+
+export type DataImportResourcesResponse = {
+  success: boolean;
+  detail: string;
+  data: DataImportResourcesData;
+};
+
+export type DataImportActiveResourceResponse = {
+  success: boolean;
+  detail: string;
+  data: {
+    import_id: string;
+    active_resource_id: string;
+    resource: DataImportResourceSummary;
   };
 };

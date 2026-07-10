@@ -1,5 +1,4 @@
-// composant de drag and drop de fichier pour l'ensemble de l'application
-import React, { ChangeEvent, DragEvent, useRef, useState } from "react";
+import React, {ChangeEvent, DragEvent, useRef, useState} from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
 
@@ -30,7 +29,10 @@ type FileDropzoneProps = {
 
   icon?: React.ReactNode;
 
-  onFileAccepted: (file: File) => void | Promise<void>;
+  multiple?: boolean;
+  onFileAccepted?: (file: File) => void | Promise<void>;
+  onFilesAccepted?: (files: File[]) => void | Promise<void>;
+
   onUrlAccepted?: (url: string) => void;
   onClear?: () => void;
   onError?: (message: string) => void;
@@ -48,8 +50,10 @@ export function FileDropzone({
   disabled = false,
   allowTextUrl = false,
   hasValue = false,
-  icon = "\u2191", // Unicode pour ce symbole ↑
+  icon = "\u2191",
+  multiple = false,
   onFileAccepted,
+  onFilesAccepted,
   onUrlAccepted,
   onClear,
   onError,
@@ -72,8 +76,15 @@ export function FileDropzone({
   const validateFile = (file: File): string | null => {
     const lowerName = file.name.toLowerCase();
 
+    /*
+     * Certains navigateurs ne renseignent pas correctement file.type,
+     * notamment pour certains CSV.
+     *
+     * Le fichier est donc accepté si son MIME OU son extension est valide.
+     */
     const mimeOk =
-      acceptedMimeTypes.length === 0 || acceptedMimeTypes.includes(file.type);
+      acceptedMimeTypes.length === 0 ||
+      acceptedMimeTypes.includes(file.type);
 
     const extensionOk =
       acceptedExtensions.length === 0 ||
@@ -89,29 +100,152 @@ export function FileDropzone({
       const maxBytes = maxSizeMb * 1024 * 1024;
 
       if (file.size > maxBytes) {
-        return t("common.fileTooLarge", { size: maxSizeMb });
+        return t("common.fileTooLarge", {
+          size: maxSizeMb,
+        });
       }
     }
 
     return null;
   };
 
-  const handleFile = async (file: File) => {
-    if (disabled) return;
+  const validateFiles = (
+    files: File[]
+  ): {
+    acceptedFiles: File[];
+    rejectedFiles: Array<{
+      file: File;
+      error: string;
+    }>;
+  } => {
+    const acceptedFiles: File[] = [];
+    const rejectedFiles: Array<{
+      file: File;
+      error: string;
+    }> = [];
 
-    const error = validateFile(file);
+    for (const file of files) {
+      const error = validateFile(file);
 
-    if (error) {
-      setIsDragReject(true);
-      onError?.(error);
+      if (error) {
+        rejectedFiles.push({
+          file,
+          error,
+        });
+      } else {
+        acceptedFiles.push(file);
+      }
+    }
+
+    return {
+      acceptedFiles,
+      rejectedFiles,
+    };
+  };
+
+  const emitAcceptedFiles = async (
+    files: File[]
+  ): Promise<void> => {
+    if (files.length === 0) {
       return;
     }
 
-    setIsDragReject(false);
-    await onFileAccepted(file);
+    /*
+     * Mode multiple :
+     * tous les fichiers valides sont transmis ensemble.
+     *
+     * Un seul fichier reste parfaitement supporté :
+     * onFilesAccepted([file]).
+     */
+    if (multiple) {
+      if (onFilesAccepted) {
+        await onFilesAccepted(files);
+        return;
+      }
+
+      /*
+       * Fallback de compatibilité :
+       * si multiple=true mais seul onFileAccepted est fourni,
+       * les fichiers sont transmis un par un.
+       */
+      if (onFileAccepted) {
+        for (const file of files) {
+          await onFileAccepted(file);
+        }
+      }
+
+      return;
+    }
+
+    /*
+     * Mode simple :
+     * seul le premier fichier valide est transmis.
+     */
+    const firstFile = files[0];
+
+    if (onFileAccepted) {
+      await onFileAccepted(firstFile);
+      return;
+    }
+
+    /*
+     * Fallback inverse :
+     * un composant peut fournir uniquement onFilesAccepted même en mode simple.
+     */
+    if (onFilesAccepted) {
+      await onFilesAccepted([firstFile]);
+    }
   };
 
-  const handleDrop = async (event: DragEvent<HTMLDivElement>) => {
+  const handleFiles = async (
+    incomingFiles: File[]
+  ): Promise<void> => {
+    if (disabled || incomingFiles.length === 0) {
+      return;
+    }
+
+    /*
+     * En mode simple, on ne valide que le premier fichier.
+     * En mode multiple, tous les fichiers sont validés.
+     */
+    const filesToValidate = multiple
+      ? incomingFiles
+      : incomingFiles.slice(0, 1);
+
+    const {
+      acceptedFiles,
+      rejectedFiles,
+    } = validateFiles(filesToValidate);
+
+    if (rejectedFiles.length > 0) {
+      setIsDragReject(true);
+
+      /*
+       * On remonte une erreur lisible pour chaque fichier refusé.
+       * Les fichiers valides restent acceptés.
+       */
+      const errorMessage = rejectedFiles
+        .map(
+          ({ file, error }) =>
+            `${file.name}: ${error}`
+        )
+        .join("\n");
+
+      onError?.(errorMessage);
+    } else {
+      setIsDragReject(false);
+    }
+
+    /*
+     * Un lot peut contenir à la fois des fichiers valides et invalides.
+     * Les fichiers valides sont tout de même transmis.
+     */
+    await emitAcceptedFiles(acceptedFiles);
+  };
+
+  const handleDrop = async (
+    event: DragEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
     event.stopPropagation();
 
@@ -119,80 +253,144 @@ export function FileDropzone({
     setIsDragActive(false);
     setIsDragReject(false);
 
-    if (disabled) return;
-    if (allowTextUrl) {
-      const text = event.dataTransfer.getData("text/plain")?.trim();
+    if (disabled) {
+      return;
+    }
 
-      if (text && (text.startsWith("http://") || text.startsWith("https://") || text.startsWith("/"))) {
+    /*
+     * Le mode URL reste réservé aux dropzones qui l'utilisent.
+     * Une URL détectée est traitée avant les fichiers.
+     */
+    if (allowTextUrl) {
+      const text = event.dataTransfer
+        .getData("text/plain")
+        ?.trim();
+
+      if (
+        text &&
+        (
+          text.startsWith("http://") ||
+          text.startsWith("https://") ||
+          text.startsWith("/")
+        )
+      ) {
         onUrlAccepted?.(text);
         return;
       }
     }
-    const file = event.dataTransfer.files?.[0];
-    if (!file) return;
-    await handleFile(file);
+
+    const files = Array.from(
+      event.dataTransfer.files ?? []
+    );
+
+    if (files.length === 0) {
+      return;
+    }
+
+    await handleFiles(files);
   };
 
-  const handleFileInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleFileInputChange = async (
+    event: ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = Array.from(
+      event.target.files ?? []
+    );
 
-    if (!file) return;
-    await handleFile(file);
+    /*
+     * Réinitialisation immédiate de l'input.
+     * Cela permet de sélectionner à nouveau les mêmes fichiers.
+     */
     event.target.value = "";
+
+    if (files.length === 0) {
+      return;
+    }
+
+    await handleFiles(files);
   };
 
-  const updateDragRejectState = (event: DragEvent<HTMLDivElement>) => {
-    const item = event.dataTransfer.items?.[0];
+  const updateDragRejectState = (
+    event: DragEvent<HTMLDivElement>
+  ) => {
+    const items = Array.from(
+      event.dataTransfer.items ?? []
+    );
 
-    if (!item) return;
-    if (item.kind === "string" && allowTextUrl) {
+    if (items.length === 0) {
+      return;
+    }
+
+    if (
+      allowTextUrl &&
+      items.some((item) => item.kind === "string")
+    ) {
       setIsDragReject(false);
       return;
     }
-    if (item.kind !== "file") {
+
+    const fileItems = multiple
+      ? items.filter((item) => item.kind === "file")
+      : items
+          .filter((item) => item.kind === "file")
+          .slice(0, 1);
+
+    if (fileItems.length === 0) {
       setIsDragReject(true);
       return;
     }
 
-    const mimeOk =
-      acceptedMimeTypes.length === 0 || acceptedMimeTypes.includes(item.type);
+    const containsRejectedMime = fileItems.some(
+      (item) =>
+        acceptedMimeTypes.length > 0 &&
+        Boolean(item.type) &&
+        !acceptedMimeTypes.includes(item.type) &&
+        acceptedExtensions.length === 0
+    );
 
-    /*
-      Pendant le drag, le navigateur ne donne pas toujours le nom du fichier,
-      donc on ne peut pas toujours vérifier l’extension ici.
-      La vraie validation se fait dans handleFile().
-    */
-    if (!mimeOk && acceptedExtensions.length === 0) {
-      setIsDragReject(true);
-      return;
-    }
-
-    setIsDragReject(false);
+    setIsDragReject(containsRejectedMime);
   };
 
-  const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragEnter = (
+    event: DragEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
     event.stopPropagation();
 
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
+
     dragCounterRef.current += 1;
     setIsDragActive(true);
     updateDragRejectState(event);
   };
 
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (
+    event: DragEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
     event.stopPropagation();
-    if (disabled) return;
+
+    if (disabled) {
+      return;
+    }
+
     updateDragRejectState(event);
   };
 
-  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+  const handleDragLeave = (
+    event: DragEvent<HTMLDivElement>
+  ) => {
     event.preventDefault();
     event.stopPropagation();
 
-    if (disabled) return;
+    if (disabled) {
+      return;
+    }
+
     dragCounterRef.current -= 1;
+
     if (dragCounterRef.current <= 0) {
       dragCounterRef.current = 0;
       setIsDragActive(false);
@@ -201,7 +399,12 @@ export function FileDropzone({
   };
 
   return (
-    <div className={["space-y-2", className].join(" ")}>
+    <div
+      className={[
+        "space-y-2",
+        className,
+      ].join(" ")}
+    >
       {labels.labelKey && (
         <label className="text-sm font-medium opacity-80">
           {t(labels.labelKey)}
@@ -210,10 +413,14 @@ export function FileDropzone({
 
       <div
         className={[
-          "group relative rounded-2xl border p-6 transition-all duration-200 cursor-pointer overflow-hidden",
+          "group relative cursor-pointer overflow-hidden rounded-2xl border p-6 transition-all duration-200",
           "hover:-translate-y-[1px] hover:shadow-md",
-          isDragActive ? "scale-[1.01]" : "scale-100",
-          disabled ? "pointer-events-none opacity-60" : "",
+          isDragActive
+            ? "scale-[1.01]"
+            : "scale-100",
+          disabled
+            ? "pointer-events-none opacity-60"
+            : "",
         ].join(" ")}
         style={{
           borderColor: isDragReject
@@ -221,7 +428,9 @@ export function FileDropzone({
             : isDragActive
               ? primary
               : borderColor,
-          backgroundColor: isDragActive ? hoverPrimary10 : background,
+          backgroundColor: isDragActive
+            ? hoverPrimary10
+            : background,
           boxShadow: isDragActive
             ? `0 0 0 3px ${hoverPrimary15}`
             : "0 1px 2px rgba(0,0,0,0.04)",
@@ -232,7 +441,14 @@ export function FileDropzone({
           }
         }}
         onKeyDown={(event) => {
-          if ((event.key === "Enter" || event.key === " ") && !disabled) {
+          if (
+            (
+              event.key === "Enter" ||
+              event.key === " "
+            ) &&
+            !disabled
+          ) {
+            event.preventDefault();
             fileInputRef.current?.click();
           }
         }}
@@ -247,14 +463,20 @@ export function FileDropzone({
         {isDragActive && (
           <div
             className="absolute inset-0 flex items-center justify-center"
-            style={{ backgroundColor: hoverPrimary10 }}
+            style={{
+              backgroundColor: hoverPrimary10,
+            }}
             aria-hidden
           >
             <div
               className="rounded-full border px-4 py-2 text-sm font-semibold shadow-sm"
               style={{
-                borderColor: isDragReject ? "#ef4444" : primary,
-                color: isDragReject ? "#ef4444" : primary,
+                borderColor: isDragReject
+                  ? "#ef4444"
+                  : primary,
+                color: isDragReject
+                  ? "#ef4444"
+                  : primary,
                 backgroundColor: background,
               }}
             >
@@ -268,7 +490,9 @@ export function FileDropzone({
         <div
           className={[
             "flex flex-col items-center justify-center text-center transition-all duration-200",
-            isDragActive ? "opacity-0 scale-95" : "opacity-100 scale-100",
+            isDragActive
+              ? "scale-95 opacity-0"
+              : "scale-100 opacity-100",
           ].join(" ")}
         >
           <div
@@ -340,6 +564,7 @@ export function FileDropzone({
           ref={fileInputRef}
           type="file"
           accept={accept}
+          multiple={multiple}
           className="hidden"
           onChange={handleFileInputChange}
           disabled={disabled}

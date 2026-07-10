@@ -13,7 +13,6 @@ UPLOAD_DIR = Path("tmp/data_imports")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# TODO: modifier la logique de stockage par la suite en .parquet ou autres formats
 def get_import_dir(import_id: str) -> Path:
     import_dir = UPLOAD_DIR / import_id
 
@@ -54,39 +53,134 @@ def write_metadata(import_dir: Path, metadata: dict[str, Any]) -> None:
     write_json(import_dir / "metadata.json", metadata)
 
 
+def get_workspace_dir(import_dir: Path) -> Path:
+    workspace_dir = import_dir / "workspace"
+    workspace_dir.mkdir(parents=True, exist_ok=True)
+
+    return workspace_dir
+
+
+def delete_import_dir(import_id: str) -> None:
+    import_dir = get_import_dir(import_id)
+    shutil.rmtree(import_dir)
+
+
+def get_sources_dir(import_dir: Path) -> Path:
+    path = import_dir / "sources"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def get_resources_dir(import_dir: Path) -> Path:
+    path = import_dir / "resources"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def get_source_dir(import_dir: Path, source_id: str) -> Path:
+    source_dir = get_sources_dir(import_dir) / source_id
+
+    if not source_dir.exists() or not source_dir.is_dir():
+        raise ValueError("Import source not found")
+
+    return source_dir
+
+
+def get_resource_dir(import_dir: Path, resource_id: str) -> Path:
+    resource_dir = get_resources_dir(import_dir) / resource_id
+
+    if not resource_dir.exists() or not resource_dir.is_dir():
+        raise ValueError("Import resource not found")
+
+    return resource_dir
+
+
+def create_source_dir(import_dir: Path, source_id: str) -> Path:
+    source_dir = get_sources_dir(import_dir) / source_id
+    source_dir.mkdir(parents=True, exist_ok=False)
+    return source_dir
+
+
+def create_resource_dir(import_dir: Path, resource_id: str) -> Path:
+    resource_dir = get_resources_dir(import_dir) / resource_id
+    resource_dir.mkdir(parents=True, exist_ok=False)
+    return resource_dir
+
+
 def read_analysis(import_dir: Path) -> dict[str, Any]:
-    return read_json(import_dir / "analysis.json")
+    path = get_workspace_dir(import_dir) / "analysis.json"
+
+    if not path.exists():
+        raise ValueError("Import has not been analyzed yet")
+
+    return read_json(path)
 
 
-def write_analysis(import_dir: Path, analysis: dict[str, Any]) -> None:
-    write_json(import_dir / "analysis.json", analysis)
+def write_analysis(
+    import_dir: Path,
+    analysis: dict[str, Any],
+) -> None:
+    write_json(get_workspace_dir(import_dir) / "analysis.json", analysis)
 
 
-def read_issues(import_dir: Path) -> dict[str, list[dict[str, Any]]]:
-    return read_json(import_dir / "issues.json")
+def read_issues(
+    import_dir: Path,
+) -> dict[str, list[dict[str, Any]]]:
+    path = get_workspace_dir(import_dir) / "issues.json"
+
+    if not path.exists():
+        raise ValueError("Import issues have not been generated yet")
+
+    return read_json(path)
 
 
 def write_issues(
     import_dir: Path,
     issues_by_column: dict[str, list[dict[str, Any]]],
 ) -> None:
-    write_json(import_dir / "issues.json", issues_by_column)
+    write_json(
+        get_workspace_dir(import_dir) / "issues.json",
+        issues_by_column,
+    )
 
 
 def read_frame(import_dir: Path) -> pd.DataFrame:
-    frame_path = import_dir / "frame.pkl"
+    frame_path = get_workspace_dir(import_dir) / "frame.pkl"
 
     if not frame_path.exists():
-        metadata = read_metadata(import_dir)
-        return read_import_file(Path(metadata["raw_path"]))
+        raise ValueError("Import workspace has not been built yet")
 
     return pd.read_pickle(frame_path)
 
 
-def write_frame(import_dir: Path, df: pd.DataFrame) -> None:
-    df.to_pickle(import_dir / "frame.pkl")
+def write_frame(
+    import_dir: Path,
+    df: pd.DataFrame,
+) -> None:
+    df.to_pickle(get_workspace_dir(import_dir) / "frame.pkl")
 
 
-def delete_import_dir(import_id: str) -> None:
-    import_dir = get_import_dir(import_id)
-    shutil.rmtree(import_dir)
+def resource_has_analysis(
+    import_dir: Path,
+    resource_id: str,
+) -> bool:
+    resource_dir = get_resource_dir(import_dir, resource_id)
+
+    return (
+        (resource_dir / "analysis.json").exists()
+        and (resource_dir / "issues.json").exists()
+        and (resource_dir / "frame.pkl").exists()
+    )
+
+
+def invalidate_import_workspace(
+    import_dir: Path,
+) -> None:
+    workspace_dir = import_dir / "workspace"
+
+    if workspace_dir.exists():
+        shutil.rmtree(workspace_dir)
+
+    metadata = read_metadata(import_dir)
+    metadata["analyzed"] = False
+    write_metadata(import_dir, metadata)
