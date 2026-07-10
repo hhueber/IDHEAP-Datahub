@@ -7,10 +7,12 @@ from app.repositories.placeOfInterest_repo import (
     list_placeOfInterest,
     upsert_placeOfInterest,
 )
+from app.schemas.geo import GeoBundle
 from app.schemas.placeOfInterest import PlaceOfInterestIn
 from app.schemas.theme_config import LogoUploadPayload, ThemeConfig
 from app.schemas.user import Role, UserPublic
 from app.services.config_service import handle_logo_data_url
+from app.services.geo_service import get_geo_by_canton_preview
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -127,4 +129,40 @@ async def theme_logo_upload_base64(
         "success": True,
         "detail": "Logo updated",
         "data": {"url": public_url},
+    }
+
+
+@router.get("/theme/map-preview")
+async def theme_map_preview(
+    db: AsyncSession = Depends(get_db),
+    current: UserPublic = Depends(get_current_user),
+):
+    """
+    Retourne les données GeoJSON nécessaires à la preview de la carte
+    dans la page de configuration du thème.
+
+    Pour éviter de charger toute la Suisse dans une simple preview,
+    on limite volontairement la réponse au canton de Vaud.
+    """
+    ensure_admin(current)
+
+    bundle = await get_geo_by_canton_preview(
+        db,
+        canton_ofs_id=22,
+        requested_year=None,
+    )
+
+    data = bundle.model_dump()
+
+    return {
+        "success": True,
+        "detail": "OK",
+        "data": {
+            "year": data.get("year"),
+            "country": data.get("country"),
+            "lakes": data.get("lakes"),
+            "cantons": data.get("cantons"),
+            "districts": data.get("districts"),
+            "communes": data.get("communes"),
+        },
     }

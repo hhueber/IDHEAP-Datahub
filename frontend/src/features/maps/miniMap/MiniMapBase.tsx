@@ -11,6 +11,7 @@ type Props = {
   minZoom?: number;
   maxZoom?: number;
   className?: string;
+  mapBackground?: string;
 };
 
 export default function MiniMapBase({
@@ -21,6 +22,7 @@ export default function MiniMapBase({
   minZoom = 7,
   maxZoom = 12,
   className = "w-full h-full",
+  mapBackground,
 }: Props) {
   const { background } = useTheme();
 
@@ -36,11 +38,11 @@ export default function MiniMapBase({
         dragging={true}
         doubleClickZoom={true}
         scrollWheelZoom={false}
-        boxZoom={true}
-        keyboard={true}
+        boxZoom={false}
+        keyboard={false}
         attributionControl={false}
         className={className}
-        style={{ background }}
+        style={{ background: mapBackground ?? background }}
       >
         {children}
       </MapContainer>

@@ -1,4 +1,5 @@
 import { apiFetch } from "@/shared/apiFetch";
+import type { ThemeMapPreviewBundle } from "@/features/admin/components/theme/themeMapPreview.types";
 
 export type ThemeMode = "light" | "dark";
 
@@ -80,4 +81,49 @@ export async function uploadThemeLogo(dataUrl: string): Promise<string> {
   }
 
   return res.data.url;
+}
+
+type ApiEnvelope<T> = {
+  success: boolean;
+  detail: string;
+  data: T;
+};
+
+let themeMapPreviewCache: ThemeMapPreviewBundle | null = null;
+let themeMapPreviewPromise: Promise<ThemeMapPreviewBundle> | null = null;
+
+export async function fetchThemeMapPreview(): Promise<ThemeMapPreviewBundle> {
+  if (themeMapPreviewCache) {
+    return themeMapPreviewCache;
+  }
+
+  if (themeMapPreviewPromise) {
+    return themeMapPreviewPromise;
+  }
+
+  themeMapPreviewPromise = apiFetch<ApiEnvelope<ThemeMapPreviewBundle>>(
+    "/config/theme/map-preview",
+    {
+      method: "GET",
+      auth: true,
+    }
+  )
+    .then((res) => {
+      if (!res.success) {
+        throw new Error(res.detail || "Failed to load theme map preview");
+      }
+
+      themeMapPreviewCache = res.data;
+      return res.data;
+    })
+    .finally(() => {
+      themeMapPreviewPromise = null;
+    });
+
+  return themeMapPreviewPromise;
+}
+
+export function clearThemeMapPreviewCache() {
+  themeMapPreviewCache = null;
+  themeMapPreviewPromise = null;
 }
