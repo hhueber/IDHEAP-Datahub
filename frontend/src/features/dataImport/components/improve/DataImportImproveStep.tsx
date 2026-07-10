@@ -7,21 +7,26 @@ import type {
   ImportIssueGroup,
 } from "@/features/dataImport/dataImportTypes";
 import LoadingDots from "@/utils/LoadingDots";
+import Pagination from "@/utils/Pagination";
 
 type DataImportImproveStepProps = {
   importId: string;
   loading: boolean;
   onOpenIssueGroup: (group: ImportIssueGroup) => Promise<void>;
   onConfirmColumnIssue: (group: ImportIssueGroup) => Promise<void>;
+  onConfirmColumnIssues: (groups: ImportIssueGroup[]) => Promise<void>;
 };
 
 type IssueSeverityFilter = "all" | "error" | "warning";
+
+const GROUPS_PER_PAGE = 20;
 
 export function DataImportImproveStep({
   importId,
   loading,
   onOpenIssueGroup,
   onConfirmColumnIssue,
+  onConfirmColumnIssues,
 }: DataImportImproveStepProps) {
   const { t } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
@@ -33,6 +38,10 @@ export function DataImportImproveStep({
   const [search, setSearch] = React.useState("");
   const [localLoading, setLocalLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
+  const [page, setPage] = React.useState(1);
+  const [selectedGroupIds, setSelectedGroupIds] = React.useState<Set<string>>(
+    () => new Set()
+  );
 
   const loadIssues = React.useCallback(async () => {
     setLocalLoading(true);
@@ -46,6 +55,14 @@ export function DataImportImproveStep({
       }
 
       setData(json.data);
+
+      setSelectedGroupIds((current) => {
+        const validIds = new Set(json.data.groups.map((group) => group.id));
+
+        return new Set(
+          Array.from(current).filter((groupId) => validIds.has(groupId))
+        );
+      });
     } catch (err: any) {
       console.error(err);
       setError(err?.message || t("common.error"));
@@ -81,6 +98,99 @@ export function DataImportImproveStep({
         .includes(normalizedSearch);
     });
   }, [data?.groups, search, severityFilter]);
+
+  const totalPages = React.useMemo(() => {
+    return Math.max(1, Math.ceil(filteredGroups.length / GROUPS_PER_PAGE));
+  }, [filteredGroups.length]);
+
+    const currentPage = Math.min(page, totalPages);
+
+  const paginatedGroups = React.useMemo(() => {
+    const start = (currentPage - 1) * GROUPS_PER_PAGE;
+    const end = start + GROUPS_PER_PAGE;
+
+    return filteredGroups.slice(start, end);
+  }, [currentPage, filteredGroups]);
+
+  const selectedGroups = React.useMemo(() => {
+    const groupsById = new Map(
+        (data?.groups ?? []).map((group) => [group.id, group])
+    );
+
+    return Array.from(selectedGroupIds)
+        .map((groupId) => groupsById.get(groupId))
+        .filter((group): group is ImportIssueGroup => !!group);
+  }, [data?.groups, selectedGroupIds]);
+
+  const selectedConfirmableGroups = React.useMemo(() => {
+    return selectedGroups.filter(
+        (group) => group.code === "SECTION_NEEDS_CONFIRMATION"
+    );
+  }, [selectedGroups]);
+
+  React.useEffect(() => {
+    setPage(1);
+  }, [search, severityFilter]);
+
+  React.useEffect(() => {
+    if (page > totalPages) {
+        setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const isConfirmableGroup = React.useCallback((group: ImportIssueGroup) => {
+    return group.code === "SECTION_NEEDS_CONFIRMATION";
+  }, []);
+
+  const toggleGroupSelection = React.useCallback(
+    (group: ImportIssueGroup) => {
+        if (!isConfirmableGroup(group)) return;
+
+        setSelectedGroupIds((current) => {
+        const next = new Set(current);
+
+        if (next.has(group.id)) {
+            next.delete(group.id);
+        } else {
+            next.add(group.id);
+        }
+
+        return next;
+        });
+    },
+    [isConfirmableGroup]
+  );
+
+  const clearSelection = React.useCallback(() => {
+    setSelectedGroupIds(new Set());
+  }, []);
+
+  const confirmSelectedGroups = React.useCallback(async () => {
+    if (selectedConfirmableGroups.length === 0) return;
+
+    setLocalLoading(true);
+    setError(null);
+
+    try {
+        await onConfirmColumnIssues(selectedConfirmableGroups);
+        setSelectedGroupIds(new Set());
+        await loadIssues();
+    } catch (err: any) {
+        console.error(err);
+        setError(err?.message || t("common.error"));
+    } finally {
+        setLocalLoading(false);
+    }
+  }, [loadIssues, onConfirmColumnIssues, selectedConfirmableGroups, t]);
+
+  const handlePageChange = React.useCallback(
+    (nextPage: number) => {
+        if (nextPage < 1 || nextPage > totalPages) return;
+
+        setPage(nextPage);
+    },
+    [totalPages]
+  );
 
   return (
     <section
@@ -184,6 +294,47 @@ export function DataImportImproveStep({
         </div>
       </div>
 
+      {selectedGroupIds.size > 0 && (
+        <div
+            className="m-4 mb-0 flex flex-col gap-3 rounded-2xl border p-3 text-sm sm:m-5 sm:mb-0 sm:flex-row sm:items-center sm:justify-between"
+            style={{ borderColor, backgroundColor: hoverPrimary04 }}
+        >
+            <div className="opacity-75">
+            {t("dataImport.improve.selection.selected", {
+                count: selectedConfirmableGroups.length,
+            })}
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+            <button
+                type="button"
+                disabled={loading || localLoading}
+                onClick={clearSelection}
+                className="rounded-xl border px-3 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
+                style={{ backgroundColor: background, borderColor, color: textColor }}
+            >
+                {t("dataImport.improve.selection.clear")}
+            </button>
+
+            <button
+                type="button"
+                disabled={
+                loading ||
+                localLoading ||
+                selectedConfirmableGroups.length === 0
+                }
+                onClick={() => void confirmSelectedGroups()}
+                className="rounded-xl border px-3 py-2 text-sm font-semibold transition hover:opacity-80 disabled:opacity-40"
+                style={{ backgroundColor: primary, borderColor: primary, color: background }}
+            >
+                {t("dataImport.improve.selection.confirm", {
+                count: selectedConfirmableGroups.length,
+                })}
+            </button>
+            </div>
+        </div>
+      )}
+
       {(loading || localLoading) && (
         <div className="flex items-center gap-3 p-5 text-sm opacity-75">
           <LoadingDots />
@@ -208,18 +359,47 @@ export function DataImportImproveStep({
               {t("dataImport.improve.noFilteredResults")}
             </div>
           ) : (
-            filteredGroups.map((group) => (
-              <IssueGroupCard
-                key={group.id}
-                group={group}
-                disabled={loading}
-                onOpenIssueGroup={onOpenIssueGroup}
-                onConfirmColumnIssue={async (group) => {
+            <>
+                {paginatedGroups.map((group) => (
+                <IssueGroupCard
+                    key={group.id}
+                    group={group}
+                    disabled={loading || localLoading}
+                    selected={selectedGroupIds.has(group.id)}
+                    selectable={isConfirmableGroup(group)}
+                    onToggleSelected={toggleGroupSelection}
+                    onOpenIssueGroup={onOpenIssueGroup}
+                    onConfirmColumnIssue={async (group) => {
                     await onConfirmColumnIssue(group);
+
+                    setSelectedGroupIds((current) => {
+                        const next = new Set(current);
+                        next.delete(group.id);
+                        return next;
+                    });
+
                     await loadIssues();
-                }}
-              />
-            ))
+                    }}
+                />
+                ))}
+
+                <div className="col-span-full flex flex-col gap-3 pt-2">
+                <div className="text-sm opacity-65">
+                    {t("dataImport.improve.pagination.summary", {
+                    shown: paginatedGroups.length,
+                    total: filteredGroups.length,
+                    page: currentPage,
+                    pages: totalPages,
+                    })}
+                </div>
+
+                <Pagination
+                    page={currentPage}
+                    totalPages={totalPages}
+                    onChange={handlePageChange}
+                />
+                </div>
+            </>
           )}
         </div>
       )}
@@ -230,11 +410,17 @@ export function DataImportImproveStep({
 function IssueGroupCard({
   group,
   disabled,
+  selected,
+  selectable,
+  onToggleSelected,
   onOpenIssueGroup,
   onConfirmColumnIssue,
 }: {
   group: ImportIssueGroup;
   disabled: boolean;
+  selected: boolean;
+  selectable: boolean;
+  onToggleSelected: (group: ImportIssueGroup) => void;
   onOpenIssueGroup: (group: ImportIssueGroup) => Promise<void>;
   onConfirmColumnIssue: (group: ImportIssueGroup) => Promise<void>;
 }) {
@@ -251,6 +437,22 @@ function IssueGroupCard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
+            {selectable && (
+                <label
+                    className="inline-flex cursor-pointer items-center gap-2 rounded-full border px-2 py-1 text-xs font-medium"
+                    style={{ borderColor, backgroundColor: hoverPrimary04 }}
+                >
+                    <input
+                    type="checkbox"
+                    checked={selected}
+                    disabled={disabled}
+                    onChange={() => onToggleSelected(group)}
+                    className="h-4 w-4"
+                    />
+
+                    <span>{t("dataImport.improve.selection.select")}</span>
+                </label>
+                )}
             <span
               className={[
                 "rounded-full px-2.5 py-1 text-xs font-semibold",

@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
-import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, patchDataImportColumn, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
+import { analyzeDataImportFile, confirmDataImportColumns, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, patchDataImportColumn, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
 import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewFilters, DataImportPreviewResponse, ImportIssueGroup, ImportSection } from "@/features/dataImport/dataImportTypes";
 import type { DataImportWorkflowStep } from "@/features/dataImport/dataImportWorkflowTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
@@ -223,6 +223,46 @@ export default function DataImportPage() {
         page,
         issuesOnly,
         previewFilters
+        );
+
+        await loadJobs();
+    } catch (err: any) {
+        console.error(err);
+        setError(err?.message || t("common.error"));
+    }
+  };
+
+  const handleConfirmColumnIssues = async (groups: ImportIssueGroup[]) => {
+    if (!importId || loading || groups.length === 0) return;
+
+    try {
+        const columnIndexes = Array.from(
+            new Set(
+                groups
+                .filter((group) => group.code === "SECTION_NEEDS_CONFIRMATION")
+                .map((group) => group.column_index)
+            )
+        );
+
+        if (columnIndexes.length === 0) return;
+
+        const json = await confirmDataImportColumns({
+            importId,
+            columnIndexes,
+        });
+
+        if (!json.success) {
+            throw new Error(json.detail || t("common.error"));
+        }
+
+        setAnalysis(json.data);
+
+        await loadPreview(
+            importId,
+            selectedSection,
+            page,
+            issuesOnly,
+            previewFilters
         );
 
         await loadJobs();
@@ -467,6 +507,7 @@ export default function DataImportPage() {
                 loading={loading}
                 onOpenIssueGroup={handleOpenIssueGroup}
                 onConfirmColumnIssue={handleConfirmColumnIssue}
+                onConfirmColumnIssues={handleConfirmColumnIssues}
             />
           )}
 
