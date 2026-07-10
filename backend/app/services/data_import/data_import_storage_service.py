@@ -1,6 +1,6 @@
 # Sert a stocker les données importées temporairement sur le backend.
 from pathlib import Path
-from typing import Any
+from typing import Any, List
 import json
 import shutil
 
@@ -28,6 +28,18 @@ def write_json(path: Path, data: Any) -> None:
         json.dumps(data, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
+
+def extract_sheet_convert_to_csv(path: Path) -> List[Path]:
+    filename_list: List[Path] = []
+    all_sheet = pd.read_excel(str(path), sheet_name=None)
+    parent_dir = path.parent
+    for sheetname, df in all_sheet.items():
+        csv_filename = f"raw_{sheetname}.csv"
+        file_path = parent_dir / Path(csv_filename)
+        df.to_csv(file_path, index=False, encoding="utf-8")
+
+        filename_list.append(file_path)
 
 
 def read_json(path: Path) -> Any:
