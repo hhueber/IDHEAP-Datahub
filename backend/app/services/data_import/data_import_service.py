@@ -23,6 +23,7 @@ from app.services.data_import.data_import_preview_service import build_preview_p
 from app.services.data_import.data_import_reader_service import read_import_file
 from app.services.data_import.data_import_storage_service import (
     delete_import_dir,
+    extract_sheet_convert_to_csv,
     get_import_dir,
     read_analysis,
     read_frame,
@@ -54,6 +55,9 @@ async def save_import_upload(file: UploadFile) -> dict[str, Any]:
 
     content = await file.read()
     raw_path.write_bytes(content)
+
+    if suffix in {".xlsx", ".xls"}:
+        extract_sheet_convert_to_csv(raw_path)
 
     metadata = {
         "import_id": import_id,
