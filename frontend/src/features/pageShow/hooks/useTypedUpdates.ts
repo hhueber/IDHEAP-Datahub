@@ -47,4 +47,8 @@ export function useTypedUpdates(meta: ShowMeta | null) {
   };
 
   return { castUpdates };
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2

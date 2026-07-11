@@ -56,11 +56,41 @@ export type ShowMeta = {
   children?: ShowChildMeta[];
 };
 
+export type InsightMapChildLayer = {
+  child_key: string;
+  child_title: string;
+  child_entity: Entity;
+  features: any[];
+};
+
+export type InsightMap = {
+  type: "geo-focus";
+  level: "commune" | "district" | "canton";
+  focus_feature: any;
+  context_features: any[];
+  child_layers?: InsightMapChildLayer[];
+};
+
+export type InsightStats = {
+  items: { label_key: string; value: any }[];
+};
+
+export type ShowInsights = {
+  map?: InsightMap | null;
+  stats?: InsightStats | null;
+};
+
 export type ShowResponse = {
   success: boolean;
   detail: string;
   meta: ShowMeta | null;
   data: Record<string, any> | null;
+};
+
+export type ShowInsightsResponse = {
+  success: boolean;
+  detail: string;
+  data: ShowInsights | null;
 };
 
 export type ShowChildrenResponse = {
@@ -73,4 +103,10 @@ export type ShowChildrenResponse = {
     per_page: number;
     pages: number;
   };
+};
+
+export type ShowPermissionActions = {
+  show: boolean;
+  edit: boolean;
+  delete: boolean;
 };

@@ -68,6 +68,12 @@ class ShowResponse(BaseModel):
 
 
 # réponse paginée pour un child
+class ShowInsightsResponse(BaseModel):
+    success: bool
+    detail: str
+    data: Optional[Dict[str, Any]] = None
+
+
 class ShowChildrenData(BaseModel):
     items: List[Dict[str, Any]]
     total: int
@@ -80,3 +86,10 @@ class ShowChildrenResponse(BaseModel):
     success: bool
     detail: str
     data: Optional[ShowChildrenData] = None
+
+
+class ShowInsightsMapChildLayer(BaseModel):
+    child_key: str
+    child_title: str
+    child_entity: str
+    features: List[Dict[str, Any]] = []

@@ -34,4 +34,5 @@ export async function getGeoPoint(type: GeoSuggestionType, uid: number) {
     `/geoSearch/${type}/${uid}/point`,
     { method: "GET", auth: true }
   );
+
 }

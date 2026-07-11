@@ -1,13 +1,16 @@
 from typing import Literal
 
 
-from app.api.dependencies import get_current_user
+from app.api.permissions import require_permission
+from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
-from app.repositories.commune_map_repo import get_commune_point
-from app.repositories.commune_repo import suggest_communes_prefix
 from app.repositories.geo_search_repo import get_geo_point, suggest_geo_locations
-from app.schemas.placeOfInterest import PlaceOfInterestSuggestOut, PlaceOfInterestSuggestResponse
-from app.schemas.user import UserPublic
+from app.schemas.placeOfInterest import (
+    GeoPointResponse,
+    GeoSuggestionResponse,
+    PlaceOfInterestSuggestOut,
+    PlaceOfInterestSuggestResponse,
+)
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,12 +18,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 router = APIRouter()
 
 
-@router.get("/suggest/geo")
+@router.get("/suggest/geo", response_model=GeoSuggestionResponse)
 async def suggest_geo(
     q: str = Query(..., min_length=3, max_length=100),
     limit: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
 ):
     """
     Recherche des suggestions géographiques parmi les communes, districts et cantons.
@@ -38,7 +41,7 @@ async def suggest_geo(
         q: Texte saisi par l'utilisateur.
         limit: Nombre maximum de résultats à retourner.
         db: Session de base de données asynchrone.
-        _user: Utilisateur courant authentifié.
+        _current_user: Utilisateur courant authentifié.
 
     Returns:
         dict: Réponse JSON contenant la liste des suggestions géographiques.
@@ -47,12 +50,12 @@ async def suggest_geo(
     return {"success": True, "detail": "OK", "data": data}
 
 
-@router.get("/{geo_type}/{uid}/point")
+@router.get("/{geo_type}/{uid}/point", response_model=GeoPointResponse)
 async def geo_point(
     geo_type: Literal["commune", "district", "canton"],
     uid: int,
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
 ):
     """
     Récupère un point géographique représentatif pour une commune, un district ou un canton.
@@ -65,7 +68,7 @@ async def geo_point(
         geo_type: Type d'entité géographique (`commune`, `district` ou `canton`).
         uid: Identifiant unique de l'entité géographique.
         db: Session de base de données asynchrone.
-        _user: Utilisateur courant authentifié.
+        _current_user: Utilisateur courant authentifié.
 
     Returns:
         dict: Réponse JSON contenant la latitude et la longitude si disponibles.
@@ -81,35 +84,56 @@ async def geo_point(
 
 
 @router.get("/suggest/public", response_model=PlaceOfInterestSuggestResponse)
-async def suggest_communes_public(
+async def suggest_geo_public(
     q: str = Query(..., min_length=3, max_length=100),
-    limit: int = Query(10, ge=1, le=50),
+    limit: int = Query(50, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
     """
-    Route publique (pas besoin d'utilisateur connecté).
-    - Utilise suggest_communes_prefix pour la recherche texte.
-    - Utilise get_commune_point pour récupérer [lat, lon].
-    - Ne renvoie que default_name + pos.
-    - Lecture seule (SELECT uniquement).
+    Recherche publique des suggestions géographiques parmi les communes, districts et cantons.
+    Cette route ne nécessite pas d'utilisateur connecté.
+    Elle est utilisée par la carte publique pour ajouter temporairement des lieux
+    d'intérêt visibles sur la carte.
+
+    La recherche fonctionne sur :
+    - les communes ;
+    - les districts ;
+    - les cantons.
+
+    Chaque résultat contient :
+    - le type d'entité ;
+    - son uid ;
+    - son code ;
+    - son nom affichable ;
+    - un point géographique représentatif `[lat, lon]`.
+
+    Args:
+        q: Texte saisi par l'utilisateur.
+        limit: Nombre maximum de résultats à retourner.
+        db: Session de base de données asynchrone.
+
+    Returns:
+        PlaceOfInterestSuggestResponse: Liste des suggestions publiques avec position.
     """
+    rows = await suggest_geo_locations(db, q=q, limit=limit)
 
-    rows = await suggest_communes_prefix(db, q=q, limit=limit)
-
-    placeOfInterest: list[PlaceOfInterestSuggestOut] = []
+    place_of_interest: list[PlaceOfInterestSuggestOut] = []
 
     for row in rows:
-        pos = await get_commune_point(db, row["uid"])
+        pos = await get_geo_point(db, row["type"], row["uid"])
         if not pos:
             continue
 
         # On choisit le name "par défaut" à exposer au public
-        default_name = row.get("name") or row.get("code")  # fallback ultime
+        default_name = row.get("name") or row.get("code")
         if not default_name:
             continue
 
-        placeOfInterest.append(
+        place_of_interest.append(
             PlaceOfInterestSuggestOut(
+                uid=row["uid"],
+                type=row["type"],
+                code=row["code"],
                 default_name=default_name,
                 pos=(float(pos[0]), float(pos[1])),
             )
@@ -118,5 +142,5 @@ async def suggest_communes_public(
     return PlaceOfInterestSuggestResponse(
         success=True,
         detail="OK",
-        data=placeOfInterest,
+        data=place_of_interest,
     )

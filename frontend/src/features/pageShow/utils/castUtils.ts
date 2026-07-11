@@ -23,4 +23,8 @@ export function castValue(value: string, kind?: ShowMetaField["kind"]) {
     default:
       return value;
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2

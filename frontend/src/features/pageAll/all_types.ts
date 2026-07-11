@@ -1,4 +1,8 @@
 import React from "react";
+<<<<<<< HEAD
+=======
+import type { PageAllLang } from "@/features/pageAll/pageAllLang";
+>>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 
 export type Entity =
   | "commune"
@@ -20,6 +24,11 @@ export type AllItem = {
   value?: string | null;
   question_uid?: number | null;
   commune_uid?: number | null;
+<<<<<<< HEAD
+=======
+  question?: string | null;
+  commune?: string | null;
+>>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 };
 
 export type AllPayload = {
@@ -36,11 +45,19 @@ export type AllResponse = {
   data: AllPayload;
 };
 
-export type SortBy = "uid" | "name";
+export type SortBy =
+  | "name"
+  | "code"
+  | "year"
+  | "value"
+  | "question"
+  | "commune";
+
 export type SortDir = "asc" | "desc";
 
 // Colonnes possibles sur la réponse
 export type ColumnKey =
+<<<<<<< HEAD
   | "uid"
   | "code"
   | "name"
@@ -49,13 +66,37 @@ export type ColumnKey =
   | "value"
   | "question_uid"
   | "commune_uid";
+=======
+  | "code"
+  | "name"
+  | "year"
+  | "value"
+  | "question"
+  | "commune";
+
+export type EditableKind = "text" | "number" | "bool" | "year";
+>>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 
 export type ColumnConfig = {
   key: ColumnKey;
-  label: string;
+  labelKey?: string;
+  label?: string;
   // Alignement et rendu custom
   align?: "left" | "center" | "right";
+  sortable?: boolean;
+  sortKey?: SortBy;
+  truncate?: boolean;
+  maxWidthClassName?: string;
   render?: (row: AllItem) => React.ReactNode;
+  // Active ou désactive l'édition inline pour cette colonne.
+  editable?: boolean;
+  // Nom réel du champ envoyé au backend dans updates.
+  // Peut être :
+  //  - une string fixe : "value", "year", "label_"
+  //  - une fonction dynamique selon la langue : (lang) => `text_${lang}`
+  editKey?: keyof AllItem | string | ((lang: PageAllLang) => string);
+  // Type utilisé pour caster la valeur avant l'envoi au backend.
+  kind?: EditableKind;
 };
 
 export type ActionsConfig = {
