@@ -22,13 +22,11 @@ import OptionAllPage from "@/features/pageAll/OptionAllPage";
 import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
 import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
-<<<<<<< HEAD
-import ExportDataPage from "@/features/export/ExportDataPage"
-=======
 import RequirePermission from "@/components/RequirePermission";
 import AdminUsersPage from "@/features/admin/users/AdminUsersPage";
 import DataImportPage from "@/features/dataImport/DataImportPage";
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
+import ExportDataPage from "./features/export/ExportDataPage";
+
 
 
 export default function App() {
@@ -83,15 +81,6 @@ export default function App() {
           />
 
           <Route
-            path="/admin/answers"
-            element={
-              <RequireRole roles={[ADMIN, MEMBER]}>
-                <AnswerAllPage />
-              </RequireRole>
-            }
-          />
-
-          <Route
             path="/admin/options"
             element={
               <RequirePermission scope="DATASET" level="READ">
@@ -138,11 +127,7 @@ export default function App() {
           <Route
             path="/admin/places/show/:entity/:id"
             element={
-<<<<<<< HEAD
-              <RequireRole roles={[ADMIN, MEMBER]}>
-=======
               <RequirePermission scope="DATASET" level="READ">
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
                 <ShowPage />
               </RequirePermission>
             }
@@ -194,11 +179,7 @@ export default function App() {
           <Route
             path="/admin/config/theme"
             element={
-<<<<<<< HEAD
-              <RequireRole roles={[ADMIN]}>
-=======
               <RequirePermission scope="PROJECT" level="READ">
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
                 <ThemeConfigPage />
               </RequirePermission>
             }

@@ -504,16 +504,12 @@
       "deleteError": "Erreur de suppression : ",
       "year": "Année",
       "questionUid": "Question UID",
-<<<<<<< HEAD
-      "communeUid": "Commune UID"
-=======
       "communeUid": "Commune UID",
       "save": "Valider",
       "saving": "Enregistrement...",
       "editError": "Erreur lors de l’édition :",
       "confirmEditTitle": "Confirmer la modification",
       "confirmEditMessage": "Êtes-vous sûr·e de vouloir modifier l'élément « {{name}} » ?"
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
     },
     "pageShow": {
       "loading": "Chargement",

@@ -8,13 +8,10 @@ import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useEdit } from "@/shared/useEdit";
 import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
-<<<<<<< HEAD
-=======
 import InsightsPanel from "@/features/pageShow/InsightsPanel";
 import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
 import { useNavigate } from "react-router-dom";
 import { getPageAllLang } from "@/features/pageAll/pageAllLang";
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 
 type Props = {
   id: number;
@@ -181,14 +178,11 @@ export default function EntityShow({ id, entity, permissions, onEdit, onDelete }
   const [draft, setDraft] = React.useState<Record<string, string>>({});
   const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
   const { castUpdates } = useTypedUpdates(meta);
-<<<<<<< HEAD
-=======
 
   const lang = React.useMemo(
     () => getPageAllLang(i18n.language),
     [i18n.language]
   );
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 
   const load = React.useCallback(async () => {
     setLoading(true);

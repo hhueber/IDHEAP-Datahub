@@ -20,12 +20,6 @@ export default function OptionAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-<<<<<<< HEAD
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.value") },
-      { key: "name", label: t("dashboardSidebar.pageAll.label") },
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
-=======
       {
         key: "code",
         labelKey: "dashboardSidebar.pageAll.value",
@@ -46,7 +40,6 @@ export default function OptionAllPage() {
         editable: allowEdit,
         editKey: "label_",
       },
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
     ],
     [allowEdit]
   );

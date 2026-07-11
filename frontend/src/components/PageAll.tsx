@@ -399,11 +399,7 @@ export default function PageAll({
 
                       {columns.map((col) => {
                         const value = (row as any)[col.key];
-<<<<<<< HEAD
-                        const content = col.render ? col.render(row) : (value ?? "\u2014"); // symbole unicode pour cela "—"
-=======
                         const content = col.render ? col.render(row) : (value ?? "—");
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
                         const alignClass =
                           col.align === "center"
                             ? "text-center"

@@ -1,8 +1,5 @@
 import React from "react";
-<<<<<<< HEAD
-=======
 import type { PageAllLang } from "@/features/pageAll/pageAllLang";
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 
 export type Entity =
   | "commune"
@@ -24,11 +21,8 @@ export type AllItem = {
   value?: string | null;
   question_uid?: number | null;
   commune_uid?: number | null;
-<<<<<<< HEAD
-=======
   question?: string | null;
   commune?: string | null;
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 };
 
 export type AllPayload = {
@@ -57,16 +51,6 @@ export type SortDir = "asc" | "desc";
 
 // Colonnes possibles sur la réponse
 export type ColumnKey =
-<<<<<<< HEAD
-  | "uid"
-  | "code"
-  | "name"
-  | "entity"
-  | "year"
-  | "value"
-  | "question_uid"
-  | "commune_uid";
-=======
   | "code"
   | "name"
   | "year"
@@ -75,7 +59,6 @@ export type ColumnKey =
   | "commune";
 
 export type EditableKind = "text" | "number" | "bool" | "year";
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
 
 export type ColumnConfig = {
   key: ColumnKey;

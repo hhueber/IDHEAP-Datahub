@@ -17,11 +17,7 @@ export type PlaceOfInterestSuggestResponse = {
 };
 
 export const communesApi = {
-<<<<<<< HEAD
-  suggest: (q: string, signal?: AbortSignal, limit = 10) =>
-=======
   suggest: (q: string, signal?: AbortSignal, limit = 50) =>
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
     apiFetch<PlaceOfInterestSuggestResponse>("geoSearch/suggest/public", {
       method: "GET",
       signal,

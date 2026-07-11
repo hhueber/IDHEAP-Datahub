@@ -20,12 +20,6 @@ export default function SurveyAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-<<<<<<< HEAD
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "name", label: t("dashboardSidebar.pageAll.name") },
-      { key: "year", label: t("dashboardSidebar.pageAll.year")},
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
-=======
       {
         key: "name",
         labelKey: "dashboardSidebar.pageAll.name",
@@ -45,7 +39,6 @@ export default function SurveyAllPage() {
         editable: allowEdit,
         editKey: "year",
       },
->>>>>>> origin/Fix-#320-permettre-l-ajouts-de-plusieurs-fichier-en-meme-temps-partie-2
     ],
     [allowEdit]
   );
