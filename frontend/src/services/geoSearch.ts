@@ -34,5 +34,8 @@ export async function getGeoPoint(type: GeoSuggestionType, uid: number) {
     `/geoSearch/${type}/${uid}/point`,
     { method: "GET", auth: true }
   );
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/Fix-#323-Validate-dataset-preparation-de-l-import-final
 }

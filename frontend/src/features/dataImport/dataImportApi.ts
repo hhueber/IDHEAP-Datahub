@@ -14,6 +14,7 @@ import type {
   DataImportActiveResourceResponse,
   DataImportResourcesResponse,
   DataImportWorkspaceUploadResponse,
+  DataImportCommitResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -281,6 +282,18 @@ export async function selectDataImportResource(params: {
       body: {
         resource_id: params.resourceId,
       },
+    }
+  );
+}
+
+export async function commitDataImport(
+  importId: string
+) {
+  return apiFetch<DataImportCommitResponse>(
+    `/data-import/${importId}/commit`,
+    {
+      method: "POST",
+      auth: true,
     }
   );
 }

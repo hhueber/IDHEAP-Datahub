@@ -316,3 +316,14 @@ class DataImportResourcesResponse(BaseModel):
     success: bool
     detail: str
     data: DataImportResourcesData
+
+
+class DataImportCommitData(BaseModel):
+    import_id: str
+    status: Literal["not_implemented"]
+
+
+class DataImportCommitResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportCommitData

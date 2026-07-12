@@ -2,28 +2,28 @@ from typing import Any, Optional
 import json
 
 
-from app.models.answer import Answer
 from app.models.canton import Canton
 from app.models.canton_map import CantonMap
 from app.models.commune import Commune
 from app.models.commune_map import CommuneMap
 from app.models.district import District
 from app.models.district_map import DistrictMap
-from app.models.option import Option
-from app.models.question_category import QuestionCategory
-from app.models.question_category_option_association import QuestionCategoryOptionAssociation
-from app.models.question_global import QuestionGlobal
-from app.models.question_global_option_association import QuestionGlobalOptionAssociation
-from app.models.question_option_association import QuestionOptionAssociation
-from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from geoalchemy2 import functions as geofunc
-from sqlalchemy import and_, case, func, select
+from sqlalchemy import and_, case, func, Select, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+JoinConfig = tuple[Any, Any]
 
 
 def _geojson_col(geom_col: Any) -> Any:
     return geofunc.ST_AsGeoJSON(geofunc.ST_Transform(geom_col, 4326), maxdecimaldigits=5)
+
+
+async def _count_from_stmt(db: AsyncSession, stmt: Select[Any]) -> int:
+    result = await db.execute(stmt)
+    return int(result.scalar_one() or 0)
 
 
 async def _latest_year(db: AsyncSession, model: Any) -> Optional[int]:
@@ -206,205 +206,90 @@ async def get_canton_focus_feature(db: AsyncSession, canton_uid: int) -> Optiona
     }
 
 
-async def count_answers_for_commune(db: AsyncSession, commune_uid: int) -> int:
-    stmt = select(func.count()).select_from(Answer).where(Answer.commune_uid == commune_uid)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_communes_in_district(db: AsyncSession, district_uid: int) -> int:
-    stmt = select(func.count()).select_from(Commune).where(Commune.district_uid == district_uid)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_answers_in_district(db: AsyncSession, district_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(Answer)
-        .join(Commune, Commune.uid == Answer.commune_uid)
-        .where(Commune.district_uid == district_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_districts_in_canton(db: AsyncSession, canton_uid: int) -> int:
-    stmt = select(func.count()).select_from(District).where(District.canton_uid == canton_uid)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_communes_in_canton(db: AsyncSession, canton_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(Commune)
-        .join(District, District.uid == Commune.district_uid)
-        .where(District.canton_uid == canton_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_answers_in_canton(db: AsyncSession, canton_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(Answer)
-        .join(Commune, Commune.uid == Answer.commune_uid)
-        .join(District, District.uid == Commune.district_uid)
-        .where(District.canton_uid == canton_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_questions_in_survey(db: AsyncSession, survey_uid: int) -> int:
-    stmt = select(func.count()).select_from(QuestionPerSurvey).where(QuestionPerSurvey.survey_uid == survey_uid)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_answers_for_question(db: AsyncSession, question_uid: int) -> int:
-    stmt = select(func.count()).select_from(Answer).where(Answer.question_uid == question_uid)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_distinct_answer_values_for_question(db: AsyncSession, question_uid: int) -> int:
-    stmt = (
-        select(func.count(func.distinct(Answer.value))).select_from(Answer).where(Answer.question_uid == question_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_options_for_question(db: AsyncSession, question_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionOptionAssociation)
-        .where(QuestionOptionAssociation.question_uid == question_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_linked_questions_for_question_global(db: AsyncSession, question_global_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionPerSurvey)
-        .where(QuestionPerSurvey.question_global_uid == question_global_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_options_for_question_global(db: AsyncSession, question_global_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionGlobalOptionAssociation)
-        .where(QuestionGlobalOptionAssociation.question_uid == question_global_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_global_questions_for_category(db: AsyncSession, category_uid: int) -> int:
-    stmt = select(func.count()).select_from(QuestionGlobal).where(QuestionGlobal.question_category_uid == category_uid)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_survey_questions_for_category(db: AsyncSession, category_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionPerSurvey)
-        .where(QuestionPerSurvey.question_category_uid == category_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_options_for_category(db: AsyncSession, category_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionCategoryOptionAssociation)
-        .where(QuestionCategoryOptionAssociation.question_uid == category_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_question_links_for_option(db: AsyncSession, option_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionOptionAssociation)
-        .where(QuestionOptionAssociation.option_uid == option_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_question_global_links_for_option(db: AsyncSession, option_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionGlobalOptionAssociation)
-        .where(QuestionGlobalOptionAssociation.option_uid == option_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_question_category_links_for_option(db: AsyncSession, option_uid: int) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(QuestionCategoryOptionAssociation)
-        .where(QuestionCategoryOptionAssociation.option_uid == option_uid)
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_same_answers_for_question_year(db: AsyncSession, question_uid: int, year: int) -> int:
-    stmt = select(func.count()).select_from(Answer).where(Answer.question_uid == question_uid, Answer.year == year)
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
-
-
-async def count_same_value_answers_for_question_year(
-    db: AsyncSession, question_uid: int, year: int, value: Optional[str]
+async def count_by_column(
+    db: AsyncSession,
+    model: Any,
+    column: Any,
+    value: Any,
 ) -> int:
-    stmt = (
-        select(func.count())
-        .select_from(Answer)
-        .where(
-            Answer.question_uid == question_uid,
-            Answer.year == year,
-            Answer.value == value,
-        )
-    )
-    result = await db.execute(stmt)
-    return int(result.scalar_one() or 0)
+    stmt = select(func.count()).select_from(model).where(column == value)
+    return await _count_from_stmt(db, stmt)
 
 
-async def get_all_commune_features_for_district(db: AsyncSession, district_uid: int) -> list[dict]:
-    map_year = await _latest_year(db, CommuneMap)
+async def count_by_columns(
+    db: AsyncSession,
+    model: Any,
+    filters: tuple[tuple[Any, Any], ...],
+) -> int:
+    stmt = select(func.count()).select_from(model)
+
+    for column, value in filters:
+        stmt = stmt.where(column == value)
+
+    return await _count_from_stmt(db, stmt)
+
+
+async def count_distinct_by_column(
+    db: AsyncSession,
+    model: Any,
+    distinct_column: Any,
+    filter_column: Any,
+    filter_value: Any,
+) -> int:
+    stmt = select(func.count(func.distinct(distinct_column))).select_from(model).where(filter_column == filter_value)
+    return await _count_from_stmt(db, stmt)
+
+
+async def count_with_joins(
+    db: AsyncSession,
+    model: Any,
+    joins: tuple[JoinConfig, ...],
+    filter_column: Any,
+    filter_value: Any,
+) -> int:
+    stmt = select(func.count()).select_from(model)
+
+    for join_model, join_condition in joins:
+        stmt = stmt.join(join_model, join_condition)
+
+    stmt = stmt.where(filter_column == filter_value)
+
+    return await _count_from_stmt(db, stmt)
+
+
+async def _get_child_features_for_parent(
+    db: AsyncSession,
+    *,
+    child_model: Any,
+    map_model: Any,
+    map_fk_column: Any,
+    child_uid_column: Any,
+    parent_fk_column: Any,
+    parent_uid: int,
+    level: str,
+) -> list[dict]:
+    map_year = await _latest_year(db, map_model)
     if map_year is None:
         return []
 
     stmt = (
         select(
-            Commune.uid.label("uid"),
-            Commune.name.label("name"),
-            Commune.code.label("code"),
-            _geojson_col(CommuneMap.geometry).label("geojson"),
+            child_model.uid.label("uid"),
+            child_model.name.label("name"),
+            child_model.code.label("code"),
+            _geojson_col(map_model.geometry).label("geojson"),
         )
         .join(
-            CommuneMap,
-            and_(CommuneMap.commune_uid == Commune.uid, CommuneMap.year == map_year),
+            map_model,
+            and_(
+                map_fk_column == child_uid_column,
+                map_model.year == map_year,
+            ),
         )
-        .where(Commune.district_uid == district_uid)
-        .order_by(Commune.uid.asc())
+        .where(parent_fk_column == parent_uid)
+        .order_by(child_model.uid.asc())
     )
+
     rows = (await db.execute(stmt)).mappings().all()
 
     features: list[dict] = []
@@ -418,10 +303,11 @@ async def get_all_commune_features_for_district(db: AsyncSession, district_uid: 
                 "geometry": json.loads(row["geojson"]),
                 "properties": {
                     "uid": row["uid"],
+                    "unit_uid": row["uid"],
                     "name": row["name"],
                     "code": row["code"],
-                    "entity": "commune",
-                    "level": "commune",
+                    "entity": level,
+                    "level": level,
                 },
             }
         )
@@ -429,44 +315,33 @@ async def get_all_commune_features_for_district(db: AsyncSession, district_uid: 
     return features
 
 
-async def get_all_district_features_for_canton(db: AsyncSession, canton_uid: int) -> list[dict]:
-    map_year = await _latest_year(db, DistrictMap)
-    if map_year is None:
-        return []
-
-    stmt = (
-        select(
-            District.uid.label("uid"),
-            District.name.label("name"),
-            District.code.label("code"),
-            _geojson_col(DistrictMap.geometry).label("geojson"),
-        )
-        .join(
-            DistrictMap,
-            and_(DistrictMap.district_id == District.uid, DistrictMap.year == map_year),
-        )
-        .where(District.canton_uid == canton_uid)
-        .order_by(District.uid.asc())
+async def get_all_commune_features_for_district(
+    db: AsyncSession,
+    district_uid: int,
+) -> list[dict]:
+    return await _get_child_features_for_parent(
+        db,
+        child_model=Commune,
+        map_model=CommuneMap,
+        map_fk_column=CommuneMap.commune_uid,
+        child_uid_column=Commune.uid,
+        parent_fk_column=Commune.district_uid,
+        parent_uid=district_uid,
+        level="commune",
     )
-    rows = (await db.execute(stmt)).mappings().all()
 
-    features: list[dict] = []
-    for row in rows:
-        if not row["geojson"]:
-            continue
 
-        features.append(
-            {
-                "type": "Feature",
-                "geometry": json.loads(row["geojson"]),
-                "properties": {
-                    "uid": row["uid"],
-                    "name": row["name"],
-                    "code": row["code"],
-                    "entity": "district",
-                    "level": "district",
-                },
-            }
-        )
-
-    return features
+async def get_all_district_features_for_canton(
+    db: AsyncSession,
+    canton_uid: int,
+) -> list[dict]:
+    return await _get_child_features_for_parent(
+        db,
+        child_model=District,
+        map_model=DistrictMap,
+        map_fk_column=DistrictMap.district_id,
+        child_uid_column=District.uid,
+        parent_fk_column=District.canton_uid,
+        parent_uid=canton_uid,
+        level="district",
+    )

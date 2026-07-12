@@ -66,7 +66,12 @@ const loadLocalPlaceOfInterest = (): PlaceOfInterestMarker[] => {
     if (!Array.isArray(parsed)) return [];
 
     return parsed.filter(isValidLocalPlaceOfInterest);
-  } catch {
+  } catch (error) {
+    console.warn(
+      "[usePlaceOfInterestMarkers] Impossible de charger les lieux d'intérêt locaux à partir de localStorage.",
+      error
+    );
+
     return [];
   }
 };
@@ -77,9 +82,11 @@ const saveLocalPlaceOfInterest = (items: PlaceOfInterestMarker[]) => {
       LOCAL_PLACE_OF_INTEREST_STORAGE_KEY,
       JSON.stringify(items)
     );
-  } catch {
-    // On ignore volontairement l'erreur pour ne pas casser la carte
-    // si le localStorage est indisponible.
+  } catch (error) {
+    console.warn(
+      "[usePlaceOfInterestMarkers] Impossible d'enregistrer les lieux d'intérêt locaux dans localStorage.",
+      error
+    );
   }
 };
 

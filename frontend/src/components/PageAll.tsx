@@ -399,7 +399,11 @@ export default function PageAll({
 
                       {columns.map((col) => {
                         const value = (row as any)[col.key];
+<<<<<<< HEAD
                         const content = col.render ? col.render(row) : (value ?? "—");
+=======
+                        const content = col.render ? col.render(row) : (value ?? "\u2014"); // symbole unicode pour cela "—"
+>>>>>>> origin/Fix-#323-Validate-dataset-preparation-de-l-import-final
                         const alignClass =
                           col.align === "center"
                             ? "text-center"

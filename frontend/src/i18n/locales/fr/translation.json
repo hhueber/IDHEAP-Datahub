@@ -613,7 +613,8 @@
     "loading": {
       "upload": "Tèlechargement du fichier...",
       "analyze": "Analyse du fichier...",
-      "preview": "Previsualisation des données..."
+      "preview": "Previsualisation des données...",
+      "validate": "Envoi de la demande de validation..."
     },
     "summary": {
       "rows": "Lignes",
@@ -821,6 +822,53 @@
       "addFilesDescription": "Les nouveaux fichiers seront ajoutés au dossier courant sans supprimer les données déjà traitées.",
       "addSelected": "Ajouter les fichiers",
       "none": "Aucune ressource exploitable n’a été trouvée dans cet import."
+    },
+    "validate": {
+      "badge": "Validate",
+      "title": "Validation finale du dataset",
+      "description": "Vérifiez une dernière fois le résumé du dataset avant d’envoyer la demande d’import au backend.",
+      "status": {
+        "ready": "Prêt à être envoyé",
+        "withIssues": "Problèmes restants"
+      },
+      "summary": {
+        "title": "Résumé de l’import",
+        "description": "Ces informations correspondent à l’état actuel des fichiers et des données analysées."
+      },
+      "metrics": {
+        "files": "Fichiers",
+        "rows": "Lignes",
+        "columns": "Colonnes",
+        "cells": "Cellules",
+        "issues": "Issues"
+      },
+      "checks": {
+        "analysis": "Analyse terminée",
+        "analysisDescription": "Les fichiers ont été lus et analysés par le backend.",
+        "data": "Données disponibles",
+        "dataDescription": "Le dataset contient des lignes et des colonnes exploitables.",
+        "issues": "Contrôle des problèmes",
+        "issuesRemaining": "{{count}} problème(s) sont encore détecté(s) dans le dataset.",
+        "noIssues": "Aucun problème n’est actuellement détecté.",
+        "database": "Écriture en base de données",
+        "databaseDescription": "L’écriture définitive en base sera implémentée dans une prochaine PR."
+      },
+      "action": {
+        "title": "Envoyer l’import au backend",
+        "description": "Cette action appelle la route finale du backend. Pour le moment, la route accuse uniquement réception et n’écrit aucune donnée en base.",
+        "issuesWarning": "Le dataset contient encore {{count}} problème(s). La demande peut tout de même être envoyée afin de tester le workflow.",
+        "submit": "Valider et envoyer a la base de données",
+        "submitting": "Envoi en cours...",
+        "submitted": "Demande envoyée",
+        "helper": "Aucune donnée ne sera encore écrite dans la base avec cette version.",
+        "endpointReached": "La demande a bien atteint le backend. L’écriture définitive en base de données sera ajoutée séparément."
+      }
     }
+  },
+  "first-modal":{
+    "title": "Bienvenue",
+    "content": "Bienvenue !",
+    "close": "Fermer",
+    "reminder": "Ne plus me rappeler"
   }
 }
