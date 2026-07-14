@@ -19,6 +19,7 @@ import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTheme } from "@/theme/useTheme";
 import { useNavigate } from "react-router-dom";
+import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 
 type PageAllProps = {
   title: string;
@@ -26,6 +27,8 @@ type PageAllProps = {
   initialPerPage?: number;
   columns: ColumnConfig[];
   actions?: ActionsConfig;
+  defaultSortBy?: SortBy;
+  defaultSortDir?: SortDir;
 };
 
 export default function PageAll({
@@ -34,8 +37,10 @@ export default function PageAll({
   initialPerPage = 20,
   columns,
   actions,
+  defaultSortBy,
+  defaultSortDir = "asc",
 }: PageAllProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [page, setPage] = React.useState(1);
   const [perPage] = React.useState(initialPerPage);
   const [items, setItems] = React.useState<AllItem[]>([]);
@@ -43,9 +48,32 @@ export default function PageAll({
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
-  // État de tri générique (uid / name pour l’instant)
-  const [sortBy, setSortBy] = React.useState<SortBy>("uid");
-  const [sortDir, setSortDir] = React.useState<SortDir>("asc");
+  // État de tri générique basé sur les colonnes affichées
+  const firstSortableColumn = columns.find((col) => col.sortable !== false);
+  const [sortBy, setSortBy] = React.useState<SortBy>(
+    defaultSortBy ??
+      ((firstSortableColumn?.sortKey ?? firstSortableColumn?.key ?? "name") as SortBy)
+  );
+  const [sortDir, setSortDir] = React.useState<SortDir>(defaultSortDir);
+
+  const lang = React.useMemo(() => getPageAllLang(i18n.language), [i18n.language]);
+
+  const sortableColumns = React.useMemo(
+    () => columns.filter((col) => col.sortable !== false),
+    [columns]
+  );
+
+  React.useEffect(() => {
+    const availableSortKeys = sortableColumns.map((col) => col.sortKey ?? col.key);
+
+    if (!availableSortKeys.includes(sortBy)) {
+      const fallback = availableSortKeys[0] as SortBy | undefined;
+      if (fallback) {
+        setSortBy(fallback);
+        setPage(1);
+      }
+    }
+  }, [sortableColumns, sortBy]);
 
   const {
     search,
@@ -90,6 +118,7 @@ export default function PageAll({
             per_page: perPage,
             order_by: sortBy,
             order_dir: sortDir,
+            lang,
           },
         });
 
@@ -104,7 +133,7 @@ export default function PageAll({
         return 1;
       }
     },
-    [entity, perPage, sortBy, sortDir, t]
+    [entity, perPage, sortBy, sortDir, lang, t]
   );
 
   const loadPage = React.useCallback(
@@ -121,6 +150,7 @@ export default function PageAll({
             per_page: perPage,
             order_by: sortBy,
             order_dir: sortDir,
+            lang,
           },
         });
 
@@ -137,7 +167,7 @@ export default function PageAll({
         setLoading(false);
       }
     },
-    [entity, perPage, sortBy, sortDir, t]
+    [entity, perPage, sortBy, sortDir, lang, t]
   );
 
   React.useEffect(() => {
@@ -156,11 +186,6 @@ export default function PageAll({
     setPage(1);
   };
 
-  const toggleSortDir = () => {
-    setSortDir((prev) => (prev === "asc" ? "desc" : "asc"));
-    setPage(1);
-  };
-
   const hasActions = !!actions && (actions.show || actions.edit || actions.delete);
 
   // Constante pour UI
@@ -175,6 +200,11 @@ export default function PageAll({
   const hoverBgVars = {
     "--pageall-control-hover-bg": hoverPrimary04,
   } as React.CSSProperties;
+
+  const getColumnLabel = (col: ColumnConfig) => {
+    if (col.labelKey) return t(col.labelKey);
+    return col.label;
+  };
 
   return (
     <div className="p-6 flex flex-col h-full" 
@@ -213,8 +243,15 @@ export default function PageAll({
             className={`${controlCls} appearance-none pr-5`}
             style={controlStyle}
           >
-            <option value="uid">{t("dashboardSidebar.pageAll.uid")}</option>
-            <option value="name">{t("dashboardSidebar.pageAll.name")}</option>
+            {sortableColumns.map((col) => {
+              const value = (col.sortKey ?? col.key) as SortBy;
+
+              return (
+                <option key={`${col.key}-${value}`} value={value}>
+                  {getColumnLabel(col)}
+                </option>
+              );
+            })}
           </select>
           <select
             value={sortDir}
@@ -264,6 +301,15 @@ export default function PageAll({
             <table className="min-w-max w-full text-sm border-collapse">
               <thead style={{ backgroundColor: hoverPrimary04 }}>
                 <tr>
+                  <th
+                    className="border-b px-3 py-2 text-left font-medium whitespace-nowrap text-sm"
+                    style={{
+                      borderColor,
+                      color: textColor,
+                    }}
+                  >
+                    {"\u0023"} {/* Signe Unicode pour ce symbole # */}
+                  </th>
                   {columns.map((col) => (
                     <th
                       key={col.key}
@@ -273,7 +319,7 @@ export default function PageAll({
                         color: textColor,
                       }}
                     >
-                      {col.label}
+                      {getColumnLabel(col)}
                     </th>
                   ))}
                   {hasActions && (
@@ -291,7 +337,7 @@ export default function PageAll({
                 {items.length === 0 && !loading ? (
                   <tr>
                     <td
-                      colSpan={columns.length + (hasActions ? 1 : 0)}
+                      colSpan={columns.length + 1 + (hasActions ? 1 : 0)}
                       className="px-3 py-4 text-center"
                       style={{ color: hoverText07 }}
                     >
@@ -299,7 +345,7 @@ export default function PageAll({
                     </td>
                   </tr>
                 ) : (
-                  items.map((row) => (
+                  items.map((row, index) => (
                     // quand element chercher met la ligne en jaune
                     <tr key={row.uid}
                         className={[
@@ -313,6 +359,13 @@ export default function PageAll({
                             "--pageall-row-selected-bg": hoverPrimary15,
                           } as React.CSSProperties
                         }>
+                      <td
+                        className="border-b px-3 py-2 whitespace-nowrap text-left"
+                        style={{ borderColor, color: textColor }}
+                      >
+                        {(page - 1) * perPage + index + 1}
+                      </td>
+
                       {columns.map((col) => {
                         const value = (row as any)[col.key];
                         const content = col.render ? col.render(row) : (value ?? "\u2014"); // symbole unicode pour cela "—"
@@ -329,7 +382,16 @@ export default function PageAll({
                             className={`border-b px-3 py-2 whitespace-nowrap ${alignClass}`}
                             style={{ borderColor, color: textColor }}
                           >
-                            {content}
+                            {col.truncate && typeof content === "string" ? (
+                              <span
+                                title={content}
+                                className={`block overflow-hidden text-ellipsis whitespace-nowrap ${col.maxWidthClassName ?? "max-w-[280px]"}`}
+                              >
+                                {content}
+                              </span>
+                            ) : (
+                              content
+                            )}
                           </td>
                         );
                       })}

@@ -1,7 +1,15 @@
 from app.api.dependencies import get_current_user
 from app.db import get_db
 from app.repositories.pageAll_repo import get_page_for_uid, get_pageAll_paginated, suggest_pageAll_prefix
-from app.schemas.pageAll import AllResponse, EntityEnum, FindPageResponse, OrderByEnum, OrderDirEnum, SuggestResponse
+from app.schemas.pageAll import (
+    AllResponse,
+    EntityEnum,
+    FindPageResponse,
+    OrderByEnum,
+    OrderDirEnum,
+    PageAllLangEnum,
+    SuggestResponse,
+)
 from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,11 +20,12 @@ router = APIRouter()
 
 @router.get("/all", response_model=AllResponse)
 async def get_all(
-    entity: EntityEnum = Query(..., description="Table à interroger (commune, district, canton, ...)"),
+    entity: EntityEnum = Query(..., description="Table à interroger"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
-    order_by: OrderByEnum = Query(OrderByEnum.uid),
+    order_by: OrderByEnum = Query(OrderByEnum.name),
     order_dir: OrderDirEnum = Query(OrderDirEnum.asc),
+    lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
     _user: UserPublic = Depends(get_current_user),
 ):
@@ -31,7 +40,9 @@ async def get_all(
         per_page=per_page,
         order_by=order_by,
         order_dir=order_dir,
+        lang=lang,
     )
+
     pages = (total + per_page - 1) // per_page
 
     return {
@@ -52,6 +63,7 @@ async def suggest(
     entity: EntityEnum = Query(...),
     q: str = Query(..., min_length=3),
     limit: int = Query(10, ge=1, le=50),
+    lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
     _user: UserPublic = Depends(get_current_user),
 ):
@@ -59,7 +71,7 @@ async def suggest(
     Suggestion générique (auto-complétion) par préfixe,
     spécifique à l'entité demandée.
     """
-    data = await suggest_pageAll_prefix(db, entity=entity, q=q, limit=limit)
+    data = await suggest_pageAll_prefix(db, entity=entity, q=q, limit=limit, lang=lang)
     return {"success": True, "detail": "OK", "data": data}
 
 
@@ -68,8 +80,9 @@ async def find_page(
     entity: EntityEnum,
     uid: int,
     per_page: int = 20,
-    order_by: OrderByEnum = OrderByEnum.uid,
+    order_by: OrderByEnum = OrderByEnum.name,
     order_dir: OrderDirEnum = OrderDirEnum.asc,
+    lang: PageAllLangEnum = PageAllLangEnum.fr,
     db: AsyncSession = Depends(get_db),
     _user: UserPublic = Depends(get_current_user),
 ):
@@ -84,6 +97,7 @@ async def find_page(
         order_by=order_by,
         order_dir=order_dir,
         per_page=per_page,
+        lang=lang,
     )
 
     return {
