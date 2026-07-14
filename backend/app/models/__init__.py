@@ -19,6 +19,9 @@ from .question_global_option_association import QuestionGlobalOptionAssociation
 from .question_option_association import QuestionOptionAssociation
 from .question_per_survey import QuestionPerSurvey
 from .survey import Survey
+from .survey_author import SurveyAuthor
+from .survey_author_association import SurveyAuthorAssociation
+from .survey_metadata import SurveyMetadata
 
 
 __all__ = [
@@ -43,4 +46,7 @@ __all__ = [
     "QuestionGlobalOptionAssociation",
     "QuestionOptionAssociation",
     "QuestionCategoryOptionAssociation",
+    "SurveyMetadata",
+    "SurveyAuthor",
+    "SurveyAuthorAssociation",
 ]

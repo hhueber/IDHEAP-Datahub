@@ -75,7 +75,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["python", "-m", "app.script.init_db_async", "-d"]
+    command: ["python", "-m", "app.script.init_db_async", "-d", "-f"]
     working_dir: /app/backend
     volumes:
       - ./backend:/app/backend:z  
