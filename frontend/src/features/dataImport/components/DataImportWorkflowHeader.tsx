@@ -5,6 +5,7 @@ import type {
   DataImportJobSummary,
 } from "@/features/dataImport/dataImportTypes";
 import { DataImportDisplayNameEditor } from "@/features/dataImport/components/DataImportDisplayNameEditor";
+import { DataImportYearsEditor } from "@/features/dataImport/components/years/DataImportYearsEditor";
 
 type DataImportWorkflowHeaderProps = {
   currentJob: DataImportJobSummary | null;
@@ -14,6 +15,7 @@ type DataImportWorkflowHeaderProps = {
   onToggleJobs: () => void;
   onChangeFile: () => void;
   onDisplayNameSaved: (displayName: string | null) => void;
+  onYearsSaved: (years: number[]) => void;
 };
 
 export function DataImportWorkflowHeader({
@@ -24,6 +26,7 @@ export function DataImportWorkflowHeader({
   onToggleJobs,
   onChangeFile,
   onDisplayNameSaved,
+  onYearsSaved,
 }: DataImportWorkflowHeaderProps) {
   const { t } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
@@ -95,6 +98,12 @@ export function DataImportWorkflowHeader({
                 {analysis.columns} {t("dataImport.summary.columns")} ·{" "}
                 {analysis.total_issues} {t("dataImport.summary.issues")}
             </div>
+            <DataImportYearsEditor
+              importId={currentJob.import_id}
+              years={analysis.years}
+              disabled={loading}
+              onSaved={onYearsSaved}
+            />
           </div>
 
           <div className="flex flex-wrap gap-2">

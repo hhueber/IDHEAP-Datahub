@@ -28,6 +28,7 @@ export type DataImportUploadResponse = {
     filename: string;
     display_name: string | null;
     size: number;
+    years: number[];
   };
 };
 
@@ -69,6 +70,7 @@ export type DataImportAnalyzeResponse = {
     columns: number;
     cells: number;
     orientation: ImportOrientation;
+    years: number[];
     files_count?: number;
     resources_count?: number;
     detected_survey: {
@@ -164,6 +166,7 @@ export type DataImportJobSummary = {
   detected_survey_year: number | null;
   files_count: number;
   resources_count: number;
+  years: number[];
 };
 
 export type DataImportListResponse = {
@@ -253,7 +256,7 @@ export type DataImportWorkspaceUploadData = {
   size: number;
   files_count: number;
   resources_count: number;
-  active_resource_id: string;
+  years: number[];
   resources: DataImportResourceSummary[];
   added_resources: DataImportResourceSummary[];
 };
@@ -282,5 +285,14 @@ export type DataImportActiveResourceResponse = {
     import_id: string;
     active_resource_id: string;
     resource: DataImportResourceSummary;
+  };
+};
+
+export type DataImportYearsResponse = {
+  success: boolean;
+  detail: string;
+  data: {
+    import_id: string;
+    years: number[];
   };
 };

@@ -790,6 +790,17 @@
       "addFilesDescription": "Les nouveaux fichiers seront ajoutés au dossier courant sans supprimer les données déjà traitées.",
       "addSelected": "Ajouter les fichiers",
       "none": "Aucune ressource exploitable n’a été trouvée dans cet import."
+    },
+    "years": {
+      "label": "Années concernées",
+      "placeholder": "Par exemple : 2023",
+      "help": "Ajoutez une ou plusieurs années concernées par les fichiers importés.",
+      "add": "Ajouter",
+      "remove": "Retirer l’année {{year}}",
+      "required": "Ajoutez au moins une année.",
+      "requiredBadge": "Obligatoire",
+      "edit": "Modifier",
+      "editTitle": "Modifier les années de l’import"
     }
   }
 }

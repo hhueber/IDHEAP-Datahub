@@ -2,12 +2,14 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
+import { DataImportYearsInput } from "@/features/dataImport/components/years/DataImportYearsInput";
 
 type DataImportUploadPanelProps = {
   loading: boolean;
   onSubmit: (params: {
     files: File[];
     displayName: string | null;
+    years: number[];
   }) => Promise<void>;
 };
 
@@ -20,6 +22,8 @@ export function DataImportUploadPanel({
 
   const [files, setFiles] = React.useState<File[]>([]);
   const [displayName, setDisplayName] = React.useState("");
+  const [years, setYears] = React.useState<number[]>([]);
+  const [yearsError, setYearsError] = React.useState<string | null>(null);
 
   const addFiles = React.useCallback((nextFiles: File[]) => {
     setFiles((currentFiles) =>
@@ -36,13 +40,28 @@ export function DataImportUploadPanel({
   };
 
   const submit = async () => {
-    if (files.length === 0 || loading) {
+    if (
+      files.length === 0 ||
+      loading
+    ) {
       return;
     }
 
+    if (years.length === 0) {
+      setYearsError(
+        t("dataImport.years.required")
+      );
+
+      return;
+    }
+
+    setYearsError(null);
+
     await onSubmit({
       files,
-      displayName: displayName.trim() || null,
+      displayName:
+        displayName.trim() || null,
+      years,
     });
   };
 
@@ -90,6 +109,31 @@ export function DataImportUploadPanel({
           {t("dataImport.upload.folderNameHelp")}
         </span>
       </label>
+
+      <div className="mb-5">
+        <div className="mb-2 flex items-center justify-between gap-3">
+          <span className="text-sm font-medium">
+            {t("dataImport.years.label")}
+          </span>
+
+          <span className="text-xs opacity-55">
+            {t("dataImport.years.requiredBadge")}
+          </span>
+        </div>
+
+        <DataImportYearsInput
+          years={years}
+          disabled={loading}
+          error={yearsError}
+          onChange={(nextYears) => {
+            setYears(nextYears);
+
+            if (nextYears.length > 0) {
+              setYearsError(null);
+            }
+          }}
+        />
+      </div>
 
       <DataImportDropzone
         disabled={loading}
@@ -159,7 +203,7 @@ export function DataImportUploadPanel({
       <div className="mt-5 flex justify-end">
         <button
           type="button"
-          disabled={loading || files.length === 0}
+          disabled={loading || files.length === 0 || years.length === 0}
           onClick={() => void submit()}
           className="rounded-xl border px-5 py-2.5 text-sm font-semibold transition hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-40"
           style={{

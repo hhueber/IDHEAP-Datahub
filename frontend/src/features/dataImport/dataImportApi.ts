@@ -14,6 +14,7 @@ import type {
   DataImportActiveResourceResponse,
   DataImportResourcesResponse,
   DataImportWorkspaceUploadResponse,
+  DataImportYearsResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -213,6 +214,7 @@ export async function confirmDataImportColumns(params: {
 export async function uploadDataImportFiles(params: {
   files: File[];
   displayName: string | null;
+  years: number[];
 }) {
   const formData = new FormData();
 
@@ -224,6 +226,13 @@ export async function uploadDataImportFiles(params: {
     formData.append(
       "display_name",
       params.displayName.trim()
+    );
+  }
+
+  for (const year of params.years) {
+    formData.append(
+      "years",
+      String(year)
     );
   }
 
@@ -280,6 +289,22 @@ export async function selectDataImportResource(params: {
       auth: true,
       body: {
         resource_id: params.resourceId,
+      },
+    }
+  );
+}
+
+export async function patchDataImportYears(params: {
+  importId: string;
+  years: number[];
+}) {
+  return apiFetch<DataImportYearsResponse>(
+    `/data-import/${params.importId}/years`,
+    {
+      method: "PATCH",
+      auth: true,
+      body: {
+        years: params.years,
       },
     }
   );
