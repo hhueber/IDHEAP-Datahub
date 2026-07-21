@@ -27,11 +27,11 @@ async def get_commune_mapping_year(db: AsyncSession, year: int):
     else:
         query_year = target_year
 
-    query = {
+    query = (
         select(Commune.uid, Commune.code)
         .join(CommuneMap, Commune.uid == CommuneMap.commune_uid)
         .filter(CommuneMap.year == query_year)
-    }
+    )
 
     result = await db.execute(query)
     return {row.code: row.uid for row in result.all()}
