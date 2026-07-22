@@ -81,5 +81,20 @@ services:
       - ./backend:/app/backend:z  
     restart: "no"
 
+  schema_db_init_empty:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "app.script.init_db_async", "-f", "-e"]
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend:z  
+    restart: "no"
+
 volumes:
   pgdata:
