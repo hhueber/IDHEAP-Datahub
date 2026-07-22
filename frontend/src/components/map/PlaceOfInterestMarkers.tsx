@@ -15,7 +15,7 @@ export default function PlaceOfInterestMarkers({ placeOfInterest }: Props) {
 
   return (
     // zIndex < 650 (tooltipPane) pour que les tooltips passent par-dessus
-    <Pane name="placeOfInterest" style={{ zIndex: 675 }}>
+    <Pane name="placeOfInterest" style={{ zIndex: 725 }}>
       {placeOfInterest.map((c) => (
         <CircleMarker
           key={c.code}
