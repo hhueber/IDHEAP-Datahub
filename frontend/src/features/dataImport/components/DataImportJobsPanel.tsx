@@ -152,6 +152,30 @@ export function DataImportJobsPanel({
                     />
                   </div>
 
+                  {job.years.length > 0 && (
+                    <div className="mt-3">
+                      <div className="text-xs font-medium opacity-60">
+                        {t("dataImport.years.label")}
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {job.years.map((year) => (
+                          <span
+                            key={year}
+                            className="rounded-full border px-2.5 py-1 text-xs font-semibold"
+                            style={{
+                              borderColor,
+                              backgroundColor:
+                                hoverPrimary04,
+                            }}
+                          >
+                            {year}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="mt-3">
                     <div className="text-xs font-medium opacity-60">
                       {t("dataImport.jobs.folderSummary")}

@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Any, Literal, Optional
 
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class ImportOrientationEnum(str, Enum):
@@ -38,6 +38,7 @@ class DataImportUploadData(BaseModel):
     filename: str
     display_name: str | None = None
     size: int
+    years: list[int] = Field(default_factory=list)
 
 
 class DataImportUploadResponse(BaseModel):
@@ -88,6 +89,7 @@ class DataImportAnalyzeData(BaseModel):
     columns: int
     cells: int
     orientation: ImportOrientationEnum
+    years: list[int] = Field(default_factory=list)
     detected_survey: DetectedSurvey
     sections: list[ImportSectionSummary] = Field(default_factory=list)
     columns_summary: list[ImportColumnSummary] = Field(default_factory=list)
@@ -207,6 +209,7 @@ class DataImportJobSummary(BaseModel):
     detected_survey_year: Optional[int] = None
     files_count: int = 0
     resources_count: int = 0
+    years: list[int] = Field(default_factory=list)
 
 
 class DataImportListResponse(BaseModel):
@@ -295,6 +298,7 @@ class DataImportWorkspaceUploadData(BaseModel):
     size: int
     files_count: int
     resources_count: int
+    years: list[int] = Field(default_factory=list)
 
     resources: list[DataImportResourceSummary] = Field(default_factory=list)
 
@@ -318,12 +322,30 @@ class DataImportResourcesResponse(BaseModel):
     data: DataImportResourcesData
 
 
-class DataImportCommitData(BaseModel):
+class DataImportYearsPatch(BaseModel):
+    years: list[int] = Field(min_length=1)
+
+    @field_validator("years")
+    @classmethod
+    def validate_years(
+        cls,
+        years: list[int],
+    ) -> list[int]:
+        normalized_years = sorted(set(years))
+
+        for year in normalized_years:
+            if not 1000 <= year <= 9999:
+                raise ValueError("Each year must contain exactly four digits")
+
+        return normalized_years
+
+
+class DataImportYearsResponseData(BaseModel):
     import_id: str
-    status: Literal["not_implemented"]
+    years: list[int] = Field(default_factory=list)
 
 
-class DataImportCommitResponse(BaseModel):
+class DataImportYearsResponse(BaseModel):
     success: bool
     detail: str
-    data: DataImportCommitData
+    data: DataImportYearsResponseData

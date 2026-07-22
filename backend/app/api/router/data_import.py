@@ -7,7 +7,6 @@ from app.schemas.data_import import (
     DataImportColumnPatch,
     DataImportColumnsConfirmPatch,
     DataImportColumnTransformPatch,
-    DataImportCommitResponse,
     DataImportDeleteResponse,
     DataImportIssuesResponse,
     DataImportListResponse,
@@ -19,6 +18,8 @@ from app.schemas.data_import import (
     DataImportResourcesResponse,
     DataImportUploadResponse,
     DataImportWorkspaceUploadResponse,
+    DataImportYearsPatch,
+    DataImportYearsResponse,
     ImportSectionEnum,
 )
 from app.services.add_database.import_survey_service import import_survey_to_db
@@ -29,6 +30,7 @@ from app.services.data_import.data_import_patch_service import (
     patch_import_column_transform,
 )
 from app.services.data_import.data_import_service import (
+    add_files_to_import_workspace,
     analyze_import_file,
     create_import_workspace,
     delete_import_job,
@@ -39,6 +41,7 @@ from app.services.data_import.data_import_service import (
     preview_import_section,
     save_import_upload,
     update_import_display_name,
+    update_import_years,
 )
 from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -50,9 +53,10 @@ router = APIRouter()
 @router.post("/upload", response_model=DataImportUploadResponse)
 async def upload_data_file(
     file: UploadFile = File(...),
+    years: list[int] = Form(...),
     _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
-    data = await save_import_upload(file)
+    data = await save_import_upload(file=file, years=years)
 
     return {
         "success": True,
@@ -214,6 +218,24 @@ async def get_data_import_summary(
     }
 
 
+@router.patch("/{import_id}/years", response_model=DataImportYearsResponse)
+async def update_data_import_years(
+    import_id: str,
+    payload: DataImportYearsPatch,
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+    data = await update_import_years(
+        import_id=import_id,
+        years=payload.years,
+    )
+
+    return {
+        "success": True,
+        "detail": "Import years updated",
+        "data": data,
+    }
+
+
 @router.delete("/{import_id}", response_model=DataImportDeleteResponse)
 async def delete_data_import(
     import_id: str,
@@ -249,6 +271,7 @@ async def confirm_data_import_columns(
 async def upload_data_files(
     files: list[UploadFile] = File(...),
     display_name: str | None = Form(None),
+    years: list[int] = Form(...),
     _current_user=Depends(
         require_permission(
             PermissionScope.DATASET,
@@ -259,6 +282,7 @@ async def upload_data_files(
     data = await create_import_workspace(
         files=files,
         display_name=display_name,
+        years=years,
     )
 
     return {
@@ -271,6 +295,7 @@ async def upload_data_files(
 @router.post("/{import_id}/files", response_model=DataImportWorkspaceUploadResponse)
 async def get_data_import_files(
     import_id: str,
+    files: list[UploadFile] = File(...),
     _current_user=Depends(
         require_permission(
             PermissionScope.DATASET,
@@ -278,7 +303,7 @@ async def get_data_import_files(
         )
     ),
 ):
-    data = await list_import_resources(import_id)
+    data = await list_import_resources(import_id=import_id, files=files)
 
     return {
         "success": True,

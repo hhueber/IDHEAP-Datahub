@@ -44,8 +44,8 @@ from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def save_import_upload(file: UploadFile) -> dict[str, Any]:
-    result = await create_import_workspace(files=[file])
+async def save_import_upload(file: UploadFile, years: list[int]) -> dict[str, Any]:
+    result = await create_import_workspace(files=[file], years=years)
 
     first_resource = result["resources"][0]
 
@@ -54,6 +54,7 @@ async def save_import_upload(file: UploadFile) -> dict[str, Any]:
         "filename": first_resource["filename"],
         "display_name": result["display_name"],
         "size": result["size"],
+        "years": result["years"],
     }
 
 
@@ -106,6 +107,7 @@ async def list_import_jobs() -> list[dict[str, Any]]:
                 "detected_survey_year": detected_survey.get("year"),
                 "files_count": len(sources),
                 "resources_count": len(resources),
+                "years": metadata.get("years") or [],
             }
         )
 
@@ -196,6 +198,7 @@ async def analyze_import_file(
 
     metadata = read_metadata(import_dir)
 
+    analysis["years"] = metadata.get("years") or []
     analysis["files_count"] = len(metadata.get("sources") or [])
     analysis["resources_count"] = len(metadata.get("resources") or [])
 
@@ -358,9 +361,12 @@ async def create_import_workspace(
     *,
     files: list[UploadFile],
     display_name: str | None = None,
+    years: list[int],
 ) -> dict[str, Any]:
     if not files:
         raise ValueError("At least one file is required")
+
+    normalized_years = normalize_import_years(years)
 
     import_id = str(uuid.uuid4())
     import_dir = UPLOAD_DIR / import_id
@@ -380,6 +386,7 @@ async def create_import_workspace(
     metadata: dict[str, Any] = {
         "import_id": import_id,
         "display_name": clean_display_name,
+        "years": normalized_years,
         "created_at": now,
         "updated_at": now,
         "analyzed": False,
@@ -457,11 +464,12 @@ def build_workspace_upload_payload(
     return {
         "import_id": metadata["import_id"],
         "display_name": metadata.get("display_name"),
+        "years": metadata.get("years") or [],
         "size": sum(int(source.get("size") or 0) for source in sources),
         "files_count": len(sources),
         "resources_count": len(resources),
         "resources": resources,
-        "added_resources": added_resources or resources,
+        "added_resources": (added_resources if added_resources is not None else resources),
     }
 
 
@@ -472,6 +480,21 @@ def clean_display_name(display_name: str | None) -> str | None:
     clean_value = display_name.strip()
 
     return clean_value or None
+
+
+def normalize_import_years(
+    years: list[int] | None,
+) -> list[int]:
+    normalized_years = sorted(set(int(year) for year in years or []))
+
+    if not normalized_years:
+        raise ValueError("At least one year is required")
+
+    for year in normalized_years:
+        if not 1000 <= year <= 9999:
+            raise ValueError("Each year must contain exactly four digits")
+
+    return normalized_years
 
 
 async def list_import_resources(
@@ -541,4 +564,39 @@ async def set_active_import_resource(
         "import_id": import_id,
         "active_resource_id": resource_id,
         "resource": resource,
+    }
+
+
+async def update_import_years(
+    *,
+    import_id: str,
+    years: list[int],
+) -> dict[str, Any]:
+    import_dir = get_import_dir(import_id)
+
+    metadata = read_metadata(import_dir)
+
+    normalized_years = normalize_import_years(years)
+
+    metadata["years"] = normalized_years
+    metadata["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+    write_metadata(import_dir, metadata)
+
+    workspace_dir = get_workspace_dir(import_dir)
+
+    analysis_path = workspace_dir / "analysis.json"
+
+    # Si l’import a déjà été analysé, on met aussi à jour
+    # analysis.json sans relancer toute l’analyse.
+    if analysis_path.exists():
+        analysis = read_analysis(import_dir)
+
+        analysis["years"] = normalized_years
+
+        write_analysis(import_dir, analysis)
+
+    return {
+        "import_id": import_id,
+        "years": normalized_years,
     }

@@ -355,6 +355,7 @@ export default function DataImportPage() {
   const handleCreateImport = async (params: {
     files: File[];
     displayName: string | null;
+    years: number[];
   }) => {
     setLoadingStep("upload");
     setError(null);
@@ -597,6 +598,29 @@ export default function DataImportPage() {
                 : job
             )
             );
+        }}
+        onYearsSaved={(years) => {
+          setAnalysis((currentAnalysis) => {
+            if (!currentAnalysis) {
+              return currentAnalysis;
+            }
+
+            return {
+              ...currentAnalysis,
+              years,
+            };
+          });
+
+          setJobs((previousJobs) =>
+            previousJobs.map((job) =>
+              job.import_id === importId
+                ? {
+                    ...job,
+                    years,
+                  }
+                : job
+            )
+          );
         }}
       />
 
