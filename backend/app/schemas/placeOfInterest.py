@@ -98,6 +98,14 @@ class GeoPointResponse(BaseModel):
     data: Optional[GeoPointOut] = None
 
 
+class LocalizedPlaceNamesOut(BaseModel):
+    fr: str | None = None
+    de: str | None = None
+    it: str | None = None
+    ro: str | None = None
+    en: str | None = None
+
+
 class PlaceOfInterestSuggestOut(BaseModel):
     """
     Schéma pour la suggestion publique utilisée par la carte.
@@ -111,7 +119,9 @@ class PlaceOfInterestSuggestOut(BaseModel):
     uid: int
     type: GeoSuggestionType
     code: str
+    name: str
     default_name: str
+    names: LocalizedPlaceNamesOut
     pos: Tuple[float, float] = Field(..., description="[lat, lon]")
 
 

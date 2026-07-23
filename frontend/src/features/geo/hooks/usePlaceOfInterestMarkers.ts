@@ -2,11 +2,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngExpression } from "leaflet";
 import { useTranslation } from "react-i18next";
 import { PlaceOfInterestApi, PlaceOfInterestMapDTO } from "@/features/geo/geoApi";
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
+
+// Represente les noms localisés d'une ville dans différentes langues.
+export type LocalizedPlaceNames = {
+  fr?: string | null;
+  de?: string | null;
+  it?: string | null;
+  en?: string | null;
+  ro?: string | null;
+};
 
 // Représente une ville à afficher sur la carte.
 export type PlaceOfInterestMarker = {
   code: string;
   name: string;
+  names?: LocalizedPlaceNames;
   pos: LatLngExpression;
   source: "backend" | "local";
 };
@@ -36,6 +47,26 @@ const backendCacheByLang: Record<string, PlaceOfInterestMarker[]> = {};
 
 const LOCAL_PLACE_OF_INTEREST_STORAGE_KEY = "map_extra_place_of_interest";
 
+const isValidLocalizedPlaceNames = (
+  value: unknown
+): value is LocalizedPlaceNames => {
+  if (!value || typeof value !== "object") {
+    return false;
+  }
+
+  const names = value as Record<string, unknown>;
+
+  return ["fr", "de", "it", "en", "ro"].every((lang) => {
+    const name = names[lang];
+
+    return (
+      name === undefined ||
+      name === null ||
+      typeof name === "string"
+    );
+  });
+};
+
 const isValidLocalPlaceOfInterest = (value: unknown): value is PlaceOfInterestMarker => {
   if (!value || typeof value !== "object") return false;
 
@@ -46,6 +77,10 @@ const isValidLocalPlaceOfInterest = (value: unknown): value is PlaceOfInterestMa
     typeof item.code === "string" &&
     typeof item.name === "string" &&
     item.source === "local" &&
+    (
+      item.names === undefined ||
+      isValidLocalizedPlaceNames(item.names)
+    ) &&
     Array.isArray(pos) &&
     pos.length === 2 &&
     typeof pos[0] === "number" &&
@@ -90,6 +125,25 @@ const saveLocalPlaceOfInterest = (items: PlaceOfInterestMarker[]) => {
   }
 };
 
+const resolveLocalPlaceOfInterestName = (
+    placeOfInterest: PlaceOfInterestMarker,
+    lang: string
+  ): string => {
+    const localizedName =
+      placeOfInterest.names?.[
+        lang as keyof LocalizedPlaceNames
+      ];
+
+    if (
+      typeof localizedName === "string" &&
+      localizedName.trim()
+    ) {
+      return localizedName.trim();
+    }
+
+    return placeOfInterest.name;
+  };
+
 export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarkersResult {
   const { t } = useTranslation();
   const [backendPlaceOfInterest, setBackendPlaceOfInterest] = useState<PlaceOfInterestMarker[]>([]);
@@ -99,6 +153,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const normalizedLang = normalizeGeoLanguage(lang);
 
   const abortRef = useRef<AbortController | null>(null);
 
@@ -107,8 +162,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
   }, [extraPlaceOfInterest]);
 
   useEffect(() => {
-    const normLang = (lang || "en").toLowerCase();
-    const cached = backendCacheByLang[normLang];
+    const cached = backendCacheByLang[normalizedLang];
     if (cached) {
       setBackendPlaceOfInterest(cached);
       setError(null);
@@ -124,7 +178,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
     setError(null);
 
     PlaceOfInterestApi
-      .list(normLang, ctrl.signal)
+      .list(normalizedLang, ctrl.signal)
       .then((raw: PlaceOfInterestMapDTO[]) => {
         const markers: PlaceOfInterestMarker[] = raw.map((c) => ({
           code: c.code,
@@ -132,7 +186,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
           pos: c.pos,
           source: "backend",
         }));
-        backendCacheByLang[normLang] = markers;
+        backendCacheByLang[normalizedLang] = markers;
         setBackendPlaceOfInterest(markers);
       })
       .catch((e: any) => {
@@ -146,7 +200,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
     return () => {
       ctrl.abort();
     };
-  }, [lang]);
+  }, [normalizedLang, t]);
 
   // Masque / démasque une ville spécifique en fonction de son code.   
   const togglePlaceOfInterestHidden = (code: string) => {
@@ -173,6 +227,18 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
     setExtraPlaceOfInterest((prev) => prev.filter((c) => c.code !== code));
   };
 
+  const localizedExtraPlaceOfInterest = useMemo(
+    () =>
+      extraPlaceOfInterest.map((placeOfInterest) => ({
+        ...placeOfInterest,
+        name: resolveLocalPlaceOfInterestName(
+          placeOfInterest,
+          normalizedLang
+        ),
+      })),
+    [extraPlaceOfInterest, normalizedLang]
+  );
+
   // Liste finale des villes visibles enregistrer mais pas dans le stockage local
   const placeOfInterest = useMemo(() => {
     // Si le toggle global est OFF, on ne montre aucune ville (backend + locales)
@@ -180,11 +246,18 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
         return [];
     }
 
-    const visibleBackend = backendPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
-    const visibleExtras  = extraPlaceOfInterest.filter((c) => !hiddenCodes.has(c.code));
+    const visibleBackend = backendPlaceOfInterest.filter(
+      (placeOfInterest) =>
+        !hiddenCodes.has(placeOfInterest.code)
+    );
+
+    const visibleExtras = localizedExtraPlaceOfInterest.filter(
+      (placeOfInterest) =>
+        !hiddenCodes.has(placeOfInterest.code)
+    );
 
     return [...visibleBackend, ...visibleExtras];
-  }, [backendPlaceOfInterest, extraPlaceOfInterest, hideAllBackend, hiddenCodes]);
+  }, [backendPlaceOfInterest, localizedExtraPlaceOfInterest, hideAllBackend, hiddenCodes]);
 
   return {
     placeOfInterest,
@@ -195,7 +268,7 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
     setHideAllBackend,
     hiddenCodes,
     togglePlaceOfInterestHidden,
-    extraPlaceOfInterest,
+    extraPlaceOfInterest:localizedExtraPlaceOfInterest,
     addExtraPlaceOfInterest,
     removeExtraPlaceOfInterest,
   };

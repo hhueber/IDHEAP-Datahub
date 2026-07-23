@@ -3,7 +3,7 @@ from typing import Literal
 
 from app.api.dependencies import get_current_user
 from app.db import get_db
-from app.repositories.geo_search_repo import get_geo_point, suggest_geo_locations
+from app.repositories.geo_search_repo import build_geo_names, get_geo_point, resolve_geo_name, suggest_geo_locations
 from app.schemas.placeOfInterest import (
     GeoPointResponse,
     GeoSuggestionResponse,
@@ -86,6 +86,7 @@ async def geo_point(
 @router.get("/suggest/public", response_model=PlaceOfInterestSuggestResponse)
 async def suggest_geo_public(
     q: str = Query(..., min_length=3, max_length=100),
+    lang: str = Query("en", description="ISO code de langue, ex: fr, de, it, ro, en"),
     limit: int = Query(50, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
@@ -129,12 +130,19 @@ async def suggest_geo_public(
         if not default_name:
             continue
 
+        localized_name = resolve_geo_name(row, lang)
+
+        if not localized_name:
+            continue
+
         place_of_interest.append(
             PlaceOfInterestSuggestOut(
                 uid=row["uid"],
                 type=row["type"],
                 code=row["code"],
+                name=localized_name,
                 default_name=default_name,
+                names=build_geo_names(row),
                 pos=(float(pos[0]), float(pos[1])),
             )
         )
