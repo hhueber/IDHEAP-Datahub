@@ -13,6 +13,47 @@ from sqlalchemy.ext.asyncio import AsyncSession
 GeoType = Literal["commune", "district", "canton"]
 
 
+LANG_FIELD_MAP = {
+    "fr": "name_fr",
+    "de": "name_de",
+    "it": "name_it",
+    "ro": "name_ro",
+    "en": "name_en",
+}
+
+
+def normalize_geo_language(lang: str | None) -> str:
+    return (lang or "").strip().lower().replace("_", "-").split("-")[0] or "en"
+
+
+def resolve_geo_name(item: dict, lang: str | None) -> str:
+    normalized_lang = normalize_geo_language(lang)
+    field_name = LANG_FIELD_MAP.get(normalized_lang, "name_en")
+    localized_name = item.get(field_name)
+    if isinstance(localized_name, str) and localized_name.strip():
+        return localized_name.strip()
+    default_name = item.get("name")
+    if isinstance(default_name, str) and default_name.strip():
+        return default_name.strip()
+
+    code = item.get("code")
+
+    if isinstance(code, str):
+        return code
+
+    return ""
+
+
+def build_geo_names(item: dict) -> dict:
+    return {
+        "fr": item.get("name_fr"),
+        "de": item.get("name_de"),
+        "it": item.get("name_it"),
+        "ro": item.get("name_ro"),
+        "en": item.get("name_en"),
+    }
+
+
 def normalize_search_text(value: Optional[str]) -> str:
     if not value:
         return ""
