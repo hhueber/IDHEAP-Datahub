@@ -294,6 +294,43 @@ export default function GeoJsonMap({
   const districts = bundle?.districts ?? null;
   const communes  = (bundle as any)?.communes ?? null;
 
+  const getLegendDisplayValue = (rawValue: any): string => {
+    if (rawValue == null || rawValue === "") {
+      return "No data";
+    }
+
+    const items = (choropleth?.legend as any)?.items;
+
+    if (!Array.isArray(items)) {
+      return String(rawValue);
+    }
+
+    const findLabel = (value: any) => {
+      const strValue = String(value);
+
+      const found = items.find((it: any) => {
+        const optionValue = it?.value ?? it?.label;
+        return String(optionValue) === strValue;
+      });
+
+      return found?.label ?? strValue;
+    };
+
+    if (Array.isArray(rawValue)) {
+      return rawValue.map(findLabel).join(", ");
+    }
+
+    return findLabel(rawValue);
+  };
+
+  const escapeHtml = (value: unknown): string =>
+    String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
   return (
     <div ref={hostRef} data-map-root 
       className={`${className} overflow-hidden`}
@@ -324,6 +361,17 @@ export default function GeoJsonMap({
 
         .leaflet-interactive {
           outline: none !important;
+        }
+
+        [data-map-root] .choropleth-tooltip-name {
+          font-weight: 600;
+          margin-bottom: 2px;
+        }
+
+        [data-map-root] .choropleth-tooltip-value {
+          font-size: 12px;
+          line-height: 1.25;
+          opacity: 0.9;
         }
 
         path:focus {
@@ -494,13 +542,25 @@ export default function GeoJsonMap({
                 }
               });
 
-                // Si gradient: pas de nom de commune
-                if (choropleth.legend.type === "gradient") {
-                  layer.bindTooltip(`${v ?? "No data"}`, { sticky: true, opacity: 1, className: "choropleth-tooltip", offset: [12, 0] });
-                } else {
-                  const name = props.name ?? props.code ?? "";
-                  layer.bindTooltip( `<div>${name}</div><div>${v ?? "No data"}</div>`,{sticky: true, opacity: 1, className: "choropleth-tooltip", offset: [12, 0]});
-                }
+                const name = props.name ?? props.code ?? "";
+                const displayValue = getLegendDisplayValue(v);
+
+                layer.bindTooltip(
+                  `
+                    <div class="choropleth-tooltip-name">
+                      ${escapeHtml(name)}
+                    </div>
+                    <div class="choropleth-tooltip-value">
+                      ${escapeHtml(displayValue)}
+                    </div>
+                  `,
+                  {
+                    sticky: true,
+                    opacity: 1,
+                    className: "choropleth-tooltip",
+                    offset: [12, 0],
+                  }
+                );
               }}
             />
 

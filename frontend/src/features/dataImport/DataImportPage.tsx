@@ -5,6 +5,7 @@ import { useTheme } from "@/theme/useTheme";
 import {
   addDataImportFiles,
   analyzeDataImportFile,
+  commitDataImport,
   confirmDataImportColumns,
   deleteDataImportJob,
   fetchDataImportJobs,
@@ -22,17 +23,16 @@ import type {
   ImportSection,
 } from "@/features/dataImport/dataImportTypes";
 import type { DataImportWorkflowStep } from "@/features/dataImport/dataImportWorkflowTypes";
-import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
 import { DataImportWorkflowHeader } from "@/features/dataImport/components/DataImportWorkflowHeader";
 import { DataImportStepTabs } from "@/features/dataImport/components/DataImportStepTabs";
-import { DataImportStepPlaceholder } from "@/features/dataImport/components/DataImportStepPlaceholder";
+import { DataImportValidateStep } from "@/features/dataImport/components/validate/DataImportValidateStep";
 import { DataImportExploreStep } from "@/features/dataImport/components/explore/DataImportExploreStep";
 import { ConfirmModal } from "@/utils/ConfirmModal";
 import { DataImportImproveStep } from "@/features/dataImport/components/improve/DataImportImproveStep";
 import { DataImportUploadPanel } from "@/features/dataImport/components/upload/DataImportUploadPanel";
 
-type LoadingStep = "idle" | "upload" | "analyze" | "preview";
+type LoadingStep = "idle" | "upload" | "analyze" | "preview" | "validate";
 
 const DEFAULT_PREVIEW_FILTERS: DataImportPreviewFilters = {
   search: "",
@@ -71,6 +71,9 @@ export default function DataImportPage() {
   const [error, setError] = React.useState<string | null>(null);
 
   const [showAddFilesModal, setShowAddFilesModal] =
+    React.useState(false);
+
+  const [validationSubmitted, setValidationSubmitted] =
     React.useState(false);
 
   const [previewFilters, setPreviewFilters] =
@@ -164,6 +167,7 @@ export default function DataImportPage() {
     setImportId(nextImportId);
     setAnalysis(null);
     setPreview(null);
+    setValidationSubmitted(false);
 
     try {
         let json: DataImportAnalyzeResponse;
@@ -357,6 +361,7 @@ export default function DataImportPage() {
     setError(null);
     setAnalysis(null);
     setPreview(null);
+    setValidationSubmitted(false);
     setActiveStep("explore");
 
     try {
@@ -442,6 +447,7 @@ export default function DataImportPage() {
         setIssuesOnly(false);
         setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
         setShowAddFilesModal(false);
+        setValidationSubmitted(false);
 
         await loadPreview(importId, firstSection, 1, false, DEFAULT_PREVIEW_FILTERS);
         await loadJobs();
@@ -515,6 +521,35 @@ export default function DataImportPage() {
     );
   };
 
+  const handleValidateImport = async () => {
+    if (!importId || loading) {
+        return;
+    }
+
+    setLoadingStep("validate");
+    setError(null);
+
+    try {
+        const json = await commitDataImport(importId);
+
+        if (!json.success) {
+          throw new Error(
+            json.detail || t("common.error")
+          );
+        }
+
+        setValidationSubmitted(true);
+    } catch (err: any) {
+        console.error(err);
+
+        setError(
+          err?.message || t("common.error")
+        );
+    } finally {
+        setLoadingStep("idle");
+    }
+  };
+
   const reloadCurrentPreview = async () => {
     if (!importId) {
         return;
@@ -532,6 +567,7 @@ export default function DataImportPage() {
     setPage(1);
     setIssuesOnly(false);
     setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
+    setValidationSubmitted(false);
     setShowDropzone(true);
     setShowJobs(true);
     setShowAddFilesModal(false);
@@ -669,7 +705,13 @@ export default function DataImportPage() {
           )}
 
           {activeStep === "validate" && (
-            <DataImportStepPlaceholder step="validate" />
+            <DataImportValidateStep
+                analysis={analysis}
+                currentJob={currentJob}
+                loading={loading}
+                submitted={validationSubmitted}
+                onSubmit={handleValidateImport}
+            />
           )}
         </>
       )}

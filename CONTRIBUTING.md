@@ -23,7 +23,7 @@ Before anything, make sure you followed the [Setup page](https://github.com/hhue
 
 We follow the [GitHub Flow](https://docs.github.com/en/get-started/quickstart/github-flow): all code contributions are submitted via a pull request towards the main branch.
 
-The convention for adding code to the Corv code base is as follows:
+The convention for adding code to the code base is as follows:
 - First, the developer makes a separate branch from the `main` branch (e.g., `feature-branch`) to implement their changes.
 - Next, a pull request is opened, which must be reviewed by another person.
   - Don't forget to merge `main` and fix conflicts before submitting your branch for review.

@@ -30,14 +30,10 @@ export class ApiError extends Error {
 // Auth via cookie HttpOnly (sinon on utilise Authorization: Bearer)
 const AUTH_VIA_COOKIE = true;
 
-/** TODO: Base URL de l’API ne pas laisser "http://localhost:8000" en dur */
 function resolveBaseUrl(): string {
-  const im = (import.meta as any)?.env ?? {};
+  const im = import.meta.env;
   return (
-    im.VITE_API_BASE_URL ||
-    im.REACT_APP_API_URL ||
-    (window as any).__API_URL__ ||
-    "http://localhost:8000"
+    im.VITE_API_BASE_URL
   );
 }
 const BASE_URL = resolveBaseUrl();

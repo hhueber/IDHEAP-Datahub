@@ -349,3 +349,14 @@ class DataImportYearsResponse(BaseModel):
     success: bool
     detail: str
     data: DataImportYearsResponseData
+
+
+class DataImportCommitData(BaseModel):
+    import_id: str
+    status: Literal["not_implemented"]
+
+
+class DataImportCommitResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportCommitData
