@@ -15,6 +15,7 @@ import type {
   DataImportResourcesResponse,
   DataImportWorkspaceUploadResponse,
   DataImportYearsResponse,
+  DataImportCommitResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -306,6 +307,18 @@ export async function patchDataImportYears(params: {
       body: {
         years: params.years,
       },
+    }
+  );
+}
+
+export async function commitDataImport(
+  importId: string
+) {
+  return apiFetch<DataImportCommitResponse>(
+    `/data-import/${importId}/commit`,
+    {
+      method: "POST",
+      auth: true,
     }
   );
 }

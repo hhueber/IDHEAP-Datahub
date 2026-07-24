@@ -296,3 +296,13 @@ export type DataImportYearsResponse = {
     years: number[];
   };
 };
+
+
+export type DataImportCommitResponse = {
+  success: boolean;
+  detail: string;
+  data: {
+    import_id: string;
+    status: "not_implemented";
+  };
+};
