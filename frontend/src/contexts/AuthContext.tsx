@@ -2,6 +2,7 @@ import React, { createContext, useContext, useEffect, useRef, useState } from "r
 import { useNavigate } from "react-router-dom";
 import { authService, User, getNextRefreshTs, clearNextRefresh } from "@/services/auth";
 import { useLocation } from "react-router-dom";
+import { roleHasPermission, type PermissionLevel, type PermissionScope } from "@/config/roles";
 
 // Contexte d’authentification : stocke l’utilisateur, expose login/logout/refresh et contrôle des rôles
 type Ctx = {
@@ -10,7 +11,7 @@ type Ctx = {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
-  hasRole: (...roles: Array<User["role"]>) => boolean;
+  can: (scope: PermissionScope, level: PermissionLevel) => boolean;
 };
 
 const Ctx = createContext<Ctx | null>(null);
@@ -174,11 +175,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const me = await authService.me(); setUser(me); authService.cacheUser(me);
   };
 
-  const hasRole = (...roles: Array<User["role"]>) => !!user && roles.includes(user.role);
+  const can = (scope: PermissionScope, level: PermissionLevel): boolean => {
+  return roleHasPermission(user?.role, { scope, level });
+};
 
   if (!ready) return null;
   return (
-    <Ctx.Provider value={{ user, isAuthenticated: !!user, login, logout, refreshUser, hasRole }}>
+    <Ctx.Provider value={{ user, isAuthenticated: !!user, login, logout, refreshUser, can }}>
       {children}
     </Ctx.Provider>
   );

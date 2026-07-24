@@ -104,8 +104,8 @@ export default function InsightsPanel({ insights, onChildShow }: Props) {
                 <span className="text-sm font-medium" style={{ color: textColor }}>
                   {typeof item.value === "boolean"
                     ? item.value
-                      ? t("common.yes")
-                      : t("common.no")
+                      ? t("dashboardSidebar.pageShow.visibility.private")
+                      : t("dashboardSidebar.pageShow.visibility.public")
                     : item.value === null || item.value === undefined || item.value === ""
                     ? "—"
                     : String(item.value)}
