@@ -22,7 +22,6 @@ from app.schemas.data_import import (
     DataImportYearsResponse,
     ImportSectionEnum,
 )
-from app.services.add_database.import_survey_service import import_survey_to_db
 from app.services.data_import.data_import_patch_service import (
     confirm_import_columns,
     patch_import_cell,
@@ -328,21 +327,4 @@ async def get_data_import_files(
         "success": True,
         "detail": "Import resources loaded",
         "data": data,
-    }
-
-
-@router.post("/{import_id}/commit", response_model=DataImportCommitResponse)
-async def commit_data_import(
-    import_id: str,
-    db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
-):
-    await import_survey_to_db(db, import_id)
-    return {
-        "success": True,
-        "detail": "Database import endpoint reached",
-        "data": {
-            "import_id": import_id,
-            "status": "not_implemented",
-        },
     }

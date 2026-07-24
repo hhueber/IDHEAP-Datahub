@@ -4,12 +4,13 @@ import logging
 from app.models.answer import Answer
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.services.add_database.commune_service import get_commune_mapping_year
+from app.services.add_database.commune_service import add_update_geo_data, get_commune_mapping_year
 from app.services.data_import.data_import_storage_service import (
     get_import_dir,
     get_workspace_dir,
     read_analysis,
     read_frame,
+    read_metadata,
 )
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
@@ -20,25 +21,27 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
+async def commune(db: AsyncSession):
+    await add_update_geo_data(db, 2016)
+
+
 async def import_survey_to_db(db: AsyncSession, upload_id: str):
     import_dir = get_import_dir(upload_id)
     workspace_dir = get_workspace_dir(import_dir)
 
     analysis = read_analysis(import_dir)
+    metadata = read_metadata(import_dir)
 
     df = read_frame(import_dir)
 
     detected_survey = analysis.get("detected_survey") or {}
     survey_name = detected_survey.get("name")
-    survey_years = detected_survey.get("year")
+    survey_years = metadata.get("years")
 
     if not survey_name or not survey_years:
         raise ValueError("Cannot find name or survey year")
 
-    # TODO : hack, don't forget to remove
-    survey_years_lsit = []
-    survey_years_lsit.append(survey_years)
-    for year in survey_years_lsit:
+    for year in survey_years:
 
         result = await db.execute(select(Survey).filter_by(year=year, name=survey_name))
         db_survey = result.scalar_one_or_none()
