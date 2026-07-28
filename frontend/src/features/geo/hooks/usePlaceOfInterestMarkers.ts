@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { LatLngExpression } from "leaflet";
 import { useTranslation } from "react-i18next";
-import { PlaceOfInterestApi, PlaceOfInterestMapDTO } from "@/features/geo/geoApi";
+import { PlaceOfInterestApi, PlaceOfInterestMapDTO, PlaceOfInterestGeoType } from "@/features/geo/geoApi";
 import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 
 // Represente les noms localisés d'une ville dans différentes langues.
@@ -16,6 +16,8 @@ export type LocalizedPlaceNames = {
 // Représente une ville à afficher sur la carte.
 export type PlaceOfInterestMarker = {
   code: string;
+  geoCode?: string;
+  geoType: PlaceOfInterestGeoType;
   name: string;
   names?: LocalizedPlaceNames;
   pos: LatLngExpression;
@@ -67,6 +69,13 @@ const isValidLocalizedPlaceNames = (
   });
 };
 
+const isValidGeoType = (
+  value: unknown
+): value is PlaceOfInterestGeoType =>
+  value === "commune" ||
+  value === "district" ||
+  value === "canton";
+
 const isValidLocalPlaceOfInterest = (value: unknown): value is PlaceOfInterestMarker => {
   if (!value || typeof value !== "object") return false;
 
@@ -77,6 +86,11 @@ const isValidLocalPlaceOfInterest = (value: unknown): value is PlaceOfInterestMa
     typeof item.code === "string" &&
     typeof item.name === "string" &&
     item.source === "local" &&
+    isValidGeoType(item.geoType) &&
+    (
+      item.geoCode === undefined ||
+      typeof item.geoCode === "string"
+    ) &&
     (
       item.names === undefined ||
       isValidLocalizedPlaceNames(item.names)
@@ -182,6 +196,8 @@ export function usePlaceOfInterestMarkers(lang: string): UsePlaceOfInterestMarke
       .then((raw: PlaceOfInterestMapDTO[]) => {
         const markers: PlaceOfInterestMarker[] = raw.map((c) => ({
           code: c.code,
+          geoCode: c.code,
+          geoType: c.geo_type,
           name: c.name,
           pos: c.pos,
           source: "backend",

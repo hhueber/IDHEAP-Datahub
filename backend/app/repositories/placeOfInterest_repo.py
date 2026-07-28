@@ -3,8 +3,11 @@ import re
 import unicodedata
 
 
+from app.models.canton import Canton
+from app.models.commune import Commune
+from app.models.district import District
 from app.models.placeOfInterest import PlaceOfInterest
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -15,6 +18,25 @@ LANG_FIELD_MAP = {
     "ro": "name_ro",
     "en": "name_en",
 }
+
+
+async def resolve_place_of_interest_geo_type(db: AsyncSession, code: str) -> str:
+    commune_uid = await db.scalar(select(Commune.uid).where(Commune.code == code).limit(1))
+
+    if commune_uid is not None:
+        return "commune"
+
+    district_uid = await db.scalar(select(District.uid).where(District.code == code).limit(1))
+
+    if district_uid is not None:
+        return "district"
+
+    canton_uid = await db.scalar(select(Canton.uid).where(Canton.code == code).limit(1))
+
+    if canton_uid is not None:
+        return "canton"
+
+    return "commune"
 
 
 def placeOfInterest_to_dict(c: PlaceOfInterest) -> dict:
@@ -85,7 +107,11 @@ def slugify(s: str) -> str:
     return s or "placeOfInterest"
 
 
-def placeOfInterest_to_client_dict(c: PlaceOfInterest, lang: str) -> dict:
+def placeOfInterest_to_client_dict(
+    c: PlaceOfInterest,
+    lang: str,
+    geo_type: str,
+) -> dict:
     # lang peut être "fr-CH", "de-CH"... on garde juste la partie avant le "-"
     base_lang = (lang or "").split("-")[0].lower() or "en"
 
@@ -102,6 +128,7 @@ def placeOfInterest_to_client_dict(c: PlaceOfInterest, lang: str) -> dict:
         "code": c.code,
         "name": label,
         "pos": list(c.pos),
+        "geo_type": geo_type,
     }
 
 
@@ -109,4 +136,9 @@ async def list_placeOfInterest_for_lang(db: AsyncSession, lang: str) -> List[dic
     stmt = select(PlaceOfInterest).where(PlaceOfInterest.active == True).order_by(PlaceOfInterest.default_name.asc())
     res = await db.execute(stmt)
     placeOfInterest = res.scalars().all()
-    return [placeOfInterest_to_client_dict(c, lang) for c in placeOfInterest]
+    result: List[dict] = []
+    for c in placeOfInterest:
+        geo_type = await resolve_place_of_interest_geo_type(db, c.code)
+        result.append(placeOfInterest_to_client_dict(c, lang, geo_type))
+
+    return result

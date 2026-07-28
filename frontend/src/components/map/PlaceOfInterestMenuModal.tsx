@@ -101,6 +101,14 @@ export default function PlaceOfInterestMenuModal({
   };
 
   const handleAddSuggestion = (s: PlaceOfInterestSuggestDTO) => {
+    console.log("Suggestion complète :", s);
+    console.log("uid :", s.uid);
+    console.log("code :", s.code);
+    console.log("type :", s.type);
+    console.log("name :", s.name);
+    console.log("default_name :", s.default_name);
+    console.log("pos :", s.pos);
+    console.log("names :", s.names);
     const code = `local-${s.type}-${s.uid}`;
     const fallbackName = s.name?.trim() || s.default_name?.trim();
     if (!fallbackName) {
@@ -110,6 +118,8 @@ export default function PlaceOfInterestMenuModal({
 
     addExtraPlaceOfInterest({
       code,
+      geoCode: s.code,
+      geoType: s.type,
       name: fallbackName,
       names: s.names,
       pos: s.pos,
