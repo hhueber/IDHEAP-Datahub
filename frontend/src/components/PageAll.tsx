@@ -337,6 +337,9 @@ export default function PageAll({
                 {items.length === 0 && !loading ? (
                   <tr>
                     <td
+                      // Cette cellule "Aucune donnée" doit s'étendre sur toute la largeur du tableau.
+                      // Le nombre de colonnes dépend des colonnes affichées, de la colonne "#" et,
+                      // éventuellement, de la colonne "Actions".
                       colSpan={columns.length + 1 + (hasActions ? 1 : 0)}
                       className="px-3 py-4 text-center"
                       style={{ color: hoverText07 }}
@@ -363,6 +366,8 @@ export default function PageAll({
                         className="border-b px-3 py-2 whitespace-nowrap text-left"
                         style={{ borderColor, color: textColor }}
                       >
+                        {/* Calcule le numéro absolu de la ligne en tenant compte de la pagination */}
+                        {/* (ex. page 2 avec 20 éléments/page : la première ligne affichera 21). */}
                         {(page - 1) * perPage + index + 1}
                       </td>
 
