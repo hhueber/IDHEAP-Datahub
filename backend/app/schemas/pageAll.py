@@ -18,14 +18,25 @@ class EntityEnum(str, Enum):
 
 
 class OrderByEnum(str, Enum):
-    uid = "uid"
-    code = "code"
     name = "name"
+    code = "code"
+    year = "year"
+    value = "value"
+    question = "question"
+    commune = "commune"
 
 
 class OrderDirEnum(str, Enum):
     asc = "asc"
     desc = "desc"
+
+
+class PageAllLangEnum(str, Enum):
+    fr = "fr"
+    de = "de"
+    it = "it"
+    ro = "ro"
+    en = "en"
 
 
 class AllItem(BaseModel):
@@ -37,6 +48,8 @@ class AllItem(BaseModel):
     value: Optional[str] = None
     question_uid: Optional[int] = None
     commune_uid: Optional[int] = None
+    question: Optional[str] = None
+    commune: Optional[str] = None
 
     class Config:
         orm_mode = True

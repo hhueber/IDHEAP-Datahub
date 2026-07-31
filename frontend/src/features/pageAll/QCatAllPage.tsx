@@ -8,12 +8,15 @@ export default function QuestionCategoryAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      // pas de code => on affiche juste `name`
-      { key: "name", label: t("dashboardSidebar.pageAll.label") },
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
+      {
+        key: "name",
+        labelKey: "dashboardSidebar.pageAll.label",
+        sortKey: "name",
+        truncate: true,
+        maxWidthClassName: "max-w-[520px]",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -29,6 +32,7 @@ export default function QuestionCategoryAllPage() {
       initialPerPage={15}
       columns={columns}
       actions={actions}
+      defaultSortBy="name"
     />
   );
 }

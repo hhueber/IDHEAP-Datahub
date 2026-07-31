@@ -1,6 +1,8 @@
 import React from "react";
 import { apiFetch } from "@/shared/apiFetch";
 import type { AllItem, Entity, SuggestResponse } from "@/features/pageAll/all_types";
+import { getPageAllLang } from "@/features/pageAll/pageAllLang";
+import { useTranslation } from "react-i18next";
 
 type UsePageAllSearchReturn = {
   search: string;
@@ -13,6 +15,8 @@ type UsePageAllSearchReturn = {
 };
 
 export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
+  const { i18n } = useTranslation();
+
   const [search, setSearch] = React.useState("");
   const [searchLoading, setSearchLoading] = React.useState(false);
   const [suggestions, setSuggestions] = React.useState<AllItem[]>([]);
@@ -24,6 +28,7 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
   const fetchSuggestions = React.useCallback(
     async (term: string) => {
       setSearchLoading(true);
+
       try {
         const json = await apiFetch<SuggestResponse>("/pageAll/suggest", {
           method: "GET",
@@ -32,6 +37,7 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
             entity,
             q: term,
             limit: 10,
+            lang: getPageAllLang(i18n.language),
           },
         });
 
@@ -49,7 +55,7 @@ export function usePageAllSearch(entity: Entity): UsePageAllSearchReturn {
         setSearchLoading(false);
       }
     },
-    [entity]
+    [entity, i18n.language]
   );
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {

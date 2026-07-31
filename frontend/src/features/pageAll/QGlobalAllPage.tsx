@@ -8,11 +8,15 @@ export default function QuestionGlobalAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "name", label: t("dashboardSidebar.pageAll.label") },
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
+      {
+        key: "name",
+        labelKey: "dashboardSidebar.pageAll.question",
+        sortKey: "name",
+        truncate: true,
+        maxWidthClassName: "max-w-[460px]",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -28,6 +32,7 @@ export default function QuestionGlobalAllPage() {
       initialPerPage={15}
       columns={columns}
       actions={actions}
+      defaultSortBy="name"
     />
   );
 }

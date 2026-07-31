@@ -8,11 +8,20 @@ export default function CantonAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.code") },
-      { key: "name", label: t("dashboardSidebar.pageAll.name") },
+      {
+        key: "code",
+        labelKey: "dashboardSidebar.pageAll.code",
+        sortKey: "code",
+      },
+      {
+        key: "name",
+        labelKey: "dashboardSidebar.pageAll.name",
+        sortKey: "name",
+        truncate: true,
+        maxWidthClassName: "max-w-[320px]",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -28,6 +37,7 @@ export default function CantonAllPage() {
       initialPerPage={10}
       columns={columns}
       actions={actions}
+      defaultSortBy="name"
     />
   );
 }
