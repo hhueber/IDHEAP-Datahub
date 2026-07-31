@@ -2,8 +2,11 @@ FROM python:3.12-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libexpat1 \
-    build-essential curl && \
-    rm -rf /var/lib/apt/lists/*
+    build-essential \
+    curl \
+    gdal-bin \
+    libgdal-dev \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1

@@ -1,12 +1,18 @@
 from typing import Optional, Set
-
+import orjson
+from starlette.responses import Response
 
 from app.db import get_db
 from app.repositories.placeOfInterest_repo import list_placeOfInterest_for_lang
-from app.schemas.choropleth import ChoroplethGranularity, ChoroplethResponse
+from app.schemas.choropleth import (
+    ChoroplethGranularity,
+    ChoroplethGeometriesResponse,
+    ChoroplethResponse,
+    ChoroplethValuesResponse,
+)
 from app.schemas.geo import GeoBundle
 from app.schemas.placeOfInterest import PlaceOfInterestClientOut
-from app.services.choropleth_service import build_choropleth
+from app.services.choropleth_service import build_choropleth, build_choropleth_geometries, build_choropleth_values
 from app.services.comparison_service import build_area_comparison
 from app.services.geo_service import ALL_LAYERS, get_geo_by_year_selective
 from fastapi import APIRouter, Depends, Query
@@ -84,7 +90,7 @@ async def commune_choropleth(
         year=year,
         granularity=granularity,
     )
-    return ChoroplethResponse(
+    response = ChoroplethResponse(
         question_uid=question_uid,
         year_requested=year,
         granularity=granularity,
@@ -93,6 +99,60 @@ async def commune_choropleth(
         legend=legend,
         feature_collection=fc,
     )
+    _content = orjson.dumps(response.model_dump(mode="json"))
+    return Response(content=_content, media_type="application/json")
+
+
+@router.get("/choropleth/geometries", response_model=ChoroplethGeometriesResponse)
+async def choropleth_geometries(
+    year: int = Query(...),
+    granularity: ChoroplethGranularity = Query("commune"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return the geographic shapes for a given granularity and year,
+    with no dependency on survey answers.
+    """
+    fc, meta = await build_choropleth_geometries(db, year=year, granularity=granularity)
+    response = ChoroplethGeometriesResponse(
+        year_requested=year,
+        year_geo_districts=meta.get("districts"),
+        year_geo_cantons=meta.get("cantons"),
+        granularity=granularity,
+        feature_collection=fc,
+    )
+    _content = orjson.dumps(response.model_dump(mode="json"))
+    return Response(content=_content, media_type="application/json")
+
+
+@router.get("/choropleth/values", response_model=ChoroplethValuesResponse)
+async def choropleth_values(
+    scope: str = Query(..., pattern="^(per_survey|global)$"),
+    question_uid: int = Query(...),
+    year: int = Query(...),
+    granularity: ChoroplethGranularity = Query("commune"),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Return legend and per-unit values for a given question/year/granularity,
+    with no geometry payload.
+    """
+    legend, values, _meta = await build_choropleth_values(
+        db,
+        scope=scope,
+        question_uid=question_uid,
+        year=year,
+        granularity=granularity,
+    )
+    response = ChoroplethValuesResponse(
+        question_uid=question_uid,
+        year_requested=year,
+        granularity=granularity,
+        legend=legend,
+        values=values,
+    )
+    _content = orjson.dumps(response.model_dump(mode="json"))
+    return Response(content=_content, media_type="application/json")
 
 
 @router.get("/comparison")
