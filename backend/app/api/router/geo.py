@@ -7,6 +7,7 @@ from app.schemas.choropleth import ChoroplethGranularity, ChoroplethResponse
 from app.schemas.geo import GeoBundle
 from app.schemas.placeOfInterest import PlaceOfInterestClientOut
 from app.services.choropleth_service import build_choropleth
+from app.services.comparison_service import build_area_comparison
 from app.services.geo_service import ALL_LAYERS, get_geo_by_year_selective
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -91,4 +92,23 @@ async def commune_choropleth(
         year_geo_cantons=meta.get("cantons"),
         legend=legend,
         feature_collection=fc,
+    )
+
+
+@router.get("/comparison")
+async def get_area_comparison(
+    scope: str = Query(..., pattern="^(per_survey|global)$"),
+    question_uid: int = Query(...),
+    year: int = Query(...),
+    area_uid: int = Query(...),
+    level: ChoroplethGranularity = Query(...),
+    db: AsyncSession = Depends(get_db),
+):
+    return await build_area_comparison(
+        db,
+        scope=scope,
+        question_uid=question_uid,
+        year=year,
+        area_uid=area_uid,
+        level=level,
     )
