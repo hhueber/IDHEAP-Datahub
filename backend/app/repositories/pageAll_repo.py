@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Tuple, Type
+import unicodedata
 
 
 from app.models.answer import Answer
@@ -323,6 +324,14 @@ def _build_count_stmt(entity: EntityEnum) -> Select[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
+    if entity == EntityEnum.answer:
+        return (
+            select(func.count(Answer.uid))
+            .select_from(Answer)
+            .join(QuestionPerSurvey, QuestionPerSurvey.uid == Answer.question_uid)
+            .join(Commune, Commune.uid == Answer.commune_uid)
+        )
+
     return select(func.count(model.uid))
 
 
@@ -489,6 +498,53 @@ def _natural_code_order_columns(code_col: Any) -> list[Any]:
     ]
 
 
+def _normalize_search_text(value: str | None) -> str:
+    if not value:
+        return ""
+
+    value = unicodedata.normalize("NFKD", value)
+    value = "".join(c for c in value if not unicodedata.combining(c))
+    return value.lower().strip()
+
+
+def _searchable_exprs_for_entity(
+    entity: EntityEnum,
+    lang: PageAllLangEnum | str,
+) -> list[Any]:
+    cfg = ENTITY_CONFIG[entity]
+    model = cfg.model
+
+    exprs: list[Any] = []
+
+    name_expr = _name_expr_for_entity(entity, lang)
+
+    if name_expr is not None:
+        exprs.append(name_expr)
+
+    if cfg.code_attr:
+        exprs.append(getattr(model, cfg.code_attr))
+
+    for attr in cfg.search_extra_attrs:
+        if hasattr(model, attr):
+            exprs.append(getattr(model, attr))
+
+    if entity == EntityEnum.answer:
+        question_expr = _localized_text_or_label(QuestionPerSurvey, lang)
+        commune_expr = _localized_name(Commune, lang)
+
+        if question_expr is not None:
+            exprs.append(question_expr)
+
+        if commune_expr is not None:
+            exprs.append(commune_expr)
+
+    return exprs
+
+
+def _normalized_sql_text(expr: Any) -> Any:
+    return func.lower(func.unaccent(cast(expr, String)))
+
+
 async def get_pageAll_paginated(
     db: AsyncSession,
     *,
@@ -498,6 +554,7 @@ async def get_pageAll_paginated(
     order_by: OrderByEnum = OrderByEnum.name,
     order_dir: OrderDirEnum = OrderDirEnum.asc,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
+    q: str | None = None,
 ) -> Tuple[List[AllItem], int]:
     cfg = ENTITY_CONFIG.get(entity)
 
@@ -512,7 +569,25 @@ async def get_pageAll_paginated(
     if per_page < 1:
         per_page = 20
 
+    search_conditions: list[Any] = []
+
+    if q and q.strip():
+        q_value = q.strip().lower()
+        q_like = f"%{q_value}%"
+
+        u = func.unaccent
+        l = func.lower
+
+        searchable_exprs = _searchable_exprs_for_entity(entity, lang)
+
+        for expr in searchable_exprs:
+            search_conditions.append(l(u(cast(expr, String))).like(q_like))
+
     total_stmt = _build_count_stmt(entity)
+
+    if search_conditions:
+        total_stmt = total_stmt.where(or_(*search_conditions))
+
     total = (await db.execute(total_stmt)).scalar_one()
 
     order_exprs = _order_exprs_for_entity(entity, order_by, order_dir, lang)
@@ -532,7 +607,7 @@ async def get_pageAll_paginated(
     return items, total
 
 
-async def suggest_pageAll_prefix(
+async def suggest_pageAll(
     db: AsyncSession,
     *,
     entity: EntityEnum,
@@ -547,7 +622,9 @@ async def suggest_pageAll_prefix(
 
     model = cfg.model
 
-    if not q or len(q.strip()) < 3:
+    q_norm = _normalize_search_text(q)
+
+    if len(q_norm) < 1:
         return []
 
     q = q.strip().lower()

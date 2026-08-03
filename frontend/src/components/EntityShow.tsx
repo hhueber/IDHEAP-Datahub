@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
-import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsResponse } from "@/features/pageShow/show_type";
+import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsResponse, ShowPermissionActions } from "@/features/pageShow/show_type";
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
@@ -11,10 +11,12 @@ import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
 import InsightsPanel from "@/features/pageShow/InsightsPanel";
 import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
 import { useNavigate } from "react-router-dom";
+import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 
 type Props = {
   id: number;
   entity: Entity;
+  permissions: ShowPermissionActions;
   onEdit?: (entity: Entity, id: number) => void;
   onDelete?: (entity: Entity, id: number) => void;
 };
@@ -44,9 +46,110 @@ function normalizeToString(v: any): string {
   return String(v);
 }
 
-export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
+type RelationDisplayItem = {
+  uidKey: string;
+  displayKey: string;
+  labelKey: string;
+  value: string;
+};
+
+const RELATION_DISPLAY_CONFIG: {
+  uidKey: string;
+  displayKeys: string[];
+  labelKey: string;
+}[] = [
+  {
+    uidKey: "commune_uid",
+    displayKeys: ["commune_name", "commune"],
+    labelKey: "dashboardSidebar.pageShow.relations.commune",
+  },
+  {
+    uidKey: "district_uid",
+    displayKeys: ["district_name", "district"],
+    labelKey: "dashboardSidebar.pageShow.relations.district",
+  },
+  {
+    uidKey: "canton_uid",
+    displayKeys: ["canton_name", "canton"],
+    labelKey: "dashboardSidebar.pageShow.relations.canton",
+  },
+  {
+    uidKey: "survey_uid",
+    displayKeys: ["survey_name", "survey"],
+    labelKey: "dashboardSidebar.pageShow.relations.survey",
+  },
+  {
+    uidKey: "question_uid",
+    displayKeys: ["question_name", "question"],
+    labelKey: "dashboardSidebar.pageShow.relations.question",
+  },
+  {
+    uidKey: "question_global_uid",
+    displayKeys: ["question_global_name", "question_global"],
+    labelKey: "dashboardSidebar.pageShow.relations.questionGlobal",
+  },
+  {
+    uidKey: "question_category_uid",
+    displayKeys: ["question_category_name", "question_category"],
+    labelKey: "dashboardSidebar.pageShow.relations.questionCategory",
+  },
+  {
+    uidKey: "option_uid",
+    displayKeys: ["option_name", "option"],
+    labelKey: "dashboardSidebar.pageShow.relations.option",
+  },
+];
+
+function getFirstNonEmptyValue(
+  data: Record<string, any>,
+  keys: string[]
+): { key: string; value: string } | null {
+  for (const key of keys) {
+    const value = data[key];
+
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      return {
+        key,
+        value: String(value),
+      };
+    }
+  }
+
+  return null;
+}
+
+function getRelationDisplayItems(
+  data: Record<string, any> | null
+): RelationDisplayItem[] {
+  if (!data) return [];
+
+  return RELATION_DISPLAY_CONFIG.flatMap((config) => {
+    const uid = data[config.uidKey];
+
+    if (uid === null || uid === undefined) {
+      return [];
+    }
+
+    const display = getFirstNonEmptyValue(data, config.displayKeys);
+
+    if (!display) {
+      return [];
+    }
+
+    return [
+      {
+        uidKey: config.uidKey,
+        displayKey: display.key,
+        labelKey: config.labelKey,
+        value: display.value,
+      },
+    ];
+  });
+}
+
+export default function EntityShow({ id, entity, permissions, onEdit, onDelete }: Props) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n  } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
   const [loading, setLoading] = React.useState(false);
@@ -58,8 +161,12 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [insightsLoading, setInsightsLoading] = React.useState(false);
   const [insightsError, setInsightsError] = React.useState<string | null>(null);
 
-  const canEdit = meta?.actions?.can_edit ?? false;
-  const canDelete = meta?.actions?.can_delete ?? false;
+  const pageAllowsEdit = meta?.actions?.can_edit ?? false;
+  const pageAllowsDelete = meta?.actions?.can_delete ?? false;
+
+  const canShow = permissions.show;
+  const canEdit = pageAllowsEdit && permissions.edit;
+  const canDelete = pageAllowsDelete && permissions.delete;
 
   // DELETE (clear fields)
   const [deleteMode, setDeleteMode] = React.useState(false);
@@ -72,6 +179,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
   const { castUpdates } = useTypedUpdates(meta);
 
+  const lang = React.useMemo(
+    () => getPageAllLang(i18n.language),
+    [i18n.language]
+  );
+
   const load = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -80,6 +192,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
       const json = await apiFetch<ShowResponse>(`/show/${entity}/${id}`, {
         method: "GET",
         auth: true,
+        query: {
+          lang,
+        },
       });
 
       setMeta(json.meta ?? null);
@@ -123,7 +238,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     } finally {
       setInsightsLoading(false);
     }
-  }, [entity, id, t]);
+  }, [entity, id, lang, t]);
 
   React.useEffect(() => {
     void load();
@@ -165,6 +280,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
       : `${entity} #${id}`;
 
   const fields = meta?.fields ?? [];
+
+  const relationDisplayItems = React.useMemo(
+    () => getRelationDisplayItems(data),
+    [data]
+  );
 
   const toggleClearField = (key: string) => {
     setSelectedFieldsToClear((prev) =>
@@ -242,6 +362,23 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const pencilIconClass =
     "text-xs opacity-70 select-none";
 
+  // Ce composant sert a garder la place de bouton meme invisible pour eviter les sauts de layout
+  function ActionSlot({
+    visible,
+    children,
+  }: {
+    visible: boolean;
+    children: React.ReactNode;
+  }) {
+    return (
+      <div className="min-w-[110px] flex justify-center">
+        <div className={visible ? "" : "invisible pointer-events-none"}>
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full h-full" style={{ backgroundColor: background, color: textColor }}>
       <div className="flex flex-col lg:flex-row gap-6 h-full">
@@ -261,99 +398,138 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                {/* Confirm clear (delete mode) */}
-                {deleteMode && (
-                  <button
-                    type="button"
-                    disabled={selectedFieldsToClear.length === 0}
-                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                    style={{
-                      backgroundColor: background,
-                      borderColor,
-                      color: textColor,
-                    }}
-                    onClick={() => {
-                      openClearConfirm({ entity, id, clear_fields: selectedFieldsToClear });
-                      setConfirmOpen(true);
-                    }}
-                  >
-                    {t("dashboardSidebar.pageShow.confirm")}
-                  </button>
-                )}
-
-                {/* Confirm edit (edit mode) */}
-                {editMode && (
-                  <button
-                    type="button"
-                    disabled={!hasAnyValidChange()}
-                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                    style={{ backgroundColor: background, borderColor, color: textColor }}
-                    onClick={() => setConfirmEditOpen(true)}
-                  >
-                    {t("dashboardSidebar.pageShow.confirm")}
-                  </button>
-                )}
-
-                {/* EDIT button -> toggles inline edit mode */}
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (editMode) {
-                        exitEditMode();
-                      } else {
+                {/* SLOT 1 : Edit normal / Confirm edit / Confirm delete */}
+                <ActionSlot visible={canEdit || canDelete || editMode || deleteMode}>
+                  {!editMode && !deleteMode && canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!canEdit) return;
                         enterEditMode();
-                      }
-                    }}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{ backgroundColor: background, borderColor, color: textColor }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverPrimary04; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = background; }}
-                  >
-                    {editMode ? t("common.cancel") : t("dashboardSidebar.pageShow.edit")}
-                  </button>
-                )}
+                      }}
+                      className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                      style={{ backgroundColor: background, borderColor, color: textColor }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = hoverPrimary04;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = background;
+                      }}
+                    >
+                      {t("dashboardSidebar.pageShow.edit")}
+                    </button>
+                  )}
 
-                {/* DELETE button */}
-                {canDelete && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (deleteMode) {
-                        // Cancel delete mode
+                  {editMode && canEdit && (
+                    <button
+                      type="button"
+                      disabled={!hasAnyValidChange()}
+                      className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                      style={{ backgroundColor: background, borderColor, color: textColor }}
+                      onClick={() => {
+                        if (!canEdit) return;
+                        setConfirmEditOpen(true);
+                      }}
+                    >
+                      {t("dashboardSidebar.pageShow.confirm")}
+                    </button>
+                  )}
+
+                  {deleteMode && canDelete && (
+                    <button
+                      type="button"
+                      disabled={selectedFieldsToClear.length === 0}
+                      className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                      style={{
+                        backgroundColor: background,
+                        borderColor,
+                        color: textColor,
+                      }}
+                      onClick={() => {
+                        if (!canDelete) return;
+                        openClearConfirm({ entity, id, clear_fields: selectedFieldsToClear });
+                        setConfirmOpen(true);
+                      }}
+                    >
+                      {t("dashboardSidebar.pageShow.confirm")}
+                    </button>
+                  )}
+                </ActionSlot>
+
+                {/* SLOT 2 : Delete normal / Cancel edit / Cancel delete */}
+                <ActionSlot visible={canEdit || canDelete || editMode || deleteMode}>
+                  {!editMode && !deleteMode && canDelete && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!canDelete) return;
+                        setDeleteMode(true);
+                        exitEditMode();
+                      }}
+                      className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                      style={{
+                        backgroundColor: background,
+                        borderColor: "rgba(239,68,68,0.35)", // couleur rouge
+                        color: "rgb(220,38,38)", // couleur rouge
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)"; // rouge clair
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = background;
+                      }}
+                    >
+                      {t("dashboardSidebar.pageShow.delete")}
+                    </button>
+                  )}
+
+                  {editMode && canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!canEdit) return;
+                        exitEditMode();
+                      }}
+                      className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                      style={{ backgroundColor: background, borderColor, color: textColor }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.backgroundColor = hoverPrimary04;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = background;
+                      }}
+                    >
+                      {t("common.cancel")}
+                    </button>
+                  )}
+
+                  {deleteMode && canDelete && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!canDelete) return;
                         setDeleteMode(false);
                         setSelectedFieldsToClear([]);
                         cancelClear();
                         setConfirmOpen(false);
-                      } else {
-                        setDeleteMode(true);
-                        exitEditMode();
-                      }
-                    }}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{
-                      backgroundColor: background,
-                      borderColor: deleteMode
-                        ? borderColor
-                        : "rgba(239,68,68,0.35)", // couleur rouge
-                      color: deleteMode
-                        ? textColor
-                        : "rgb(220,38,38)", // couleur rouge
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!deleteMode) {
-                        e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)"; // rouge clair
-                      } else {
+                      }}
+                      className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                      style={{
+                        backgroundColor: background,
+                        borderColor,
+                        color: textColor,
+                      }}
+                      onMouseEnter={(e) => {
                         e.currentTarget.style.backgroundColor = hoverPrimary04;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = background;
-                    }}
-                  >
-                    {deleteMode ? t("common.cancel") : t("dashboardSidebar.pageShow.delete")}
-                  </button>
-                )}
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.backgroundColor = background;
+                      }}
+                    >
+                      {t("common.cancel")}
+                    </button>
+                  )}
+                </ActionSlot>
               </div>
             </div>
 
@@ -392,8 +568,8 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                         .filter((f) => data[f.key] !== undefined)
                         .map((f) => {
                           const protectedField = isProtectedField(f.key);
-                          const showClearCheckbox = deleteMode && !protectedField;
-                          const showEditInput = editMode && !protectedField;
+                          const showClearCheckbox = deleteMode && canDelete && !protectedField;
+                          const showEditInput = editMode && canEdit && !protectedField;
 
                           return (
                             <React.Fragment key={f.key}>
@@ -469,6 +645,36 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                           );
                         })}
                     </div>
+
+                    {/* RELATED READ-ONLY INFO */}
+                    {relationDisplayItems.length > 0 && (
+                      <>
+                        <div className="my-4 border-t" style={{ borderColor }} />
+
+                        <div className="text-sm font-medium mb-3">
+                          {t("dashboardSidebar.pageShow.relatedInfo")}
+                        </div>
+
+                        <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+                          {relationDisplayItems.map((item) => (
+                            <React.Fragment key={item.uidKey}>
+                              <div className="font-medium min-w-0" style={{ color: hoverText07 }}>
+                                {t(item.labelKey)}
+                              </div>
+
+                              <div className="min-w-0">
+                                <span
+                                  title={item.value}
+                                  className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                                >
+                                  {renderEmpty(item.value)}
+                                </span>
+                              </div>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      </>
+                    )}    
                   </div>
 
                   {/* LANGUAGES */}
@@ -488,8 +694,8 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                           if (data[key] === undefined) return null;
 
                           const protectedField = isProtectedField(key);
-                          const showClearCheckbox = deleteMode && !protectedField;
-                          const showEditInput = editMode && !protectedField;
+                          const showClearCheckbox = deleteMode && canDelete && !protectedField;
+                          const showEditInput = editMode && canEdit && !protectedField;
 
                           return (
                             <React.Fragment key={l.key}>
@@ -642,6 +848,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
         cancelLabel={t("common.cancel")}
         onCancel={() => setConfirmOpen(false)}
         onConfirm={async () => {
+          if (!canDelete) return;
           const ok = await confirmClear();
           if (!ok) return;
 
@@ -671,6 +878,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
         cancelLabel={t("common.cancel")}
         onCancel={() => setConfirmEditOpen(false)}
         onConfirm={async () => {
+          if (!canEdit) return;
           const updates = getChangedUpdates();
           if (Object.keys(updates).length === 0) return;
 
