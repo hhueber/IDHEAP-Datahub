@@ -123,7 +123,7 @@ async def populate_db() -> None:
                         text_en=str(row["text_en"]),
                         text_fr=str(row["text_fr"]),
                         text_it=str(row["text_it"]),
-                        text_rm=str(row["text_rm"]),
+                        text_rm=str(row["text_ro"]),
                     )
                     session.add(db_question)
                     await session.flush()
@@ -141,7 +141,7 @@ async def populate_db() -> None:
                         text_en=row["category_text_en"],
                         text_fr=row["category_text_fr"],
                         text_it=row["category_text_it"],
-                        text_rm=row["category_text_rm"],
+                        text_rm=row["category_text_ro"],
                     )
 
                     session.add(db_question_category)
@@ -154,7 +154,7 @@ async def populate_db() -> None:
                     text_en=row["text_en"],
                     text_fr=row["text_fr"],
                     text_it=row["text_it"],
-                    text_rm=row["text_rm"],
+                    text_rm=row["text_ro"],
                 )
 
                 session.add(db_question_global)
