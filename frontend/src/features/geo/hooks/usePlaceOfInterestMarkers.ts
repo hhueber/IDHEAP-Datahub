@@ -10,7 +10,7 @@ export type LocalizedPlaceNames = {
   de?: string | null;
   it?: string | null;
   en?: string | null;
-  ro?: string | null;
+  rm?: string | null;
 };
 
 // Représente une ville à afficher sur la carte.
@@ -56,7 +56,7 @@ const isValidLocalizedPlaceNames = (
 
   const names = value as Record<string, unknown>;
 
-  return ["fr", "de", "it", "en", "ro"].every((lang) => {
+  return ["fr", "de", "it", "en", "rm"].every((lang) => {
     const name = names[lang];
 
     return (

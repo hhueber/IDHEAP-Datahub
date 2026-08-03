@@ -86,7 +86,7 @@ async def geo_point(
 @router.get("/suggest/public", response_model=PlaceOfInterestSuggestResponse)
 async def suggest_geo_public(
     q: str = Query(..., min_length=3, max_length=100),
-    lang: str = Query("en", description="ISO code de langue, ex: fr, de, it, ro, en"),
+    lang: str = Query("en", description="ISO language code, e.g.: fr, de, it, rm, en"),
     limit: int = Query(50, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):

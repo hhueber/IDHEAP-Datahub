@@ -41,7 +41,7 @@ async def populate_db() -> None:
                     name_en=lang["en"],
                     name_fr=lang["fr"],
                     name_it=lang["it"],
-                    name_ro=lang["ro"],
+                    name_rm=lang["rm"],
                 )
                 # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
                 index += 1
@@ -73,7 +73,7 @@ async def populate_db() -> None:
                         name_en=rows["Nom du district"],
                         name_fr=rows["Nom du district"],
                         name_it=rows["Nom du district"],
-                        name_ro=rows["Nom du district"],
+                        name_rm=rows["Nom du district"],
                         name_de=rows["Nom du district"],
                         canton=db_canton,
                     )
@@ -87,7 +87,7 @@ async def populate_db() -> None:
                     name_en=rows["Nom de la commune"],
                     name_fr=rows["Nom de la commune"],
                     name_it=rows["Nom de la commune"],
-                    name_ro=rows["Nom de la commune"],
+                    name_rm=rows["Nom de la commune"],
                     name_de=rows["Nom de la commune"],
                     district=db_district,
                 )
@@ -123,7 +123,7 @@ async def populate_db() -> None:
                         text_en=str(row["text_en"]),
                         text_fr=str(row["text_fr"]),
                         text_it=str(row["text_it"]),
-                        text_ro=str(row["text_ro"]),
+                        text_rm=str(row["text_rm"]),
                     )
                     session.add(db_question)
                     await session.flush()
@@ -141,7 +141,7 @@ async def populate_db() -> None:
                         text_en=row["category_text_en"],
                         text_fr=row["category_text_fr"],
                         text_it=row["category_text_it"],
-                        text_ro=row["category_text_ro"],
+                        text_rm=row["category_text_rm"],
                     )
 
                     session.add(db_question_category)
@@ -154,7 +154,7 @@ async def populate_db() -> None:
                     text_en=row["text_en"],
                     text_fr=row["text_fr"],
                     text_it=row["text_it"],
-                    text_ro=row["text_ro"],
+                    text_rm=row["text_rm"],
                 )
 
                 session.add(db_question_global)
@@ -179,7 +179,7 @@ async def populate_db() -> None:
                         name_en=row["gemidname"],
                         name_fr=row["gemidname"],
                         name_it=row["gemidname"],
-                        name_ro=row["gemidname"],
+                        name_rm=row["gemidname"],
                         name_de=row["gemidname"],
                         district=db_district,
                     )
@@ -220,7 +220,7 @@ async def populate_db() -> None:
                         name=row["Gemeinde_2023"],
                         name_fr=row["Gemeinde_2023"],
                         name_it=row["Gemeinde_2023"],
-                        name_ro=row["Gemeinde_2023"],
+                        name_rm=row["Gemeinde_2023"],
                         name_en=row["Gemeinde_2023"],
                         name_de=row["Gemeinde_2023"],
                     )

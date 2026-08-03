@@ -13,7 +13,7 @@ class PlaceOfInterestBase(BaseModel):
     name_fr: Optional[str] = None
     name_de: Optional[str] = None
     name_it: Optional[str] = None
-    name_ro: Optional[str] = None
+    name_rm: Optional[str] = None
     name_en: Optional[str] = None
     pos: Tuple[float, float] = Field(..., description="[lat, lon]")
 
@@ -65,7 +65,7 @@ class GeoSuggestionOut(BaseModel):
     name_fr: Optional[str] = None
     name_de: Optional[str] = None
     name_it: Optional[str] = None
-    name_ro: Optional[str] = None
+    name_rm: Optional[str] = None
     name_en: Optional[str] = None
 
 
@@ -102,7 +102,7 @@ class LocalizedPlaceNamesOut(BaseModel):
     fr: str | None = None
     de: str | None = None
     it: str | None = None
-    ro: str | None = None
+    rm: str | None = None
     en: str | None = None
 
 
