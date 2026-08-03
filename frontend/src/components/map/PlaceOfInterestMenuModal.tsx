@@ -8,6 +8,7 @@ import { useTheme } from "@/theme/useTheme";
 type Props = {
   isOpen: boolean;
   onClose: () => void;
+  lang: string;
 
   backendPlaceOfInterest: PlaceOfInterestMarker[];
   extraPlaceOfInterest: PlaceOfInterestMarker[];
@@ -23,6 +24,7 @@ type Props = {
 export default function PlaceOfInterestMenuModal({
   isOpen,
   onClose,
+  lang,
   backendPlaceOfInterest,
   extraPlaceOfInterest,
   hideAllBackend,
@@ -79,7 +81,7 @@ export default function PlaceOfInterestMenuModal({
     setError(null);
 
     communesApi
-      .suggest(value.trim(), ctrl.signal, 10)
+      .suggest(value.trim(), lang, ctrl.signal, 10)
       .then((res) => {
         if (!res.success) {
           setError(res.detail || t("map.errors.failedToFetchSuggestions"));
@@ -100,10 +102,16 @@ export default function PlaceOfInterestMenuModal({
 
   const handleAddSuggestion = (s: PlaceOfInterestSuggestDTO) => {
     const code = `local-${s.type}-${s.uid}`;
+    const fallbackName = s.name?.trim() || s.default_name?.trim();
+    if (!fallbackName) {
+      setError(t("map.errors.failedToFetchSuggestions"));
+      return;
+    }
 
     addExtraPlaceOfInterest({
       code,
-      name: s.default_name,
+      name: fallbackName,
+      names: s.names,
       pos: s.pos,
     });
 
@@ -288,7 +296,7 @@ export default function PlaceOfInterestMenuModal({
                     } as React.CSSProperties
                   }
                 >
-                  <span className="truncate font-medium">{s.default_name}</span>
+                  <span className="truncate font-medium">{s.name || s.default_name}</span>
 
                   <span
                     className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium"

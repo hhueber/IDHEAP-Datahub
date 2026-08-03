@@ -49,7 +49,7 @@ async def placeOfInterest_get(
             "name_fr": c.name_fr,
             "name_de": c.name_de,
             "name_it": c.name_it,
-            "name_ro": c.name_ro,
+            "name_rm": c.name_rm,
             "name_en": c.name_en,
             "pos": list(c.pos),
         },

@@ -305,7 +305,7 @@
             "fr": "Français",
             "de": "Deutsch",
             "it": "Italiano",
-            "ro": "Rumantsch",
+            "rm": "Rumantsch",
             "en": "Anglais",
             "lat": "Latitude",
             "lon": "Longitude",
@@ -323,7 +323,7 @@
             "fr": "FR",
             "de": "DE",
             "it": "IT",
-            "ro": "RO",
+            "rm": "RM",
             "en": "EN",
             "position": "Position"
           },

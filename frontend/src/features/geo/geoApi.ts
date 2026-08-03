@@ -1,5 +1,6 @@
 // Types utilitaires pour manipuler des données GeoJSON + appel API geo/by_year
 import { apiFetch } from "@/shared/apiFetch";
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 
 // Coordonnée [longitude, latitude]
 export type Position = [number, number];
@@ -93,7 +94,7 @@ export const PlaceOfInterestApi = {
     apiFetch<PlaceOfInterestMapDTO[]>("geo/placeOfInterest", {
       method: "GET",
       signal,
-      query: { lang },
+      query: { lang: normalizeGeoLanguage(lang) },
     }),
 };
 
