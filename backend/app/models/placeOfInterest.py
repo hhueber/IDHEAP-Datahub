@@ -20,7 +20,7 @@ class PlaceOfInterest(Base):
     name_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_it: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    name_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    name_rm: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     # un seul point par ville (WGS84)

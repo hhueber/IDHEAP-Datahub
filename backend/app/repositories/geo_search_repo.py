@@ -17,7 +17,7 @@ LANG_FIELD_MAP = {
     "fr": "name_fr",
     "de": "name_de",
     "it": "name_it",
-    "ro": "name_ro",
+    "rm": "name_rm",
     "en": "name_en",
 }
 
@@ -49,7 +49,7 @@ def build_geo_names(item: dict) -> dict:
         "fr": item.get("name_fr"),
         "de": item.get("name_de"),
         "it": item.get("name_it"),
-        "ro": item.get("name_ro"),
+        "rm": item.get("name_rm"),
         "en": item.get("name_en"),
     }
 
@@ -72,7 +72,7 @@ def geo_row_to_dict(row, geo_type: GeoType) -> dict:
         "name_fr": row.name_fr,
         "name_de": row.name_de,
         "name_it": row.name_it,
-        "name_ro": row.name_ro,
+        "name_rm": row.name_rm,
         "name_en": row.name_en,
     }
 
@@ -85,7 +85,7 @@ def score_geo_suggestion(item: dict, q: str) -> tuple[int, int, str]:
         item.get("name_fr"),
         item.get("name_de"),
         item.get("name_it"),
-        item.get("name_ro"),
+        item.get("name_rm"),
         item.get("name_en"),
         item.get("code"),
     ]
@@ -130,7 +130,7 @@ async def suggest_geo_locations(
             l(u(model.name_fr)).like(q_like),
             l(u(model.name_de)).like(q_like),
             l(u(model.name_it)).like(q_like),
-            l(u(model.name_ro)).like(q_like),
+            l(u(model.name_rm)).like(q_like),
             l(u(model.name_en)).like(q_like),
             l(u(model.code)).like(q_like),
         )
@@ -143,7 +143,7 @@ async def suggest_geo_locations(
             Commune.name_fr,
             Commune.name_de,
             Commune.name_it,
-            Commune.name_ro,
+            Commune.name_rm,
             Commune.name_en,
         )
         .where(where_match(Commune))
@@ -158,7 +158,7 @@ async def suggest_geo_locations(
             District.name_fr,
             District.name_de,
             District.name_it,
-            District.name_ro,
+            District.name_rm,
             District.name_en,
         )
         .where(where_match(District))
@@ -173,7 +173,7 @@ async def suggest_geo_locations(
             Canton.name_fr,
             Canton.name_de,
             Canton.name_it,
-            Canton.name_ro,
+            Canton.name_rm,
             Canton.name_en,
         )
         .where(where_match(Canton))

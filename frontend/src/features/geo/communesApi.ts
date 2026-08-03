@@ -14,7 +14,7 @@ export type PlaceOfInterestSuggestDTO = {
     de?: string | null;
     it?: string | null;
     en?: string | null;
-    ro?: string | null;
+    rm?: string | null;
   };
   pos: [number, number]; // [lat, lon]
 };

@@ -15,7 +15,7 @@ LANG_FIELD_MAP = {
     "fr": "name_fr",
     "de": "name_de",
     "it": "name_it",
-    "ro": "name_ro",
+    "rm": "name_rm",
     "en": "name_en",
 }
 
@@ -46,7 +46,7 @@ def placeOfInterest_to_dict(c: PlaceOfInterest) -> dict:
         "name_fr": c.name_fr,
         "name_de": c.name_de,
         "name_it": c.name_it,
-        "name_ro": c.name_ro,
+        "name_rm": c.name_rm,
         "name_en": c.name_en,
         "pos": list(c.pos),
     }
@@ -75,7 +75,7 @@ async def upsert_placeOfInterest(db: AsyncSession, payload: dict) -> None:
         c.name_fr = payload.get("name_fr")
         c.name_de = payload.get("name_de")
         c.name_it = payload.get("name_it")
-        c.name_ro = payload.get("name_ro")
+        c.name_rm = payload.get("name_rm")
         c.name_en = payload.get("name_en")
         c.active = True
         db.add(c)
@@ -84,7 +84,7 @@ async def upsert_placeOfInterest(db: AsyncSession, payload: dict) -> None:
         c.name_fr = payload.get("name_fr")
         c.name_de = payload.get("name_de")
         c.name_it = payload.get("name_it")
-        c.name_ro = payload.get("name_ro")
+        c.name_rm = payload.get("name_rm")
         c.name_en = payload.get("name_en")
         c.set_pos(payload["pos"][0], payload["pos"][1])
         c.active = True

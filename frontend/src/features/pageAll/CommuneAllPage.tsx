@@ -8,12 +8,20 @@ export default function CommuneAllPage() {
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
-      { key: "uid", label: t("dashboardSidebar.pageAll.uid") },
-      { key: "code", label: t("dashboardSidebar.pageAll.code") },
-      { key: "name", label: t("dashboardSidebar.pageAll.name") },
-      { key: "entity", label: t("dashboardSidebar.pageAll.entity") },
+      {
+        key: "code",
+        labelKey: "dashboardSidebar.pageAll.code",
+        sortKey: "code",
+      },
+      {
+        key: "name",
+        labelKey: "dashboardSidebar.pageAll.name",
+        sortKey: "name",
+        truncate: true,
+        maxWidthClassName: "max-w-[360px]",
+      },
     ],
-    [t]
+    []
   );
 
   const actions: ActionsConfig = {
@@ -29,6 +37,7 @@ export default function CommuneAllPage() {
       initialPerPage={20}
       columns={columns}
       actions={actions}
+      defaultSortBy="name"
     />
   );
 }

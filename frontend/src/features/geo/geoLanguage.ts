@@ -8,11 +8,5 @@ export function normalizeGeoLanguage(
       .replace("_", "-")
       .split("-")[0] || "en";
 
-  // Le frontend utilise "rm" pour le romanche,
-  // tandis que le backend utilise actuellement "ro".
-  if (normalizedLanguage === "rm") {
-    return "ro";
-  }
-
   return normalizedLanguage;
 }

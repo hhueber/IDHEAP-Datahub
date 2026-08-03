@@ -25,7 +25,7 @@ class QuestionPerSurvey(Base):
     text_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_it: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    text_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    text_rm: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     survey_uid: Mapped[int] = mapped_column(ForeignKey("survey.uid", ondelete="CASCADE"))
