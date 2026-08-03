@@ -1,7 +1,7 @@
 from typing import List, Optional
 
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -12,8 +12,9 @@ class District(Base):
     __tablename__ = "district"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String, unique=True, index=True)
+    code: Mapped[str] = mapped_column(String, index=True)
     name: Mapped[str] = mapped_column(String)
+    hist_id: Mapped[int] = mapped_column(Integer, unique=True, nullable=False)
 
     name_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)

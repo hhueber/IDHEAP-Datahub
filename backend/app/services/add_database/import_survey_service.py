@@ -21,8 +21,8 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-async def commune(db: AsyncSession):
-    await add_update_geo_data(db, 2016)
+async def import_new_survey_pipeline(db: AsyncSession, upload_id: str):
+    await import_survey_to_db(db, upload_id)
 
 
 async def import_survey_to_db(db: AsyncSession, upload_id: str):
@@ -41,13 +41,13 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
     if not survey_name or not survey_years:
         raise ValueError("Cannot find name or survey year")
 
-    for year in survey_years:
+    await add_update_geo_data(db, survey_years)
 
+    for year in survey_years:
         result = await db.execute(select(Survey).filter_by(year=year, name=survey_name))
         db_survey = result.scalar_one_or_none()
         if not db_survey:
             db_survey = Survey(name=survey_name, year=year)
-            logging.info("cc")
             db.add(db_survey)
             await db.flush()
 

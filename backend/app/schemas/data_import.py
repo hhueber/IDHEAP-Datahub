@@ -359,4 +359,4 @@ class DataImportCommitData(BaseModel):
 class DataImportCommitResponse(BaseModel):
     success: bool
     detail: str
-    data: DataImportCommitData
+    data: str  # TODO Change

@@ -7,6 +7,7 @@ from app.schemas.data_import import (
     DataImportColumnPatch,
     DataImportColumnsConfirmPatch,
     DataImportColumnTransformPatch,
+    DataImportCommitResponse,
     DataImportDeleteResponse,
     DataImportIssuesResponse,
     DataImportListResponse,
@@ -22,6 +23,7 @@ from app.schemas.data_import import (
     DataImportYearsResponse,
     ImportSectionEnum,
 )
+from app.services.add_database.import_survey_service import import_new_survey_pipeline
 from app.services.data_import.data_import_patch_service import (
     confirm_import_columns,
     patch_import_cell,
@@ -328,3 +330,14 @@ async def get_data_import_files(
         "detail": "Import resources loaded",
         "data": data,
     }
+
+
+@router.post("/{import_id}/commit", response_model=DataImportCommitResponse)
+async def commit_change(
+    import_id: str,
+    db: AsyncSession = Depends(get_db),
+    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+):
+
+    await import_new_survey_pipeline(db, import_id)
+    return {"success": True, "detail": "Helloooo", "data": "Hellooooca"}
