@@ -41,7 +41,7 @@ async def populate_db() -> None:
                     name_en=lang["en"],
                     name_fr=lang["fr"],
                     name_it=lang["it"],
-                    name_rm=lang["rm"],
+                    name_rm=lang["ro"],
                 )
                 # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
                 index += 1
