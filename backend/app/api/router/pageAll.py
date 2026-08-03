@@ -11,6 +11,7 @@ from app.schemas.pageAll import (
     PageAllLangEnum,
     SuggestResponse,
 )
+from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -20,7 +21,7 @@ router = APIRouter()
 
 @router.get("/all", response_model=AllResponse)
 async def get_all(
-    entity: EntityEnum = Query(..., description="Table à interroger"),
+    entity: EntityEnum = Query(..., description="Entity to query"),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
     order_by: OrderByEnum = Query(OrderByEnum.name),

@@ -592,12 +592,12 @@ async def get_pageAll_paginated(
 
     order_exprs = _order_exprs_for_entity(entity, order_by, order_dir, lang)
 
-    stmt = _build_base_stmt(entity, lang)
-
-    if search_conditions:
-        stmt = stmt.where(or_(*search_conditions))
-
-    stmt = stmt.order_by(*order_exprs, model.uid.asc()).offset((page - 1) * per_page).limit(per_page)
+    stmt = (
+        _build_base_stmt(entity, lang)
+        .order_by(*order_exprs, model.uid.asc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
 
     result = await db.execute(stmt)
     rows = result.all()
@@ -627,48 +627,42 @@ async def suggest_pageAll(
     if len(q_norm) < 1:
         return []
 
-    q_exact = q_norm
-    q_prefix = f"{q_norm}%"
-    q_contains = f"%{q_norm}%"
+    q = q.strip().lower()
+    qprefix = f"{q}%"
 
-    searchable_exprs = _searchable_exprs_for_entity(entity, lang)
+    u = func.unaccent
+    l = func.lower
 
-    if not searchable_exprs:
+    search_conditions = []
+
+    name_expr = _name_expr_for_entity(entity, lang)
+
+    if name_expr is not None:
+        search_conditions.append(l(u(name_expr)).like(qprefix))
+
+    if cfg.code_attr:
+        code_col = getattr(model, cfg.code_attr)
+        search_conditions.append(l(u(code_col)).like(qprefix))
+
+    for attr in cfg.search_extra_attrs:
+        if hasattr(model, attr):
+            col = getattr(model, attr)
+            search_conditions.append(l(u(col)).like(qprefix))
+
+    if entity == EntityEnum.answer:
+        question_expr = _localized_text_or_label(QuestionPerSurvey, lang)
+        commune_expr = _localized_name(Commune, lang)
+
+        if question_expr is not None:
+            search_conditions.append(l(u(question_expr)).like(qprefix))
+
+        if commune_expr is not None:
+            search_conditions.append(l(u(commune_expr)).like(qprefix))
+
+    if not search_conditions:
         return []
 
-    rank_exprs: list[Any] = []
-    search_conditions: list[Any] = []
-
-    for expr in searchable_exprs:
-        normalized_expr = _normalized_sql_text(expr)
-
-        search_conditions.append(normalized_expr.like(q_contains))
-
-        rank_exprs.append(
-            case(
-                (normalized_expr == q_exact, 0),
-                (normalized_expr.like(q_prefix), 1),
-                (normalized_expr.like(q_contains), 2),
-                else_=9,
-            )
-        )
-
-    best_rank = func.least(*rank_exprs).label("search_rank")
-
-    stmt = (
-        _build_base_stmt(entity, lang)
-        .where(or_(*search_conditions))
-        .order_by(
-            best_rank.asc(),
-            (
-                _name_expr_for_entity(entity, lang).asc()
-                if _name_expr_for_entity(entity, lang) is not None
-                else model.uid.asc()
-            ),
-            model.uid.asc(),
-        )
-        .limit(limit)
-    )
+    stmt = _build_base_stmt(entity, lang).where(or_(*search_conditions)).limit(limit)
 
     result = await db.execute(stmt)
     rows = result.all()
