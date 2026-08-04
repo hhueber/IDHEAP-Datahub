@@ -45,12 +45,15 @@ export function ThemeColorsSection({
     variant === "light" ? "colour_light_secondary" : "colour_dark_secondary";
   const logoBgKey = 
     variant === "light" ? "logoBackground_light" : "logoBackground_dark";
+  const selectionKey =
+    variant === "light" ? "selection_light" : "selection_dark";
 
   const backgroundColor = config[backgroundKey] ?? undefined;
   const inputText = config[textKey] ?? undefined;
   const primaryColor = config[primaryKey] ?? undefined;
   const secondaryColor = config[secondaryKey] ?? undefined;
   const logoBgValue = config[logoBgKey] ?? undefined;
+  const selectionColor = config[selectionKey] ?? undefined;
 
   return (
     <div
@@ -86,6 +89,7 @@ export function ThemeColorsSection({
             textColor={inputText}
             primaryColor={primaryColor}
             secondaryColor={secondaryColor}
+            selectionColor={selectionColor}
           />
         </div>
       </div>

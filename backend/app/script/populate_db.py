@@ -41,7 +41,7 @@ async def populate_db() -> None:
                     name_en=lang["en"],
                     name_fr=lang["fr"],
                     name_it=lang["it"],
-                    name_ro=lang["ro"],
+                    name_rm=lang["ro"],
                 )
                 # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
                 index += 1
@@ -73,7 +73,7 @@ async def populate_db() -> None:
                         name_en=rows["Nom du district"],
                         name_fr=rows["Nom du district"],
                         name_it=rows["Nom du district"],
-                        name_ro=rows["Nom du district"],
+                        name_rm=rows["Nom du district"],
                         name_de=rows["Nom du district"],
                         canton=db_canton,
                     )
@@ -87,7 +87,7 @@ async def populate_db() -> None:
                     name_en=rows["Nom de la commune"],
                     name_fr=rows["Nom de la commune"],
                     name_it=rows["Nom de la commune"],
-                    name_ro=rows["Nom de la commune"],
+                    name_rm=rows["Nom de la commune"],
                     name_de=rows["Nom de la commune"],
                     district=db_district,
                 )
@@ -123,7 +123,7 @@ async def populate_db() -> None:
                         text_en=str(row["text_en"]),
                         text_fr=str(row["text_fr"]),
                         text_it=str(row["text_it"]),
-                        text_ro=str(row["text_ro"]),
+                        text_rm=str(row["text_ro"]),
                     )
                     session.add(db_question)
                     await session.flush()
@@ -141,7 +141,7 @@ async def populate_db() -> None:
                         text_en=row["category_text_en"],
                         text_fr=row["category_text_fr"],
                         text_it=row["category_text_it"],
-                        text_ro=row["category_text_ro"],
+                        text_rm=row["category_text_ro"],
                     )
 
                     session.add(db_question_category)
@@ -154,7 +154,7 @@ async def populate_db() -> None:
                     text_en=row["text_en"],
                     text_fr=row["text_fr"],
                     text_it=row["text_it"],
-                    text_ro=row["text_ro"],
+                    text_rm=row["text_ro"],
                 )
 
                 session.add(db_question_global)
@@ -179,7 +179,7 @@ async def populate_db() -> None:
                         name_en=row["gemidname"],
                         name_fr=row["gemidname"],
                         name_it=row["gemidname"],
-                        name_ro=row["gemidname"],
+                        name_rm=row["gemidname"],
                         name_de=row["gemidname"],
                         district=db_district,
                     )
@@ -208,7 +208,6 @@ async def populate_db() -> None:
         # Answer for 2023 data (separate file)
         async with session.begin():
             GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
-
             for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
                 if pd.isna(row["BFS_2023"]):
                     continue
@@ -221,7 +220,7 @@ async def populate_db() -> None:
                         name=row["Gemeinde_2023"],
                         name_fr=row["Gemeinde_2023"],
                         name_it=row["Gemeinde_2023"],
-                        name_ro=row["Gemeinde_2023"],
+                        name_rm=row["Gemeinde_2023"],
                         name_en=row["Gemeinde_2023"],
                         name_de=row["Gemeinde_2023"],
                     )
@@ -229,7 +228,7 @@ async def populate_db() -> None:
                     await session.flush()
 
                 for col in GSB_2023:
-                    if "GSB" in col:
+                    if "GSB23_Q" in col:
                         survey = col.split("_")[0]
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
@@ -240,7 +239,7 @@ async def populate_db() -> None:
                         if db_question is None:
                             raise RuntimeError("Question not found")
                         db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=year, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
                         )
                         session.add(db_answer)
                         await session.flush()

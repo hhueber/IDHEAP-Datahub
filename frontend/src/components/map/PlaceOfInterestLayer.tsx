@@ -4,6 +4,7 @@ import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
 import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 import { useTheme } from "@/theme/useTheme";
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 
 const CUSTOM_OFFSET_PX = 160;
 
@@ -11,8 +12,11 @@ export default function PlaceOfInterestLayer() {
   const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const currentLang =
-    i18n.language || window.localStorage.getItem("i18nextLng") || "en";
+  const currentLang = normalizeGeoLanguage(
+    i18n.resolvedLanguage ||
+      i18n.language ||
+      localStorage.getItem("i18nextLng")
+  );
 
   const {
     placeOfInterest,
@@ -97,6 +101,7 @@ export default function PlaceOfInterestLayer() {
       <PlaceOfInterestMenuModal
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
+        lang={currentLang}
         backendPlaceOfInterest={backendPlaceOfInterest}
         extraPlaceOfInterest={extraPlaceOfInterest}
         hideAllBackend={hideAllBackend}
