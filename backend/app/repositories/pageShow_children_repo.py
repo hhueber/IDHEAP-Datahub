@@ -26,7 +26,7 @@ ASSOCIATION_MODEL_MAP = {
 }
 
 
-SUPPORTED_LANGS = {"fr", "de", "it", "ro", "en"}
+SUPPORTED_LANGS = {"fr", "de", "it", "rm", "en"}
 
 
 def _safe_lang(lang: PageAllLangEnum | str) -> str:
