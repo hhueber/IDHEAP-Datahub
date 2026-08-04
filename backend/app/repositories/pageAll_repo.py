@@ -19,7 +19,7 @@ from sqlalchemy.sql import Select
 
 ModelType = Type[Base]
 
-SUPPORTED_LANGS = {"fr", "de", "it", "ro", "en"}
+SUPPORTED_LANGS = {"fr", "de", "it", "rm", "en"}
 
 
 def _safe_lang(lang: PageAllLangEnum | str) -> str:
@@ -152,7 +152,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "name_fr",
             "name_de",
             "name_it",
-            "name_ro",
+            "name_rm",
             "name_en",
             "code",
         ],
@@ -166,7 +166,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "name_fr",
             "name_de",
             "name_it",
-            "name_ro",
+            "name_rm",
             "name_en",
             "code",
         ],
@@ -194,7 +194,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
@@ -207,7 +207,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
@@ -221,7 +221,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
