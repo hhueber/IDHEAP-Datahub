@@ -13,6 +13,8 @@ from app.schemas.data_import import (
     DataImportListResponse,
     DataImportNamePatch,
     DataImportNameResponse,
+    DataImportNewProject,
+    DataImportNewProjectResponse,
     DataImportPatchResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
@@ -340,4 +342,13 @@ async def commit_change(
 ):
 
     await import_new_survey_pipeline(db, import_id)
-    return {"success": True, "detail": "Helloooo", "data": "Hellooooca"}
+    return {"success": True, "detail": "Helloooo", "data": "Helloooo"}
+
+
+@router.post("/project", response_model=DataImportNewProjectResponse)
+async def new_project(
+    payload=DataImportNewProject,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+):
+    return {"success": True}

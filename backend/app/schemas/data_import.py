@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Literal, Optional
+from typing import Any, List, Literal, Optional
 
 
 from pydantic import BaseModel, Field, field_validator
@@ -360,3 +360,32 @@ class DataImportCommitResponse(BaseModel):
     success: bool
     detail: str
     data: str  # TODO Change
+
+
+class Link(BaseModel):
+    name: str
+    url: str
+
+
+class Author(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+
+
+class DataImportNewProject(BaseModel):
+    name: str
+    description: str
+    licence: str
+    links: List[Link]
+    authors: List[Author]
+
+
+class DataImportNewProjectData(BaseModel):
+    uid: int
+
+
+class DataImportNewProjectResponse(BaseModel):
+    sucess: bool
+    detail: str
+    data: DataImportNewProjectData
