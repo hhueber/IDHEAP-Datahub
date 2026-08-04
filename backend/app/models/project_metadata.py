@@ -13,7 +13,6 @@ class ProjectMetadata(Base):
 
     uid: Mapped[int] = mapped_column(primary_key=True)
 
-    name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String)
     licence: Mapped[str] = mapped_column(String)
     links_: Mapped[str] = mapped_column(String)
