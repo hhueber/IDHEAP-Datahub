@@ -48,6 +48,8 @@ def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     if not valid_columns:
         return None
 
+    # Applique _not_empty() à chaque colonne afin de traiter les chaînes vides
+    # comme des valeurs NULL, puis retourne la première valeur non NULL avec COALESCE.
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
@@ -63,6 +65,8 @@ def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
 def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
+    # Récupère dynamiquement le champ traduit correspondant à la langue
+    # (ex. text_fr, text_de, text_it, etc.). Retourne None si le champ n'existe pas.
     translated_text = getattr(model, f"text_{safe_lang}", None)
 
     if model is Option:
