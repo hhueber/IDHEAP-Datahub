@@ -29,7 +29,7 @@ async def export_csv_service(
         query = text(
             """
             SELECT uid, label, private,
-                   text_fr, text_de, text_it, text_en, text_ro
+                   text_fr, text_de, text_it, text_en, text_rm
             FROM question_per_survey
             WHERE uid = ANY(:ids)
         """
@@ -51,7 +51,7 @@ async def export_csv_service(
             SELECT 
                 g.uid AS global_uid,
                 g.label,
-                g.text_fr, g.text_de, g.text_it, g.text_en, g.text_ro,
+                g.text_fr, g.text_de, g.text_it, g.text_en, g.text_rm,
                 q.uid AS qps_uid,
                 q.private
             FROM question_global g

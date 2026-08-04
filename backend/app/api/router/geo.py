@@ -42,7 +42,7 @@ async def geo_by_year(
 
 @router.get("/placeOfInterest", response_model=list[PlaceOfInterestClientOut])
 async def get_placeOfInterest_for_map(
-    lang: str = Query("en", description="ISO code de langue, ex: fr, de, it, ro, en"),
+    lang: str = Query("en", description="ISO code de langue, ex: fr, de, it, rm, en"),
     db: AsyncSession = Depends(get_db),
 ):
     """
