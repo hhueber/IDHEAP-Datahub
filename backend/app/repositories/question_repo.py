@@ -13,7 +13,7 @@ LANG_COL = {
     "fr": "text_fr",
     "de": "text_de",
     "it": "text_it",
-    "rm": "text_ro",
+    "rm": "text_rm",
     "en": "text_en",
 }
 

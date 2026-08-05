@@ -3,6 +3,7 @@ from typing import Optional, Set, Tuple
 import json
 
 
+from app.core.geo_config import THEME_MAP_PREVIEW_CANTON_OFS_ID
 from app.models.canton import Canton
 from app.models.canton_map import CantonMap
 from app.models.commune import Commune
@@ -14,7 +15,7 @@ from app.models.lake import Lake
 from app.models.lake_map import LakeMap
 from app.schemas.geo import Feature, FeatureCollection, GeoBundle, Geometry, YearMeta
 from geoalchemy2 import functions as geofunc
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -174,3 +175,169 @@ async def get_geo_by_year_selective(
         bundle_kwargs["communes"] = communes_fc
 
     return GeoBundle(**bundle_kwargs)
+
+
+async def get_geo_by_canton_preview(
+    session: AsyncSession,
+    canton_ofs_id: int = THEME_MAP_PREVIEW_CANTON_OFS_ID,
+    requested_year: Optional[int] = None,
+) -> GeoBundle:
+    """
+    Retourne les couches GeoJSON nécessaires à une preview de carte limitée
+    à un seul canton.
+
+    Cette méthode est utilisée pour la configuration du thème afin d'éviter
+    de charger toutes les géométries de Suisse dans une simple mini-preview.
+
+    Elle récupère :
+    - le canton correspondant à l'identifiant OFS demandé
+    - les districts rattachés à ce canton
+    - les communes rattachées aux districts du canton
+    - les lacs qui intersectent la géométrie du canton
+
+    Le canton utilisé par défaut est défini par
+    THEME_MAP_PREVIEW_CANTON_OFS_ID.
+
+    Args:
+        session: Session SQLAlchemy async utilisée pour exécuter les requêtes.
+        canton_ofs_id: Identifiant OFS du canton à afficher dans la preview.
+        requested_year: Année demandée pour les géométries. Si aucune année
+            n'est fournie, l'année courante est utilisée, puis la dernière
+            année disponible inférieure ou égale est sélectionnée par couche.
+
+    Returns:
+        GeoBundle: Bundle GeoJSON contenant uniquement les couches utiles à
+        la preview ciblée.
+    """
+    y_req = int(requested_year or date.today().year)
+
+    canton_uid = (await session.execute(select(Canton.uid).where(Canton.ofs_id == canton_ofs_id))).scalar_one_or_none()
+
+    if canton_uid is None:
+        # On retourne volontairement un GeoBundle vide plutôt que de lever une erreur.
+        # La preview de thème est uniquement décorative : si le canton configuré
+        # n'existe pas dans les données, l'UI peut afficher un état "aucune donnée"
+        # sans bloquer le chargement de la page de configuration.
+        return GeoBundle(
+            year=YearMeta(
+                requested=y_req,
+                country=None,
+                lakes=None,
+                cantons=None,
+                districts=None,
+            ),
+            country=None,
+            lakes=None,
+            cantons=FeatureCollection(features=[]),
+            districts=FeatureCollection(features=[]),
+            communes=FeatureCollection(features=[]),
+        )
+
+    # On prend pour chaque table de géométrie, la dernière année
+    y_cantons = await _max_year_leq(session, CantonMap, y_req)
+    y_districts = await _max_year_leq(session, DistrictMap, y_req)
+    y_communes = await _max_year_leq(session, CommuneMap, y_req)
+    y_lakes = await _max_year_leq(session, LakeMap, y_req)
+
+    canton_fc = FeatureCollection(features=[])
+    districts_fc = FeatureCollection(features=[])
+    communes_fc = FeatureCollection(features=[])
+    lakes_fc = FeatureCollection(features=[])
+
+    if y_cantons is not None:
+        # Géométrie du canton sélectionné uniquement.
+        canton_fc = await _features_from_stmt(
+            session,
+            select(
+                geofunc.ST_AsGeoJSON(CantonMap.geometry, maxdecimaldigits=5).label("geojson"),
+                Canton.uid.label("uid"),
+                Canton.code.label("code"),
+                Canton.name.label("name"),
+            )
+            .join(CantonMap.canton)
+            .where(
+                CantonMap.year == y_cantons,
+                Canton.uid == canton_uid,
+            ),
+            ("uid", "code", "name"),
+        )
+
+    if y_districts is not None:
+        # Les districts sont directement rattachés au canton via District.canton_uid.
+        districts_fc = await _features_from_stmt(
+            session,
+            select(
+                geofunc.ST_AsGeoJSON(DistrictMap.geometry, maxdecimaldigits=5).label("geojson"),
+                District.uid.label("uid"),
+                District.name.label("name"),
+                District.code.label("code"),
+            )
+            .join(DistrictMap.district)
+            .where(
+                DistrictMap.year == y_districts,
+                District.canton_uid == canton_uid,
+            ),
+            ("uid", "name", "code"),
+        )
+
+    if y_communes is not None:
+        # Les communes ne sont pas directement rattachées au canton.
+        # On passe donc par leur district pour limiter la preview aux communes du canton.
+        communes_fc = await _features_from_stmt(
+            session,
+            select(
+                geofunc.ST_AsGeoJSON(CommuneMap.geometry, maxdecimaldigits=5).label("geojson"),
+                Commune.uid.label("uid"),
+                Commune.name.label("name"),
+                Commune.code.label("code"),
+            )
+            .join(CommuneMap.commune)
+            .join(District, Commune.district_uid == District.uid)
+            .where(
+                CommuneMap.year == y_communes,
+                District.canton_uid == canton_uid,
+            ),
+            ("uid", "name", "code"),
+        )
+
+    if y_lakes is not None and y_cantons is not None:
+        # Les lacs ne sont pas reliés aux cantons par une clé étrangère.
+        # On les sélectionne donc spatialement : tout lac qui intersecte
+        # la géométrie du canton est inclus dans la preview.
+        lakes_fc = await _features_from_stmt(
+            session,
+            select(
+                geofunc.ST_AsGeoJSON(LakeMap.geometry, maxdecimaldigits=5).label("geojson"),
+                Lake.uid.label("uid"),
+                Lake.name.label("name"),
+                Lake.code.label("code"),
+            )
+            .join(LakeMap.lake)
+            .join(
+                CantonMap,
+                and_(
+                    CantonMap.year == y_cantons,
+                    CantonMap.canton_uid == canton_uid,
+                ),
+            )
+            .where(
+                LakeMap.year == y_lakes,
+                geofunc.ST_Intersects(LakeMap.geometry, CantonMap.geometry),
+            ),
+            ("uid", "name", "code"),
+        )
+
+    return GeoBundle(
+        year=YearMeta(
+            requested=y_req,
+            country=None,
+            lakes=y_lakes,
+            cantons=y_cantons,
+            districts=y_districts,
+        ),
+        country=None,
+        lakes=lakes_fc,
+        cantons=canton_fc,
+        districts=districts_fc,
+        communes=communes_fc,
+    )

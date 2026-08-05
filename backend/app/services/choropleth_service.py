@@ -3,8 +3,7 @@
 # (par exemple des communes) sont colorées en fonction d'une valeur de données
 # (statistique, réponse à un sondage, score numérique, etc.).
 from typing import Any, List, Optional
-import json
-
+import orjson
 
 from app.models.answer import Answer
 from app.models.canton import Canton
@@ -17,7 +16,13 @@ from app.models.option import Option
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.schemas.choropleth import ChoroplethGranularity, GradientMeta, LegendItem, MapLegend
+from app.schemas.choropleth import (
+    ChoroplethGranularity,
+    ChoroplethValueEntry,
+    GradientMeta,
+    LegendItem,
+    MapLegend,
+)
 from app.schemas.geo import Feature, FeatureCollection, Geometry
 from geoalchemy2 import functions as geofunc
 from sqlalchemy import and_, case, cast, func, Integer, Numeric, select
@@ -27,6 +32,7 @@ from sqlalchemy.sql.selectable import FromClause
 
 
 NO_DATA_COLOR = "#cccccc"  # gris
+_DUMMY_GEOM = Geometry(type="Point", coordinates=[0.0, 0.0])
 NO_RESPONSE_COLOR = "#f59e0b"  # orange/ambre
 GRAD_START = "#22c55e"  # vert
 GRAD_END = "#3b82f6"  # bleu
@@ -414,7 +420,7 @@ def _pick_aggregated_value(
 
 
 def _geojson_col(geom_col) -> ColumnElement:
-    return geofunc.ST_AsGeoJSON(geofunc.ST_Transform(geom_col, 4326), maxdecimaldigits=5)
+    return geofunc.ST_AsGeoJSON(geom_col, maxdecimaldigits=5)
 
 
 def _numeric_regex_col() -> ColumnElement:
@@ -700,7 +706,7 @@ def _rows_to_features(
         if r.get("geojson") is None:
             continue
 
-        gj = json.loads(r["geojson"])
+        gj = orjson.loads(r["geojson"])
 
         cnt_null = int(r.get("cnt_null") or 0)
         cnt_empty = int(r.get("cnt_empty") or 0)
@@ -828,31 +834,6 @@ async def build_choropleth(
             target_year=year,
             year_window=1,
         )
-
-        communes_requested = int((await db.execute(select(func.count()).select_from(commune_agg))).scalar_one() or 0)
-        communes_with_geo = int((await db.execute(select(func.count()).select_from(cm_best))).scalar_one() or 0)
-
-        if communes_requested == 0:
-            _add_warning(
-                years_meta,
-                code="NO_ANSWERS",
-                message=f"No answers for question_uid={q_uid} year={year} (commune).",
-                q_uid=q_uid,
-                year=year,
-                granularity="commune",
-            )
-            return _empty_return(years_meta)
-
-        if communes_with_geo == 0:
-            _add_warning(
-                years_meta,
-                code="NO_GEO_FOR_REQUESTED",
-                message=f"Answers exist but no commune geometry found in window +/-2 for question_uid={q_uid} year={year}.",
-                q_uid=q_uid,
-                year=year,
-                granularity="commune",
-            )
-            return _empty_return(years_meta)
 
         stmt = (
             select(
@@ -1051,7 +1032,7 @@ async def build_choropleth(
 
         feats: list[Feature] = []
         for r in rows:
-            gj = json.loads(r["geojson"])
+            gj = orjson.loads(r["geojson"])
             feats.append(
                 Feature(
                     geometry=Geometry(**gj),
@@ -1094,3 +1075,371 @@ async def build_choropleth(
         granularity=str(granularity),
     )
     return _empty_return(years_meta)
+
+
+def _all_commune_geo_cte(*, target_year: int, year_window: int = 1):
+    """
+    Like _best_commune_map_for_requested_cte_window but for ALL communes,
+    not filtered by which communes have answers.
+    """
+    y_min = target_year - year_window
+    y_max = target_year + year_window
+
+    cm_ranked = (
+        select(
+            CommuneMap.commune_uid.label("unit_uid"),
+            CommuneMap.geometry.label("geometry"),
+            CommuneMap.year.label("map_year"),
+            func.row_number()
+            .over(
+                partition_by=CommuneMap.commune_uid,
+                order_by=[
+                    func.abs(CommuneMap.year - target_year).asc(),
+                    case((CommuneMap.year <= target_year, 0), else_=1).asc(),
+                    CommuneMap.year.desc(),
+                ],
+            )
+            .label("rn"),
+        )
+        .select_from(CommuneMap)
+        .where(and_(CommuneMap.year >= y_min, CommuneMap.year <= y_max))
+    ).cte("cm_ranked_all_window")
+
+    return (
+        select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year)
+        .where(cm_ranked.c.rn == 1)
+    ).cte("cm_best_all_window")
+
+
+def _rows_to_value_features(
+    *,
+    level: str,
+    rows: list[dict[str, Any]],
+    use_mode: bool,
+) -> list[Feature]:
+    """
+    Like _rows_to_features but without geojson parsing.
+    Uses _DUMMY_GEOM as placeholder — geometry is not included in /values responses.
+    """
+    feats: list[Feature] = []
+    for r in rows:
+        cnt_null = int(r.get("cnt_null") or 0)
+        cnt_empty = int(r.get("cnt_empty") or 0)
+        top_real_count = int(r.get("top_real_count") or 0)
+
+        kind, val = _pick_aggregated_value(
+            cnt_empty=cnt_empty,
+            cnt_null=cnt_null,
+            cnt_non_empty=int(r.get("cnt_non_empty") or 0),
+            cnt_num=int(r.get("cnt_num") or 0),
+            avg_num_int=r.get("avg_num_int"),
+            mode_text=r.get("mode_text"),
+            use_mode=use_mode,
+        )
+
+        props: dict[str, Any] = {
+            "level": level,
+            "unit_uid": int(r["uid"]),
+            "name": r["name"],
+            "code": r["code"],
+            "value_kind": kind,
+            "value": val,
+            "special_dominant": _special_dominates(cnt_null, cnt_empty, top_real_count),
+            "top_real_count": top_real_count,
+            "cnt_null": cnt_null,
+            "cnt_empty": cnt_empty,
+        }
+
+        if level != "commune":
+            tie_values = r.get("tie_values") or []
+            if not isinstance(tie_values, (list, tuple)):
+                tie_values = []
+
+            candidates_raw: list[tuple[str, Any]] = []
+            for tv in tie_values:
+                if tv is None:
+                    continue
+                candidates_raw.append(("value", str(tv)))
+
+            if top_real_count > 0:
+                if cnt_empty >= top_real_count:
+                    candidates_raw.append(("no_response", ""))
+                if cnt_null >= top_real_count:
+                    candidates_raw.append(("no_data", None))
+
+            candidates = _unique_keep_order(candidates_raw, limit=MAX_CATEGORIES)
+
+            if len(candidates) >= 2:
+                props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
+                props["fill_pattern_opts"] = {"type": "stripes", "angle": 45, "stripe": 6}
+
+        feats.append(Feature(geometry=_DUMMY_GEOM, properties=props))
+
+    return feats
+
+
+def _features_to_values_dict(feats: list[Feature]) -> dict[str, ChoroplethValueEntry]:
+    result: dict[str, ChoroplethValueEntry] = {}
+    for f in feats:
+        uid_str = str(f.properties["unit_uid"])
+        result[uid_str] = ChoroplethValueEntry(
+            value=f.properties.get("value"),
+            value_kind=f.properties["value_kind"],
+            fill_color=f.properties.get("fill_color", NO_DATA_COLOR),
+            fill_pattern=f.properties.get("fill_pattern"),
+            special_dominant=bool(f.properties.get("special_dominant", False)),
+            top_real_count=int(f.properties.get("top_real_count", 0)),
+            cnt_null=int(f.properties.get("cnt_null", 0)),
+            cnt_empty=int(f.properties.get("cnt_empty", 0)),
+        )
+    return result
+
+
+async def build_choropleth_geometries(
+    db: "AsyncSession",
+    year: int,
+    granularity: "ChoroplethGranularity",
+) -> tuple["FeatureCollection", dict[str, Any]]:
+    """
+    Returns a FeatureCollection containing ALL geographic units for the given
+    granularity and year, with no answer/question dependency.
+    Also returns years_meta dict with keys 'communes', 'districts', 'cantons'.
+    """
+    years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
+
+    if granularity == "commune":
+        years_meta["communes"] = year
+        cm_best = _all_commune_geo_cte(target_year=year, year_window=1)
+        stmt = (
+            select(
+                Commune.uid.label("uid"),
+                Commune.name.label("name"),
+                Commune.code.label("code"),
+                cm_best.c.map_year.label("geo_year_used"),
+                _geojson_col(cm_best.c.geometry).label("geojson"),
+            )
+            .select_from(cm_best)
+            .join(Commune, Commune.uid == cm_best.c.unit_uid)
+        )
+        rows = (await db.execute(stmt)).mappings().all()
+        feats: list[Feature] = []
+        for r in rows:
+            if r.get("geojson") is None:
+                continue
+            gj = orjson.loads(r["geojson"])
+            feats.append(
+                Feature(
+                    geometry=Geometry(**gj),
+                    properties={
+                        "level": "commune",
+                        "unit_uid": int(r["uid"]),
+                        "name": r["name"],
+                        "code": r["code"],
+                        "geo_year_used": int(r["geo_year_used"]) if r.get("geo_year_used") is not None else None,
+                    },
+                )
+            )
+        return FeatureCollection(features=feats), years_meta
+
+    if granularity == "district":
+        y_geo = await _nearest_year_sql_window(db, DistrictMap, year, year_window=2)
+        years_meta["districts"] = y_geo
+        if y_geo is None:
+            return FeatureCollection(features=[]), years_meta
+        stmt = (
+            select(
+                District.uid.label("uid"),
+                District.name.label("name"),
+                District.code.label("code"),
+                _geojson_col(DistrictMap.geometry).label("geojson"),
+            )
+            .select_from(District)
+            .join(DistrictMap, and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo))
+        )
+        rows = (await db.execute(stmt)).mappings().all()
+        feats = [
+            Feature(
+                geometry=Geometry(**orjson.loads(r["geojson"])),
+                properties={"level": "district", "unit_uid": int(r["uid"]), "name": r["name"], "code": r["code"]},
+            )
+            for r in rows
+            if r.get("geojson") is not None
+        ]
+        return FeatureCollection(features=feats), years_meta
+
+    if granularity in ("canton", "federal"):
+        y_geo = await _nearest_year_sql_window(db, CantonMap, year, year_window=2)
+        years_meta["cantons"] = y_geo
+        if y_geo is None:
+            return FeatureCollection(features=[]), years_meta
+        level = "canton" if granularity == "canton" else "federal"
+        stmt = (
+            select(
+                Canton.uid.label("uid"),
+                Canton.name.label("name"),
+                Canton.code.label("code"),
+                _geojson_col(CantonMap.geometry).label("geojson"),
+            )
+            .select_from(Canton)
+            .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo))
+        )
+        rows = (await db.execute(stmt)).mappings().all()
+        feats = [
+            Feature(
+                geometry=Geometry(**orjson.loads(r["geojson"])),
+                properties={"level": level, "unit_uid": int(r["uid"]), "name": r["name"], "code": r["code"]},
+            )
+            for r in rows
+            if r.get("geojson") is not None
+        ]
+        return FeatureCollection(features=feats), years_meta
+
+    return FeatureCollection(features=[]), years_meta
+
+
+async def build_choropleth_values(
+    db: "AsyncSession",
+    scope: str,
+    question_uid: int,
+    year: int,
+    granularity: "ChoroplethGranularity",
+) -> tuple["MapLegend", dict[str, "ChoroplethValueEntry"], dict[str, Any]]:
+    """
+    Returns (legend, values_dict, years_meta) without any geometry.
+    values_dict is keyed by str(unit_uid).
+    """
+    years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
+
+    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
+    result = await db.scalars(smt)
+    options = result.all()
+
+    if scope == "global":
+        resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
+        if resolved is None:
+            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            return empty_legend, {}, years_meta
+        q_uid = resolved
+    else:
+        q_uid = question_uid
+
+    distinct_cnt = await _global_distinct_non_empty_count(db, q_uid, year)
+    use_mode = distinct_cnt <= MAX_CATEGORIES
+
+    if granularity == "commune":
+        years_meta["communes"] = year
+        commune_agg = _commune_agg_cte(q_uid=q_uid, year=year)
+        stmt = (
+            select(
+                Commune.uid.label("uid"),
+                Commune.name.label("name"),
+                Commune.code.label("code"),
+                *_agg_cols(commune_agg),
+            )
+            .select_from(commune_agg)
+            .join(Commune, Commune.uid == commune_agg.c.gid)
+        )
+        rows = (await db.execute(stmt)).mappings().all()
+        feats = _rows_to_value_features(level="commune", rows=[dict(r) for r in rows], use_mode=use_mode)
+        if not feats:
+            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            return empty_legend, {}, years_meta
+        legend = _build_legend_and_colors(feats, options)
+        return legend, _features_to_values_dict(feats), years_meta
+
+    if granularity == "district":
+        y_geo = await _nearest_year_sql_window(db, DistrictMap, year, year_window=2)
+        years_meta["districts"] = y_geo
+        district_agg = _district_agg_cte(q_uid=q_uid, year=year)
+        # JOIN DistrictMap (existence only, no geometry selected) to match exactly
+        # the same set of units as the old choropleth — required for correct gradient vmin/vmax.
+        stmt = (
+            select(
+                District.uid.label("uid"),
+                District.name.label("name"),
+                District.code.label("code"),
+                *_agg_cols(district_agg),
+            )
+            .select_from(district_agg)
+            .join(District, District.uid == district_agg.c.gid)
+            .join(DistrictMap, and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo))
+        )
+        rows = (await db.execute(stmt)).mappings().all()
+        feats = _rows_to_value_features(level="district", rows=[dict(r) for r in rows], use_mode=use_mode)
+        if not feats:
+            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            return empty_legend, {}, years_meta
+        legend = _build_legend_and_colors(feats, options)
+        return legend, _features_to_values_dict(feats), years_meta
+
+    if granularity == "canton":
+        y_geo = await _nearest_year_sql_window(db, CantonMap, year, year_window=2)
+        years_meta["cantons"] = y_geo
+        canton_agg = _canton_agg_cte(q_uid=q_uid, year=year)
+        # JOIN CantonMap (existence only, no geometry selected) to match exactly
+        # the same set of units as the old choropleth.
+        stmt = (
+            select(
+                Canton.uid.label("uid"),
+                Canton.name.label("name"),
+                Canton.code.label("code"),
+                *_agg_cols(canton_agg),
+            )
+            .select_from(canton_agg)
+            .join(Canton, Canton.uid == canton_agg.c.gid)
+            .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo))
+        )
+        rows = (await db.execute(stmt)).mappings().all()
+        feats = _rows_to_value_features(level="canton", rows=[dict(r) for r in rows], use_mode=use_mode)
+        if not feats:
+            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            return empty_legend, {}, years_meta
+        legend = _build_legend_and_colors(feats, options)
+        return legend, _features_to_values_dict(feats), years_meta
+
+    if granularity == "federal":
+        y_geo = await _nearest_year_sql_window(db, CantonMap, year, year_window=2)
+        years_meta["cantons"] = y_geo
+
+        total_rows = int(
+            (
+                await db.execute(
+                    select(func.count()).select_from(Answer).where(Answer.question_uid == q_uid, Answer.year == year)
+                )
+            ).scalar_one()
+            or 0
+        )
+        if total_rows == 0:
+            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            return empty_legend, {}, years_meta
+
+        global_kind, global_val = await _compute_global_value(db, q_uid, year, use_mode=use_mode)
+        special = await _global_special_stats(db, q_uid, year)
+
+        canton_rows = (await db.execute(select(Canton.uid, Canton.name, Canton.code))).mappings().all()
+        feats = [
+            Feature(
+                geometry=_DUMMY_GEOM,
+                properties={
+                    "level": "federal",
+                    "unit_uid": int(r["uid"]),
+                    "name": r["name"],
+                    "code": r["code"],
+                    "value_kind": global_kind,
+                    "value": global_val,
+                    "special_dominant": bool(special["special_dominant"]),
+                    "top_real_count": int(special["top_real_count"]),
+                    "cnt_null": int(special["cnt_null"]),
+                    "cnt_empty": int(special["cnt_empty"]),
+                },
+            )
+            for r in canton_rows
+        ]
+        if not feats:
+            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            return empty_legend, {}, years_meta
+        legend = _build_legend_and_colors(feats, options)
+        return legend, _features_to_values_dict(feats), years_meta
+
+    empty_legend = MapLegend(type="categorical", title="Responses", items=[])
+    return empty_legend, {}, years_meta

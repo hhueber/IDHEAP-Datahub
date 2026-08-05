@@ -18,7 +18,7 @@ class Commune(Base):
     name_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_it: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    name_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    name_rm: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     name_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     district_uid: Mapped[int] = mapped_column(ForeignKey("district.uid", ondelete="CASCADE"))

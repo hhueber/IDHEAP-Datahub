@@ -76,7 +76,7 @@ export default function ConfigPlaceOfInterestPage() {
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.fr")}</th>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.de")}</th>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.it")}</th>
-                <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.ro")}</th>
+                <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.rm")}</th>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.en")}</th>
                 <th className="px-3 py-2 text-left">{t("admin.config.placeOfInterestPage.columns.position")}</th>
                 <th className="px-3 py-2" />
@@ -89,7 +89,7 @@ export default function ConfigPlaceOfInterestPage() {
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.name_fr || "—"}</td>
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.name_de || "—"}</td>
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.name_it || "—"}</td>
-                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_ro || "—"}</td>
+                  <td className="px-3 py-2" style={{ color: textColor }}>{c.name_rm || "—"}</td>
                   <td className="px-3 py-2" style={{ color: textColor }}>{c.name_en || "—"}</td>
                   <td className="px-3 py-2" style={{ color: textColor }}>
                     {fmt4(c.pos[0])}, {fmt4(c.pos[1])}

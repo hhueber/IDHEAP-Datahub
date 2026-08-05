@@ -51,7 +51,7 @@ export type ShowMeta = {
   title_key: string;
   hide_keys: string[];
   fields: ShowMetaField[];
-  languages?: Record<"de" | "fr" | "en" | "it" | "ro", string>;
+  languages?: Record<"de" | "fr" | "en" | "it" | "rm", string>;
   actions?: ShowMetaActions;
   children?: ShowChildMeta[];
 };
