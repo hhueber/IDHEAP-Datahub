@@ -86,6 +86,39 @@ export const geoApi = {
         ...(params.granularity ? { granularity: params.granularity } : {}),
       },
     }),
+
+  getChoroplethGeometries: (
+    params: { year: number; granularity?: ChoroplethGranularity },
+    signal?: AbortSignal
+  ) =>
+    apiFetch<ChoroplethGeometriesResponse>("geo/choropleth/geometries", {
+      method: "GET",
+      signal,
+      query: {
+        year: params.year,
+        ...(params.granularity ? { granularity: params.granularity } : {}),
+      },
+    }),
+
+  getChoroplethValues: (
+    params: {
+      scope: "per_survey" | "global";
+      question_uid: number;
+      year: number;
+      granularity?: ChoroplethGranularity;
+    },
+    signal?: AbortSignal
+  ) =>
+    apiFetch<ChoroplethValuesResponse>("geo/choropleth/values", {
+      method: "GET",
+      signal,
+      query: {
+        scope: params.scope,
+        question_uid: params.question_uid,
+        year: params.year,
+        ...(params.granularity ? { granularity: params.granularity } : {}),
+      },
+    }),
 };
 
 export type PlaceOfInterestGeoType =
@@ -159,4 +192,39 @@ export type ChoroplethResponse = {
       colors?: string[];
     };
   }>;
+};
+
+export type ChoroplethGeometryFeatureProps = {
+  level: ChoroplethGranularity;
+  unit_uid: number;
+  name?: string;
+  code?: string;
+  geo_year_used?: number | null;
+};
+
+export type ChoroplethGeometriesResponse = {
+  year_requested: number;
+  year_geo_districts?: number | null;
+  year_geo_cantons?: number | null;
+  granularity: ChoroplethGranularity;
+  feature_collection: FeatureCollection<ChoroplethGeometryFeatureProps>;
+};
+
+export type ChoroplethValueEntry = {
+  value?: any | null;
+  value_kind: "value" | "no_data" | "no_response";
+  fill_color: string;
+  fill_pattern?: any | null;
+  special_dominant: boolean;
+  top_real_count: number;
+  cnt_null: number;
+  cnt_empty: number;
+};
+
+export type ChoroplethValuesResponse = {
+  question_uid: number;
+  year_requested: number;
+  granularity: ChoroplethGranularity;
+  legend: MapLegend;
+  values: Record<string, ChoroplethValueEntry>;
 };

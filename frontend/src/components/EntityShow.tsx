@@ -11,6 +11,7 @@ import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
 import InsightsPanel from "@/features/pageShow/InsightsPanel";
 import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
 import { useNavigate } from "react-router-dom";
+import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 
 type Props = {
   id: number;
@@ -44,9 +45,110 @@ function normalizeToString(v: any): string {
   return String(v);
 }
 
+type RelationDisplayItem = {
+  uidKey: string;
+  displayKey: string;
+  labelKey: string;
+  value: string;
+};
+
+const RELATION_DISPLAY_CONFIG: {
+  uidKey: string;
+  displayKeys: string[];
+  labelKey: string;
+}[] = [
+  {
+    uidKey: "commune_uid",
+    displayKeys: ["commune_name", "commune"],
+    labelKey: "dashboardSidebar.pageShow.relations.commune",
+  },
+  {
+    uidKey: "district_uid",
+    displayKeys: ["district_name", "district"],
+    labelKey: "dashboardSidebar.pageShow.relations.district",
+  },
+  {
+    uidKey: "canton_uid",
+    displayKeys: ["canton_name", "canton"],
+    labelKey: "dashboardSidebar.pageShow.relations.canton",
+  },
+  {
+    uidKey: "survey_uid",
+    displayKeys: ["survey_name", "survey"],
+    labelKey: "dashboardSidebar.pageShow.relations.survey",
+  },
+  {
+    uidKey: "question_uid",
+    displayKeys: ["question_name", "question"],
+    labelKey: "dashboardSidebar.pageShow.relations.question",
+  },
+  {
+    uidKey: "question_global_uid",
+    displayKeys: ["question_global_name", "question_global"],
+    labelKey: "dashboardSidebar.pageShow.relations.questionGlobal",
+  },
+  {
+    uidKey: "question_category_uid",
+    displayKeys: ["question_category_name", "question_category"],
+    labelKey: "dashboardSidebar.pageShow.relations.questionCategory",
+  },
+  {
+    uidKey: "option_uid",
+    displayKeys: ["option_name", "option"],
+    labelKey: "dashboardSidebar.pageShow.relations.option",
+  },
+];
+
+function getFirstNonEmptyValue(
+  data: Record<string, any>,
+  keys: string[]
+): { key: string; value: string } | null {
+  for (const key of keys) {
+    const value = data[key];
+
+    if (value !== null && value !== undefined && String(value).trim() !== "") {
+      return {
+        key,
+        value: String(value),
+      };
+    }
+  }
+
+  return null;
+}
+
+function getRelationDisplayItems(
+  data: Record<string, any> | null
+): RelationDisplayItem[] {
+  if (!data) return [];
+
+  return RELATION_DISPLAY_CONFIG.flatMap((config) => {
+    const uid = data[config.uidKey];
+
+    if (uid === null || uid === undefined) {
+      return [];
+    }
+
+    const display = getFirstNonEmptyValue(data, config.displayKeys);
+
+    if (!display) {
+      return [];
+    }
+
+    return [
+      {
+        uidKey: config.uidKey,
+        displayKey: display.key,
+        labelKey: config.labelKey,
+        value: display.value,
+      },
+    ];
+  });
+}
+
 export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, i18n  } = useTranslation();
   const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
 
   const [loading, setLoading] = React.useState(false);
@@ -72,6 +174,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
   const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
   const { castUpdates } = useTypedUpdates(meta);
 
+  const lang = React.useMemo(
+    () => getPageAllLang(i18n.language),
+    [i18n.language]
+  );
+
   const load = React.useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -80,6 +187,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
       const json = await apiFetch<ShowResponse>(`/show/${entity}/${id}`, {
         method: "GET",
         auth: true,
+        query: {
+          lang,
+        },
       });
 
       setMeta(json.meta ?? null);
@@ -123,7 +233,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
     } finally {
       setInsightsLoading(false);
     }
-  }, [entity, id, t]);
+  }, [entity, id, lang, t]);
 
   React.useEffect(() => {
     void load();
@@ -165,6 +275,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
       : `${entity} #${id}`;
 
   const fields = meta?.fields ?? [];
+
+  const relationDisplayItems = React.useMemo(
+    () => getRelationDisplayItems(data),
+    [data]
+  );
 
   const toggleClearField = (key: string) => {
     setSelectedFieldsToClear((prev) =>
@@ -469,6 +584,36 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                           );
                         })}
                     </div>
+
+                    {/* RELATED READ-ONLY INFO */}
+                    {relationDisplayItems.length > 0 && (
+                      <>
+                        <div className="my-4 border-t" style={{ borderColor }} />
+
+                        <div className="text-sm font-medium mb-3">
+                          {t("dashboardSidebar.pageShow.relatedInfo")}
+                        </div>
+
+                        <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+                          {relationDisplayItems.map((item) => (
+                            <React.Fragment key={item.uidKey}>
+                              <div className="font-medium min-w-0" style={{ color: hoverText07 }}>
+                                {t(item.labelKey)}
+                              </div>
+
+                              <div className="min-w-0">
+                                <span
+                                  title={item.value}
+                                  className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                                >
+                                  {renderEmpty(item.value)}
+                                </span>
+                              </div>
+                            </React.Fragment>
+                          ))}
+                        </div>
+                      </>
+                    )}    
                   </div>
 
                   {/* LANGUAGES */}
