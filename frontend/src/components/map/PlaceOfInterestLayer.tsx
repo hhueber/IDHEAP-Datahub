@@ -5,10 +5,29 @@ import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfIntere
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 import { useTheme } from "@/theme/useTheme";
 import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
+import type { FeatureCollection, GeoFeatureProperties } from "@/features/geo/geoApi";
 
 const CUSTOM_OFFSET_PX = 160;
 
-export default function PlaceOfInterestLayer() {
+type Props = {
+  communes?: FeatureCollection<
+    GeoFeatureProperties
+  > | null;
+
+  districts?: FeatureCollection<
+    GeoFeatureProperties
+  > | null;
+
+  cantons?: FeatureCollection<
+    GeoFeatureProperties
+  > | null;
+};
+
+export default function PlaceOfInterestLayer({
+  communes,
+  districts,
+  cantons,
+}: Props) {
   const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -95,7 +114,12 @@ export default function PlaceOfInterestLayer() {
       </div>
 
       {/* Marqueurs de villes sur la carte */}
-      <PlaceOfInterestMarkers placeOfInterest={placeOfInterest} />
+      <PlaceOfInterestMarkers
+        placeOfInterest={placeOfInterest}
+        communes={communes}
+        districts={districts}
+        cantons={cantons}
+      />
 
       {/* Modale de gestion des villes */}
       <PlaceOfInterestMenuModal

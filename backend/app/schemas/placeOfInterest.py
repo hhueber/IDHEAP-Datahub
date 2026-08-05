@@ -40,6 +40,11 @@ class PlaceOfInterestClientOut(BaseModel):
     code: str
     name: str
     pos: Tuple[float, float]
+    geo_type: Literal[
+        "commune",
+        "district",
+        "canton",
+    ]
 
 
 class PlaceOfInterestIn(PlaceOfInterestBase):

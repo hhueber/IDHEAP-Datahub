@@ -569,7 +569,11 @@ export default function GeoJsonMap({
           </>
         )}
         {/* Points villes et labels */}
-        <PlaceOfInterestLayer />
+        <PlaceOfInterestLayer
+          communes={communes}
+          districts={districts}
+          cantons={cantons}
+        />
       </MapContainer>
 
       {/* Alerte d’erreur de chargement géo */}

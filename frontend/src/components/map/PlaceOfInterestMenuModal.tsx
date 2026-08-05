@@ -110,6 +110,8 @@ export default function PlaceOfInterestMenuModal({
 
     addExtraPlaceOfInterest({
       code,
+      geoCode: s.code,
+      geoType: s.type,
       name: fallbackName,
       names: s.names,
       pos: s.pos,

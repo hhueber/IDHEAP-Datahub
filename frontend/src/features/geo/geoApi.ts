@@ -36,6 +36,12 @@ export type YearMeta = {
   districts?: number | null;
 };
 
+export type GeoFeatureProperties = {
+  uid: number;
+  code?: string;
+  name?: string;
+};
+
 // Regroupe toutes les couches géo pour une année
 export type GeoBundle = {
   year: YearMeta;
@@ -115,10 +121,16 @@ export const geoApi = {
     }),
 };
 
+export type PlaceOfInterestGeoType =
+  | "commune"
+  | "district"
+  | "canton";
+
 export type PlaceOfInterestMapDTO = {
   code: string;
   name: string;
   pos: [number, number];
+  geo_type: PlaceOfInterestGeoType;
 };
 
 // Client API pour récupérer la liste des villes affichées sur la carte.
