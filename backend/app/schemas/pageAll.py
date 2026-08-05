@@ -35,7 +35,7 @@ class PageAllLangEnum(str, Enum):
     fr = "fr"
     de = "de"
     it = "it"
-    ro = "ro"
+    rm = "rm"
     en = "en"
 
 

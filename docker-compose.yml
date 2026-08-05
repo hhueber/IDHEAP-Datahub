@@ -39,11 +39,10 @@ services:
     build:
       context: .
       dockerfile: docker/frontend/Dockerfile
-      args:
-        # Pass the backend API URL as a build argument for React
-        - REACT_APP_API_URL=http://localhost:8000
     ports:
       - "3000:3000"
+    env_file:
+      - .env
     volumes:
       - ./frontend:/app:Z
       - /app/node_modules
@@ -77,6 +76,21 @@ services:
       db:
         condition: service_healthy
     command: ["python", "-m", "app.script.init_db_async", "-d", "-f"]
+    working_dir: /app/backend
+    volumes:
+      - ./backend:/app/backend:z  
+    restart: "no"
+
+  schema_db_init_empty:
+    build:
+      context: .
+      dockerfile: docker/backend/Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+    command: ["python", "-m", "app.script.init_db_async", "-f", "-e"]
     working_dir: /app/backend
     volumes:
       - ./backend:/app/backend:z  
