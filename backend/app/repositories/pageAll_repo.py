@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional, Tuple, Type
+import unicodedata
 
 
 from app.models.answer import Answer
@@ -323,6 +324,14 @@ def _build_count_stmt(entity: EntityEnum) -> Select[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
+    if entity == EntityEnum.answer:
+        return (
+            select(func.count(Answer.uid))
+            .select_from(Answer)
+            .join(QuestionPerSurvey, QuestionPerSurvey.uid == Answer.question_uid)
+            .join(Commune, Commune.uid == Answer.commune_uid)
+        )
+
     return select(func.count(model.uid))
 
 
@@ -489,6 +498,53 @@ def _natural_code_order_columns(code_col: Any) -> list[Any]:
     ]
 
 
+def _normalize_search_text(value: str | None) -> str:
+    if not value:
+        return ""
+
+    value = unicodedata.normalize("NFKD", value)
+    value = "".join(c for c in value if not unicodedata.combining(c))
+    return value.lower().strip()
+
+
+def _searchable_exprs_for_entity(
+    entity: EntityEnum,
+    lang: PageAllLangEnum | str,
+) -> list[Any]:
+    cfg = ENTITY_CONFIG[entity]
+    model = cfg.model
+
+    exprs: list[Any] = []
+
+    name_expr = _name_expr_for_entity(entity, lang)
+
+    if name_expr is not None:
+        exprs.append(name_expr)
+
+    if cfg.code_attr:
+        exprs.append(getattr(model, cfg.code_attr))
+
+    for attr in cfg.search_extra_attrs:
+        if hasattr(model, attr):
+            exprs.append(getattr(model, attr))
+
+    if entity == EntityEnum.answer:
+        question_expr = _localized_text_or_label(QuestionPerSurvey, lang)
+        commune_expr = _localized_name(Commune, lang)
+
+        if question_expr is not None:
+            exprs.append(question_expr)
+
+        if commune_expr is not None:
+            exprs.append(commune_expr)
+
+    return exprs
+
+
+def _normalized_sql_text(expr: Any) -> Any:
+    return func.lower(func.unaccent(cast(expr, String)))
+
+
 async def get_pageAll_paginated(
     db: AsyncSession,
     *,
@@ -498,6 +554,7 @@ async def get_pageAll_paginated(
     order_by: OrderByEnum = OrderByEnum.name,
     order_dir: OrderDirEnum = OrderDirEnum.asc,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
+    q: str | None = None,
 ) -> Tuple[List[AllItem], int]:
     cfg = ENTITY_CONFIG.get(entity)
 
@@ -512,17 +569,35 @@ async def get_pageAll_paginated(
     if per_page < 1:
         per_page = 20
 
+    search_conditions: list[Any] = []
+
+    if q and q.strip():
+        q_value = q.strip().lower()
+        q_like = f"%{q_value}%"
+
+        u = func.unaccent
+        l = func.lower
+
+        searchable_exprs = _searchable_exprs_for_entity(entity, lang)
+
+        for expr in searchable_exprs:
+            search_conditions.append(l(u(cast(expr, String))).like(q_like))
+
     total_stmt = _build_count_stmt(entity)
+
+    if search_conditions:
+        total_stmt = total_stmt.where(or_(*search_conditions))
+
     total = (await db.execute(total_stmt)).scalar_one()
 
     order_exprs = _order_exprs_for_entity(entity, order_by, order_dir, lang)
 
-    stmt = (
-        _build_base_stmt(entity, lang)
-        .order_by(*order_exprs, model.uid.asc())
-        .offset((page - 1) * per_page)
-        .limit(per_page)
-    )
+    stmt = _build_base_stmt(entity, lang)
+
+    if search_conditions:
+        stmt = stmt.where(or_(*search_conditions))
+
+    stmt = stmt.order_by(*order_exprs, model.uid.asc()).offset((page - 1) * per_page).limit(per_page)
 
     result = await db.execute(stmt)
     rows = result.all()
@@ -532,7 +607,7 @@ async def get_pageAll_paginated(
     return items, total
 
 
-async def suggest_pageAll_prefix(
+async def suggest_pageAll(
     db: AsyncSession,
     *,
     entity: EntityEnum,
@@ -547,45 +622,53 @@ async def suggest_pageAll_prefix(
 
     model = cfg.model
 
-    if not q or len(q.strip()) < 3:
+    q_norm = _normalize_search_text(q)
+
+    if len(q_norm) < 1:
         return []
 
-    q = q.strip().lower()
-    qprefix = f"{q}%"
+    q_exact = q_norm
+    q_prefix = f"{q_norm}%"
+    q_contains = f"%{q_norm}%"
 
-    u = func.unaccent
-    l = func.lower
+    searchable_exprs = _searchable_exprs_for_entity(entity, lang)
 
-    search_conditions = []
-
-    name_expr = _name_expr_for_entity(entity, lang)
-
-    if name_expr is not None:
-        search_conditions.append(l(u(name_expr)).like(qprefix))
-
-    if cfg.code_attr:
-        code_col = getattr(model, cfg.code_attr)
-        search_conditions.append(l(u(code_col)).like(qprefix))
-
-    for attr in cfg.search_extra_attrs:
-        if hasattr(model, attr):
-            col = getattr(model, attr)
-            search_conditions.append(l(u(col)).like(qprefix))
-
-    if entity == EntityEnum.answer:
-        question_expr = _localized_text_or_label(QuestionPerSurvey, lang)
-        commune_expr = _localized_name(Commune, lang)
-
-        if question_expr is not None:
-            search_conditions.append(l(u(question_expr)).like(qprefix))
-
-        if commune_expr is not None:
-            search_conditions.append(l(u(commune_expr)).like(qprefix))
-
-    if not search_conditions:
+    if not searchable_exprs:
         return []
 
-    stmt = _build_base_stmt(entity, lang).where(or_(*search_conditions)).limit(limit)
+    rank_exprs: list[Any] = []
+    search_conditions: list[Any] = []
+
+    for expr in searchable_exprs:
+        normalized_expr = _normalized_sql_text(expr)
+
+        search_conditions.append(normalized_expr.like(q_contains))
+
+        rank_exprs.append(
+            case(
+                (normalized_expr == q_exact, 0),
+                (normalized_expr.like(q_prefix), 1),
+                (normalized_expr.like(q_contains), 2),
+                else_=9,
+            )
+        )
+
+    best_rank = func.least(*rank_exprs).label("search_rank")
+
+    stmt = (
+        _build_base_stmt(entity, lang)
+        .where(or_(*search_conditions))
+        .order_by(
+            best_rank.asc(),
+            (
+                _name_expr_for_entity(entity, lang).asc()
+                if _name_expr_for_entity(entity, lang) is not None
+                else model.uid.asc()
+            ),
+            model.uid.asc(),
+        )
+        .limit(limit)
+    )
 
     result = await db.execute(stmt)
     rows = result.all()
