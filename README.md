@@ -56,6 +56,10 @@ If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and 
   </tbody>
 </table>
 
+### Source
+
+source of the icon image: ```https://game-icons.net/1x1/delapouite/position-marker.html```
+
 ## License
 
 Copyright (c) 2025 Université de Lausanne - IDHEAP.
