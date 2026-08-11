@@ -20,12 +20,12 @@ type Props = {
   onDelete?: (entity: Entity, id: number) => void;
 };
 
-const LANGS: { key: "de" | "fr" | "en" | "it" | "ro"; label: string }[] = [
+const LANGS: { key: "de" | "fr" | "en" | "it" | "rm"; label: string }[] = [
   { key: "de", label: "Deutsch" },
   { key: "fr", label: "Français" },
   { key: "en", label: "English" },
   { key: "it", label: "Italiano" },
-  { key: "ro", label: "Rumantsch" },
+  { key: "rm", label: "Rumantsch" },
 ];
 
 function renderEmpty(v: any): string {

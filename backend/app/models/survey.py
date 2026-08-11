@@ -19,3 +19,5 @@ class Survey(Base):
     questions: Mapped[List["QuestionPerSurvey"]] = relationship(
         "QuestionPerSurvey", back_populates="survey", cascade="all, delete-orphan"
     )
+
+    survey_metadata: Mapped["SurveyMetadata"] = relationship("SurveyMetadata", back_populates="survey")
