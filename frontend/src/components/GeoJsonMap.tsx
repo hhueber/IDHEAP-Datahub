@@ -1,9 +1,9 @@
 // Carte GeoJSON Suisse : couches pays/lacs/communes/districts/cantons + marqueurs de villes,
 // contrôles utilitaires (reset zoom Suisse, capture écran).
-import { MapContainer, GeoJSON, Pane, ImageOverlay, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect, lazy, Suspense, useCallback } from "react";
+import { MapContainer, GeoJSON, Pane, ImageOverlay, TileLayer, useMap } from "react-leaflet";
 import { useTranslation } from "react-i18next";
-import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
+import ResetSwissControl, { SWISS_BOUNDS, SWISS_BOUNDS_PADDED } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
 import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
@@ -18,6 +18,25 @@ import "leaflet.pattern";
 import type { ViewState3D } from "@/features/geo/3d/ChoroplethDeckLayer";
 
 const ChoroplethDeckLayer = lazy(() => import("@/features/geo/3d/ChoroplethDeckLayer"));
+
+type BasemapId = "none" | "light" | "swiss";
+
+const BASEMAP_CONFIG: Record<
+  Exclude<BasemapId, "none">,
+  { url: string; attribution: string; subdomains?: string[] }
+> = {
+  light: {
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
+      '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: ["a", "b", "c", "d"],
+  },
+  swiss: {
+    url: "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
+    attribution: '&copy; <a href="https://www.swisstopo.admin.ch/">swisstopo</a>',
+  },
+};
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -143,6 +162,7 @@ export default function GeoJsonMap({
     }
     setIs3DMode(false);
   }, []);
+  const [basemap, setBasemap] = useState<BasemapId>("none");
 
   // Crée ou récupère un pattern de rayures multicolores (pour les choropleth catégorielles avec ex-aequo)
   function getMultiStripePattern(map: any, colors: string[], angle = 45, stripe = 6) {
@@ -330,8 +350,8 @@ export default function GeoJsonMap({
     color: countryColors,      // couleur frontière du pays
     weight: 1,
     fillColor: background,  // fond couleur du background general
-    fillOpacity: 1,
-  }), []);
+    fillOpacity: basemap !== "none" ? 0 : 1,
+  }), [background, countryColors, basemap]);
   const lakesStyle = useMemo(() => ({
     color: lakesColores,      // couleur lacs
     weight: 1.2,
@@ -354,6 +374,9 @@ export default function GeoJsonMap({
     weight: 0.6,
     fillOpacity: 0,
   }), []);
+
+  const choroplethFillOpacity = basemap !== "none" ? 0.45 : 0.75;
+  const activeTileConfig = basemap !== "none" ? BASEMAP_CONFIG[basemap] : null;
 
   // Alias pratiques
   const country   = bundle?.country   ?? null;
@@ -518,18 +541,32 @@ export default function GeoJsonMap({
       <MapContainer
         center={[46.8182, 9.2]}
         zoom={8}
+        minZoom={8}
+        maxBounds={SWISS_BOUNDS_PADDED}
+        maxBoundsViscosity={1.0}
         className="w-full h-full"
         scrollWheelZoom
       >
         {/* Utilitaires : export écran, resize, bouton recadrage Suisse */}
         <ExposeMapOnWindow />
-        <InstallScreenshoter showButton={true} />
+        <InstallScreenshoter showButton={true} hideElementsWithSelectors={['.leaflet-control-container', '[data-no-export]']} />
         <MapSizeFixer host={hostRef.current} />
         <TooltipZoomGuard />
         <ResetSwissControl position="topleft" />
 
         {/* Raster en fond (zIndex le plus bas) */}
         <Pane name="pane-raster" style={{ zIndex: 100 }}>
+          {activeTileConfig && (
+            <TileLayer
+              key={basemap}
+              url={activeTileConfig.url}
+              attribution={activeTileConfig.attribution}
+              {...(activeTileConfig.subdomains != null ? { subdomains: activeTileConfig.subdomains } : {})}
+              noWrap={true}
+              pane="pane-raster"
+              crossOrigin="anonymous"
+            />
+          )}
           {baseImageUrl && (
             <ImageOverlay
               url={baseImageUrl}
@@ -559,7 +596,7 @@ export default function GeoJsonMap({
           <>
             <Pane name="choropleth" style={{ zIndex: 650 }} />
             <GeoJSON
-              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}-${choropleth.granularity}`}
+              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}-${choropleth.granularity}-${basemap !== "none" ? "bm" : "no-bm"}`}
               data={choropleth.feature_collection as any}
               pane="choropleth"
               style={(feat: any) => {
@@ -603,7 +640,7 @@ export default function GeoJsonMap({
                 // fallback normal
                 return {
                   ...base,
-                  fillOpacity: 0.75,
+                  fillOpacity: choroplethFillOpacity,
                   fillColor: fill,
                 };
               }}
@@ -670,7 +707,7 @@ export default function GeoJsonMap({
 
                 layer.setStyle({
                   weight: 1,
-                  fillOpacity: 0.75,
+                  fillOpacity: choroplethFillOpacity,
                   opacity: 1,
                 });
 
@@ -710,6 +747,8 @@ export default function GeoJsonMap({
           communes={communes}
           districts={districts}
           cantons={cantons}
+          selectedBasemap={basemap}
+          onBasemapChange={setBasemap}
         />
       </MapContainer>
       </div>{/* end Leaflet visibility wrapper */}

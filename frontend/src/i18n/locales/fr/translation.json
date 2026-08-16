@@ -60,6 +60,12 @@
       "show": "Afficher les villes",
       "hide": "Masquer les villes"
     },
+    "basemap": {
+      "title": "Fond de carte",
+      "none": "Aucun",
+      "light": "Carte claire",
+      "swiss": "Carte suisse"
+    },
     "menu": {
       "global": "Menu global",
       "instancePlaceOfInterest": "Lieux d'intérêt définies",
