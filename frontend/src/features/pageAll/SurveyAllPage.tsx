@@ -14,12 +14,18 @@ export default function SurveyAllPage() {
         sortKey: "name",
         truncate: true,
         maxWidthClassName: "max-w-[360px]",
+        kind: "text",
+        editable: true,
+        editKey: "name",
       },
       {
         key: "year",
         labelKey: "dashboardSidebar.pageAll.year",
         sortKey: "year",
         align: "right",
+        kind: "year",
+        editable: true,
+        editKey: "year",
       },
     ],
     []
