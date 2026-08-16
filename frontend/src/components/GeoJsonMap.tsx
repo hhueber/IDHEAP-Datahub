@@ -5,6 +5,12 @@ import { MapContainer, GeoJSON, Pane, ImageOverlay, TileLayer, useMap } from "re
 import { useTranslation } from "react-i18next";
 import ResetSwissControl, { SWISS_BOUNDS, SWISS_BOUNDS_PADDED } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
+import {
+  buildGeoCacheKey,
+  getCachedGeoBundle,
+  setCachedGeoBundle,
+  BASE_MAP_CACHE_TTL_MS,
+} from "@/features/geo/geoCache";
 import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
@@ -306,38 +312,82 @@ export default function GeoJsonMap({
     return null;
   }
 
-  /** Chargement des couches géo pour l’année courante. */
+  /** Chargement des couches géo pour l’année courante, avec cache IndexedDB persistant.
+   *
+   * Stratégie :
+   *   ABSENT  -> réseau -> setBundle -> écriture cache
+   *   FRESH   -> cache immédiatement -> aucun appel réseau
+   *   STALE   -> cache immédiatement -> revalidation réseau en arrière-plan -> mise à jour cache
+   */
   useEffect(() => {
     const ctrl = new AbortController();
-    let alive = true; // évite setState après unmount
+    let alive = true;
 
     const y = typeof year === "number" ? year : new Date().getFullYear();
+    const INITIAL_LAYERS = ["country", "lakes", "cantons", "districts"] as const;
+    const cacheKey = buildGeoCacheKey(y, [...INITIAL_LAYERS], false);
 
-    geoApi
-      .getByYear(y, ctrl.signal, {
-        layers: ["country", "lakes", "cantons", "districts"],
-        clearOthers: false,
-      }
-      )
-      .then((b) => {
-        if (!alive) return;
-        setBundle(b);
-      })
-      .catch((e: any) => {
-        if (!alive) return;
-        const name = e?.name || "";
-        const msg = (e?.message || "").toLowerCase();
-        if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+    async function loadBundle() {
+      // Étape 1 : lecture IndexedDB
+      const cached = await getCachedGeoBundle(cacheKey);
 
-        if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
-          // erreur avec la connexion réseau
-          setErrKey("map.errors.network");
-        } else {
-          // erreur avec les GeoJson
-          setErrKey("map.errors.loadGeometry");
+      if (!alive) return;
+
+      if (cached) {
+        const isFresh = Date.now() - cached.cachedAt < BASE_MAP_CACHE_TTL_MS;
+
+        // Affichage immédiat depuis le cache (frais ou périmé)
+        setBundle(cached.bundle);
+
+        if (isFresh) {
+          // FRESH : aucune requête réseau
+          return;
         }
-        setErrDetail(e?.message || null);
-      });
+
+        // STALE : carte déjà visible, revalidation en arrière-plan
+        geoApi
+          .getByYear(y, ctrl.signal, { layers: [...INITIAL_LAYERS], clearOthers: false })
+          .then((fresh) => {
+            if (!alive) return;
+            setBundle(fresh);
+            setCachedGeoBundle(cacheKey, fresh); // fire-and-forget, erreurs gérées en interne
+          })
+          .catch((e: any) => {
+            // Revalidation échouée : l’ancien bundle reste affiché, aucune erreur montrée
+            const name = e?.name || "";
+            const msg = (e?.message || "").toLowerCase();
+            if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+            // Intentionnellement pas de setErrKey, le cache existant reste visible
+          });
+        return;
+      }
+
+      // Étape 2 : pas de cache -> réseau
+      geoApi
+        .getByYear(y, ctrl.signal, { layers: [...INITIAL_LAYERS], clearOthers: false })
+        .then((b) => {
+          if (!alive) return;
+          setBundle(b);
+          setCachedGeoBundle(cacheKey, b); // fire-and-forget, erreurs gérées en interne
+        })
+        .catch((e: any) => {
+          if (!alive) return;
+          const name = e?.name || "";
+          const msg = (e?.message || "").toLowerCase();
+          if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+
+          if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
+            // erreur avec la connexion réseau
+            setErrKey("map.errors.network");
+          } else {
+            // erreur avec les GeoJson
+            setErrKey("map.errors.loadGeometry");
+          }
+          setErrDetail(e?.message || null);
+        });
+    }
+
+    loadBundle();
 
     return () => {
       alive = false;

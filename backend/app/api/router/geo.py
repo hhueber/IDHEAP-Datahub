@@ -32,7 +32,6 @@ def _parse_layers(layers_csv: Optional[str]) -> Set[str]:
     return wanted
 
 
-# TODO: ameliorer la vitesse de traitement actuellement entre 3 - 6 secondes
 @router.get("/by_year", response_model=GeoBundle)
 async def geo_by_year(
     year: int | None = Query(None, description="Année demandée; défaut = année courante"),
@@ -43,7 +42,8 @@ async def geo_by_year(
     db: AsyncSession = Depends(get_db),
 ):
     wanted = _parse_layers(layers)
-    return await get_geo_by_year_selective(db, year, layers=wanted, clear_others=clear_others)
+    bundle = await get_geo_by_year_selective(db, year, layers=wanted, clear_others=clear_others)
+    return Response(content=orjson.dumps(bundle.model_dump(mode="json")), media_type="application/json")
 
 
 @router.get("/placeOfInterest", response_model=list[PlaceOfInterestClientOut])
