@@ -40,6 +40,7 @@ class Settings(BaseSettings):
     # CORS and API
     CORS_ORIGINS: str
     API_URL: str
+    VITE_API_BASE_URL: str
 
     @field_validator("CORS_ORIGINS")
     @classmethod

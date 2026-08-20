@@ -29,7 +29,7 @@ services:
     #   db:
     #     condition: service_healthy   # commenter si depends voulue ou pas entre les service api et db
     ports:
-      - "8000:8000" # only for dev
+      - "8765:8765" # only for dev
     working_dir: /app/backend
     volumes:
       - ./backend:/app/backend:z
@@ -40,7 +40,7 @@ services:
       context: .
       dockerfile: docker/frontend/Dockerfile
     ports:
-      - "3000:3000"
+      - "3123:3123"
     env_file:
       - .env
     volumes:

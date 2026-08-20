@@ -1,4 +1,4 @@
-.PHONY:	setup init_database run_backend run_frontend run run_background clean docker docker_clean docker_fclean
+.PHONY:	setup init_database run_backend run_frontend run run_background clean docker docker_clean docker_fclean init_database_empty
 
 ## Standard
 
@@ -31,6 +31,11 @@ $(ENV_FILE):
 	@echo "⚠️ At least 'API_SECRET', 'SECRET_KEY', 'ROOT_EMAIL', 'ROOT_PASSWORD'."
 
 # Initial database creation
+init_database_empty:
+	@echo "🔜 Initialisation of empty database"
+	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async -e -f
+	@echo "✅  Database ready"
+
 init_database:
 	@echo "🔜 Initialisation of database - this might take a while"
 	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async
@@ -43,15 +48,15 @@ init_demo_database:
 
 # Quick start
 run_backend:
-	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env
+	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload --env-file .env
 
 run_frontend:
-	@npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT
+	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT}
 
 run run_background:
-	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env & \
+	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload --env-file .env & \
 	echo "PID Backend: $$!"
-	@npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT & \
+	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT} & \
 	echo "PID Frontend: $$!"
 
 clean:
