@@ -29,7 +29,7 @@ services:
     #   db:
     #     condition: service_healthy   # commenter si depends voulue ou pas entre les service api et db
     command:
-      ["uvicorn", "app.main:app", "--host", "${BACKEND_HOST}", "--port", "${BACKEND_PORT}", "--reload", "--env-file", ".env"]
+      ["uvicorn", "app.main:app", "--host", "${BACKEND_HOST}", "--port", "${BACKEND_PORT}", "--reload"]
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     working_dir: /app/backend

@@ -4,4 +4,3 @@ WORKDIR /app
 COPY ./frontend/package*.json ./
 RUN npm ci
 COPY ./frontend /app
-COPY .env /app/.env
