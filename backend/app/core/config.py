@@ -42,7 +42,7 @@ class Settings(BaseSettings):
 
     # Vite
     VITE_API_BASE_URL: str
-    VITE_ALLOWED_HOSTS: list
+    VITE_ALLOWED_HOSTS: str
 
     @field_validator("CORS_ORIGINS")
     @classmethod

@@ -27,7 +27,7 @@ $(VENV_FOLDER):
 
 $(ENV_FILE):
 	@echo "🔜 Creating .env file"
-	@cp .env.dist .env
+	@cp .env.dist $(ENV_FILE)
 	@echo "✅  .env file created"
 	@echo "⚠️ Please change default settings before doing anything else!"
 	@echo "⚠️ At least 'API_SECRET', 'SECRET_KEY', 'ROOT_EMAIL', 'ROOT_PASSWORD'."
@@ -50,9 +50,11 @@ schema_db_init_empty:
 
 # Quick start
 run_backend:
-	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload --env-file .env
+	@export $(grep -e '^BACKEND' $(ENV_FILE) | xargs)
+	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload --env-file $(ENV_FILE)
 
 run_frontend:
+	@export $(grep -e '^FRONTEND' $(ENV_FILE) | xargs)
 	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT}
 
 clean:
