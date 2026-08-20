@@ -19,7 +19,7 @@ services:
       timeout: 3s
       retries: 10
 
-  api:
+  backend:
     build:
       context: .
       dockerfile: docker/backend/Dockerfile
@@ -29,13 +29,9 @@ services:
     #   db:
     #     condition: service_healthy   # commenter si depends voulue ou pas entre les service api et db
     command:
-      ["uvicorn", "app.main:app", "--host", "${BACKEND_HOST}", "--port", "${BACKEND_PORT}", "--reload"]
+      ["uvicorn", "app.main:app", "--host", "${BACKEND_HOST}", "--port", "${BACKEND_PORT}", "--reload", "--env-file", ".env"]
     ports:
-<<<<<<< HEAD
-      - "8765:8765" # only for dev
-=======
-      - "${BACKEND_PORT}:${BACKEND_PORT}" # only for dev
->>>>>>> origin/Fix-#327-Docker-must-be-using-.env-values
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     working_dir: /app/backend
     volumes:
       - ./backend:/app/backend:z
@@ -48,11 +44,7 @@ services:
     command:
       ["npm", "run", "dev", "--", "--host", "${FRONTEND_HOST}", "--port", "${FRONTEND_PORT}"]
     ports:
-<<<<<<< HEAD
-      - "3123:3123"
-=======
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
->>>>>>> origin/Fix-#327-Docker-must-be-using-.env-values
     env_file:
       - .env
     volumes:
@@ -60,7 +52,7 @@ services:
       - /app/node_modules
     depends_on:
       # Ensure backend starts before frontend
-      - api
+      - backend
     restart: "always"
 
   schema_db_init:
@@ -102,7 +94,7 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: ["python", "-m", "app.script.init_db_async", "-f", "-e"]
+    command: ["python", "-m", "app.script.init_db_async", "-e", "-f"]
     working_dir: /app/backend
     volumes:
       - ./backend:/app/backend:z  

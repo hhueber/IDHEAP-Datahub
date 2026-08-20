@@ -1,7 +1,9 @@
-.PHONY:	setup init_database run_backend run_frontend run run_background clean docker docker_clean docker_fclean init_database_empty
+.PHONY: setup clean \
+	schema_db_init schema_db_init_demo schema_db_init_empty \
+	run_backend run_frontend \
+	docker docker_demo docker_empty docker_run docker_clean docker_fclean
 
 ## Standard
-
 VENV_FOLDER		:= .venv
 PYTHON			:= $(VENV_FOLDER)/bin/python
 ENV_FILE		:= .env
@@ -31,20 +33,20 @@ $(ENV_FILE):
 	@echo "⚠️ At least 'API_SECRET', 'SECRET_KEY', 'ROOT_EMAIL', 'ROOT_PASSWORD'."
 
 # Initial database creation
-init_database_empty:
+schema_db_init:
+	@echo "🔜 Initialisation of database - this might take a while"
+	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async -f
+	@echo "✅  Database ready"
+
+schema_db_init_demo:
+	@echo "🔜 Initialisation of database with demo data- this might take a while"
+	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async -d -f
+	@echo "✅ Demo Database ready"
+
+schema_db_init_empty:
 	@echo "🔜 Initialisation of empty database"
 	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async -e -f
 	@echo "✅  Database ready"
-
-init_database:
-	@echo "🔜 Initialisation of database - this might take a while"
-	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async
-	@echo "✅  Database ready"
-
-init_demo_database:
-	@echo "🔜 Initialisation of database with demo data- this might take a while"
-	@PYTHONPATH=backend $(PYTHON) -m app.script.init_db_async -d
-	@echo "✅ Demo Database ready"
 
 # Quick start
 run_backend:
@@ -53,25 +55,18 @@ run_backend:
 run_frontend:
 	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT}
 
-run run_background:
-	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload --env-file .env & \
-	echo "PID Backend: $$!"
-	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT} & \
-	echo "PID Frontend: $$!"
-
 clean:
 	rm -rf $(VENV_FOLDER)
 	rm -rf $(ENV_FILE)
 
 ## Docker
-
-COMPOSE = docker compose
-DB_SERVICE = db
-FRONT_SERVICE = frontend
-INIT_SERVICE = schema_db_init
-INIT_DEMO_SERVICE = schema_db_init_demo
-INIT_EMPTY_SERVICE = schema_db_init_empty
-API_SERVICE = api
+COMPOSE				:= docker compose
+DB_SERVICE			:= db
+FRONT_SERVICE		:= frontend
+INIT_SERVICE		:= schema_db_init
+INIT_DEMO_SERVICE	:= schema_db_init_demo
+INIT_EMPTY_SERVICE	:= schema_db_init_empty
+API_SERVICE			:= backend
 
 # build service DB (db) and api and front + initdb, then display the Postgres logs.
 docker:
