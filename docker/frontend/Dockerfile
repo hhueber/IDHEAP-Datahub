@@ -4,5 +4,3 @@ WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ .
-EXPOSE 3123
-CMD ["npm","run","dev","--","--host","0.0.0.0","--port","3123"]
