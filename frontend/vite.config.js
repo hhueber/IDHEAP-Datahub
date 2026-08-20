@@ -6,7 +6,7 @@ export default defineConfig(({mode}) => {
     const env = loadEnv(mode, process.cwd(), '')
     return {
         server: {
-            allowedHosts: env.VITE_ALLOWED_HOSTS.split(',')
+            allowedHosts: String(env.VITE_ALLOWED_HOSTS).split(',')
         },
         plugins: [react()],
         resolve: {

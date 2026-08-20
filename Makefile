@@ -50,11 +50,11 @@ schema_db_init_empty:
 
 # Quick start
 run_backend:
-	@export $(grep -e '^BACKEND' $(ENV_FILE) | xargs)
+	@export $$(grep -e '^BACKEND' $(ENV_FILE) | xargs)
 	@PYTHONPATH=backend $(PYTHON) -m uvicorn app.main:app --host ${BACKEND_HOST} --port ${BACKEND_PORT} --reload --env-file $(ENV_FILE)
 
 run_frontend:
-	@export $(grep -e '^FRONTEND' $(ENV_FILE) | xargs)
+	export $$(grep -e '^FRONTEND' $(ENV_FILE) | xargs)
 	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT}
 
 clean:
