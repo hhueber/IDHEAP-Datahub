@@ -119,7 +119,7 @@
     "clear": "Retirer",
     "next": "Suivant",
     "prev": "Précédent",
-    "done": "Finir le tour"
+    "done": "Finir le tutoriel"
   },
   "notFound": {
     "message": "Page introuvable."
