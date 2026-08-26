@@ -12,14 +12,20 @@ declare module "leaflet" {
   interface Map { __screenshoter?: any }
 }
 
-function InstallScreenshoter({ showButton = true }: { showButton?: boolean }) {
+function InstallScreenshoter({
+  showButton = true,
+  hideElementsWithSelectors = [] as string[],
+}: {
+  showButton?: boolean;
+  hideElementsWithSelectors?: string[];
+}) {
   const map = useMap();
 
   useEffect(() => {
     if (!map || map.__screenshoter) return;
 
     // @ts-ignore (types non fournis par le plugin)
-    const ctrl = L.simpleMapScreenshoter({ position: "topleft" }).addTo(map);
+    const ctrl = L.simpleMapScreenshoter({ position: "topleft", hideElementsWithSelectors }).addTo(map);
     map.__screenshoter = ctrl;
 
     // masquer le bouton si demandé

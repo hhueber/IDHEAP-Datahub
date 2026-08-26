@@ -60,6 +60,12 @@
       "show": "Afficher les villes",
       "hide": "Masquer les villes"
     },
+    "basemap": {
+      "title": "Fond de carte",
+      "none": "Aucun",
+      "light": "Carte routière",
+      "swiss": "Carte topographique"
+    },
     "menu": {
       "global": "Lieux d'intérêt",
       "instancePlaceOfInterest": "Lieux d'intérêt définies",
