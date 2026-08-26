@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import YearSelector from "@/features/home/components/YearSelector";
 import type { HomeBootstrap } from "@/features/home/services/homeApi";
@@ -88,10 +88,28 @@ export default function HomeInfoPanel({
 
   const questionScope: QuestionOriginScope = showGlobals ? "global" : "per_survey";
 
-  // auto-set globalYear sur la dernière année dispo si vide
-  const latestYear = years.length ? years[years.length - 1] : null;
-  if (showGlobals && selectedQuestionUid != null && globalYear == null && latestYear != null) {
-  }
+  // Sélectionne automatiquement l'année la plus récente uniquement
+  // si aucune année n'a encore été choisie.
+  useEffect(() => {
+    if (
+      !showGlobals ||
+      selectedQuestionUid == null ||
+      globalYear != null ||
+      years.length === 0
+    ) {
+      return;
+    }
+
+    const latestYear = Math.max(...years);
+
+    onGlobalYearChange(latestYear);
+  }, [
+    showGlobals,
+    selectedQuestionUid,
+    globalYear,
+    years,
+    onGlobalYearChange,
+  ]);
 
   const granularityItems = [
     { key: "commune" as const, label: "Communal" },
