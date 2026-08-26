@@ -4,7 +4,7 @@ import * as L from "leaflet";
 
 // Limites approx. de la Suisse (SW / NE)
 export const SWISS_BOUNDS: L.LatLngBoundsExpression = [
-  [45.817, 5.956],  // sud-ouest
+  [45.817, 5.956], // sud-ouest
   [47.808, 10.492], // nord-est
 ];
 
@@ -31,6 +31,7 @@ export default function ResetSwissControl({
 
     const btn = L.DomUtil.create("a", "", container);
     btn.href = "#";
+    btn.id = "btn-center-swiss";
     btn.title = "Recentrer sur la Suisse";
     btn.innerHTML = `
         <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
@@ -44,14 +45,14 @@ export default function ResetSwissControl({
     // Conteneur de contrôle + bouton
     L.DomEvent.disableClickPropagation(container);
     L.DomEvent.on(btn, "click", (e) => {
-        L.DomEvent.preventDefault(e);
-        map.fitBounds(bounds as any, { padding: [20, 20] });
+      L.DomEvent.preventDefault(e);
+      map.fitBounds(bounds as any, { padding: [20, 20] });
     });
 
     // Contrôle minimal du wrapper Leaflet
     const ResetControl = L.Control.extend({
-        onAdd: () => container,
-        onRemove: () => {},
+      onAdd: () => container,
+      onRemove: () => {},
     });
 
     // Contrôle du montage, puis nettoyage lors du démontage/des modifications
@@ -59,9 +60,9 @@ export default function ResetSwissControl({
     ctrl.addTo(map);
 
     return () => {
-        ctrl.remove();
+      ctrl.remove();
     };
-    }, [map, position, bounds]);
+  }, [map, position, bounds]);
 
   return null;
 }
