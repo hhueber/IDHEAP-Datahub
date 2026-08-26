@@ -167,6 +167,7 @@ async def get_area_comparison(
     year: int = Query(...),
     area_uid: int = Query(...),
     level: ChoroplethGranularity = Query(...),
+    lang: str = Query("en"),
     db: AsyncSession = Depends(get_db),
 ):
     return await build_area_comparison(
@@ -176,4 +177,5 @@ async def get_area_comparison(
         year=year,
         area_uid=area_uid,
         level=level,
+        lang=lang,
     )

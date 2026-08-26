@@ -11,22 +11,55 @@ from app.services.choropleth_service import _resolve_question_per_survey_uid_for
 from sqlalchemy import func, select
 
 
-async def _get_question_options(db, question_uid: int) -> list[dict]:
-    stmt = (
-        select(Option.value, Option.label_)
-        .join(QuestionOptionAssociation)
-        .where(QuestionOptionAssociation.question_uid == question_uid)
-    )
+SUPPORTED_OPTION_LANGS = {"fr", "de", "it", "rm", "en"}
 
-    rows = (await db.execute(stmt)).all()
 
-    return [
-        {
-            "value": str(value),
-            "label": label if label else str(value),
-        }
-        for value, label in rows
-    ]
+def _normalize_option_lang(lang: str | None) -> str:
+    normalized = (lang or "en").strip().lower().replace("_", "-").split("-")[0]
+
+    if normalized not in SUPPORTED_OPTION_LANGS:
+        return "en"
+
+    return normalized
+
+
+def _non_empty_text(value) -> str | None:
+    if value is None:
+        return None
+
+    text = str(value).strip()
+
+    return text if text else None
+
+
+async def _get_question_options(
+    db,
+    question_uid: int,
+    lang: str,
+) -> list[dict]:
+    stmt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
+
+    options = (await db.scalars(stmt)).all()
+
+    safe_lang = _normalize_option_lang(lang)
+
+    result: list[dict] = []
+
+    for option in options:
+        translated_text = _non_empty_text(getattr(option, f"text_{safe_lang}", None))
+
+        label = _non_empty_text(option.label)
+
+        value = str(option.value)
+
+        result.append(
+            {
+                "value": value,
+                "label": translated_text or label or value,
+            }
+        )
+
+    return result
 
 
 def _complete_distribution(distribution: list[dict], options: list[dict]) -> list[dict]:
@@ -283,6 +316,7 @@ async def build_area_comparison(
     year,
     area_uid,
     level,
+    lang="en",
 ):
     if scope == "global":
         resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
@@ -309,7 +343,7 @@ async def build_area_comparison(
 
     percentage_same = round((same_count / total) * 100, 1) if total > 0 else 0.0
 
-    options = await _get_question_options(db, question_uid)
+    options = await _get_question_options(db, question_uid, lang)
     if options:
         distributions["commune"] = _complete_distribution(distributions["commune"], options)
         distributions["district"] = _complete_distribution(distributions["district"], options)
