@@ -69,6 +69,10 @@ export default function Home() {
             intro: t("home.tour.geomap"),
           },
           {
+            element: "#floating-buttton",
+            intro: t("home.tour.floatingButton"),
+          },
+          {
             element: "#btn-navbar",
             intro: t("home.tour.btn-navbar"),
           },
@@ -95,10 +99,6 @@ export default function Home() {
           {
             element: "#place-of-interest-onoff",
             intro: t("home.tour.placeonoff"),
-          },
-          {
-            element: "#floating-buttton",
-            intro: t("home.tour.floatingButton"),
           },
           {
             element: "#popup-right",

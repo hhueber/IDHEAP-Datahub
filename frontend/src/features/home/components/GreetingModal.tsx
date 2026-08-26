@@ -85,7 +85,7 @@ export default function GreetingModal({
           <button
             className={`
                     text-left
-                    rounded-xl px-3 py-2
+                    rounded-xl px-3 py-2 mx-2
                     shadow-sm
                     active:translate-y-[1px]
                     transition
