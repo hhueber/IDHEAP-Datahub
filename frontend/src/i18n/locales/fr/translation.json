@@ -24,7 +24,7 @@
     "sectionQuestions": "Questions",
     "selectionQuestions": "Sélection de questions",
     "chooseYear": "Choisir une année",
-    "globalOption": "Global",
+    "globalOption": "Toutes les années",
     "noGlobalQuestions": "Pas de questions globales disponibles.",
     "noQuestionsForSelection": "Pas de questions pour cette sélection.",
     "bootstrapError": "Impossible de charger les données initiales.",
@@ -61,7 +61,7 @@
       "hide": "Masquer les villes"
     },
     "menu": {
-      "global": "Menu global",
+      "global": "Lieux d'intérêt",
       "instancePlaceOfInterest": "Lieux d'intérêt définies",
       "noInstancePlaceOfInterest": "Aucun lieu d'intérêt défini.",
       "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
@@ -129,6 +129,25 @@
       "rateLimited": "Trop de tentatives. Réessayez plus tard."
     }
   },
+  "stats": {
+    "context": {
+      "commune": "Commune",
+      "district": "District",
+      "canton": "Canton",
+      "communes_one": "{{count}} Commune",
+      "communes_other": "{{count}} Communes"
+    },
+    "loading": "Chargement des statistiques",
+    "noData": "pas de données disponibles",
+    "selectedValue": "Valeur sélectionnée",
+    "sameAnswer": "de même réponse",
+    "countText": "{{count}} sur {{total}} {{unit}} partagent cette valeur",
+    "selected": "Selectionné",
+    "others": "Autres",
+    "value": "Valeur:",
+    "count": "Nombre:",
+    "share": "Part:"
+  },
   "export": {
     "title": "Export",
     "pngLabel": "PNG",
@@ -147,6 +166,18 @@
       "mapUnavailable": "Carte indisponible.",
       "pngFailed": "Export PNG impossible.",
       "pdfFailed": "Export PDF impossible."
+    },
+    "data": {
+      "title": "Exporter les données",
+      "description": "Sélectionnez les questions enregistrées et exportez leurs données au format CSV.",
+      "selectAll": "Tout sélectionner",
+      "clear": "Effacer",
+      "selected": "Sélectionné",
+      "noSavedQuestions": "Aucune question enregistrée n'est disponible",
+      "global": "Global",
+      "survey": "Enquête",
+      "loading": "Exporter",
+      "download": "Télécharger le fichier CSV"
     }
   },
   "dashboard": {
@@ -247,7 +278,7 @@
             "fr": "Français",
             "de": "Deutsch",
             "it": "Italiano",
-            "ro": "Rumantsch",
+            "rm": "Rumantsch",
             "en": "Anglais",
             "lat": "Latitude",
             "lon": "Longitude",
@@ -265,7 +296,7 @@
             "fr": "FR",
             "de": "DE",
             "it": "IT",
-            "ro": "RO",
+            "rm": "RM",
             "en": "EN",
             "position": "Position"
           },
@@ -556,5 +587,11 @@
   },
   "pagination": {
     "page": "Page"
+  },
+  "first-modal":{
+    "title": "Bienvenue",
+    "content": "Bienvenue !",
+    "close": "Fermer",
+    "reminder": "Ne plus me rappeler"
   }
 }
