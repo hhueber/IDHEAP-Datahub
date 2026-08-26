@@ -143,19 +143,10 @@ export default function Home() {
   const statsYear =
     selectedSurveyUid === GLOBAL_UID ? globalYear : selectedSurvey?.year;
 
-  const missingQuestion = !selectedQuestionUid;
-  const missingDate = isGlobal && selectedQuestionUid && !globalYear;
-
   let overlayType: "loading" | "action" = "loading";
   let overlayLabel: string | undefined;
 
-  if (missingQuestion) {
-    overlayType = "action";
-    overlayLabel = t("home.selectQuestionFirst");
-  } else if (missingDate) {
-    overlayType = "action";
-    overlayLabel = t("home.selectDate");
-  } else if (choroplethLoading) {
+  if (choroplethLoading) {
     overlayType = "loading";
     overlayLabel = t("common.loading");
   }
@@ -182,7 +173,7 @@ export default function Home() {
           selectedArea={selectedArea}
           onSelectArea={setSelectedArea}
         />
-        {(missingQuestion || missingDate || choroplethLoading) && (
+        {(choroplethLoading) && (
           <MapLoadingOverlay label={overlayLabel} type={overlayType} />
         )}
       </div>
