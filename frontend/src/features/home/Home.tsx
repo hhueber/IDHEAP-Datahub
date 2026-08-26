@@ -77,12 +77,8 @@ export default function Home() {
             intro: t("home.tour.btn-navbar"),
           },
           {
-            element: ".leaflet-control-zoom-in",
-            intro: t("home.tour.zoomin"),
-          },
-          {
-            element: ".leaflet-control-zoom-out",
-            intro: t("home.tour.zoomout"),
+            element: ".leaflet-control-zoom",
+            intro: t("home.tour.zoom"),
           },
           {
             element: ".leaflet-control-simpleMapScreenshoter-btn",
