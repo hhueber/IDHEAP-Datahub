@@ -425,9 +425,13 @@ export default function GeoJsonMap({
               key={basemap}
               url={activeTileConfig.url}
               attribution={activeTileConfig.attribution}
+              // Fournit les sous-domaines si la couche de tuiles en nécessite.
               {...(activeTileConfig.subdomains != null ? { subdomains: activeTileConfig.subdomains } : {})}
+              // Empêche la répétition infinie des tuiles hors de la zone couverte.
               noWrap={true}
+              // Place la couche raster dans le pane de fond.
               pane="pane-raster"
+              // Active le chargement CORS des tuiles (utile pour l'export de la carte).
               crossOrigin="anonymous"
             />
           )}

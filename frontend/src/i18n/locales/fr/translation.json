@@ -63,8 +63,8 @@
     "basemap": {
       "title": "Fond de carte",
       "none": "Aucun",
-      "light": "Carte claire",
-      "swiss": "Carte suisse"
+      "light": "Carte routière",
+      "swiss": "Carte topographique"
     },
     "menu": {
       "global": "Menu global",
