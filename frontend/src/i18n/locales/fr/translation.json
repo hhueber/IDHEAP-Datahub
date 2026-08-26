@@ -38,16 +38,15 @@
     "selectQuestionFirst": "Choisissez une question",
     "selectDate": "Choisissez une date",
     "tour": {
-      "geomap": "Ici vous trouverez la carte de la suisse ainsi que l'affichage des réponses",
-      "btn-navbar": "Cliquez ici pour afficher le menu de navigation",
-      "zoomin": "Ce boutton sert a zoomer sur la carte de la Suisse",
-      "zoomout": "Ce boutton sert a dézoomer sur la carte de la Suisse",
-      "screenshot": "Vous pouvez prendre une capture écran en cliquant sur ce boutton",
-      "centerswiss": "Si vous voulez recentrer la carte, vous pouvez appuyer sur ce boutton",
-      "place-menu": "Pour ouvrir le menu des points d'intérêt cliquez sur ce boutton",
-      "placeonoff": "Pour afficher ou masquer les point d'intérêt, vous pouvez cliquer sur ce boutton",
-      "floatingButton": "Cliquez ici pour derouler ou masquer le panneau latéral",
-      "popup-right": "Sur ce menu vous pouvez sélectionner les questions qui vous intéressent, selectionner l'année d'affichage pour les réponses."
+      "geomap": "Ici, vous trouverez la carte de la Suisse, et l'affichage des résultats par commune.",
+      "btn-navbar": "Cliquez ici pour afficher le menu de navigation.",
+      "zoom": "Ces boutons servent à zoomer et dézoomer sur la carte de la Suisse.",
+      "screenshot": "Vous pouvez prendre une capture écran en cliquant sur ce bouton.",
+      "centerswiss": "Si vous voulez recentrer la carte, vous pouvez appuyer sur ce bouton.",
+      "place-menu": "Pour ouvrir le menu des points d'intérêt, cliquez sur ce bouton.",
+      "placeonoff": "Pour afficher ou masquer lesdits points d'intérêt, vous pouvez cliquer sur ce bouton.",
+      "floatingButton": "Cliquez ici pour afficher ou masquer le panneau de contrôle.",
+      "popup-right": "Dans le panneau de contrôle, vous pouvez configurer les variables à afficher sur la carte."
     },
     "question_collections": {
       "saved": {
