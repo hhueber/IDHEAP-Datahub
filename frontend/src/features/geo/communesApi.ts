@@ -3,8 +3,6 @@ import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 
 export type PlaceOfInterestSuggestType = "commune" | "district" | "canton";
 
-export type PlaceOfInterestSuggestType = "commune" | "district" | "canton";
-
 export type PlaceOfInterestSuggestDTO = {
   uid: number;
   type: PlaceOfInterestSuggestType;
