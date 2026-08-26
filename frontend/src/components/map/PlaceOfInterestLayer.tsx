@@ -19,9 +19,7 @@ type Props = {
 
   districts?: FeatureCollection<GeoFeatureProperties> | null;
 
-  cantons?: FeatureCollection<
-    GeoFeatureProperties
-  > | null;
+  cantons?: FeatureCollection<GeoFeatureProperties> | null;
 
   selectedBasemap?: BasemapId;
   onBasemapChange?: (id: BasemapId) => void;
@@ -65,7 +63,10 @@ export default function PlaceOfInterestLayer({
   useEffect(() => {
     if (!isBasemapOpen) return;
     const handler = (e: MouseEvent) => {
-      if (basemapRef.current && !basemapRef.current.contains(e.target as Node)) {
+      if (
+        basemapRef.current &&
+        !basemapRef.current.contains(e.target as Node)
+      ) {
         setIsBasemapOpen(false);
       }
     };
@@ -73,10 +74,16 @@ export default function PlaceOfInterestLayer({
     return () => document.removeEventListener("mousedown", handler);
   }, [isBasemapOpen]);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary } = useTheme();
+  const {
+    primary,
+    textColor,
+    background,
+    borderColor,
+    adaptiveTextColorPrimary,
+  } = useTheme();
 
   const basemapOptions: { id: BasemapId; labelKey: string }[] = [
-    { id: "none",  labelKey: "map.basemap.none" },
+    { id: "none", labelKey: "map.basemap.none" },
     { id: "light", labelKey: "map.basemap.light" },
     { id: "swiss", labelKey: "map.basemap.swiss" },
   ];
@@ -90,11 +97,15 @@ export default function PlaceOfInterestLayer({
           top: `calc(var(--leaflet-top-offset, 96px) + ${CUSTOM_OFFSET_PX}px)`,
         }}
       >
-        <div className="relative flex items-start pointer-events-auto" ref={basemapRef}>
+        <div
+          className="relative flex items-start pointer-events-auto"
+          ref={basemapRef}
+        >
           {/* Groupe de boutons */}
           <div className="leaflet-control leaflet-bar flex flex-col ml-2 overflow-hidden rounded-md">
             {/* Bouton MENU GLOBAL */}
             <button
+              id="place-of-interest-menu"
               type="button"
               onClick={() => setIsMenuOpen(true)}
               className="
@@ -117,6 +128,7 @@ export default function PlaceOfInterestLayer({
 
             {/* Bouton ON/OFF villes */}
             <button
+              id="place-of-interest-onoff"
               type="button"
               onClick={togglePlaceOfInterest}
               className="
@@ -151,16 +163,30 @@ export default function PlaceOfInterestLayer({
                   transition hover:opacity-90
                 "
                 style={{
-                  backgroundColor: selectedBasemap !== "none" ? primary : "#FFFFFF",
-                  color: selectedBasemap !== "none" ? adaptiveTextColorPrimary : "#111827",
+                  backgroundColor:
+                    selectedBasemap !== "none" ? primary : "#FFFFFF",
+                  color:
+                    selectedBasemap !== "none"
+                      ? adaptiveTextColorPrimary
+                      : "#111827",
                   borderColor,
                 }}
                 title={t("map.basemap.title")}
               >
-                <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/>
-                  <line x1="9" y1="3" x2="9" y2="18"/>
-                  <line x1="15" y1="6" x2="15" y2="21"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  aria-hidden="true"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
+                  <line x1="9" y1="3" x2="9" y2="18" />
+                  <line x1="15" y1="6" x2="15" y2="21" />
                 </svg>
               </button>
             )}
@@ -178,7 +204,10 @@ export default function PlaceOfInterestLayer({
             >
               <div
                 className="px-3 py-1 text-xs font-semibold uppercase tracking-wide"
-                style={{ color: "#6B7280", borderBottom: `1px solid ${borderColor}` }}
+                style={{
+                  color: "#6B7280",
+                  borderBottom: `1px solid ${borderColor}`,
+                }}
               >
                 {t("map.basemap.title")}
               </div>
@@ -192,15 +221,21 @@ export default function PlaceOfInterestLayer({
                   }}
                   className="w-full text-left px-3 py-2 text-sm transition hover:opacity-80 flex items-center gap-2"
                   style={{
-                    backgroundColor: selectedBasemap === id ? primary : "#FFFFFF",
-                    color: selectedBasemap === id ? adaptiveTextColorPrimary : "#111827",
+                    backgroundColor:
+                      selectedBasemap === id ? primary : "#FFFFFF",
+                    color:
+                      selectedBasemap === id
+                        ? adaptiveTextColorPrimary
+                        : "#111827",
                   }}
                 >
                   <span
                     className="inline-block w-3 h-3 rounded-full border flex-shrink-0"
                     style={{
-                      backgroundColor: selectedBasemap === id ? textColor : "transparent",
-                      borderColor: selectedBasemap === id ? textColor : "#9CA3AF",
+                      backgroundColor:
+                        selectedBasemap === id ? textColor : "transparent",
+                      borderColor:
+                        selectedBasemap === id ? textColor : "#9CA3AF",
                     }}
                   />
                   {t(labelKey)}
