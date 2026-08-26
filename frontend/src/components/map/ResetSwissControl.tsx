@@ -8,6 +8,12 @@ export const SWISS_BOUNDS: L.LatLngBoundsExpression = [
   [47.808, 10.492], // nord-est
 ];
 
+// Limites légèrement élargies (~55 km de marge) pour le maxBounds de la carte
+export const SWISS_BOUNDS_PADDED: L.LatLngBoundsExpression = [
+  [45.3, 5.5],  // sud-ouest
+  [48.3, 11.0], // nord-est
+];
+
 type Props = {
   position?: L.ControlPosition;
   bounds?: L.LatLngBoundsExpression;

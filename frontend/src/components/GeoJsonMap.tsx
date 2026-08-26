@@ -1,10 +1,16 @@
 // Carte GeoJSON Suisse : couches pays/lacs/communes/districts/cantons + marqueurs de villes,
 // contrôles utilitaires (reset zoom Suisse, capture écran).
-import { MapContainer, GeoJSON, Pane, ImageOverlay, useMap } from "react-leaflet";
+import { MapContainer, GeoJSON, Pane, ImageOverlay, TileLayer, useMap } from "react-leaflet";
 import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
 import { useTranslation } from "react-i18next";
-import ResetSwissControl, { SWISS_BOUNDS } from "@/components/map/ResetSwissControl";
+import ResetSwissControl, { SWISS_BOUNDS, SWISS_BOUNDS_PADDED } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
+import {
+  buildGeoCacheKey,
+  getCachedGeoBundle,
+  setCachedGeoBundle,
+  BASE_MAP_CACHE_TTL_MS,
+} from "@/features/geo/geoCache";
 import { onEachCanton } from "@/components/map/admLabels";
 import "leaflet-simple-map-screenshoter";
 import InstallScreenshoter from "./map/screenShoter";
@@ -15,6 +21,25 @@ import MapLegendOverlay from "@/components/map/MapLegendOverlay";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import L from "leaflet";
 import "leaflet.pattern";
+
+type BasemapId = "none" | "light" | "swiss";
+
+const BASEMAP_CONFIG: Record<
+  Exclude<BasemapId, "none">,
+  { url: string; attribution: string; subdomains?: string[] }
+> = {
+  light: {
+    url: "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors ' +
+      '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: ["a", "b", "c", "d"],
+  },
+  swiss: {
+    url: "https://wmts.geo.admin.ch/1.0.0/ch.swisstopo.pixelkarte-farbe/default/current/3857/{z}/{x}/{y}.jpeg",
+    attribution: '&copy; <a href="https://www.swisstopo.admin.ch/">swisstopo</a>',
+  },
+};
 
 /** Assure le recalcul de taille Leaflet (containers responsives, resize, etc.) */
 function MapSizeFixer({ host }: { host: HTMLElement | null }) {
@@ -75,6 +100,8 @@ export default function GeoJsonMap({
   const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor, selectionColor } = useTheme();
 
   const patternCacheRef = useRef<Map<string, any>>(new Map());
+
+  const [basemap, setBasemap] = useState<BasemapId>("none");
 
   // Crée ou récupère un pattern de rayures multicolores (pour les choropleth catégorielles avec ex-aequo)
   function getMultiStripePattern(map: any, colors: string[], angle = 45, stripe = 6) {
@@ -218,38 +245,82 @@ export default function GeoJsonMap({
     return null;
   }
 
-  /** Chargement des couches géo pour l’année courante. */
+  /** Chargement des couches géo pour l’année courante, avec cache IndexedDB persistant.
+   *
+   * Stratégie :
+   *   ABSENT  -> réseau -> setBundle -> écriture cache
+   *   FRESH   -> cache immédiatement -> aucun appel réseau
+   *   STALE   -> cache immédiatement -> revalidation réseau en arrière-plan -> mise à jour cache
+   */
   useEffect(() => {
     const ctrl = new AbortController();
-    let alive = true; // évite setState après unmount
+    let alive = true;
 
     const y = typeof year === "number" ? year : new Date().getFullYear();
+    const INITIAL_LAYERS = ["country", "lakes", "cantons", "districts"] as const;
+    const cacheKey = buildGeoCacheKey(y, [...INITIAL_LAYERS], false);
 
-    geoApi
-      .getByYear(y, ctrl.signal, {
-        layers: ["country", "lakes", "cantons", "districts"],
-        clearOthers: false,
-      }
-      )
-      .then((b) => {
-        if (!alive) return;
-        setBundle(b);
-      })
-      .catch((e: any) => {
-        if (!alive) return;
-        const name = e?.name || "";
-        const msg = (e?.message || "").toLowerCase();
-        if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+    async function loadBundle() {
+      // Étape 1 : lecture IndexedDB
+      const cached = await getCachedGeoBundle(cacheKey);
 
-        if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
-          // erreur avec la connexion réseau
-          setErrKey("map.errors.network");
-        } else {
-          // erreur avec les GeoJson
-          setErrKey("map.errors.loadGeometry");
+      if (!alive) return;
+
+      if (cached) {
+        const isFresh = Date.now() - cached.cachedAt < BASE_MAP_CACHE_TTL_MS;
+
+        // Affichage immédiat depuis le cache (frais ou périmé)
+        setBundle(cached.bundle);
+
+        if (isFresh) {
+          // FRESH : aucune requête réseau
+          return;
         }
-        setErrDetail(e?.message || null);
-      });
+
+        // STALE : carte déjà visible, revalidation en arrière-plan
+        geoApi
+          .getByYear(y, ctrl.signal, { layers: [...INITIAL_LAYERS], clearOthers: false })
+          .then((fresh) => {
+            if (!alive) return;
+            setBundle(fresh);
+            setCachedGeoBundle(cacheKey, fresh); // fire-and-forget, erreurs gérées en interne
+          })
+          .catch((e: any) => {
+            // Revalidation échouée : l’ancien bundle reste affiché, aucune erreur montrée
+            const name = e?.name || "";
+            const msg = (e?.message || "").toLowerCase();
+            if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+            // Intentionnellement pas de setErrKey, le cache existant reste visible
+          });
+        return;
+      }
+
+      // Étape 2 : pas de cache -> réseau
+      geoApi
+        .getByYear(y, ctrl.signal, { layers: [...INITIAL_LAYERS], clearOthers: false })
+        .then((b) => {
+          if (!alive) return;
+          setBundle(b);
+          setCachedGeoBundle(cacheKey, b); // fire-and-forget, erreurs gérées en interne
+        })
+        .catch((e: any) => {
+          if (!alive) return;
+          const name = e?.name || "";
+          const msg = (e?.message || "").toLowerCase();
+          if (name === "AbortError" || msg.includes("aborted") || msg.includes("canceled")) return;
+
+          if (name === "NetworkError" || msg.includes("network") || !navigator.onLine) {
+            // erreur avec la connexion réseau
+            setErrKey("map.errors.network");
+          } else {
+            // erreur avec les GeoJson
+            setErrKey("map.errors.loadGeometry");
+          }
+          setErrDetail(e?.message || null);
+        });
+    }
+
+    loadBundle();
 
     return () => {
       alive = false;
@@ -262,8 +333,8 @@ export default function GeoJsonMap({
     color: countryColors,      // couleur frontière du pays
     weight: 1,
     fillColor: background,  // fond couleur du background general
-    fillOpacity: 1,
-  }), []);
+    fillOpacity: basemap !== "none" ? 0 : 1,
+  }), [background, countryColors, basemap]);
   const lakesStyle = useMemo(() => ({
     color: lakesColores,      // couleur lacs
     weight: 1.2,
@@ -286,6 +357,9 @@ export default function GeoJsonMap({
     weight: 0.6,
     fillOpacity: 0,
   }), []);
+
+  const choroplethFillOpacity = basemap !== "none" ? 0.45 : 0.75;
+  const activeTileConfig = basemap !== "none" ? BASEMAP_CONFIG[basemap] : null;
 
   // Alias pratiques
   const country   = bundle?.country   ?? null;
@@ -381,18 +455,36 @@ export default function GeoJsonMap({
       <MapContainer
         center={[46.8182, 9.2]}
         zoom={8}
+        minZoom={8}
+        maxBounds={SWISS_BOUNDS_PADDED}
+        maxBoundsViscosity={1.0}
         className="w-full h-full"
         scrollWheelZoom
       >
         {/* Utilitaires : export écran, resize, bouton recadrage Suisse */}
         <ExposeMapOnWindow />
-        <InstallScreenshoter showButton={true} />
+        <InstallScreenshoter showButton={true} hideElementsWithSelectors={['.leaflet-control-container', '[data-no-export]']} />
         <MapSizeFixer host={hostRef.current} />
         <TooltipZoomGuard />
         <ResetSwissControl position="topleft" />
 
         {/* Raster en fond (zIndex le plus bas) */}
         <Pane name="pane-raster" style={{ zIndex: 100 }}>
+          {activeTileConfig && (
+            <TileLayer
+              key={basemap}
+              url={activeTileConfig.url}
+              attribution={activeTileConfig.attribution}
+              // Fournit les sous-domaines si la couche de tuiles en nécessite.
+              {...(activeTileConfig.subdomains != null ? { subdomains: activeTileConfig.subdomains } : {})}
+              // Empêche la répétition infinie des tuiles hors de la zone couverte.
+              noWrap={true}
+              // Place la couche raster dans le pane de fond.
+              pane="pane-raster"
+              // Active le chargement CORS des tuiles (utile pour l'export de la carte).
+              crossOrigin="anonymous"
+            />
+          )}
           {baseImageUrl && (
             <ImageOverlay
               url={baseImageUrl}
@@ -422,7 +514,7 @@ export default function GeoJsonMap({
           <>
             <Pane name="choropleth" style={{ zIndex: 650 }} />
             <GeoJSON
-              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}-${choropleth.granularity}`}
+              key={`choropleth-${choropleth.question_uid}-${choropleth.year_requested}-${choropleth.granularity}-${basemap !== "none" ? "bm" : "no-bm"}`}
               data={choropleth.feature_collection as any}
               pane="choropleth"
               style={(feat: any) => {
@@ -466,7 +558,7 @@ export default function GeoJsonMap({
                 // fallback normal
                 return {
                   ...base,
-                  fillOpacity: 0.75,
+                  fillOpacity: choroplethFillOpacity,
                   fillColor: fill,
                 };
               }}
@@ -533,7 +625,7 @@ export default function GeoJsonMap({
 
                 layer.setStyle({
                   weight: 1,
-                  fillOpacity: 0.75,
+                  fillOpacity: choroplethFillOpacity,
                   opacity: 1,
                 });
 
@@ -573,6 +665,8 @@ export default function GeoJsonMap({
           communes={communes}
           districts={districts}
           cantons={cantons}
+          selectedBasemap={basemap}
+          onBasemapChange={setBasemap}
         />
       </MapContainer>
 
