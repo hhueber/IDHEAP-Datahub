@@ -386,6 +386,17 @@ class DataImportNewProjectData(BaseModel):
 
 
 class DataImportNewProjectResponse(BaseModel):
-    sucess: bool
+    success: bool
     detail: str
-    data: DataImportNewProjectData
+    data: int
+
+
+class DataProjectPayload(BaseModel):
+    uid: int
+    name: str
+
+
+class DataProjectResponse(BaseModel):
+    success: bool
+    detail: str
+    data: List[DataProjectPayload]

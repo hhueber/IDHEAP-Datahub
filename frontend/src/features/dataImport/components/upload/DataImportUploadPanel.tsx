@@ -3,6 +3,9 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportYearsInput } from "@/features/dataImport/components/years/DataImportYearsInput";
+import { ProjectSelector } from "@/features/dataImport/components/project/ProjectSelector";
+import { NewProjectData } from "../../dataImportTypes";
+import { newProjectCreate } from "../../dataImportApi";
 
 type DataImportUploadPanelProps = {
   loading: boolean;
@@ -18,7 +21,8 @@ export function DataImportUploadPanel({
   onSubmit,
 }: DataImportUploadPanelProps) {
   const { t } = useTranslation();
-  const {textColor, background, borderColor, hoverPrimary04, primary} = useTheme();
+  const { textColor, background, borderColor, hoverPrimary04, primary } =
+    useTheme();
 
   const [files, setFiles] = React.useState<File[]>([]);
   const [displayName, setDisplayName] = React.useState("");
@@ -27,30 +31,25 @@ export function DataImportUploadPanel({
 
   const addFiles = React.useCallback((nextFiles: File[]) => {
     setFiles((currentFiles) =>
-      mergeFilesWithoutDuplicates(currentFiles, nextFiles)
+      mergeFilesWithoutDuplicates(currentFiles, nextFiles),
     );
   }, []);
 
   const removeFile = (fileToRemove: File) => {
     setFiles((currentFiles) =>
       currentFiles.filter(
-        (file) => getFileKey(file) !== getFileKey(fileToRemove)
-      )
+        (file) => getFileKey(file) !== getFileKey(fileToRemove),
+      ),
     );
   };
 
   const submit = async () => {
-    if (
-      files.length === 0 ||
-      loading
-    ) {
+    if (files.length === 0 || loading) {
       return;
     }
 
     if (years.length === 0) {
-      setYearsError(
-        t("dataImport.years.required")
-      );
+      setYearsError(t("dataImport.years.required"));
 
       return;
     }
@@ -59,16 +58,25 @@ export function DataImportUploadPanel({
 
     await onSubmit({
       files,
-      displayName:
-        displayName.trim() || null,
+      displayName: displayName.trim() || null,
       years,
     });
   };
 
   const totalSize = React.useMemo(
     () => files.reduce((total, file) => total + file.size, 0),
-    [files]
+    [files],
   );
+
+  const handleNewProject = (newProject: NewProjectData) => {
+    newProjectCreate(newProject);
+  };
+
+  const handleSelectingOne = (projectUid: number) => {
+    console.log(projectUid);
+  };
+
+  const loadProjects = () => {};
 
   return (
     <section
@@ -79,6 +87,19 @@ export function DataImportUploadPanel({
         <h2 className="text-lg font-semibold">
           {t("dataImport.upload.title")}
         </h2>
+
+        <div className="mb-5">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-sm font-medium">projet choisir</span>
+
+            <span className="text-xs opacity-55">obligatoire</span>
+          </div>
+
+          <ProjectSelector
+            onCreatedNew={handleNewProject}
+            onSelectedExisting={handleSelectingOne}
+          />
+        </div>
 
         <p className="mt-1 max-w-3xl text-sm leading-6 opacity-70">
           {t("dataImport.upload.description")}
@@ -109,7 +130,7 @@ export function DataImportUploadPanel({
           {t("dataImport.upload.folderNameHelp")}
         </span>
       </label>
-      
+
       <div className="mb-5">
         <div className="mb-2 flex items-center justify-between gap-3">
           <span className="text-sm font-medium">
@@ -135,10 +156,7 @@ export function DataImportUploadPanel({
         />
       </div>
 
-      <DataImportDropzone
-        disabled={loading}
-        onFilesSelected={addFiles}
-      />
+      <DataImportDropzone disabled={loading} onFilesSelected={addFiles} />
 
       {files.length > 0 && (
         <div
@@ -221,7 +239,7 @@ export function DataImportUploadPanel({
 
 function mergeFilesWithoutDuplicates(
   currentFiles: File[],
-  nextFiles: File[]
+  nextFiles: File[],
 ): File[] {
   const filesByKey = new Map<string, File>();
 
@@ -233,12 +251,7 @@ function mergeFilesWithoutDuplicates(
 }
 
 function getFileKey(file: File): string {
-  return [
-    file.name,
-    file.size,
-    file.lastModified,
-    file.type,
-  ].join(":");
+  return [file.name, file.size, file.lastModified, file.type].join(":");
 }
 
 function formatFileSize(size: number): string {
