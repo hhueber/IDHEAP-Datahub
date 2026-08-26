@@ -14,6 +14,9 @@ export default function QuestionCategoryAllPage() {
         sortKey: "name",
         truncate: true,
         maxWidthClassName: "max-w-[520px]",
+        kind: "text",
+        editable: true,
+        editKey: "label",
       },
     ],
     []

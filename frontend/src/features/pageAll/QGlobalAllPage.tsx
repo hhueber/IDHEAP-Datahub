@@ -14,6 +14,9 @@ export default function QuestionGlobalAllPage() {
         sortKey: "name",
         truncate: true,
         maxWidthClassName: "max-w-[460px]",
+        kind: "text",
+        editable: true,
+        editKey: (lang) => `text_${lang}`,
       },
     ],
     []
