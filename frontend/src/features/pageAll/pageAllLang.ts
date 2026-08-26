@@ -1,4 +1,4 @@
-const SUPPORTED_PAGE_ALL_LANGS = ["fr", "de", "it", "ro", "en"] as const;
+const SUPPORTED_PAGE_ALL_LANGS = ["fr", "de", "it", "rm", "en"] as const;
 
 export type PageAllLang = (typeof SUPPORTED_PAGE_ALL_LANGS)[number];
 

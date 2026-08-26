@@ -4,15 +4,38 @@ import PlaceOfInterestMarkers from "@/components/map/PlaceOfInterestMarkers";
 import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 import { useTheme } from "@/theme/useTheme";
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
+import type { FeatureCollection, GeoFeatureProperties } from "@/features/geo/geoApi";
 
 const CUSTOM_OFFSET_PX = 160;
 
-export default function PlaceOfInterestLayer() {
+type Props = {
+  communes?: FeatureCollection<
+    GeoFeatureProperties
+  > | null;
+
+  districts?: FeatureCollection<
+    GeoFeatureProperties
+  > | null;
+
+  cantons?: FeatureCollection<
+    GeoFeatureProperties
+  > | null;
+};
+
+export default function PlaceOfInterestLayer({
+  communes,
+  districts,
+  cantons,
+}: Props) {
   const { t, i18n } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const currentLang =
-    i18n.language || window.localStorage.getItem("i18nextLng") || "en";
+  const currentLang = normalizeGeoLanguage(
+    i18n.resolvedLanguage ||
+      i18n.language ||
+      localStorage.getItem("i18nextLng")
+  );
 
   const {
     placeOfInterest,
@@ -91,12 +114,18 @@ export default function PlaceOfInterestLayer() {
       </div>
 
       {/* Marqueurs de villes sur la carte */}
-      <PlaceOfInterestMarkers placeOfInterest={placeOfInterest} />
+      <PlaceOfInterestMarkers
+        placeOfInterest={placeOfInterest}
+        communes={communes}
+        districts={districts}
+        cantons={cantons}
+      />
 
       {/* Modale de gestion des villes */}
       <PlaceOfInterestMenuModal
         isOpen={isMenuOpen}
         onClose={() => setIsMenuOpen(false)}
+        lang={currentLang}
         backendPlaceOfInterest={backendPlaceOfInterest}
         extraPlaceOfInterest={extraPlaceOfInterest}
         hideAllBackend={hideAllBackend}

@@ -141,7 +141,7 @@ async def populate_async_geo(is_demo: bool) -> None:
                                         name_fr=name,
                                         name_en=name,
                                         name_de=name,
-                                        name_ro=name,
+                                        name_rm=name,
                                         name_it=name,
                                         canton=db_canton,
                                     )

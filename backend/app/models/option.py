@@ -19,7 +19,7 @@ class Option(Base):
     text_de: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_fr: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_it: Mapped[Optional[str]] = mapped_column(String, nullable=True)
-    text_ro: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    text_rm: Mapped[Optional[str]] = mapped_column(String, nullable=True)
     text_en: Mapped[Optional[str]] = mapped_column(String, nullable=True)
 
     question_association: Mapped[List["QuestionOptionAssociation"]] = relationship(
