@@ -260,14 +260,6 @@ export default function HomeInfoPanel({
         </h2>
 
         <div className="space-y-4">
-          <QuestionCollectionsPanel
-            saved={saved}
-            onDropQuestion={handleDropQuestion}
-            onRemoveQuestion={handleRemoveQuestion}
-            onSelectQuestion={onQuestionSelect}
-            selectedQuestionUid={selectedQuestionUid}
-          />
-
           <div
             className="rounded-2xl border p-3"
             style={{
@@ -361,6 +353,15 @@ export default function HomeInfoPanel({
               )}
             </div>
           </div>
+
+          <QuestionCollectionsPanel
+            saved={saved}
+            onDropQuestion={handleDropQuestion}
+            onRemoveQuestion={handleRemoveQuestion}
+            onSelectQuestion={onQuestionSelect}
+            selectedQuestionUid={selectedQuestionUid}
+          />
+
         </div>
       </section>
       <MapExportButtons />
