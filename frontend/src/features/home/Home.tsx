@@ -11,6 +11,8 @@ import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
 import { createPortal } from "react-dom";
 import GreetingModal from "./components/GreetingModal";
 import BottomStatsPanel from "@/features/home/components/BottomStatsPanel";
+import introJs from "intro.js";
+import "intro.js/introjs.css";
 
 const GLOBAL_UID = -1;
 
@@ -28,25 +30,84 @@ export default function Home() {
   const [panelOpen, setPanelOpen] = useState(true);
 
   // Etat de la modal
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // état sélection
-  const [selectedSurveyUid, setSelectedSurveyUid] = useState<number>(GLOBAL_UID);
-  const [selectedQuestionUid, setSelectedQuestionUid] = useState<number | null>(null);
+  const [selectedSurveyUid, setSelectedSurveyUid] =
+    useState<number>(GLOBAL_UID);
+  const [selectedQuestionUid, setSelectedQuestionUid] = useState<number | null>(
+    null,
+  );
   const [globalYear, setGlobalYear] = useState<number | null>(null);
 
   // Granularity selector
-  const [granularity, setGranularity] = useState<ChoroplethGranularity>("commune");
+  const [granularity, setGranularity] =
+    useState<ChoroplethGranularity>("commune");
 
   // appel bootstrap
   const { data, loading, error, errorKey } = useBootstrap();
 
   // Theme
-  const { primary, background, borderColor, adaptiveTextColorPrimary } = useTheme();
+  const { primary, background, borderColor, adaptiveTextColorPrimary } =
+    useTheme();
 
   const isGlobal = selectedSurveyUid === GLOBAL_UID;
 
-  const closeModal = () => setIsModalOpen(false)
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleStartTour = () => {
+    setIsModalOpen(false);
+
+    introJs()
+      .setOptions({
+        nextLabel: t("common.next"),
+        prevLabel: t("common.prev"),
+        doneLabel: t("common.done"),
+        steps: [
+          {
+            element: "#map-tour",
+            intro: t("home.tour.geomap"),
+          },
+          {
+            element: "#btn-navbar",
+            intro: t("home.tour.btn-navbar"),
+          },
+          {
+            element: ".leaflet-control-zoom-in",
+            intro: t("home.tour.zoomin"),
+          },
+          {
+            element: ".leaflet-control-zoom-out",
+            intro: t("home.tour.zoomout"),
+          },
+          {
+            element: ".leaflet-control-simpleMapScreenshoter-btn",
+            intro: t("home.tour.screenshot"),
+          },
+          {
+            element: "#btn-center-swiss",
+            intro: t("home.tour.centerswiss"),
+          },
+          {
+            element: "#place-of-interest-menu",
+            intro: t("home.tour.place-menu"),
+          },
+          {
+            element: "#place-of-interest-onoff",
+            intro: t("home.tour.placeonoff"),
+          },
+          {
+            element: "#floating-buttton",
+            intro: t("home.tour.floatingButton"),
+          },
+          {
+            element: "#popup-right",
+            intro: t("home.tour.popup-right"),
+          },
+        ],
+      })
+      .start();
+  };
 
   // année utilisée pour la carte (et pour la choropleth si survey)
   const surveyYear = useMemo(() => {
@@ -58,14 +119,13 @@ export default function Home() {
   const activeYear = isGlobal ? globalYear : surveyYear;
   const choroplethScope = isGlobal ? "global" : "per_survey";
 
-
   useEffect(() => {
-    const hasBeenHiden = localStorage.getItem('hideWelcomeModal')
+    const hasBeenHiden = localStorage.getItem("hideWelcomeModal");
 
-    if(!hasBeenHiden){
-      setIsModalOpen(true)
+    if (!hasBeenHiden) {
+      setIsModalOpen(true);
     }
-  },[])
+  }, []);
 
   // choropleth : année = activeYear
   const {
@@ -81,13 +141,12 @@ export default function Home() {
   });
 
   const selectedSurvey = data?.surveys?.find(
-        (s) => s.uid === selectedSurveyUid
-      );
+    (s) => s.uid === selectedSurveyUid,
+  );
 
-  const statsYear = selectedSurveyUid === GLOBAL_UID
-    ? globalYear
-    : selectedSurvey?.year;
-  
+  const statsYear =
+    selectedSurveyUid === GLOBAL_UID ? globalYear : selectedSurvey?.year;
+
   const missingQuestion = !selectedQuestionUid;
   const missingDate = isGlobal && selectedQuestionUid && !globalYear;
 
@@ -108,11 +167,16 @@ export default function Home() {
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
     <section className="absolute inset-0">
-      {isModalOpen && createPortal(
-        <GreetingModal onClose={closeModal}></GreetingModal>, document.body
-      )}
+      {isModalOpen &&
+        createPortal(
+          <GreetingModal
+            onClose={closeModal}
+            onStartTour={handleStartTour}
+          ></GreetingModal>,
+          document.body,
+        )}
       {/* Carte en plein écran */}
-      <div className="absolute inset-0">
+      <div id="map-tour" className="absolute inset-0">
         <GeoJsonMap
           className="absolute inset-0"
           year={activeYear}
@@ -123,16 +187,14 @@ export default function Home() {
           onSelectArea={setSelectedArea}
         />
         {(missingQuestion || missingDate || choroplethLoading) && (
-          <MapLoadingOverlay
-            label={overlayLabel}
-            type={overlayType}
-          />
+          <MapLoadingOverlay label={overlayLabel} type={overlayType} />
         )}
       </div>
 
       {/* Bouton flottant (ouvre/ferme uniquement) */}
       <button
-        onClick={() => setPanelOpen(v => !v)}
+        id="floating-buttton"
+        onClick={() => setPanelOpen((v) => !v)}
         className="
           fixed bottom-4 z-[3600]
           h-12 w-12 rounded-full border
@@ -144,7 +206,9 @@ export default function Home() {
         style={{
           right: "max(env(safe-area-inset-right), 1rem)",
           // se décale à gauche de la largeur du drawer quand ouvert
-          transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
+          transform: panelOpen
+            ? "translateX(calc(-1 * min(90vw, 28rem)))"
+            : "translateX(0)",
           backgroundColor: primary,
           borderColor: borderColor,
           color: adaptiveTextColorPrimary, // texte + icône blancs comme avant
@@ -171,6 +235,7 @@ export default function Home() {
       {/* Drawer (ouvert/fermé seulement via le bouton) */}
       <aside className="fixed inset-0 z-[3500] pointer-events-none">
         <div
+          id="popup-right"
           className={`
             absolute right-0 top-0 h-full
             w-[min(90vw,28rem)]
@@ -208,7 +273,7 @@ export default function Home() {
           />
         </div>
       </aside>
-      
+
       {/* Pop up bas */}
       <BottomStatsPanel
         selectedArea={selectedArea}

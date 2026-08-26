@@ -5,22 +5,19 @@ import { usePlaceOfInterestMarkers } from "@/features/geo/hooks/usePlaceOfIntere
 import PlaceOfInterestMenuModal from "@/components/map/PlaceOfInterestMenuModal";
 import { useTheme } from "@/theme/useTheme";
 import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
-import type { FeatureCollection, GeoFeatureProperties } from "@/features/geo/geoApi";
+import type {
+  FeatureCollection,
+  GeoFeatureProperties,
+} from "@/features/geo/geoApi";
 
 const CUSTOM_OFFSET_PX = 160;
 
 type Props = {
-  communes?: FeatureCollection<
-    GeoFeatureProperties
-  > | null;
+  communes?: FeatureCollection<GeoFeatureProperties> | null;
 
-  districts?: FeatureCollection<
-    GeoFeatureProperties
-  > | null;
+  districts?: FeatureCollection<GeoFeatureProperties> | null;
 
-  cantons?: FeatureCollection<
-    GeoFeatureProperties
-  > | null;
+  cantons?: FeatureCollection<GeoFeatureProperties> | null;
 };
 
 export default function PlaceOfInterestLayer({
@@ -34,7 +31,7 @@ export default function PlaceOfInterestLayer({
   const currentLang = normalizeGeoLanguage(
     i18n.resolvedLanguage ||
       i18n.language ||
-      localStorage.getItem("i18nextLng")
+      localStorage.getItem("i18nextLng"),
   );
 
   const {
@@ -53,7 +50,13 @@ export default function PlaceOfInterestLayer({
     setHideAllBackend(!hideAllBackend);
   };
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary } = useTheme();
+  const {
+    primary,
+    textColor,
+    background,
+    borderColor,
+    adaptiveTextColorPrimary,
+  } = useTheme();
 
   return (
     <>
@@ -66,6 +69,7 @@ export default function PlaceOfInterestLayer({
         <div className="leaflet-control leaflet-bar flex flex-col pointer-events-auto ml-2 overflow-hidden rounded-md">
           {/* Bouton MENU GLOBAL */}
           <button
+            id="place-of-interest-menu"
             type="button"
             onClick={() => setIsMenuOpen(true)}
             className="
@@ -88,6 +92,7 @@ export default function PlaceOfInterestLayer({
 
           {/* Bouton ON/OFF villes */}
           <button
+            id="place-of-interest-onoff"
             type="button"
             onClick={togglePlaceOfInterest}
             className="
