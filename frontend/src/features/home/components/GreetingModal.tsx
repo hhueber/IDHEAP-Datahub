@@ -32,7 +32,24 @@ export default function GreetingModal({
             {t("first-modal.title")}
           </h3>
           <p className="mt-2 text-center text-gray-500">
-            {t("first-modal.content")}
+            {t("first-modal.contentp1")}
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href="https://github.com/hhueber/IDHEAP-Datahub"
+              className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-800 transition-colors"
+            >
+              Github
+            </a>
+            {t("first-modal.contentp2")}
+            <a
+              target="_blank"
+              rel="noopener noreferrer"
+              href="mailto:olivier.schoni@unil.ch?cc=hugo.hueber@unil.ch&subject=Datahub%20%3A%20"
+              className="font-medium text-blue-600 underline underline-offset-2 hover:text-blue-800 transition-colors"
+            >
+              olivier.schoni@unil.ch
+            </a>
           </p>
         </div>
 

@@ -402,7 +402,7 @@
         "noLogo": "Aucun logo",
         "previewPanel": {
           "text": "Lorem ipsum — simple text",
-          "buttonPrimary": "Bouton primaire",
+          "buttonPrimary": "Boutton primaire",
           "secondaryFrame": "Cadre secondaire",
           "selection": "Élément sélectionné"
         }
@@ -608,8 +608,9 @@
     "page": "Page"
   },
   "first-modal": {
-    "title": "Bienvenue",
-    "content": "Bienvenue sur le Datahub. Ce que vous voyez n'est qu'une version beta. Le produit est encore en développement. Le code est disponible en open source sur",
+    "title": "Bienvenue sur le Datahub",
+    "contentp1": "Bienvenue sur le Datahub - actuellement en version bêta, encore en développement. Le code est disponible en open source sur ",
+    "contentp2": ". Si vous remarquez des erreurs de traduction ou des bugs, vous pouvez nous contacter à l'adresse e-mail : ",
     "close": "Fermer",
     "reminder": "Ne plus me rappeler",
     "tour": "Découvrir l'interface"
