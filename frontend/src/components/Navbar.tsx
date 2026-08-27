@@ -96,10 +96,7 @@ export default function Navbar() {
         onClick={toggleMenu}
         className={[
           "fixed top-3 left-3 inline-flex items-center justify-center",
-          "w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-transparent",
-          open
-            ? "opacity-0 pointer-events-none z-[3400]"
-            : "opacity-100 z-[3450]",
+          "w-16 h-16 sm:w-18 sm:h-18 rounded-2xl bg-transparent opacity-100 z-[3500]",
         ].join(" ")}
         // décale les contrôles Leaflet sous le bouton (utile même quand le bouton est masqué)
         style={{ "--leaflet-top-offset": "96px" } as React.CSSProperties}
@@ -137,9 +134,9 @@ export default function Navbar() {
             role="menu"
             aria-label={t("nav.navigation")}
             className="absolute left-0 top-0 h-full w-[min(10rem,70vw)]
-                       overflow-y-auto rounded-tr-2xl rounded-br-2xl
-                       backdrop-blur p-3
-                       flex flex-col"
+             overflow-y-auto rounded-tr-2xl rounded-br-2xl
+             backdrop-blur p-3 pt-20
+             flex flex-col"
             style={{
               backgroundColor: background, // fond du panneau
               color: textColor,
