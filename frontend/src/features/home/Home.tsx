@@ -100,6 +100,10 @@ export default function Home() {
             intro: t("home.tour.placeonoff"),
           },
           {
+            element: "#basemap-btn",
+            intro: t("home.tour.basemap"),
+          },
+          {
             element: "#popup-right",
             intro: t("home.tour.popup-right"),
           },
