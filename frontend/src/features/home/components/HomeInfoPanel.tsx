@@ -144,6 +144,8 @@ export default function HomeInfoPanel({
   };
 
   const surveyYear = data?.surveys?.find(s => s.uid === selectedSurveyUid)?.year;
+  const showGlobalTimeline =
+    showGlobals && selectedQuestionUid != null;
 
   return (
     <div className="space-y-4 px-3 py-2">
@@ -173,7 +175,7 @@ export default function HomeInfoPanel({
           borderWidth: 1,
           borderStyle: "solid",
           borderColor: borderColor,
-          minHeight: 280,
+          // minHeight: 280,
         }}
       >
         <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>
@@ -191,33 +193,57 @@ export default function HomeInfoPanel({
           />
         </div>
 
-        {/* Timeline uniquement en GLOBAL */}
+        {/* Timeline uniquement si une question globale est sélectionnée */}
         <div
-          className="mt-4 transition-all duration-200"
-          style={{
-            minHeight: 200, // réserve l’espace
-          }}
+          className={`
+            grid
+            transition-all
+            duration-300
+            ease-in-out
+            ${
+              showGlobalTimeline
+                ? "grid-rows-[1fr] opacity-100 mt-4"
+                : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+            }
+          `}
+          aria-hidden={!showGlobalTimeline}
         >
-          <>
-            <div className="text-xs mb-2 opacity-80" style={{ color: textColor }}>
-              {t("home.choroplethGlobalYear")}
-            </div>
+          <div className="min-h-0 overflow-hidden">
+            <div
+              className={`
+                transition-all
+                duration-300
+                ease-out
+                ${
+                  showGlobalTimeline
+                    ? "translate-y-0 scale-100"
+                    : "-translate-y-2 scale-[0.98]"
+                }
+              `}
+            >
+              <div
+                className="text-xs mb-2 opacity-80"
+                style={{ color: textColor }}
+              >
+                {t("home.choroplethGlobalYear")}
+              </div>
 
-            <GlobalQuestionTimeline
-              visible={true}
-              isGlobal={showGlobals}
-              allYears={
-                [...(data?.surveys ?? [])]
-                  .map((s) => s.year)
-                  .filter((y) => Number.isFinite(y))
-              }
-              enabledYears={years}
-              selectedYear={globalYear}
-              onSelect={(year) => onGlobalYearChange(year)}
-              loading={loadingYears}
-              questionSelected={selectedQuestionUid != null}
-            />
-          </>
+              <GlobalQuestionTimeline
+                visible={showGlobalTimeline}
+                isGlobal={showGlobals}
+                allYears={
+                  [...(data?.surveys ?? [])]
+                    .map((s) => s.year)
+                    .filter((y) => Number.isFinite(y))
+                }
+                enabledYears={years}
+                selectedYear={globalYear}
+                onSelect={(year) => onGlobalYearChange(year)}
+                loading={loadingYears}
+                questionSelected={selectedQuestionUid != null}
+              />
+            </div>
+          </div>
         </div>
       </section>
 
