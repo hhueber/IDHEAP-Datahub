@@ -1,27 +1,628 @@
 {
-  "nav": { 
-    "language": "Language", 
+  "nav": {
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "navigation": "Navigation",
+    "language": "Language",
+    "switchTo": "Switch to {{lang}}",
+    "home": "Home",
     "data": "Data",
-    "home": "Home", 
-    "dataSoon": "Coming soon." },
+    "currentLogoName": "IDHEAP",
+    "theme": "Theme",
+    "errors": {
+      "changeLanguage": "Unable to change the language at the moment."
+    },
+    "private": {
+      "privateArea": "Private area",
+      "anonymous": "Anonymous"
+    }
+  },
   "home": {
-    "heroTitle": "IDHEAP Data Explorer",
-    "heroSubtitle": "This site, developed by IDHEAP, allows you to explore data from Swiss municipalities. You can visualize changes over time: first choose a survey year, then the question you want to display. Some global questions cover several years; you can select them directly, then choose the display year.",
     "openPanel": "Open panel",
     "close": "Close",
     "sectionDates": "Dates",
     "sectionQuestions": "Questions",
+    "selectionQuestions": "Question selection",
     "chooseYear": "Choose a year",
-    "globalOption": "Global",
+    "globalOption": "All years",
     "noGlobalQuestions": "No global questions available.",
-    "noQuestionsForSelection": "No questions for this selection."
+    "noQuestionsForSelection": "No questions available for this selection.",
+    "bootstrapError": "Unable to load the initial data.",
+    "availableYears": "Available years for this question",
+    "noAvailableYears": "No available years",
+    "selectYear": "Select a year",
+    "choroplethGlobalYear": "Available years for this question",
+    "granularity": "Granularity",
+    "timelineAvailable": "Available",
+    "timelineUnavailable": "Unavailable",
+    "selectQuestionFirst": "Select a question",
+    "selectDate": "Select a date",
+    "tour": {
+      "geomap": "Here you will find the map of Switzerland displaying results by municipality.",
+      "btn-navbar": "Click here to open the navigation menu.",
+      "zoom": "Use these buttons to zoom in and out on the map of Switzerland.",
+      "screenshot": "Click this button to take a screenshot.",
+      "centerswiss": "Click this button to recenter the map.",
+      "place-menu": "Click this button to open the points of interest menu.",
+      "placeonoff": "Click this button to show or hide the points of interest.",
+      "floatingButton": "Click here to show or hide the control panel.",
+      "popup-right": "In the control panel, you can configure the variables displayed on the map."
+    },
+    "question_collections": {
+      "saved": {
+        "title": "Quick access",
+        "description": "Your saved questions"
+      }
+    },
+    "question_drop_zone": {
+      "drag_question": "Drag a question here",
+      "release_to_add": "Release to add this question"
+    },
+    "question_card": {
+      "saved": "Saved questions",
+      "drag": "Drag",
+      "removeSaved": "Remove from saved questions",
+      "addSaved": "Add to saved questions",
+      "remove": "Remove from selection"
+    }
   },
-  "login": {
-    "title": "Login",
-    "subtitle": "Placeholder for the future auth."
+  "map": {
+    "placeOfInterest": {
+      "show": "Show cities",
+      "hide": "Hide cities"
+    },
+    "basemap": {
+      "title": "Basemap",
+      "none": "None",
+      "light": "Road map",
+      "swiss": "Topographic map"
+    },
+    "menu": {
+      "global": "Points of interest",
+      "instancePlaceOfInterest": "Defined points of interest",
+      "noInstancePlaceOfInterest": "No points of interest defined.",
+      "localPlaceOfInterest": "Additional points of interest",
+      "removePlaceOfInterest": "Remove",
+      "addPlaceOfInterest": "Add a point of interest",
+      "addPlaceOfInterestPlaceholder": "Type at least 3 letters…",
+      "loadingSuggestions": "Loading suggestions...",
+      "noLocalPlaceOfInterest": "No additional points of interest defined.",
+      "placeholder": "This menu will be expanded later with global options.",
+      "placeOfInterestTypes": {
+        "commune": "Municipality",
+        "district": "District",
+        "canton": "Canton"
+      }
+    },
+    "legend": {
+      "showStats": "Show statistics",
+      "distribution": "Response distribution",
+      "unitsWithResponse_one": "{{count}} unit with a response",
+      "unitsWithResponse_other": "{{count}} units with a response",
+      "noData": "No data",
+      "noResponse": "No response"
+    },
+    "errors": {
+      "loadGeometry": "Unable to load geographic layers.",
+      "network": "Network issue. Please check your connection.",
+      "failedToLoadPlaceOfInterest": "Unable to load points of interest.",
+      "failedToFetchSuggestions": "Unable to retrieve suggestions."
+    }
   },
   "common": {
     "loading": "Loading…",
-    "error": "Error"
+    "error": "Error",
+    "close": "Close",
+    "unknown": "Unknown error",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "clear": "Clear",
+    "next": "Next",
+    "prev": "Previous",
+    "done": "Finish tutorial"
+  },
+  "notFound": {
+    "message": "Page not found."
+  },
+  "questions": {
+    "empty": "No questions available.",
+    "loadError": "Unable to load questions.",
+    "aborted": "Loading cancelled."
+  },
+  "login": {
+    "title": "Sign in",
+    "subtitle": "Reserved for future authentication.",
+
+    "emailLabel": "Email",
+    "emailPlaceholder": "Enter your email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Enter your password",
+
+    "submit": "Sign in",
+    "submitting": "Signing in",
+
+    "errors": {
+      "generic": "Login failed.",
+      "invalidCredentials": "Invalid credentials.",
+      "network": "Network connection problem.",
+      "locked": "Account locked.",
+      "rateLimited": "Too many attempts. Please try again later."
+    }
+  },
+  "stats": {
+    "context": {
+      "commune": "Municipality",
+      "district": "District",
+      "canton": "Canton",
+      "communes_one": "{{count}} municipality",
+      "communes_other": "{{count}} municipalities"
+    },
+    "loading": "Loading statistics",
+    "noData": "No data available",
+    "selectedValue": "Selected value",
+    "sameAnswer": "with the same response",
+    "countText": "{{count}} out of {{total}} {{unit}} share this value",
+    "selected": "Selected",
+    "others": "Others",
+    "value": "Value:",
+    "count": "Count:",
+    "share": "Share:"
+  },
+  "export": {
+    "title": "Export",
+    "pngLabel": "PNG",
+    "pdfLabel": "PDF",
+    "pngTooltip": "Export as PNG",
+    "pdfTooltip": "Export as PDF",
+
+    "note": "The screenshot captures the current view (zoom/pan) without the menu.",
+
+    "ariaExportPng": "PNG export in progress",
+    "ariaExportPdf": "PDF export in progress",
+
+    "filenamePrefix": "map",
+
+    "errors": {
+      "mapUnavailable": "Map unavailable.",
+      "pngFailed": "PNG export failed.",
+      "pdfFailed": "PDF export failed."
+    },
+    "data": {
+      "title": "Export data",
+      "description": "Select your saved questions and export their data as a CSV file.",
+      "selectAll": "Select all",
+      "clear": "Clear",
+      "selected": "Selected",
+      "noSavedQuestions": "No saved questions available.",
+      "global": "Global",
+      "survey": "Survey",
+      "loading": "Exporting",
+      "download": "Download CSV file"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome {{name}}",
+    "welcomeWithRole": "Welcome {{name}} ({{role}})",
+    "anonymous": "User",
+    "logout": "Sign out"
+  },
+  "changePassword": {
+    "title": "Change my password",
+
+    "oldPasswordLabel": "Current password",
+    "oldPasswordPlaceholder": "Enter your current password",
+
+    "newPasswordLabel": "New password",
+    "newPasswordPlaceholder": "Enter your new password",
+
+    "confirmLabel": "Confirm password",
+    "confirmPlaceholder": "Confirm your new password",
+
+    "passwordHelp": "Minimum 10 characters, including at least: 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 symbol (e.g. !@#$%&*).",
+
+    "submit": "Update",
+    "submitting": "Updating",
+
+    "success": "Password updated.",
+    "successWithDetail": "Password updated.",
+
+    "fail": "Failed to update password.",
+    "failWithDetail": "Failed to update password.",
+
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+
+    "errors": {
+      "confirmMismatch": "The confirmation does not match.",
+      "tooShort": "Password is too short (minimum 10 characters).",
+      "invalidOldPassword": "Invalid current password.",
+      "serverValidation": "The server returned validation errors.",
+      "generic": "An error occurred."
+    }
+  },
+  "admin": {
+    "deleteMember": {
+      "title": "Delete member",
+
+      "firstNameLabel": "First name",
+      "firstNamePlaceholder": "Enter the first name",
+      "lastNameLabel": "Last name",
+      "lastNamePlaceholder": "Enter the last name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter the email address",
+      "roleLabel": "Role",
+
+      "roles": {
+        "member": "Member",
+        "admin": "Admin"
+      },
+
+      "submit": "Delete",
+      "submitting": "Deleting",
+
+      "success": "User deleted.",
+      "fail": "Failed to delete user.",
+
+      "errors": {
+        "serverValidation": "The server returned validation errors.",
+        "notFound": "User not found.",
+        "forbidden": "Action forbidden.",
+        "generic": "An error occurred."
+      }
+    },
+    "addMember": {
+      "title": "Add member",
+
+      "firstNameLabel": "First name",
+      "firstNamePlaceholder": "Enter the first name",
+      "lastNameLabel": "Last name",
+      "lastNamePlaceholder": "Enter the last name",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Enter the email address",
+      "roleLabel": "Role",
+
+      "roles": {
+        "member": "Member",
+        "admin": "Admin"
+      },
+
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter the password",
+      "confirmLabel": "Confirm password",
+      "confirmPlaceholder": "Confirm the password",
+      "passwordHelp": "Minimum 10 characters, including at least: 1 uppercase letter, 1 lowercase letter, 1 digit, and 1 symbol (e.g. !@#$%&*).",
+
+      "submit": "Create member",
+      "submitting": "Creating",
+
+      "success": "Member created.",
+      "fail": "Failed to create member.",
+
+      "errors": {
+        "confirmMismatch": "The confirmation does not match.",
+        "tooShort": "Password is too short (minimum 10 characters).",
+        "emailExists": "A member with this email address already exists.",
+        "forbidden": "Action forbidden.",
+        "serverValidation": "The server returned validation errors.",
+        "generic": "An error occurred."
+      }
+    },
+    "config": {
+      "placeOfInterestEditor": {
+        "titleCreate": "Add a city",
+        "titleEdit": "Edit a city",
+
+        "importFromCommunes": "Import from municipalities",
+        "searchPlaceholder": "Type at least 3 letters...",
+        "search": "Search",
+        "empty": "No results",
+
+        "canonicalLabel": "Canonical name",
+        "canonicalPlaceholder": "Lausanne, Geneva, Zurich...",
+
+        "labels": {
+          "fr": "French",
+          "de": "German",
+          "it": "Italian",
+          "rm": "Romansh",
+          "en": "English",
+          "lat": "Latitude",
+          "lon": "Longitude",
+          "preview": "Preview:"
+        },
+
+        "submitCreate": "Create",
+        "submitEdit": "Save"
+      },
+      "placeOfInterestPage": {
+        "title": "Cities",
+        "addButton": "Add",
+        "columns": {
+          "name": "Name",
+          "fr": "FR",
+          "de": "DE",
+          "it": "IT",
+          "rm": "RM",
+          "en": "EN",
+          "position": "Position"
+        },
+        "edit": "Edit",
+        "delete": "Delete",
+        "empty": "No cities",
+        "loading": "Loading",
+        "titleConfirm": "Delete city",
+        "deleteConfirm": "Are you sure you want to delete the city \"{{name}}\"?",
+        "confirmLabel": "Delete",
+        "cancelLabel": "Cancel"
+      },
+      "themeConfigPage": {
+        "title": "Theme and instance configuration",
+        "general": "Instance",
+        "instanceName": "Instance name",
+        "logoUrl": "Logo URL",
+        "logoPreview": "Logo preview",
+        "logoUpload": "Upload logo",
+        "logoInvalidType": "Unsupported format. Use PNG/JPG/WebP/SVG.",
+        "logoTooLarge": "File is too large (maximum {{size}} MB).",
+        "logoDropZone": "Logo drop zone",
+        "logoDropReject": "Unsupported file.",
+        "logoDropActive": "Release to drop",
+        "logoFormats": "PNG / JPG / WebP / SVG · {{size}} MB max",
+        "logoDropHint": "Drag an image here or click to select a file",
+        "logoBrowse": "Upload...",
+        "currentMode": "Current mode: {{mode}}",
+        "defaultMode": "Default mode",
+        "light": "Light theme",
+        "dark": "Dark theme",
+        "presets": "Color presets",
+        "presetsHelp": "Choose a color preset for both light and dark themes to quickly apply a consistent color palette.",
+        "lightSection": "Light theme",
+        "darkSection": "Dark theme",
+        "lightPreview": "Light theme preview",
+        "darkPreview": "Dark theme preview",
+        "mapLightPreview": "Light theme map preview",
+        "mapDarkPreview": "Dark theme map preview",
+        "mapSection": "Map colors",
+        "primaryColourLabel": "Primary color",
+        "secondaryColourLabel": "Secondary color",
+        "backgroundColourLabel": "Background color",
+        "textColourLabel": "Text color",
+        "navbarOverlayLabel": "Navigation bar opacity",
+        "logoBackgroundLabel": "Logo background color",
+        "selectionColourLabel": "Selection color",
+        "communesColourLabel": "Municipality color",
+        "districtColourLabel": "District color",
+        "cantonColourLabel": "Canton color",
+        "countryColourLabel": "Country color",
+        "lakesColourLabel": "Lake color",
+        "saving": "Saving",
+        "save": "Save",
+        "saved": "Saved.",
+        "confirmTitle": "Confirm changes",
+        "confirmMessage": "Are you sure you want to save the theme changes? This will affect the appearance of the entire application.",
+        "logoUploadError": "An error occurred while uploading the logo image.",
+        "loadError": "Unable to load the theme configuration.",
+        "saveError": "An error occurred while saving the configuration.",
+        "noLogo": "No logo",
+        "previewPanel": {
+          "text": "Lorem ipsum — simple text",
+          "buttonPrimary": "Primary button",
+          "secondaryFrame": "Secondary panel",
+          "selection": "Selected item"
+        }
+      },
+      "configEditor": {
+        "cancel": "Cancel",
+        "submit": "Save",
+        "saving": "Saving"
+      },
+      "errors": {
+        "loadFailed": "Loading failed.",
+        "saved": "Saved.",
+        "saveFailed": "Saving failed.",
+        "deleted": "Deleted.",
+        "deleteFailed": "Deletion failed.",
+        "network": "Network error."
+      }
+    }
+  },
+  "dashboardSidebar": {
+    "privateSpace": "Private area",
+    "toggleSection": "Toggle {{section}} section",
+    "rolePrefix": "Role:",
+    "logout": "Sign out",
+    "sections": {
+      "dashboard": "Dashboard",
+      "survey": "Survey",
+      "qa": "Questions & Answers",
+      "places": "Places",
+      "administration": "Administration"
+    },
+    "survey": {
+      "_": "Survey",
+      "all": "All",
+      "newEdit": "New"
+    },
+    "qa": {
+      "qps": {
+        "_": "QuestionPerSurvey",
+        "all": "All",
+        "newEdit": "New"
+      },
+      "qglobal": {
+        "_": "QuestionGlobal",
+        "all": "All",
+        "newEdit": "New"
+      },
+      "qcat": {
+        "_": "QuestionCategory",
+        "all": "All",
+        "newEdit": "New"
+      },
+      "answer": {
+        "_": "Answer",
+        "all": "All",
+        "newEdit": "New"
+      },
+      "option": {
+        "_": "Option",
+        "all": "All",
+        "newEdit": "New"
+      }
+    },
+    "places": {
+      "commune": {
+        "_": "Municipality",
+        "all": "All"
+      },
+      "district": {
+        "_": "District",
+        "all": "All"
+      },
+      "canton": {
+        "_": "Canton",
+        "all": "All"
+      }
+    },
+    "administration": {
+      "changePassword": "Change my password",
+      "users": {
+        "_": "Users",
+        "add": "Add member",
+        "delete": "Delete member"
+      },
+      "config": {
+        "_": "Configuration",
+        "placeOfInterest": "Points of interest",
+        "theme": "Theme"
+      }
+    },
+    "pageAll": {
+      "uid": "UID",
+      "name": "Name",
+      "code": "Code",
+      "entity": "Entity",
+      "question": "Survey",
+      "commune": "Municipality",
+      "noData": "No data",
+      "asc": "Asc",
+      "desc": "Desc",
+      "error": "Error:",
+      "loading": "Loading",
+      "sortBy": "Sort by",
+      "label": "Label",
+      "actions": "Actions",
+      "show": "Show",
+      "edit": "Edit",
+      "delete": "Delete",
+      "value": "Value",
+      "searchPlaceholder": "Search within this entity...",
+      "clear": "Clear",
+      "searching": "Searching",
+      "confirmDeleteTitle": "Confirm deletion",
+      "confirmDeleteMessage": "Are you sure you want to delete the item \"{{name}}\"?",
+      "deleting": "Deleting",
+      "deleteError": "Deletion error:",
+      "year": "Year",
+      "questionUid": "Question UID",
+      "communeUid": "Municipality UID",
+      "save": "Save",
+      "saving": "Saving...",
+      "editError": "Editing error:",
+      "confirmEditTitle": "Confirm changes",
+      "confirmEditMessage": "Are you sure you want to modify the item \"{{name}}\"?"
+    },
+    "pageShow": {
+      "loading": "Loading",
+      "error": "Error:",
+      "noData": "No data",
+      "mainInfo": "Main information",
+      "languages": "Languages",
+      "edit": "Edit",
+      "delete": "Delete",
+      "children": "Related entities",
+      "childrenHint": "Relations / related tables",
+      "insights": "Insights",
+      "insightsHint": "Map / statistics",
+      "text": "Text",
+      "noChildren": "No data",
+      "confirm": "Confirm",
+      "deleteError": "Deletion error:",
+      "confirmDeleteTitle": "Confirm deletion",
+      "noSelection": "No field selected.",
+      "confirmClearMessage": "You are about to clear the following fields:\n- {{fields}}",
+      "deleting": "Deleting...",
+      "editError": "Editing error:",
+      "saving": "Saving...",
+      "save": "Save",
+      "confirmEditTitle": "Confirm changes",
+      "confirmEditMessage": "You are about to edit the following fields:\n- {{fields}}",
+      "insightsPanel": {
+        "noInsights": "No information is available for this entity.",
+        "mapContext": "Swiss cantons in context, with the selected entity highlighted",
+        "stats": "Statistics",
+        "map": "Map",
+        "stat": {
+          "code": "Code",
+          "district_uid": "District UID",
+          "canton_uid": "Canton UID",
+          "ofs_id": "FSO ID",
+          "year": "Year",
+          "survey_uid": "Survey UID",
+          "survey_year": "Survey year",
+          "private": "Private",
+          "category_uid": "Category UID",
+          "question_uid": "Question UID",
+          "commune_uid": "Municipality UID",
+          "value": "Value",
+          "label": "Label",
+          "answers_count": "Number of answers",
+          "communes_count": "Number of municipalities",
+          "districts_count": "Number of districts",
+          "questions_count": "Number of questions",
+          "options_count": "Number of options",
+          "distinct_answer_values": "Number of distinct answer values",
+          "linked_survey_questions": "Linked survey questions",
+          "global_questions_count": "Number of global questions",
+          "survey_questions_count": "Number of survey questions",
+          "question_links": "Question links",
+          "global_question_links": "Global question links",
+          "category_links": "Category links",
+          "answers_same_question_year": "Answers for the same question/year",
+          "same_value_count": "Same answer value"
+        }
+      },
+      "visibility": {
+        "private": "Private",
+        "public": "Public"
+      },
+      "relatedInfo": "Related information",
+      "relations": {
+        "commune": "Municipality",
+        "district": "District",
+        "canton": "Canton",
+        "survey": "Survey",
+        "question": "Question",
+        "questionGlobal": "Global question",
+        "questionCategory": "Category",
+        "option": "Option"
+      }
+    }
+  },
+  "roles": {
+    "admin": "Administrator",
+    "member": "Member"
+  },
+  "pagination": {
+    "page": "Page"
+  },
+  "first-modal": {
+    "title": "Welcome to the Datahub",
+    "contentp1": "Welcome to the Datahub — currently in beta and still under development. The source code is available as open source at ",
+    "contentp2": ". If you notice any translation errors or bugs, you can contact us at the following email address: ",
+    "close": "Close",
+    "reminder": "Don't remind me again",
+    "tour": "Discover the interface"
   }
 }

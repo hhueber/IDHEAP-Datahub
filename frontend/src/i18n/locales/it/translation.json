@@ -1,25 +1,628 @@
 {
-  "nav": { 
-    "language": "Lingua", 
+  "nav": {
+    "openMenu": "Apri il menu",
+    "closeMenu": "Chiudi il menu",
+    "navigation": "Navigazione",
+    "language": "Lingua",
+    "switchTo": "Passa a {{lang}}",
+    "home": "Home",
     "data": "Dati",
-    "home": "Home", 
-    "dataSoon": "Disponibile presto."
+    "currentLogoName": "IDHEAP",
+    "theme": "Tema",
+    "errors": {
+      "changeLanguage": "Impossibile cambiare lingua al momento."
+    },
+    "private": {
+      "privateArea": "Area privata",
+      "anonymous": "Anonimo"
+    }
   },
   "home": {
-    "heroTitle": "IDHEAP Data Explorer",
-    "heroSubtitle": "Questo sito, realizzato dall’IDHEAP, consente di esplorare i dati dei comuni svizzeri. È possibile visualizzare l’evoluzione nel tempo: scegliete prima un anno di questionario e poi la domanda che desiderate visualizzare. Alcune domande globali coprono più anni; potete selezionarle direttamente e poi scegliere l’anno di visualizzazione.",
-    "openPanel": "Apri pannello",
+    "openPanel": "Apri il pannello",
     "close": "Chiudi",
     "sectionDates": "Anni",
     "sectionQuestions": "Domande",
+    "selectionQuestions": "Selezione delle domande",
     "chooseYear": "Scegli un anno",
-    "globalOption": "Globale",
+    "globalOption": "Tutti gli anni",
     "noGlobalQuestions": "Nessuna domanda globale disponibile.",
-    "noQuestionsForSelection": "Nessuna domanda per questa selezione."
+    "noQuestionsForSelection": "Nessuna domanda disponibile per questa selezione.",
+    "bootstrapError": "Impossibile caricare i dati iniziali.",
+    "availableYears": "Anni disponibili per questa domanda",
+    "noAvailableYears": "Nessun anno disponibile",
+    "selectYear": "Seleziona un anno",
+    "choroplethGlobalYear": "Anni disponibili per questa domanda",
+    "granularity": "Granularità",
+    "timelineAvailable": "Disponibile",
+    "timelineUnavailable": "Non disponibile",
+    "selectQuestionFirst": "Seleziona una domanda",
+    "selectDate": "Seleziona un anno",
+    "tour": {
+      "geomap": "Qui troverai la mappa della Svizzera con la visualizzazione dei risultati per comune.",
+      "btn-navbar": "Fai clic qui per aprire il menu di navigazione.",
+      "zoom": "Usa questi pulsanti per ingrandire o ridurre la mappa della Svizzera.",
+      "screenshot": "Puoi acquisire uno screenshot facendo clic su questo pulsante.",
+      "centerswiss": "Se desideri ricentrare la mappa, fai clic su questo pulsante.",
+      "place-menu": "Per aprire il menu dei punti di interesse, fai clic su questo pulsante.",
+      "placeonoff": "Per mostrare o nascondere i punti di interesse, fai clic su questo pulsante.",
+      "floatingButton": "Fai clic qui per mostrare o nascondere il pannello di controllo.",
+      "popup-right": "Nel pannello di controllo puoi configurare le variabili visualizzate sulla mappa."
+    },
+    "question_collections": {
+      "saved": {
+        "title": "Accesso rapido",
+        "description": "Le tue domande salvate"
+      }
+    },
+    "question_drop_zone": {
+      "drag_question": "Trascina una domanda qui",
+      "release_to_add": "Rilascia per aggiungere questa domanda"
+    },
+    "question_card": {
+      "saved": "Domande salvate",
+      "drag": "Trascina",
+      "removeSaved": "Rimuovi dalle domande salvate",
+      "addSaved": "Aggiungi alle domande salvate",
+      "remove": "Rimuovi dalla selezione"
+    }
+  },
+  "map": {
+    "placeOfInterest": {
+      "show": "Mostra le città",
+      "hide": "Nascondi le città"
+    },
+    "basemap": {
+      "title": "Mappa di sfondo",
+      "none": "Nessuna",
+      "light": "Mappa stradale",
+      "swiss": "Mappa topografica"
+    },
+    "menu": {
+      "global": "Punti di interesse",
+      "instancePlaceOfInterest": "Punti di interesse definiti",
+      "noInstancePlaceOfInterest": "Nessun punto di interesse definito.",
+      "localPlaceOfInterest": "Punti di interesse aggiuntivi",
+      "removePlaceOfInterest": "Rimuovi",
+      "addPlaceOfInterest": "Aggiungi un punto di interesse",
+      "addPlaceOfInterestPlaceholder": "Digita almeno 3 lettere…",
+      "loadingSuggestions": "Caricamento dei suggerimenti...",
+      "noLocalPlaceOfInterest": "Nessun punto di interesse aggiuntivo definito.",
+      "placeholder": "Questo menu sarà completato successivamente con opzioni globali.",
+      "placeOfInterestTypes": {
+        "commune": "Comune",
+        "district": "Distretto",
+        "canton": "Cantone"
+      }
+    },
+    "legend": {
+      "showStats": "Mostra statistiche",
+      "distribution": "Distribuzione delle risposte",
+      "unitsWithResponse_one": "{{count}} unità con risposta",
+      "unitsWithResponse_other": "{{count}} unità con risposta",
+      "noData": "Nessun dato",
+      "noResponse": "Nessuna risposta"
+    },
+    "errors": {
+      "loadGeometry": "Impossibile caricare i livelli geografici.",
+      "network": "Problema di rete. Controlla la tua connessione.",
+      "failedToLoadPlaceOfInterest": "Impossibile caricare i punti di interesse.",
+      "failedToFetchSuggestions": "Impossibile recuperare i suggerimenti."
+    }
+  },
+  "common": {
+    "loading": "Caricamento…",
+    "error": "Errore",
+    "close": "Chiudi",
+    "unknown": "Errore sconosciuto",
+    "confirm": "Conferma",
+    "cancel": "Annulla",
+    "clear": "Cancella",
+    "next": "Avanti",
+    "prev": "Indietro",
+    "done": "Termina il tutorial"
+  },
+  "notFound": {
+    "message": "Pagina non trovata."
+  },
+  "questions": {
+    "empty": "Nessuna domanda disponibile.",
+    "loadError": "Impossibile caricare le domande.",
+    "aborted": "Caricamento annullato."
   },
   "login": {
     "title": "Accesso",
-    "subtitle": "Spazio riservato per la futura autenticazione."
+    "subtitle": "Area riservata per la futura autenticazione.",
+
+    "emailLabel": "Email",
+    "emailPlaceholder": "Inserisci la tua email",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Inserisci la tua password",
+
+    "submit": "Accedi",
+    "submitting": "Accesso in corso",
+
+    "errors": {
+      "generic": "Accesso non riuscito.",
+      "invalidCredentials": "Credenziali non valide.",
+      "network": "Problema di connessione alla rete.",
+      "locked": "Account bloccato.",
+      "rateLimited": "Troppi tentativi. Riprova più tardi."
+    }
   },
-  "common": { "loading": "Caricamento…", "error": "Errore" }
+  "stats": {
+    "context": {
+      "commune": "Comune",
+      "district": "Distretto",
+      "canton": "Cantone",
+      "communes_one": "{{count}} comune",
+      "communes_other": "{{count}} comuni"
+    },
+    "loading": "Caricamento delle statistiche",
+    "noData": "Nessun dato disponibile",
+    "selectedValue": "Valore selezionato",
+    "sameAnswer": "con la stessa risposta",
+    "countText": "{{count}} su {{total}} {{unit}} condividono questo valore",
+    "selected": "Selezionato",
+    "others": "Altri",
+    "value": "Valore:",
+    "count": "Numero:",
+    "share": "Percentuale:"
+  },
+  "export": {
+    "title": "Esporta",
+    "pngLabel": "PNG",
+    "pdfLabel": "PDF",
+    "pngTooltip": "Esporta in PNG",
+    "pdfTooltip": "Esporta in PDF",
+
+    "note": "Lo screenshot riproduce esattamente la vista corrente (zoom/spostamento) senza il menu.",
+
+    "ariaExportPng": "Esportazione PNG in corso",
+    "ariaExportPdf": "Esportazione PDF in corso",
+
+    "filenamePrefix": "mappa",
+
+    "errors": {
+      "mapUnavailable": "Mappa non disponibile.",
+      "pngFailed": "Esportazione PNG non riuscita.",
+      "pdfFailed": "Esportazione PDF non riuscita."
+    },
+    "data": {
+      "title": "Esporta dati",
+      "description": "Seleziona le domande salvate ed esporta i relativi dati in formato CSV.",
+      "selectAll": "Seleziona tutto",
+      "clear": "Cancella",
+      "selected": "Selezionato",
+      "noSavedQuestions": "Nessuna domanda salvata disponibile.",
+      "global": "Globale",
+      "survey": "Sondaggio",
+      "loading": "Esportazione",
+      "download": "Scarica il file CSV"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Benvenuto {{name}}",
+    "welcomeWithRole": "Benvenuto {{name}} ({{role}})",
+    "anonymous": "Utente",
+    "logout": "Disconnetti"
+  },
+  "changePassword": {
+    "title": "Cambia la mia password",
+
+    "oldPasswordLabel": "Password attuale",
+    "oldPasswordPlaceholder": "Inserisci la tua password attuale",
+
+    "newPasswordLabel": "Nuova password",
+    "newPasswordPlaceholder": "Inserisci la tua nuova password",
+
+    "confirmLabel": "Conferma password",
+    "confirmPlaceholder": "Conferma la tua nuova password",
+
+    "passwordHelp": "Minimo 10 caratteri, con almeno: 1 lettera maiuscola, 1 lettera minuscola, 1 numero e 1 simbolo (es. !@#$%&*).",
+
+    "submit": "Salva",
+    "submitting": "Salvataggio",
+
+    "success": "Password modificata con successo.",
+    "successWithDetail": "Password modificata con successo.",
+
+    "fail": "Impossibile modificare la password.",
+    "failWithDetail": "Impossibile modificare la password.",
+
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
+
+    "errors": {
+      "confirmMismatch": "La conferma della password non corrisponde.",
+      "tooShort": "La password è troppo corta (minimo 10 caratteri).",
+      "invalidOldPassword": "La password attuale non è valida.",
+      "serverValidation": "Il server ha restituito errori di validazione.",
+      "generic": "Si è verificato un errore."
+    }
+  },
+  "admin": {
+    "deleteMember": {
+      "title": "Elimina membro",
+
+      "firstNameLabel": "Nome",
+      "firstNamePlaceholder": "Inserisci il nome",
+      "lastNameLabel": "Cognome",
+      "lastNamePlaceholder": "Inserisci il cognome",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Inserisci l'indirizzo email",
+      "roleLabel": "Ruolo",
+
+      "roles": {
+        "member": "Membro",
+        "admin": "Amministratore"
+      },
+
+      "submit": "Elimina",
+      "submitting": "Eliminazione",
+
+      "success": "Utente eliminato con successo.",
+      "fail": "Eliminazione non riuscita.",
+
+      "errors": {
+        "serverValidation": "Il server ha restituito errori di validazione.",
+        "notFound": "Utente non trovato.",
+        "forbidden": "Azione non consentita.",
+        "generic": "Si è verificato un errore."
+      }
+    },
+    "addMember": {
+      "title": "Aggiungi membro",
+
+      "firstNameLabel": "Nome",
+      "firstNamePlaceholder": "Inserisci il nome",
+      "lastNameLabel": "Cognome",
+      "lastNamePlaceholder": "Inserisci il cognome",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Inserisci l'indirizzo email",
+      "roleLabel": "Ruolo",
+
+      "roles": {
+        "member": "Membro",
+        "admin": "Amministratore"
+      },
+
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Inserisci la password",
+      "confirmLabel": "Conferma password",
+      "confirmPlaceholder": "Conferma la password",
+      "passwordHelp": "Minimo 10 caratteri, con almeno: 1 lettera maiuscola, 1 lettera minuscola, 1 numero e 1 simbolo (es. !@#$%&*).",
+
+      "submit": "Crea membro",
+      "submitting": "Creazione",
+
+      "success": "Membro creato con successo.",
+      "fail": "Creazione non riuscita.",
+
+      "errors": {
+        "confirmMismatch": "La conferma della password non corrisponde.",
+        "tooShort": "La password è troppo corta (minimo 10 caratteri).",
+        "emailExists": "Esiste già un membro con questo indirizzo email.",
+        "forbidden": "Azione non consentita.",
+        "serverValidation": "Il server ha restituito errori di validazione.",
+        "generic": "Si è verificato un errore."
+      }
+    },
+    "config": {
+      "placeOfInterestEditor": {
+        "titleCreate": "Aggiungi una città",
+        "titleEdit": "Modifica una città",
+
+        "importFromCommunes": "Importa dai comuni",
+        "searchPlaceholder": "Digita almeno 3 lettere...",
+        "search": "Cerca",
+        "empty": "Nessun risultato",
+
+        "canonicalLabel": "Nome canonico",
+        "canonicalPlaceholder": "Losanna, Ginevra, Zurigo...",
+
+        "labels": {
+          "fr": "Francese",
+          "de": "Tedesco",
+          "it": "Italiano",
+          "rm": "Rumantsch",
+          "en": "Inglese",
+          "lat": "Latitudine",
+          "lon": "Longitudine",
+          "preview": "Anteprima:"
+        },
+
+        "submitCreate": "Crea",
+        "submitEdit": "Salva"
+      },
+      "placeOfInterestPage": {
+        "title": "Città",
+        "addButton": "Aggiungi",
+        "columns": {
+          "name": "Nome",
+          "fr": "FR",
+          "de": "DE",
+          "it": "IT",
+          "rm": "RM",
+          "en": "EN",
+          "position": "Posizione"
+        },
+        "edit": "Modifica",
+        "delete": "Elimina",
+        "empty": "Nessuna città",
+        "loading": "Caricamento",
+        "titleConfirm": "Elimina città",
+        "deleteConfirm": "Vuoi davvero eliminare la città «{{name}}»?",
+        "confirmLabel": "Elimina",
+        "cancelLabel": "Annulla"
+      },
+      "themeConfigPage": {
+        "title": "Configurazione del tema e dell'istanza",
+        "general": "Istanza",
+        "instanceName": "Nome dell'istanza",
+        "logoUrl": "URL del logo",
+        "logoPreview": "Anteprima del logo",
+        "logoUpload": "Carica logo",
+        "logoInvalidType": "Formato non supportato. Usa PNG/JPG/WebP/SVG.",
+        "logoTooLarge": "File troppo grande (massimo {{size}} MB).",
+        "logoDropZone": "Area di rilascio del logo",
+        "logoDropReject": "File non supportato.",
+        "logoDropActive": "Rilascia per caricare",
+        "logoFormats": "PNG / JPG / WebP / SVG · max {{size}} MB",
+        "logoDropHint": "Trascina un'immagine qui o fai clic per selezionare un file",
+        "logoBrowse": "Carica...",
+        "currentMode": "Modalità attuale: {{mode}}",
+        "defaultMode": "Modalità predefinita",
+        "light": "Tema chiaro",
+        "dark": "Tema scuro",
+        "presets": "Preimpostazioni dei colori",
+        "presetsHelp": "Scegli una preimpostazione di colori per i temi chiaro e scuro per applicare rapidamente una palette coerente.",
+        "lightSection": "Tema chiaro",
+        "darkSection": "Tema scuro",
+        "lightPreview": "Anteprima del tema chiaro",
+        "darkPreview": "Anteprima del tema scuro",
+        "mapLightPreview": "Anteprima della mappa con tema chiaro",
+        "mapDarkPreview": "Anteprima della mappa con tema scuro",
+        "mapSection": "Colori della mappa",
+        "primaryColourLabel": "Colore principale",
+        "secondaryColourLabel": "Colore secondario",
+        "backgroundColourLabel": "Colore di sfondo",
+        "textColourLabel": "Colore del testo",
+        "navbarOverlayLabel": "Opacità della barra di navigazione",
+        "logoBackgroundLabel": "Colore di sfondo del logo",
+        "selectionColourLabel": "Colore della selezione",
+        "communesColourLabel": "Colore dei comuni",
+        "districtColourLabel": "Colore dei distretti",
+        "cantonColourLabel": "Colore dei cantoni",
+        "countryColourLabel": "Colore del Paese",
+        "lakesColourLabel": "Colore dei laghi",
+        "saving": "Salvataggio",
+        "save": "Salva",
+        "saved": "Salvato.",
+        "confirmTitle": "Conferma modifiche",
+        "confirmMessage": "Sei sicuro di voler salvare le modifiche al tema? Questo influenzerà l'aspetto dell'intera applicazione.",
+        "logoUploadError": "Si è verificato un errore durante il caricamento del logo.",
+        "loadError": "Impossibile caricare la configurazione del tema.",
+        "saveError": "Si è verificato un errore durante il salvataggio della configurazione.",
+        "noLogo": "Nessun logo",
+        "previewPanel": {
+          "text": "Lorem ipsum — testo semplice",
+          "buttonPrimary": "Pulsante principale",
+          "secondaryFrame": "Pannello secondario",
+          "selection": "Elemento selezionato"
+        }
+      },
+      "configEditor": {
+        "cancel": "Annulla",
+        "submit": "Salva",
+        "saving": "Salvataggio"
+      },
+      "errors": {
+        "loadFailed": "Caricamento non riuscito.",
+        "saved": "Salvato.",
+        "saveFailed": "Salvataggio non riuscito.",
+        "deleted": "Eliminato.",
+        "deleteFailed": "Eliminazione non riuscita.",
+        "network": "Errore di rete."
+      }
+    }
+  },
+  "dashboardSidebar": {
+    "privateSpace": "Area privata",
+    "toggleSection": "Mostra/Nascondi la sezione {{section}}",
+    "rolePrefix": "Ruolo:",
+    "logout": "Disconnetti",
+    "sections": {
+      "dashboard": "Dashboard",
+      "survey": "Sondaggio",
+      "qa": "Domande e Risposte",
+      "places": "Luoghi",
+      "administration": "Amministrazione"
+    },
+    "survey": {
+      "_": "Sondaggio",
+      "all": "Tutti",
+      "newEdit": "Nuovo"
+    },
+    "qa": {
+      "qps": {
+        "_": "QuestionPerSurvey",
+        "all": "Tutti",
+        "newEdit": "Nuovo"
+      },
+      "qglobal": {
+        "_": "QuestionGlobal",
+        "all": "Tutti",
+        "newEdit": "Nuovo"
+      },
+      "qcat": {
+        "_": "QuestionCategory",
+        "all": "Tutti",
+        "newEdit": "Nuovo"
+      },
+      "answer": {
+        "_": "Answer",
+        "all": "Tutti",
+        "newEdit": "Nuovo"
+      },
+      "option": {
+        "_": "Option",
+        "all": "Tutti",
+        "newEdit": "Nuovo"
+      }
+    },
+    "places": {
+      "commune": {
+        "_": "Comune",
+        "all": "Tutti"
+      },
+      "district": {
+        "_": "Distretto",
+        "all": "Tutti"
+      },
+      "canton": {
+        "_": "Cantone",
+        "all": "Tutti"
+      }
+    },
+    "administration": {
+      "changePassword": "Cambia la mia password",
+      "users": {
+        "_": "Utenti",
+        "add": "Aggiungi membro",
+        "delete": "Elimina membro"
+      },
+      "config": {
+        "_": "Configurazione",
+        "placeOfInterest": "Punti di interesse",
+        "theme": "Tema"
+      }
+    },
+    "pageAll": {
+      "uid": "UID",
+      "name": "Nome",
+      "code": "Codice",
+      "entity": "Entità",
+      "question": "Sondaggio",
+      "commune": "Comune",
+      "noData": "Nessun dato",
+      "asc": "Asc",
+      "desc": "Desc",
+      "error": "Errore:",
+      "loading": "Caricamento",
+      "sortBy": "Ordina per",
+      "label": "Etichetta",
+      "actions": "Azioni",
+      "show": "Mostra",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "value": "Valore",
+      "searchPlaceholder": "Cerca in questa entità...",
+      "clear": "Cancella",
+      "searching": "Ricerca",
+      "confirmDeleteTitle": "Conferma eliminazione",
+      "confirmDeleteMessage": "Sei sicuro di voler eliminare l'elemento «{{name}}»?",
+      "deleting": "Eliminazione",
+      "deleteError": "Errore durante l'eliminazione:",
+      "year": "Anno",
+      "questionUid": "UID domanda",
+      "communeUid": "UID comune",
+      "save": "Salva",
+      "saving": "Salvataggio...",
+      "editError": "Errore durante la modifica:",
+      "confirmEditTitle": "Conferma modifica",
+      "confirmEditMessage": "Sei sicuro di voler modificare l'elemento «{{name}}»?"
+    },
+    "pageShow": {
+      "loading": "Caricamento",
+      "error": "Errore:",
+      "noData": "Nessun dato",
+      "mainInfo": "Informazioni principali",
+      "languages": "Lingue",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "children": "Entità correlate",
+      "childrenHint": "Relazioni / tabelle correlate",
+      "insights": "Approfondimenti",
+      "insightsHint": "Mappa / statistiche",
+      "text": "Testo",
+      "noChildren": "Nessun dato",
+      "confirm": "Conferma",
+      "deleteError": "Errore durante l'eliminazione:",
+      "confirmDeleteTitle": "Conferma eliminazione",
+      "noSelection": "Nessun campo selezionato.",
+      "confirmClearMessage": "Stai per cancellare i seguenti campi:\n- {{fields}}",
+      "deleting": "Eliminazione...",
+      "editError": "Errore durante la modifica:",
+      "saving": "Salvataggio...",
+      "save": "Salva",
+      "confirmEditTitle": "Conferma modifica",
+      "confirmEditMessage": "Stai per modificare i seguenti campi:\n- {{fields}}",
+      "insightsPanel": {
+        "noInsights": "Nessuna informazione disponibile per questa entità.",
+        "mapContext": "I cantoni svizzeri nel loro contesto, con l'entità selezionata evidenziata",
+        "stats": "Statistiche",
+        "map": "Mappa",
+        "stat": {
+          "code": "Codice",
+          "district_uid": "UID del distretto",
+          "canton_uid": "UID del cantone",
+          "ofs_id": "ID UST",
+          "year": "Anno",
+          "survey_uid": "UID del sondaggio",
+          "survey_year": "Anno del sondaggio",
+          "private": "Privato",
+          "category_uid": "UID della categoria",
+          "question_uid": "UID della domanda",
+          "commune_uid": "UID del comune",
+          "value": "Valore",
+          "label": "Etichetta",
+          "answers_count": "Numero di risposte",
+          "communes_count": "Numero di comuni",
+          "districts_count": "Numero di distretti",
+          "questions_count": "Numero di domande",
+          "options_count": "Numero di opzioni",
+          "distinct_answer_values": "Numero di valori di risposta distinti",
+          "linked_survey_questions": "Domande del sondaggio collegate",
+          "global_questions_count": "Numero di domande globali",
+          "survey_questions_count": "Numero di domande del sondaggio",
+          "question_links": "Collegamenti alle domande",
+          "global_question_links": "Collegamenti alle domande globali",
+          "category_links": "Collegamenti alle categorie",
+          "answers_same_question_year": "Risposte per la stessa domanda/anno",
+          "same_value_count": "Stesso valore di risposta"
+        }
+      },
+      "visibility": {
+        "private": "Privato",
+        "public": "Pubblico"
+      },
+      "relatedInfo": "Informazioni correlate",
+      "relations": {
+        "commune": "Comune",
+        "district": "Distretto",
+        "canton": "Cantone",
+        "survey": "Sondaggio",
+        "question": "Domanda",
+        "questionGlobal": "Domanda globale",
+        "questionCategory": "Categoria",
+        "option": "Opzione"
+      }
+    }
+  },
+  "roles": {
+    "admin": "Amministratore",
+    "member": "Membro"
+  },
+  "pagination": {
+    "page": "Pagina"
+  },
+  "first-modal": {
+    "title": "Benvenuto nel Datahub",
+    "contentp1": "Benvenuto nel Datahub, attualmente in versione beta e ancora in fase di sviluppo. Il codice sorgente è disponibile come open source su ",
+    "contentp2": ". Se noti errori di traduzione o bug, puoi contattarci al seguente indirizzo e-mail: ",
+    "close": "Chiudi",
+    "reminder": "Non ricordarmelo più",
+    "tour": "Scopri l'interfaccia"
+  }
 }
