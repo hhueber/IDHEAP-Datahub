@@ -155,6 +155,7 @@ export default function PlaceOfInterestLayer({
             {/* Bouton fond cartographique */}
             {onBasemapChange && (
               <button
+                id="basemap-btn"
                 type="button"
                 onClick={() => setIsBasemapOpen((o) => !o)}
                 className="
