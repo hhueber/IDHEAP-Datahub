@@ -58,7 +58,7 @@ If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and 
 
 ## AI Disclosure
 
-Part of the translations were made using [ce que tu as utilisé].
+Part of the translations were made using ChatGPT modele 5.5.
 
 ### Source
 
