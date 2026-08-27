@@ -56,6 +56,10 @@ If you are a dev, please refer to our [CONTRIBUTING](CONTRIBUTING.md) file, and 
   </tbody>
 </table>
 
+## AI Disclosure
+
+Part of the translations were made using [ce que tu as utilisé].
+
 ### Source
 
 source of the icon image: ```https://game-icons.net/1x1/delapouite/position-marker.html```
