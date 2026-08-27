@@ -7,6 +7,8 @@ import {
   ChoroplethResponse,
 } from "@/features/geo/geoApi";
 import { choroplethGeometryCache } from "@/features/geo/choroplethGeometryCache";
+import { useTranslation } from "react-i18next";
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 
 type Params = {
   scope: "per_survey" | "global";
@@ -96,9 +98,13 @@ function mergeChoroplethGeometriesAndValues(
 }
 
 export function useChoropleth(params: Params) {
+  const { i18n } = useTranslation();
   const [data, setData] = useState<ChoroplethResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorKey, setErrorKey] = useState<string | null>(null);
+  const lang = normalizeGeoLanguage(
+    i18n.resolvedLanguage ?? i18n.language
+  );
 
   const enabled = useMemo(
     () => typeof params.question_uid === "number" && typeof params.year === "number",
@@ -128,7 +134,7 @@ export function useChoropleth(params: Params) {
       ? // Cache hit: fetch only values
         geoApi
           .getChoroplethValues(
-            { scope: params.scope, question_uid: params.question_uid as number, year, granularity },
+            { scope: params.scope, question_uid: params.question_uid as number, year, granularity, lang },
             ctrl.signal
           )
           .then((values) => mergeChoroplethGeometriesAndValues(cachedGeo, values))
@@ -136,7 +142,7 @@ export function useChoropleth(params: Params) {
         Promise.all([
           geoApi.getChoroplethGeometries({ year, granularity }, ctrl.signal),
           geoApi.getChoroplethValues(
-            { scope: params.scope, question_uid: params.question_uid as number, year, granularity },
+            { scope: params.scope, question_uid: params.question_uid as number, year, granularity, lang },
             ctrl.signal
           ),
         ]).then(([geo, values]) => {
@@ -165,7 +171,7 @@ export function useChoropleth(params: Params) {
       alive = false;
       ctrl.abort();
     };
-  }, [enabled, params.question_uid, params.year, params.bins, params.granularity, params.scope]);
+  }, [enabled, params.question_uid, params.year, params.bins, params.granularity, params.scope, lang]);
 
   return { data, loading, errorKey };
 }

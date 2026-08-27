@@ -7,7 +7,7 @@ import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
-
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 import { createPortal } from "react-dom";
 import GreetingModal from "./components/GreetingModal";
 import BottomStatsPanel from "@/features/home/components/BottomStatsPanel";
@@ -23,7 +23,10 @@ type SelectedArea = {
 } | null;
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = normalizeGeoLanguage(
+    i18n.resolvedLanguage ?? i18n.language
+  );
   const [selectedArea, setSelectedArea] = useState<SelectedArea>(null);
 
   // Menu ouvert par défaut
@@ -268,6 +271,7 @@ export default function Home() {
         questionUid={selectedQuestionUid}
         year={statsYear}
         scope={selectedSurveyUid === GLOBAL_UID ? "global" : "per_survey"}
+        lang={lang}
       />
     </section>
   );

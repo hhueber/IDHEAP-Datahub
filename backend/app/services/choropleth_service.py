@@ -3,7 +3,7 @@
 # (par exemple des communes) sont colorées en fonction d'une valeur de données
 # (statistique, réponse à un sondage, score numérique, etc.).
 from typing import Any, List, Optional
-import orjson
+
 
 from app.models.answer import Answer
 from app.models.canton import Canton
@@ -16,19 +16,14 @@ from app.models.option import Option
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.schemas.choropleth import (
-    ChoroplethGranularity,
-    ChoroplethValueEntry,
-    GradientMeta,
-    LegendItem,
-    MapLegend,
-)
+from app.schemas.choropleth import ChoroplethGranularity, ChoroplethValueEntry, GradientMeta, LegendItem, MapLegend
 from app.schemas.geo import Feature, FeatureCollection, Geometry
 from geoalchemy2 import functions as geofunc
 from sqlalchemy import and_, case, cast, func, Integer, Numeric, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 from sqlalchemy.sql.selectable import FromClause
+import orjson
 
 
 NO_DATA_COLOR = "#cccccc"  # gris
@@ -37,6 +32,56 @@ NO_RESPONSE_COLOR = "#f59e0b"  # orange/ambre
 GRAD_START = "#22c55e"  # vert
 GRAD_END = "#3b82f6"  # bleu
 MAX_CATEGORIES = 12  # légende: 12 catégories max, sinon gradient ou top12+other
+SUPPORTED_LEGEND_LANGS = {"fr", "de", "it", "rm", "en"}
+
+
+def _normalize_legend_lang(lang: str | None) -> str:
+    normalized = (lang or "en").strip().lower().replace("_", "-").split("-")[0]
+
+    if normalized not in SUPPORTED_LEGEND_LANGS:
+        return "en"
+
+    return normalized
+
+
+def _non_empty_string(value: Any) -> str | None:
+    if value is None:
+        return None
+
+    value = str(value).strip()
+
+    return value if value else None
+
+
+def _get_option_legend_label(
+    option: Option | None,
+    lang: str,
+    fallback_value: Any,
+) -> str:
+    if option is None:
+        return str(fallback_value)
+
+    safe_lang = _normalize_legend_lang(lang)
+
+    # 1. Traduction correspondant à la langue active
+    translated = _non_empty_string(getattr(option, f"text_{safe_lang}", None))
+
+    if translated is not None:
+        return translated
+
+    # 2. Label par défaut
+    label = _non_empty_string(getattr(option, "label", None))
+
+    if label is not None:
+        return label
+
+    # 3. Valeur/code de l'option
+    option_value = _non_empty_string(getattr(option, "value", None))
+
+    if option_value is not None:
+        return option_value
+
+    return str(fallback_value)
 
 
 def _default_colors(n: int) -> list[str]:
@@ -264,7 +309,11 @@ async def _compute_global_value(
     return _normalize_value(str(r.get("mode_text")) if r.get("mode_text") is not None else None)
 
 
-def _build_legend_and_colors(features: list[Feature], options: List[Option]) -> MapLegend:
+def _build_legend_and_colors(
+    features: list[Feature],
+    options: List[Option],
+    lang: str = "en",
+) -> MapLegend:
     raw_values: list[tuple[str, Optional[str]]] = []
     numeric_values: list[float] = []
 
@@ -305,7 +354,11 @@ def _build_legend_and_colors(features: list[Feature], options: List[Option]) -> 
         items: list[LegendItem] = []
         for i, v in enumerate(distinct):
             opt = option_by_value.get(str(v))
-            label = opt.label if opt is not None and opt.label else str(v)
+            label = _get_option_legend_label(
+                option=opt,
+                lang=lang,
+                fallback_value=v,
+            )
 
             items.append(
                 LegendItem(
@@ -345,7 +398,20 @@ def _build_legend_and_colors(features: list[Feature], options: List[Option]) -> 
     # fallback top 12 + other
     top = distinct[:MAX_CATEGORIES]
     colors = _default_colors(len(top))
-    items = [LegendItem(label=str(v), color=colors[i], value=v) for i, v in enumerate(top)]
+    option_by_value = {str(opt.value): opt for opt in options}
+
+    items = [
+        LegendItem(
+            label=_get_option_legend_label(
+                option=option_by_value.get(str(v)),
+                lang=lang,
+                fallback_value=v,
+            ),
+            color=colors[i],
+            value=v,
+        )
+        for i, v in enumerate(top)
+    ]
     if n_distinct > MAX_CATEGORIES:
         items.append(LegendItem(label="Other", color="#999999", value="__other__"))
     _append_special(items)
@@ -798,6 +864,7 @@ async def build_choropleth(
     question_uid: int,
     year: int,
     granularity: "ChoroplethGranularity",
+    lang: str = "en",
 ) -> tuple["FeatureCollection", "MapLegend", dict[str, Any]]:
 
     years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
@@ -865,7 +932,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return FeatureCollection(features=feats), legend, years_meta
 
     # District
@@ -920,7 +987,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return FeatureCollection(features=feats), legend, years_meta
 
     # Canton
@@ -975,7 +1042,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return FeatureCollection(features=feats), legend, years_meta
 
     # Federal
@@ -1062,7 +1129,7 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return FeatureCollection(features=feats), legend, years_meta
 
     # fallback
@@ -1105,10 +1172,9 @@ def _all_commune_geo_cte(*, target_year: int, year_window: int = 1):
         .where(and_(CommuneMap.year >= y_min, CommuneMap.year <= y_max))
     ).cte("cm_ranked_all_window")
 
-    return (
-        select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year)
-        .where(cm_ranked.c.rn == 1)
-    ).cte("cm_best_all_window")
+    return (select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year).where(cm_ranked.c.rn == 1)).cte(
+        "cm_best_all_window"
+    )
 
 
 def _rows_to_value_features(
@@ -1303,6 +1369,7 @@ async def build_choropleth_values(
     question_uid: int,
     year: int,
     granularity: "ChoroplethGranularity",
+    lang: str = "en",
 ) -> tuple["MapLegend", dict[str, "ChoroplethValueEntry"], dict[str, Any]]:
     """
     Returns (legend, values_dict, years_meta) without any geometry.
@@ -1317,7 +1384,11 @@ async def build_choropleth_values(
     if scope == "global":
         resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
         if resolved is None:
-            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            empty_legend = MapLegend(
+                type="categorical",
+                title="Responses",
+                items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)],
+            )
             return empty_legend, {}, years_meta
         q_uid = resolved
     else:
@@ -1342,9 +1413,13 @@ async def build_choropleth_values(
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_value_features(level="commune", rows=[dict(r) for r in rows], use_mode=use_mode)
         if not feats:
-            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            empty_legend = MapLegend(
+                type="categorical",
+                title="Responses",
+                items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)],
+            )
             return empty_legend, {}, years_meta
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return legend, _features_to_values_dict(feats), years_meta
 
     if granularity == "district":
@@ -1367,9 +1442,13 @@ async def build_choropleth_values(
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_value_features(level="district", rows=[dict(r) for r in rows], use_mode=use_mode)
         if not feats:
-            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            empty_legend = MapLegend(
+                type="categorical",
+                title="Responses",
+                items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)],
+            )
             return empty_legend, {}, years_meta
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return legend, _features_to_values_dict(feats), years_meta
 
     if granularity == "canton":
@@ -1392,9 +1471,13 @@ async def build_choropleth_values(
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_value_features(level="canton", rows=[dict(r) for r in rows], use_mode=use_mode)
         if not feats:
-            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            empty_legend = MapLegend(
+                type="categorical",
+                title="Responses",
+                items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)],
+            )
             return empty_legend, {}, years_meta
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return legend, _features_to_values_dict(feats), years_meta
 
     if granularity == "federal":
@@ -1410,7 +1493,11 @@ async def build_choropleth_values(
             or 0
         )
         if total_rows == 0:
-            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            empty_legend = MapLegend(
+                type="categorical",
+                title="Responses",
+                items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)],
+            )
             return empty_legend, {}, years_meta
 
         global_kind, global_val = await _compute_global_value(db, q_uid, year, use_mode=use_mode)
@@ -1436,9 +1523,13 @@ async def build_choropleth_values(
             for r in canton_rows
         ]
         if not feats:
-            empty_legend = MapLegend(type="categorical", title="Responses", items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)])
+            empty_legend = MapLegend(
+                type="categorical",
+                title="Responses",
+                items=[LegendItem(label="No data", color=NO_DATA_COLOR, value=None)],
+            )
             return empty_legend, {}, years_meta
-        legend = _build_legend_and_colors(feats, options)
+        legend = _build_legend_and_colors(feats, options, lang)
         return legend, _features_to_values_dict(feats), years_meta
 
     empty_legend = MapLegend(type="categorical", title="Responses", items=[])
