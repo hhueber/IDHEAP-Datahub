@@ -47,7 +47,7 @@
       "placeonoff": "Pour afficher ou masquer lesdits points d'intérêt, vous pouvez cliquer sur ce bouton.",
       "floatingButton": "Cliquez ici pour afficher ou masquer le panneau de contrôle.",
       "popup-right": "Dans le panneau de contrôle, vous pouvez configurer les variables à afficher sur la carte.",
-      "basemap": "Cliquez sur ce boutton pour pouvoir changer le fond de la carte."
+      "basemap": "Cliquez sur ce bouton pour pouvoir changer le fond de base de la carte."
     },
     "question_collections": {
       "saved": {
