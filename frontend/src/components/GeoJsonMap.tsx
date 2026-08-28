@@ -657,7 +657,7 @@ export default function GeoJsonMap({
             />
 
             {/* Légende */}
-            <MapLegendOverlay choropleth={choropleth} panelOpen={panelOpen} />
+            <MapLegendOverlay choropleth={choropleth} />
           </>
         )}
         {/* Points villes et labels */}

@@ -369,7 +369,7 @@ export default function BottomStatsPanel({
   return (
     <div
       className="
-        fixed bottom-0 left-0 right-0 z-[40]
+        absolute bottom-0 left-0 right-0 z-[2000]
         rounded-t-3xl shadow-2xl
         border-t
         px-6 py-5

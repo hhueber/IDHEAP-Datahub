@@ -20,3 +20,15 @@ body {
 }
 .leaflet-container { z-index: 0; }
 .leaflet-control { z-index: 100 !important; }
+
+/*
+  Bouton d'ouverture/fermeture du drawer mobile uniquement (< 1024 px).
+  Sur desktop le bouton suit la carte naturellement (absolute dans flex-1).
+  Sur mobile le drawer est en overlay : on translate le bouton pour qu'il reste visible.
+  On utilise --tw-translate-x pour s'intégrer proprement avec les transforms Tailwind.
+*/
+@media (max-width: 1023px) {
+  #floating-buttton[data-open="true"] {
+    --tw-translate-x: calc(-1 * min(90vw, 28rem));
+  }
+}

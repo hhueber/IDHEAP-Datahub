@@ -5,7 +5,6 @@ import { useTranslation } from "react-i18next";
 
 type Props = {
   choropleth: ChoroplethResponse;
-  panelOpen?: boolean;
 };
 
 type StatItem = {
@@ -100,15 +99,13 @@ function useOutsideClick(
   }, [enabled, onClose, ref]);
 }
 
-export default function MapLegendOverlay({ choropleth, panelOpen = false }: Props) {
+export default function MapLegendOverlay({ choropleth }: Props) {
   const { background, borderColor, textColor, hoverText07, hoverPrimary04 } = useTheme();
 
   const legend = choropleth.legend as any;
   const { t } = useTranslation();
   const isGradient = legend?.type === "gradient";
   const g = legend?.gradient;
-
-  const drawerShift = "calc(-1 * min(90vw, 28rem))";
 
   const [statsOpen, setStatsOpen] = useState(false);
   const popRef = useRef<HTMLDivElement>(null);
@@ -176,8 +173,7 @@ export default function MapLegendOverlay({ choropleth, panelOpen = false }: Prop
         transition-transform duration-300 ease-out
       "
       style={{
-        transform: panelOpen ? `translate(${drawerShift}, -50%)` 
-    : "translate(0, -50%)",
+        transform: "translate(0, -50%)",
         backgroundColor: background,
         borderWidth: 1,
         borderStyle: "solid",
