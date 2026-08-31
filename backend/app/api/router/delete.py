@@ -1,9 +1,11 @@
 from app.api.dependencies import get_current_user
+from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
 from app.repositories.delete_repo import clear_fields, delete_rows
 from app.schemas.delete import DeleteRequest, DeleteResponse
 from app.schemas.user import UserPublic
 from app.security.delete_guard import assert_delete_allowed, DeleteAction
+from app.services.permission_service import role_has_permission
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -37,6 +39,15 @@ async def generic_delete(
 
     try:
         if payload.clear_fields:
+            if not role_has_permission(
+                _user.role,
+                scope=PermissionScope.DATASET,
+                level=PermissionLevel.WRITE,
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not enough permissions to clear fields",
+                )
             assert_delete_allowed(entity=payload.entity, action=DeleteAction.CLEAR_FIELDS)
             affected = await clear_fields(
                 db,
@@ -46,6 +57,15 @@ async def generic_delete(
             )
             action = "Cleared fields"
         else:
+            if not role_has_permission(
+                _user.role,
+                scope=PermissionScope.DATASET,
+                level=PermissionLevel.MANAGE,
+            ):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Not enough permissions to delete rows",
+                )
             assert_delete_allowed(entity=payload.entity, action=DeleteAction.DELETE_ROWS)
             affected = await delete_rows(
                 db,
