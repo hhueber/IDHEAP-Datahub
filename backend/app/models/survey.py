@@ -1,7 +1,7 @@
 from typing import List
 
 
-from sqlalchemy import Integer, String
+from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -21,3 +21,8 @@ class Survey(Base):
     )
 
     survey_metadata: Mapped["SurveyMetadata"] = relationship("SurveyMetadata", back_populates="survey")
+
+    project_uid: Mapped[int] = mapped_column(
+        ForeignKey("project.uid", ondelete="CASCADE"), nullable=True
+    )  # TODO When we will implement the project on the front and back change this to False, but i don't want to break everything now
+    project: Mapped["Project"] = relationship("Project", back_populates="surveys")

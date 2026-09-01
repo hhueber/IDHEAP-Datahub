@@ -44,6 +44,35 @@ export default function GlobalQuestionTimeline({
     return ((year - minYear) / range) * 100;
   };
 
+  const getHitArea = (index: number) => {
+    const current = getLeftPercent(sortedYears[index]);
+
+    const previous =
+      index > 0
+        ? getLeftPercent(sortedYears[index - 1])
+        : 0;
+
+    const next =
+      index < sortedYears.length - 1
+        ? getLeftPercent(sortedYears[index + 1])
+        : 100;
+
+    const left =
+      index === 0
+        ? 0
+        : (previous + current) / 2;
+
+    const right =
+      index === sortedYears.length - 1
+        ? 100
+        : (current + next) / 2;
+
+    return {
+      left,
+      width: right - left,
+    };
+  };
+
   return (
     <div
       className={`relative transition-opacity duration-200 ${visible ? "opacity-100" : "opacity-0"}`}
@@ -108,6 +137,39 @@ export default function GlobalQuestionTimeline({
 
             {/* Points / repères */}
             <div className="relative h-[90px]">
+              {/* Zones de clic étendues */}
+              {sortedYears.map((year, index) => {
+                const enabled =
+                  questionSelected &&
+                  enabledSet.has(year) &&
+                  !loading;
+
+                const hitArea = getHitArea(index);
+
+                return (
+                  <button
+                    key={`hit-${year}`}
+                    type="button"
+                    disabled={!enabled}
+                    onClick={() => enabled && onSelect(year)}
+                    className="
+                      absolute
+                      top-[14px]
+                      h-[60px]
+                      z-10
+                      bg-transparent
+                      disabled:cursor-not-allowed
+                    "
+                    style={{
+                      left: `${hitArea.left}%`,
+                      width: `${hitArea.width}%`,
+                    }}
+                    aria-label={`${t("home.selectYear")} ${year}`}
+                    aria-pressed={selectedYear === year}
+                    title={String(year)}
+                  />
+                );
+              })}
               {sortedYears.map((year, index) => {
                 const enabled = questionSelected && enabledSet.has(year) && !loading;
                 const selected = selectedYear === year;
@@ -116,7 +178,7 @@ export default function GlobalQuestionTimeline({
                 return (
                   <div
                     key={year}
-                    className="absolute"
+                    className="absolute z-20 pointer-events-none"
                     style={{
                         left: `${left}%`,
                         top: 0,
@@ -138,11 +200,8 @@ export default function GlobalQuestionTimeline({
                       }}
                     />
 
-                    <button
-                      type="button"
-                      disabled={!enabled}
-                      onClick={() => enabled && onSelect(year)}
-                      className="relative block transition-all duration-150 disabled:cursor-not-allowed"
+                    <div
+                      className="relative block transition-all duration-150"
                       style={{
                         width: 24,
                         height: 24,
@@ -158,7 +217,7 @@ export default function GlobalQuestionTimeline({
                       title={String(year)}
                     >
                       <span className="sr-only">{year}</span>
-                    </button>
+                    </div>
 
                     <div
                         className="mt-3 text-center text-[10px] font-medium whitespace-nowrap"

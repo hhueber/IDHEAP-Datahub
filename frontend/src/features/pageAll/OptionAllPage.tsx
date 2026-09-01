@@ -14,6 +14,9 @@ export default function OptionAllPage() {
         sortKey: "value",
         truncate: true,
         maxWidthClassName: "max-w-[180px]",
+        kind: "text",
+        editable: true,
+        editKey: "value",
       },
       {
         key: "name",
@@ -21,6 +24,9 @@ export default function OptionAllPage() {
         sortKey: "name",
         truncate: true,
         maxWidthClassName: "max-w-[420px]",
+        kind: "text",
+        editable: true,
+        editKey: "label_",
       },
     ],
     []

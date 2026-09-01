@@ -313,6 +313,7 @@ export default function BottomStatsPanel({
   questionUid,
   year,
   scope,
+  lang,
 }: any) {
   const { t } = useTranslation();
   const [data, setData] = useState<any>(null);
@@ -344,11 +345,12 @@ export default function BottomStatsPanel({
         year,
         area_uid: selectedArea.uid,
         level: selectedArea.level,
+        lang,
       })
       .then((res) => setData(res.data ?? null))
       .catch(() => setData(null))
       .finally(() => setLoading(false));
-  }, [selectedArea, questionUid, year, scope]);
+  }, [selectedArea, questionUid, year, scope, lang]);
 
   if (!selectedArea || !questionUid || !year) return null;
 
@@ -367,7 +369,7 @@ export default function BottomStatsPanel({
   return (
     <div
       className="
-        fixed bottom-0 left-0 right-0 z-[40]
+        absolute bottom-0 left-0 right-0 z-[2000]
         rounded-t-3xl shadow-2xl
         border-t
         px-6 py-5

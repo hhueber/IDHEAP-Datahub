@@ -1,17 +1,628 @@
 {
-  "nav": { "language": "Lingua", "data": "Datas", "home": "Chasa", "dataSoon": "Prest disponibel." },
+  "nav": {
+    "openMenu": "Avrir il menu",
+    "closeMenu": "Serrar il menu",
+    "navigation": "Navigaziun",
+    "language": "Lingua",
+    "switchTo": "Midar a {{lang}}",
+    "home": "Pagina d'inizial",
+    "data": "Datas",
+    "currentLogoName": "IDHEAP",
+    "theme": "Tema",
+    "errors": {
+      "changeLanguage": "Impussibel da midar la lingua il mument."
+    },
+    "private": {
+      "privateArea": "Zona privata",
+      "anonymous": "Anonim"
+    }
+  },
   "home": {
-    "heroTitle": "IDHEAP Data Explorer",
-    "heroSubtitle": "Quest sit, sviluppà da l’IDHEAP, pussibilitescha da explorar las datas da las vischnancas svizras. Ins po visualizar l’evoluziun en il temp: tschernai l’emprim in onn da questiunari e lura la dumonda che vus vulais vesair. Intginas dumondas globalas cumpiglian plirs onns; quellas pon ins tscherner directamain ed inditgar lura l’onn da visualisaziun.",
     "openPanel": "Avrir il panel",
     "close": "Serrar",
     "sectionDates": "Onns",
     "sectionQuestions": "Dumondas",
+    "selectionQuestions": "Selecziun da dumondas",
     "chooseYear": "Tscherner in onn",
-    "globalOption": "Global",
+    "globalOption": "Tut ils onns",
     "noGlobalQuestions": "Naginas dumondas globalas disponiblas.",
-    "noQuestionsForSelection": "Naginas dumondas per questa selecziun."
+    "noQuestionsForSelection": "Naginas dumondas per questa selecziun.",
+    "bootstrapError": "Impussibel da chargiar las datas inizialas.",
+    "availableYears": "Onns disponibels per questa dumonda",
+    "noAvailableYears": "Nagins onns disponibels",
+    "selectYear": "Tscherner in onn",
+    "choroplethGlobalYear": "Onns disponibels per questa dumonda",
+    "granularity": "Granularitad",
+    "timelineAvailable": "Disponibel",
+    "timelineUnavailable": "Betg disponibel",
+    "selectQuestionFirst": "Tscherna ina dumonda",
+    "selectDate": "Tscherna in onn",
+    "tour": {
+      "geomap": "Qua chattas la carta da la Svizra cun la visualisaziun dals resultats per vischnanca.",
+      "btn-navbar": "Clicca qua per avrir il menu da navigaziun.",
+      "zoom": "Quests buttuns servan per engrondir e reducir la carta da la Svizra.",
+      "screenshot": "Ti pos far ina captura dal visur cun quest buttun.",
+      "centerswiss": "Per recentrar la carta, clicca sin quest buttun.",
+      "place-menu": "Per avrir il menu dals lieus d'interess, clicca sin quest buttun.",
+      "placeonoff": "Per mussar u zuppentar ils lieus d'interess, clicca sin quest buttun.",
+      "floatingButton": "Clicca qua per mussar u zuppentar il panel da controlla.",
+      "popup-right": "En il panel da controlla pos ti configurar las variablas visualisadas sin la carta."
+    },
+    "question_collections": {
+      "saved": {
+        "title": "Access svelt",
+        "description": "Tes dumondas memorisadas"
+      }
+    },
+    "question_drop_zone": {
+      "drag_question": "Tira ina dumonda qua",
+      "release_to_add": "Lascha liber per agiuntar questa dumonda"
+    },
+    "question_card": {
+      "saved": "Dumondas memorisadas",
+      "drag": "Trar",
+      "removeSaved": "Allontanar da las dumondas memorisadas",
+      "addSaved": "Agiuntar a las dumondas memorisadas",
+      "remove": "Allontanar da la selecziun"
+    }
   },
-  "login": { "title": "S'annunziar", "subtitle": "Reservà per tia futura autentificaziun." },
-  "common": { "loading": "Chargi…", "error": "Sbagl" }
+  "map": {
+    "placeOfInterest": {
+      "show": "Mussar las citads",
+      "hide": "Zuppentar las citads"
+    },
+    "basemap": {
+      "title": "Carta da fund",
+      "none": "Nagina",
+      "light": "Carta da vias",
+      "swiss": "Carta topografica"
+    },
+    "menu": {
+      "global": "Lieus d'interess",
+      "instancePlaceOfInterest": "Lieus d'interess definids",
+      "noInstancePlaceOfInterest": "Nagins lieus d'interess definids.",
+      "localPlaceOfInterest": "Lieus d'interess supplementars",
+      "removePlaceOfInterest": "Allontanar",
+      "addPlaceOfInterest": "Agiuntar in lieu d'interess",
+      "addPlaceOfInterestPlaceholder": "Endatescha almain 3 bustabs…",
+      "loadingSuggestions": "Chargiament da propostas...",
+      "noLocalPlaceOfInterest": "Nagins lieus d'interess supplementars definids.",
+      "placeholder": "Quest menu vegn cumplettà pli tard cun opziuns globalas.",
+      "placeOfInterestTypes": {
+        "commune": "Vischnanca",
+        "district": "District",
+        "canton": "Chantun"
+      }
+    },
+    "legend": {
+      "showStats": "Mussar las statisticas",
+      "distribution": "Distribuziun da las respostas",
+      "unitsWithResponse_one": "{{count}} unitad cun resposta",
+      "unitsWithResponse_other": "{{count}} unitads cun resposta",
+      "noData": "Naginas datas",
+      "noResponse": "Nagina resposta"
+    },
+    "errors": {
+      "loadGeometry": "Impussibel da chargiar ils nivels geografics.",
+      "network": "Problem da rait. Controllescha tia connexiun.",
+      "failedToLoadPlaceOfInterest": "Impussibel da chargiar ils lieus d'interess.",
+      "failedToFetchSuggestions": "Impussibel da retschaiver las propostas."
+    }
+  },
+  "common": {
+    "loading": "Chargiament…",
+    "error": "Errur",
+    "close": "Serrar",
+    "unknown": "Errur nunenconuschenta",
+    "confirm": "Confermar",
+    "cancel": "Interrumper",
+    "clear": "Stizzar",
+    "next": "Enavant",
+    "prev": "Enavos",
+    "done": "Terminar il tutorial"
+  },
+  "notFound": {
+    "message": "Pagina betg chattada."
+  },
+  "questions": {
+    "empty": "Naginas dumondas disponiblas.",
+    "loadError": "Impussibel da chargiar las dumondas.",
+    "aborted": "Chargiament interrut."
+  },
+  "login": {
+    "title": "Annunziaziun",
+    "subtitle": "Zona reservada per l'autentificaziun futura.",
+
+    "emailLabel": "E-mail",
+    "emailPlaceholder": "Endatescha tia adressa dad e-mail",
+    "passwordLabel": "Pled-clav",
+    "passwordPlaceholder": "Endatescha tes pled-clav",
+
+    "submit": "S'annunziar",
+    "submitting": "Annunziaziun en curs",
+
+    "errors": {
+      "generic": "L'annunziaziun n'è betg reussida.",
+      "invalidCredentials": "Datas d'annunziaziun nunvalidas.",
+      "network": "Problem da connexiun.",
+      "locked": "Conto bloccà.",
+      "rateLimited": "Memia blers emprovs. Emprova pli tard anc ina giada."
+    }
+  },
+  "stats": {
+    "context": {
+      "commune": "Vischnanca",
+      "district": "District",
+      "canton": "Chantun",
+      "communes_one": "{{count}} vischnanca",
+      "communes_other": "{{count}} vischnancas"
+    },
+    "loading": "Chargiament da las statisticas",
+    "noData": "Naginas datas disponiblas",
+    "selectedValue": "Valur tschernida",
+    "sameAnswer": "cun la medema resposta",
+    "countText": "{{count}} da {{total}} {{unit}} han questa valur",
+    "selected": "Tschernì",
+    "others": "Auters",
+    "value": "Valur:",
+    "count": "Dumber:",
+    "share": "Part:"
+  },
+  "export": {
+    "title": "Export",
+    "pngLabel": "PNG",
+    "pdfLabel": "PDF",
+    "pngTooltip": "Exportar sco PNG",
+    "pdfTooltip": "Exportar sco PDF",
+
+    "note": "La captura reproducescha exactamain la vista actuala (zoom/spustament) senza il menu.",
+
+    "ariaExportPng": "Export PNG en curs",
+    "ariaExportPdf": "Export PDF en curs",
+
+    "filenamePrefix": "carta",
+
+    "errors": {
+      "mapUnavailable": "Carta betg disponibla.",
+      "pngFailed": "L'export PNG n'è betg reussì.",
+      "pdfFailed": "L'export PDF n'è betg reussì."
+    },
+    "data": {
+      "title": "Exportar las datas",
+      "description": "Tscherna las dumondas memorisadas ed exportescha lur datas en furmat CSV.",
+      "selectAll": "Selecziunar tut",
+      "clear": "Stizzar",
+      "selected": "Tschernì",
+      "noSavedQuestions": "Naginas dumondas memorisadas disponiblas.",
+      "global": "Global",
+      "survey": "Retschertga",
+      "loading": "Exportaziun",
+      "download": "Telechargiar il datotec CSV"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Bainvegni {{name}}",
+    "welcomeWithRole": "Bainvegni {{name}} ({{role}})",
+    "anonymous": "Utilisader",
+    "logout": "Sortir"
+  },
+  "changePassword": {
+    "title": "Midar mes pled-clav",
+
+    "oldPasswordLabel": "Pled-clav actual",
+    "oldPasswordPlaceholder": "Endatescha tes pled-clav actual",
+
+    "newPasswordLabel": "Nov pled-clav",
+    "newPasswordPlaceholder": "Endatescha tes nov pled-clav",
+
+    "confirmLabel": "Confermar il pled-clav",
+    "confirmPlaceholder": "Conferma tes nov pled-clav",
+
+    "passwordHelp": "Almain 10 caracters, cun almain: 1 bustab grond, 1 bustab pitschen, 1 cifra e 1 simbol (p.ex. !@#$%&*).",
+
+    "submit": "Memorisar",
+    "submitting": "Memorisaziun",
+
+    "success": "Il pled-clav è vegnì midà cun success.",
+    "successWithDetail": "Il pled-clav è vegnì midà cun success.",
+
+    "fail": "Impussibel da midar il pled-clav.",
+    "failWithDetail": "Impussibel da midar il pled-clav.",
+
+    "showPassword": "Mussar il pled-clav",
+    "hidePassword": "Zuppentar il pled-clav",
+
+    "errors": {
+      "confirmMismatch": "La conferma dal pled-clav na correspunda betg.",
+      "tooShort": "Il pled-clav è memia curt (almain 10 caracters).",
+      "invalidOldPassword": "Il pled-clav actual è nunvalid.",
+      "serverValidation": "Il server ha renvià sbagls da validaziun.",
+      "generic": "Ina errur è capità."
+    }
+  },
+  "admin": {
+    "deleteMember": {
+      "title": "Stizzar in commember",
+
+      "firstNameLabel": "Prenum",
+      "firstNamePlaceholder": "Endatescha il prenum",
+      "lastNameLabel": "Num",
+      "lastNamePlaceholder": "Endatescha il num",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "Endatescha l'adressa dad e-mail",
+      "roleLabel": "Rolla",
+
+      "roles": {
+        "member": "Commember",
+        "admin": "Administratur"
+      },
+
+      "submit": "Stizzar",
+      "submitting": "Stizzament",
+
+      "success": "L'utilisader è vegnì stizzà cun success.",
+      "fail": "Il stizzament n'è betg reussì.",
+
+      "errors": {
+        "serverValidation": "Il server ha renvià sbagls da validaziun.",
+        "notFound": "Utilisader betg chattà.",
+        "forbidden": "Acziun betg lubida.",
+        "generic": "Ina errur è capità."
+      }
+    },
+    "addMember": {
+      "title": "Agiuntar in commember",
+
+      "firstNameLabel": "Prenum",
+      "firstNamePlaceholder": "Endatescha il prenum",
+      "lastNameLabel": "Num",
+      "lastNamePlaceholder": "Endatescha il num",
+      "emailLabel": "E-mail",
+      "emailPlaceholder": "Endatescha l'adressa dad e-mail",
+      "roleLabel": "Rolla",
+
+      "roles": {
+        "member": "Commember",
+        "admin": "Administratur"
+      },
+
+      "passwordLabel": "Pled-clav",
+      "passwordPlaceholder": "Endatescha il pled-clav",
+      "confirmLabel": "Confermar il pled-clav",
+      "confirmPlaceholder": "Conferma il pled-clav",
+      "passwordHelp": "Almain 10 caracters, cun almain: 1 bustab grond, 1 bustab pitschen, 1 cifra e 1 simbol (p.ex. !@#$%&*).",
+
+      "submit": "Crear il commember",
+      "submitting": "Creaziun",
+
+      "success": "Il commember è vegnì creà cun success.",
+      "fail": "La creaziun n'è betg reussida.",
+
+      "errors": {
+        "confirmMismatch": "La conferma dal pled-clav na correspunda betg.",
+        "tooShort": "Il pled-clav è memia curt (almain 10 caracters).",
+        "emailExists": "I exista gia in commember cun questa adressa dad e-mail.",
+        "forbidden": "Acziun betg lubida.",
+        "serverValidation": "Il server ha renvià sbagls da validaziun.",
+        "generic": "Ina errur è capità."
+      }
+    },
+    "config": {
+      "placeOfInterestEditor": {
+        "titleCreate": "Agiuntar ina citad",
+        "titleEdit": "Modifitgar ina citad",
+
+        "importFromCommunes": "Importar ord vischnancas",
+        "searchPlaceholder": "Endatescha almain 3 bustabs...",
+        "search": "Tschertga",
+        "empty": "Nagins resultats",
+
+        "canonicalLabel": "Num canonic",
+        "canonicalPlaceholder": "Losanna, Genevra, Turitg...",
+
+        "labels": {
+          "fr": "Franzos",
+          "de": "Tudestg",
+          "it": "Talian",
+          "rm": "Rumantsch",
+          "en": "Englais",
+          "lat": "Latituda",
+          "lon": "Longhituda",
+          "preview": "Prevista:"
+        },
+
+        "submitCreate": "Crear",
+        "submitEdit": "Memorisar"
+      },
+      "placeOfInterestPage": {
+        "title": "Citads",
+        "addButton": "Agiuntar",
+        "columns": {
+          "name": "Num",
+          "fr": "FR",
+          "de": "DE",
+          "it": "IT",
+          "rm": "RM",
+          "en": "EN",
+          "position": "Posiziun"
+        },
+        "edit": "Modifitgar",
+        "delete": "Stizzar",
+        "empty": "Nagina citad",
+        "loading": "Chargiament",
+        "titleConfirm": "Stizzar la citad",
+        "deleteConfirm": "Vuls ti propi stizzar la citad «{{name}}»?",
+        "confirmLabel": "Stizzar",
+        "cancelLabel": "Interrumper"
+      },
+      "themeConfigPage": {
+        "title": "Configuraziun dal tema e da l'instanza",
+        "general": "Instanza",
+        "instanceName": "Num da l'instanza",
+        "logoUrl": "URL dal logo",
+        "logoPreview": "Prevista dal logo",
+        "logoUpload": "Telechargiar in logo",
+        "logoInvalidType": "Format betg sustegnì. Utilisescha PNG/JPG/WebP/SVG.",
+        "logoTooLarge": "Datoteca memia gronda (maximum {{size}} MB).",
+        "logoDropZone": "Zona per deponer il logo",
+        "logoDropReject": "Datoteca betg sustegnida.",
+        "logoDropActive": "Lascha liber per deponer",
+        "logoFormats": "PNG / JPG / WebP / SVG · max. {{size}} MB",
+        "logoDropHint": "Tira ina maletg qua u clicca per tscherner ina datoteca",
+        "logoBrowse": "Telechargiar...",
+        "currentMode": "Modus actual: {{mode}}",
+        "defaultMode": "Modus predefinì",
+        "light": "Tema cler",
+        "dark": "Tema stgir",
+        "presets": "Preselecziuns da colurs",
+        "presetsHelp": "Tscherna ina preselecziun da colurs per ils temas cler e stgir per applitgar svelt ina paletta da colurs coherenta.",
+        "lightSection": "Tema cler",
+        "darkSection": "Tema stgir",
+        "lightPreview": "Prevista dal tema cler",
+        "darkPreview": "Prevista dal tema stgir",
+        "mapLightPreview": "Prevista da la carta cun tema cler",
+        "mapDarkPreview": "Prevista da la carta cun tema stgir",
+        "mapSection": "Colurs da la carta",
+        "primaryColourLabel": "Colur principala",
+        "secondaryColourLabel": "Colur secundara",
+        "backgroundColourLabel": "Colur dal fund",
+        "textColourLabel": "Colur dal text",
+        "navbarOverlayLabel": "Opacitad da la trav da navigaziun",
+        "logoBackgroundLabel": "Colur dal fund dal logo",
+        "selectionColourLabel": "Colur da selecziun",
+        "communesColourLabel": "Colur da las vischnancas",
+        "districtColourLabel": "Colur dals districts",
+        "cantonColourLabel": "Colur dals chantuns",
+        "countryColourLabel": "Colur dal pajais",
+        "lakesColourLabel": "Colur dals lais",
+        "saving": "Memorisaziun",
+        "save": "Memorisar",
+        "saved": "Memorisà.",
+        "confirmTitle": "Confermar las modificaziuns",
+        "confirmMessage": "Es ti segir che ti vuls memorisar las modificaziuns dal tema? Quai influenzescha l'apparientscha da l'entira applicaziun.",
+        "logoUploadError": "Ina errur è capità durant il telechargiament dal logo.",
+        "loadError": "Impussibel da chargiar la configuraziun dal tema.",
+        "saveError": "Ina errur è capità durant la memorisaziun da la configuraziun.",
+        "noLogo": "Nagin logo",
+        "previewPanel": {
+          "text": "Lorem ipsum — text simpel",
+          "buttonPrimary": "Buttun principal",
+          "secondaryFrame": "Panel secundar",
+          "selection": "Element tschernì"
+        }
+      },
+      "configEditor": {
+        "cancel": "Interrumper",
+        "submit": "Memorisar",
+        "saving": "Memorisaziun"
+      },
+      "errors": {
+        "loadFailed": "Chargiament betg reussì.",
+        "saved": "Memorisà.",
+        "saveFailed": "Memorisaziun betg reussida.",
+        "deleted": "Stizzà.",
+        "deleteFailed": "Stizzament betg reussì.",
+        "network": "Problem da rait."
+      }
+    }
+  },
+  "dashboardSidebar": {
+    "privateSpace": "Zona privata",
+    "toggleSection": "Mussar/Zuppentar la secziun {{section}}",
+    "rolePrefix": "Rolla:",
+    "logout": "Sortir",
+    "sections": {
+      "dashboard": "Dashboard",
+      "survey": "Retschertga",
+      "qa": "Dumondas & Respostas",
+      "places": "Lieus",
+      "administration": "Administraziun"
+    },
+    "survey": {
+      "_": "Retschertga",
+      "all": "Tut",
+      "newEdit": "Nov"
+    },
+    "qa": {
+      "qps": {
+        "_": "QuestionPerSurvey",
+        "all": "Tut",
+        "newEdit": "Nov"
+      },
+      "qglobal": {
+        "_": "QuestionGlobal",
+        "all": "Tut",
+        "newEdit": "Nov"
+      },
+      "qcat": {
+        "_": "QuestionCategory",
+        "all": "Tut",
+        "newEdit": "Nov"
+      },
+      "answer": {
+        "_": "Answer",
+        "all": "Tut",
+        "newEdit": "Nov"
+      },
+      "option": {
+        "_": "Option",
+        "all": "Tut",
+        "newEdit": "Nov"
+      }
+    },
+    "places": {
+      "commune": {
+        "_": "Vischnanca",
+        "all": "Tut"
+      },
+      "district": {
+        "_": "District",
+        "all": "Tut"
+      },
+      "canton": {
+        "_": "Chantun",
+        "all": "Tut"
+      }
+    },
+    "administration": {
+      "changePassword": "Midar mes pled-clav",
+      "users": {
+        "_": "Utilisaders",
+        "add": "Agiuntar in commember",
+        "delete": "Stizzar in commember"
+      },
+      "config": {
+        "_": "Configuraziun",
+        "placeOfInterest": "Lieus d'interess",
+        "theme": "Tema"
+      }
+    },
+    "pageAll": {
+      "uid": "UID",
+      "name": "Num",
+      "code": "Code",
+      "entity": "Entitad",
+      "question": "Retschertga",
+      "commune": "Vischnanca",
+      "noData": "Naginas datas",
+      "asc": "Asc.",
+      "desc": "Desc.",
+      "error": "Errur:",
+      "loading": "Chargiament",
+      "sortBy": "Sortar tenor",
+      "label": "Etichetta",
+      "actions": "Acziuns",
+      "show": "Mussar",
+      "edit": "Modifitgar",
+      "delete": "Stizzar",
+      "value": "Valur",
+      "searchPlaceholder": "Tschertgar en questa entitad...",
+      "clear": "Stizzar",
+      "searching": "Tschertga",
+      "confirmDeleteTitle": "Confermar il stizzament",
+      "confirmDeleteMessage": "Vuls ti propi stizzar l'element «{{name}}»?",
+      "deleting": "Stizzament",
+      "deleteError": "Errur durant il stizzament:",
+      "year": "Onn",
+      "questionUid": "UID da la dumonda",
+      "communeUid": "UID da la vischnanca",
+      "save": "Memorisar",
+      "saving": "Memorisaziun...",
+      "editError": "Errur durant la modificaziun:",
+      "confirmEditTitle": "Confermar la modificaziun",
+      "confirmEditMessage": "Vuls ti propi modifitgar l'element «{{name}}»?"
+    },
+    "pageShow": {
+      "loading": "Chargiament",
+      "error": "Errur:",
+      "noData": "Naginas datas",
+      "mainInfo": "Infurmaziuns principalas",
+      "languages": "Linguas",
+      "edit": "Modifitgar",
+      "delete": "Stizzar",
+      "children": "Entitads colliadas",
+      "childrenHint": "Relaziuns / tabellas colliadas",
+      "insights": "Infurmaziuns",
+      "insightsHint": "Carta / statisticas",
+      "text": "Text",
+      "noChildren": "Naginas datas",
+      "confirm": "Confermar",
+      "deleteError": "Errur durant il stizzament:",
+      "confirmDeleteTitle": "Confermar il stizzament",
+      "noSelection": "Nagin champ tschernì.",
+      "confirmClearMessage": "Ti vegns a stizzar ils suandants champs:\n- {{fields}}",
+      "deleting": "Stizzament...",
+      "editError": "Errur durant la modificaziun:",
+      "saving": "Memorisaziun...",
+      "save": "Memorisar",
+      "confirmEditTitle": "Confermar la modificaziun",
+      "confirmEditMessage": "Ti vegns a modifitgar ils suandants champs:\n- {{fields}}",
+      "insightsPanel": {
+        "noInsights": "Naginas infurmaziuns èn disponiblas per questa entitad.",
+        "mapContext": "Ils chantuns svizzers en lur context, cun l'entitad tschernida accentuada",
+        "stats": "Statisticas",
+        "map": "Carta",
+        "stat": {
+          "code": "Code",
+          "district_uid": "UID dal district",
+          "canton_uid": "UID dal chantun",
+          "ofs_id": "ID UST",
+          "year": "Onn",
+          "survey_uid": "UID da la retschertga",
+          "survey_year": "Onn da la retschertga",
+          "private": "Privà",
+          "category_uid": "UID da la categoria",
+          "question_uid": "UID da la dumonda",
+          "commune_uid": "UID da la vischnanca",
+          "value": "Valur",
+          "label": "Etichetta",
+          "answers_count": "Dumber da respostas",
+          "communes_count": "Dumber da vischnancas",
+          "districts_count": "Dumber da districts",
+          "questions_count": "Dumber da dumondas",
+          "options_count": "Dumber d'opziuns",
+          "distinct_answer_values": "Dumber da valurs da resposta distinctas",
+          "linked_survey_questions": "Dumondas da retschertga colliadas",
+          "global_questions_count": "Dumber da dumondas globalas",
+          "survey_questions_count": "Dumber da dumondas da retschertga",
+          "question_links": "Colliaziuns a dumondas",
+          "global_question_links": "Colliaziuns a dumondas globalas",
+          "category_links": "Colliaziuns a categorias",
+          "answers_same_question_year": "Respostas per la medema dumonda/onn",
+          "same_value_count": "Medema valur da resposta"
+        }
+      },
+      "visibility": {
+        "private": "Privà",
+        "public": "Public"
+      },
+      "relatedInfo": "Infurmaziuns colliadas",
+      "relations": {
+        "commune": "Vischnanca",
+        "district": "District",
+        "canton": "Chantun",
+        "survey": "Retschertga",
+        "question": "Dumonda",
+        "questionGlobal": "Dumonda globala",
+        "questionCategory": "Categoria",
+        "option": "Opziun"
+      }
+    }
+  },
+  "roles": {
+    "admin": "Administratur",
+    "member": "Commember"
+  },
+  "pagination": {
+    "page": "Pagina"
+  },
+  "first-modal": {
+    "title": "Bainvegni en il Datahub",
+    "contentp1": "Bainvegni en il Datahub – actualmain en versiun beta ed anc en svilup. Il code-funtauna è disponibel sco open source sin ",
+    "contentp2": ". Sche ti constatas sbagls da translaziun u bugs, pos ti contactar nus a l'adressa dad e-mail suandanta: ",
+    "close": "Serrar",
+    "reminder": "Betg pli regurdar",
+    "tour": "Scuvrir l'interfatscha"
+  }
 }

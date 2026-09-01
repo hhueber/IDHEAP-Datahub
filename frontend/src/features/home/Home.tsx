@@ -7,10 +7,12 @@ import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
-
+import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 import { createPortal } from "react-dom";
 import GreetingModal from "./components/GreetingModal";
 import BottomStatsPanel from "@/features/home/components/BottomStatsPanel";
+import introJs from "intro.js";
+import "intro.js/introjs.css";
 
 const GLOBAL_UID = -1;
 
@@ -21,32 +23,94 @@ type SelectedArea = {
 } | null;
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = normalizeGeoLanguage(
+    i18n.resolvedLanguage ?? i18n.language
+  );
   const [selectedArea, setSelectedArea] = useState<SelectedArea>(null);
 
   // Menu ouvert par défaut
   const [panelOpen, setPanelOpen] = useState(true);
 
   // Etat de la modal
-  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // état sélection
-  const [selectedSurveyUid, setSelectedSurveyUid] = useState<number>(GLOBAL_UID);
-  const [selectedQuestionUid, setSelectedQuestionUid] = useState<number | null>(null);
+  const [selectedSurveyUid, setSelectedSurveyUid] =
+    useState<number>(GLOBAL_UID);
+  const [selectedQuestionUid, setSelectedQuestionUid] = useState<number | null>(
+    null,
+  );
   const [globalYear, setGlobalYear] = useState<number | null>(null);
 
   // Granularity selector
-  const [granularity, setGranularity] = useState<ChoroplethGranularity>("commune");
+  const [granularity, setGranularity] =
+    useState<ChoroplethGranularity>("commune");
 
   // appel bootstrap
   const { data, loading, error, errorKey } = useBootstrap();
 
   // Theme
-  const { primary, background, borderColor, adaptiveTextColorPrimary } = useTheme();
+  const { primary, background, borderColor, adaptiveTextColorPrimary } =
+    useTheme();
 
   const isGlobal = selectedSurveyUid === GLOBAL_UID;
 
-  const closeModal = () => setIsModalOpen(false)
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleStartTour = () => {
+    setIsModalOpen(false);
+
+    introJs()
+      .setOptions({
+        nextLabel: t("common.next"),
+        prevLabel: t("common.prev"),
+        doneLabel: t("common.done"),
+        steps: [
+          {
+            element: "#map-tour",
+            intro: t("home.tour.geomap"),
+          },
+          {
+            element: "#floating-buttton",
+            intro: t("home.tour.floatingButton"),
+          },
+          {
+            element: "#btn-navbar",
+            intro: t("home.tour.btn-navbar"),
+          },
+          {
+            element: ".leaflet-control-zoom",
+            intro: t("home.tour.zoom"),
+          },
+          {
+            element: ".leaflet-control-simpleMapScreenshoter-btn",
+            intro: t("home.tour.screenshot"),
+          },
+          {
+            element: "#btn-center-swiss",
+            intro: t("home.tour.centerswiss"),
+          },
+          {
+            element: "#place-of-interest-menu",
+            intro: t("home.tour.place-menu"),
+          },
+          {
+            element: "#place-of-interest-onoff",
+            intro: t("home.tour.placeonoff"),
+          },
+          {
+            element: "#basemap-btn",
+            intro: t("home.tour.basemap"),
+          },
+          {
+            element: "#popup-right",
+            intro: t("home.tour.popup-right"),
+          },
+        ],
+      })
+      .start();
+  };
 
   // année utilisée pour la carte (et pour la choropleth si survey)
   const surveyYear = useMemo(() => {
@@ -58,14 +122,13 @@ export default function Home() {
   const activeYear = isGlobal ? globalYear : surveyYear;
   const choroplethScope = isGlobal ? "global" : "per_survey";
 
-
   useEffect(() => {
-    const hasBeenHiden = localStorage.getItem('hideWelcomeModal')
+    const hasBeenHiden = localStorage.getItem("hideWelcomeModal");
 
-    if(!hasBeenHiden){
-      setIsModalOpen(true)
+    if (!hasBeenHiden) {
+      setIsModalOpen(true);
     }
-  },[])
+  }, []);
 
   // choropleth : année = activeYear
   const {
@@ -81,38 +144,33 @@ export default function Home() {
   });
 
   const selectedSurvey = data?.surveys?.find(
-        (s) => s.uid === selectedSurveyUid
-      );
+    (s) => s.uid === selectedSurveyUid,
+  );
 
-  const statsYear = selectedSurveyUid === GLOBAL_UID
-    ? globalYear
-    : selectedSurvey?.year;
-  
-  const missingQuestion = !selectedQuestionUid;
-  const missingDate = isGlobal && selectedQuestionUid && !globalYear;
+  const statsYear =
+    selectedSurveyUid === GLOBAL_UID ? globalYear : selectedSurvey?.year;
 
   let overlayType: "loading" | "action" = "loading";
   let overlayLabel: string | undefined;
 
-  if (missingQuestion) {
-    overlayType = "action";
-    overlayLabel = t("home.selectQuestionFirst");
-  } else if (missingDate) {
-    overlayType = "action";
-    overlayLabel = t("home.selectDate");
-  } else if (choroplethLoading) {
+  if (choroplethLoading) {
     overlayType = "loading";
     overlayLabel = t("common.loading");
   }
 
   return (
     // Plein écran : ce bloc remplit toute la fenêtre, de haut en bas.
-    <section className="absolute inset-0">
-      {isModalOpen && createPortal(
-        <GreetingModal onClose={closeModal}></GreetingModal>, document.body
-      )}
-      {/* Carte en plein écran */}
-      <div className="absolute inset-0">
+    <section className="absolute inset-0 flex flex-row overflow-hidden">
+      {isModalOpen &&
+        createPortal(
+          <GreetingModal
+            onClose={closeModal}
+            onStartTour={handleStartTour}
+          ></GreetingModal>,
+          document.body,
+        )}
+      {/* Carte — zone flexible, prend tout l'espace disponible */}
+      <div id="map-tour" className="relative flex-1 min-w-0">
         <GeoJsonMap
           className="absolute inset-0"
           year={activeYear}
@@ -122,64 +180,97 @@ export default function Home() {
           selectedArea={selectedArea}
           onSelectArea={setSelectedArea}
         />
-        {(missingQuestion || missingDate || choroplethLoading) && (
-          <MapLoadingOverlay
-            label={overlayLabel}
-            type={overlayType}
-          />
+        {(choroplethLoading) && (
+          <MapLoadingOverlay label={overlayLabel} type={overlayType} />
         )}
+
+        {/*
+          Bouton d'ouverture/fermeture, placé dans la zone carte.
+          Desktop : suit naturellement le bord droit de la carte lorsqu'elle se réduit.
+          Mobile  : translateX via CSS (index.css + attribut data-open).
+        */}
+        <button
+          id="floating-buttton"
+          data-open={panelOpen.toString()}
+          onClick={() => setPanelOpen((v) => !v)}
+          className="
+            absolute bottom-4 right-4 z-[3600]
+            translate-x-0
+            h-12 w-12 rounded-full border
+            shadow-lg active:translate-y-px
+            grid place-items-center
+            max-lg:transition-transform max-lg:duration-300 max-lg:ease-out
+            hover:opacity-90
+          "
+          style={{
+            backgroundColor: primary,
+            borderColor: borderColor,
+            color: adaptiveTextColorPrimary,
+          }}
+          aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            aria-hidden="true"
+            className={`w-6 h-6 transition-transform duration-200 ease-out ${panelOpen ? "" : "-scale-x-100"}`}
+          >
+            {/* chevron "gauche" de base ; on le flippe à droite quand panelOpen === false */}
+            <path
+              d="M9 6l6 6-6 6" // si on veux inverser la fleche changer en "M15 6l-6 6 6 6"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+
+        {/* Pop up bas, dans la zone carte, sa largeur suit celle de la map */}
+        <BottomStatsPanel
+          selectedArea={selectedArea}
+          onClose={() => setSelectedArea(null)}
+          questionUid={selectedQuestionUid}
+          year={statsYear}
+          scope={selectedSurveyUid === GLOBAL_UID ? "global" : "per_survey"}
+          lang={lang}
+        />
       </div>
 
-      {/* Bouton flottant (ouvre/ferme uniquement) */}
-      <button
-        onClick={() => setPanelOpen(v => !v)}
-        className="
-          fixed bottom-4 z-[3600]
-          h-12 w-12 rounded-full border
-          shadow-lg active:translate-y-px
-          grid place-items-center
-          transition-transform duration-300 ease-out
-          hover:opacity-90
-        "
-        style={{
-          right: "max(env(safe-area-inset-right), 1rem)",
-          // se décale à gauche de la largeur du drawer quand ouvert
-          transform: panelOpen ? "translateX(calc(-1 * min(90vw, 28rem)))" : "translateX(0)",
-          backgroundColor: primary,
-          borderColor: borderColor,
-          color: adaptiveTextColorPrimary, // texte + icône blancs comme avant
-        }}
-        aria-label={panelOpen ? t("home.close") : t("home.openPanel")}
+      {/*
+        Drawer, double comportement selon la taille d'écran :
+        >= lg (1024 px) : colonne flex dans le layout, largeur animée (carte réduite).
+        < lg           : overlay fixe par-dessus la carte.
+      */}
+      <aside
+        className={[
+          // Desktop >=lg : enfant flex, largeur animée via CSS transition
+          "lg:relative lg:shrink-0 lg:z-auto lg:overflow-hidden",
+          "lg:rounded-tl-2xl lg:rounded-bl-2xl",
+          "lg:transition-[width] lg:duration-300 lg:ease-out",
+          panelOpen
+            ? "lg:w-[min(90vw,28rem)] lg:pointer-events-auto"
+            : "lg:w-0 lg:pointer-events-none",
+          // Mobile <lg : overlay fixe plein écran (pointer-events géré par le panneau interne)
+          "max-lg:fixed max-lg:inset-0 max-lg:z-[3500] max-lg:pointer-events-none",
+        ].join(" ")}
       >
-        <svg
-          viewBox="0 0 24 24"
-          aria-hidden="true"
-          className={`w-6 h-6 transition-transform duration-200 ease-out ${panelOpen ? "" : "-scale-x-100"}`}
-        >
-          {/* chevron "gauche" de base ; on le flippe à droite quand panelOpen === false */}
-          <path
-            d="M9 6l6 6-6 6" // si on veux inverser la fleche changer en "M15 6l-6 6 6 6"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </button>
-
-      {/* Drawer (ouvert/fermé seulement via le bouton) */}
-      <aside className="fixed inset-0 z-[3500] pointer-events-none">
         <div
-          className={`
-            absolute right-0 top-0 h-full
-            w-[min(90vw,28rem)]
-            backdrop-blur shadow-2xl border
-            transform transition-transform duration-300 ease-out
-            ${panelOpen ? "translate-x-0 pointer-events-auto" : "translate-x-full pointer-events-none"}
-            overflow-y-auto
-            rounded-tl-2xl rounded-bl-2xl
-          `}
+          id="popup-right"
+          className={[
+            // Dimensions fixes du panneau, le parent aside gère le clip sur desktop
+            "w-[min(90vw,28rem)] h-full overflow-y-auto",
+            "border shadow-2xl",
+            "rounded-tl-2xl rounded-bl-2xl",
+            // Mobile : positionné à droite de l'écran, animé via translateX
+            "max-lg:absolute max-lg:right-0 max-lg:top-0",
+            "max-lg:backdrop-blur",
+            "max-lg:rounded-tl-2xl max-lg:rounded-bl-2xl",
+            "max-lg:transform max-lg:transition-transform max-lg:duration-300 max-lg:ease-out",
+            panelOpen
+              ? "max-lg:translate-x-0 max-lg:pointer-events-auto"
+              : "max-lg:translate-x-full max-lg:pointer-events-none",
+          ].join(" ")}
           role="dialog"
           aria-modal="true"
           style={{
@@ -208,15 +299,6 @@ export default function Home() {
           />
         </div>
       </aside>
-      
-      {/* Pop up bas */}
-      <BottomStatsPanel
-        selectedArea={selectedArea}
-        onClose={() => setSelectedArea(null)}
-        questionUid={selectedQuestionUid}
-        year={statsYear}
-        scope={selectedSurveyUid === GLOBAL_UID ? "global" : "per_survey"}
-      />
     </section>
   );
 }

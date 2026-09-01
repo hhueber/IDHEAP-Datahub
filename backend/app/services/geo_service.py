@@ -1,6 +1,6 @@
 from datetime import date
 from typing import Optional, Set, Tuple
-import json
+import orjson
 
 
 from app.core.geo_config import THEME_MAP_PREVIEW_CANTON_OFS_ID
@@ -61,7 +61,7 @@ async def _features_from_stmt(session: AsyncSession, stmt, prop_keys: Tuple[str,
     feats = []
     for row in rows:
         m = row._mapping
-        gj = json.loads(m["geojson"])  # ST_AsGeoJSON -> str
+        gj = orjson.loads(m["geojson"])  # ST_AsGeoJSON -> str, orjson ~2x faster than stdlib
         props = {k: m[k] for k in prop_keys if k in m}
         feats.append(Feature(geometry=Geometry(**gj), properties=props))
     return FeatureCollection(features=feats)
@@ -84,16 +84,42 @@ async def get_geo_by_year_selective(
     """
     y_req = int(requested_year or date.today().year)
 
-    # Calcule les années uniquement pour les couches demandées
+    # Calcule les années pour les couches versionnées demandées en un seul round-trip SQL.
+    # Chaque sous-requête scalaire est évaluée par la DB en parallèle dans une seule exécution.
     y_cantons = y_districts = y_lakes = y_communes = None
+    _year_subqs = []
     if "cantons" in layers:
-        y_cantons = await _max_year_leq(session, CantonMap, y_req)
+        _year_subqs.append(
+            select(func.max(CantonMap.year)).where(CantonMap.year <= y_req).scalar_subquery().label("y_cantons")
+        )
     if "districts" in layers:
-        y_districts = await _max_year_leq(session, DistrictMap, y_req)
+        _year_subqs.append(
+            select(func.max(DistrictMap.year)).where(DistrictMap.year <= y_req).scalar_subquery().label("y_districts")
+        )
     if "lakes" in layers:
-        y_lakes = await _max_year_leq(session, LakeMap, y_req)
+        # Priorité passé : MAX(year <= requested). Fallback futur si aucune version antérieure :
+        # MIN(year > requested). Ainsi les lacs s'affichent même si la demande précède toute
+        # version disponible (ex. requested=1980, seule version disponible=2008 -> retourne 2008).
+        _year_subqs.append(
+            func.coalesce(
+                select(func.max(LakeMap.year)).where(LakeMap.year <= y_req).scalar_subquery(),
+                select(func.min(LakeMap.year)).where(LakeMap.year > y_req).scalar_subquery(),
+            ).label("y_lakes")
+        )
     if "communes" in layers:
-        y_communes = await _max_year_leq(session, CommuneMap, y_req)
+        _year_subqs.append(
+            select(func.max(CommuneMap.year)).where(CommuneMap.year <= y_req).scalar_subquery().label("y_communes")
+        )
+    if _year_subqs:
+        _year_row = (await session.execute(select(*_year_subqs))).one()
+        if "cantons" in layers:
+            y_cantons = _year_row.y_cantons
+        if "districts" in layers:
+            y_districts = _year_row.y_districts
+        if "lakes" in layers:
+            y_lakes = _year_row.y_lakes
+        if "communes" in layers:
+            y_communes = _year_row.y_communes
 
     # Construit les FeatureCollections demandées
     country_fc = lakes_fc = cantons_fc = districts_fc = communes_fc = None
