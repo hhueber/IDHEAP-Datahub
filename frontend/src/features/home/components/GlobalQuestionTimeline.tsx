@@ -37,7 +37,7 @@ export default function GlobalQuestionTimeline({
   const maxYear = sortedYears.length ? sortedYears[sortedYears.length - 1] : 0;
   const range = Math.max(1, maxYear - minYear);
   const shouldScroll = sortedYears.length > 6;
-  const disabled = !isGlobal || !questionSelected;
+  const disabled = !isGlobal;
 
   const getLeftPercent = (year: number) => {
     if (sortedYears.length <= 1) return 50;
@@ -140,7 +140,6 @@ export default function GlobalQuestionTimeline({
               {/* Zones de clic étendues */}
               {sortedYears.map((year, index) => {
                 const enabled =
-                  questionSelected &&
                   enabledSet.has(year) &&
                   !loading;
 
@@ -171,7 +170,7 @@ export default function GlobalQuestionTimeline({
                 );
               })}
               {sortedYears.map((year, index) => {
-                const enabled = questionSelected && enabledSet.has(year) && !loading;
+                const enabled = enabledSet.has(year) && !loading;
                 const selected = selectedYear === year;
                 const left = getLeftPercent(year);
 
