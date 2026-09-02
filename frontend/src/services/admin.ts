@@ -1,12 +1,13 @@
 // Services d’administration : création et suppression de membres via l’API
 import { apiFetch } from "@/shared/apiFetch";
 import { normalizeName, normalizeEmail } from "@/utils/normalize";
+import type { PermissionRole } from "@/config/roles";
 
 export type CreateMemberPayload = {
   first_name: string;
   last_name: string;
   email: string;
-  role: "ADMIN" | "MEMBER";
+  role: PermissionRole;
   password: string;
 };
 
@@ -14,7 +15,7 @@ export async function createMember(form: {
   first_name: string;
   last_name: string;
   email: string;
-  role: "ADMIN" | "MEMBER";
+  role: PermissionRole;
   password: string;
 }) {
   const body: CreateMemberPayload = {
@@ -35,7 +36,7 @@ export async function deleteMember(form: {
   first_name: string;
   last_name: string;
   email: string;
-  role: "ADMIN" | "MEMBER";
+  role: PermissionRole;
 }) {
   const body = {
     first_name: normalizeName(form.first_name),

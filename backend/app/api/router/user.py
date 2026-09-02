@@ -1,9 +1,12 @@
 from app.api.dependencies import get_current_user
+from app.api.permissions import require_permission
+from app.config.roles import PermissionLevel, PermissionScope
 from app.core.security import get_password_hash, verify_password
 from app.db import get_db
 from app.models.user import User as UserModel
 from app.repositories.user_repo import create_user_record, delete_user_by_instance, update_user_password_hash
-from app.schemas.user import PasswordChangeIn, Role, User, UserCreate, UserDeleteIn, UserPublic
+from app.schemas.user import PasswordChangeIn, User, UserCreate, UserDeleteIn, UserPublic
+from app.services.permission_service import role_can_manage_role
 from app.services.user_service import normalize_name
 from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import select
@@ -23,16 +26,11 @@ def get_current_user_profile(current_user: UserModel = Depends(get_current_user)
     return current_user
 
 
-def ensure_admin(u: UserPublic):
-    if u.role != Role.ADMIN:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
-
-
 @router.post("/addUser")
 async def create_user(
     payload: UserCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user),
+    current_user=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)),
 ):
     """Create a new user (admin-only operation).
         - Requires the caller to be an administrator.
@@ -46,7 +44,11 @@ async def create_user(
         the User mask guarantees that the information returned is in accordance with the User schema.
 
     """
-    ensure_admin(current_user)
+    if not role_can_manage_role(current_user.role, payload.role):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to create a user with this role",
+        )
 
     exists = await db.scalar(select(UserModel.id).where(UserModel.email == payload.email))
     if exists:
@@ -72,7 +74,7 @@ async def create_user(
 async def delete_user(
     payload: UserDeleteIn,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user),
+    current_user=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)),
 ):
     """Deletes a user (operation reserved for administrators).
         - Verifies that the caller is an administrator.
@@ -88,8 +90,6 @@ async def delete_user(
         the UserModel mask guarantees that the information returned is in accordance with the UserModel schema.
 
     """
-    ensure_admin(current_user)
-
     result = await db.execute(select(UserModel).where(UserModel.email == payload.email))
     target = result.scalar_one_or_none()
     if not target:
@@ -110,6 +110,13 @@ async def delete_user(
     if target.id == current_user.id:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Impossible de supprimer votre propre compte"
+        )
+
+    # vérifie que l'admin a le droit de supprimer un utilisateur avec ce rôle
+    if not role_can_manage_role(current_user.role, target.role):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to delete a user with this role",
         )
 
     await delete_user_by_instance(db, target)
