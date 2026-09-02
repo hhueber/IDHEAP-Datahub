@@ -283,17 +283,19 @@ export default function GlobalQuestionTimeline({
                                 ? "none"
                                 : "translateX(-50%)",
 
-                            color: enabled
-                              ? textColor
-                              : hoverText07,
+                            color: selected
+                              ? primary
+                              : enabled
+                                ? textColor
+                                : hoverText07,
 
-                            fontWeight: selected
-                              ? 600
-                              : 400,
+                            fontWeight: selected ? 700 : 400,
 
-                            opacity: enabled
-                              ? 1
-                              : 0.55,
+                            fontSize: selected ? "12px" : "10px",
+
+                            transition: "all 150ms ease",
+
+                            opacity: enabled ? 1 : 0.55,
                           }}
                         >
                           {year}
@@ -337,47 +339,6 @@ export default function GlobalQuestionTimeline({
                       background,
                   }}
                 />
-              </div>
-
-              {/* Légende d’état */}
-              <div
-                className="
-                  mt-1
-                  flex
-                  flex-wrap
-                  items-center
-                  gap-4
-                  text-xs
-                "
-                style={{
-                  color: hoverText07,
-                }}
-              >
-                <div className="flex items-center gap-2">
-                  <span
-                    className="inline-block h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor: primary,
-                    }}
-                  />
-
-                  <span>
-                    {t("home.timelineAvailable")}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span
-                    className="inline-block h-2 w-2 rounded-full"
-                    style={{
-                      backgroundColor: hoverText30,
-                    }}
-                  />
-
-                  <span>
-                    {t("home.timelineUnavailable")}
-                  </span>
-                </div>
               </div>
             </div>
           </div>

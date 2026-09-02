@@ -33,8 +33,6 @@
     "selectYear": "Select a year",
     "choroplethGlobalYear": "Available years for this question",
     "granularity": "Granularity",
-    "timelineAvailable": "Available",
-    "timelineUnavailable": "Unavailable",
     "selectQuestionFirst": "Select a question",
     "selectDate": "Select a date",
     "tour": {
