@@ -197,22 +197,6 @@ export default function Navbar() {
                 >
                   {t("nav.home")}
                 </Link>
-                <Link
-                  to="/export-data"
-                  className="
-                    w-full text-left px-3 py-2 rounded-lg font-medium transition
-                    hover:[background-color:var(--navbar-link-hover-bg)]
-                  "
-                  style={
-                    {
-                      color: primary,
-                      "--navbar-link-hover-bg": hoverBg08,
-                    } as React.CSSProperties
-                  }
-                  onClick={() => setOpen(false)}
-                >
-                  {t("nav.data", "Data")}
-                </Link>
               </div>
             </div>
 
