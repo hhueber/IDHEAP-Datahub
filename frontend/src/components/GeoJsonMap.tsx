@@ -1,7 +1,7 @@
 // Carte GeoJSON Suisse : couches pays/lacs/communes/districts/cantons + marqueurs de villes,
 // contrôles utilitaires (reset zoom Suisse, capture écran).
 import { MapContainer, GeoJSON, Pane, ImageOverlay, TileLayer, useMap } from "react-leaflet";
-import { useEffect, useMemo, useRef, useState, useLayoutEffect } from "react";
+import { useEffect, useMemo, useRef, useState, useLayoutEffect, lazy, Suspense, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import ResetSwissControl, { SWISS_BOUNDS, SWISS_BOUNDS_PADDED } from "@/components/map/ResetSwissControl";
 import { geoApi, GeoBundle } from "@/features/geo/geoApi";
@@ -21,6 +21,10 @@ import MapLegendOverlay from "@/components/map/MapLegendOverlay";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import L from "leaflet";
 import "leaflet.pattern";
+import type { ViewState3D } from "@/features/geo/3d/ChoroplethDeckLayer";
+import Map3DControl from "@/components/map/Map3DControl";
+
+const ChoroplethDeckLayer = lazy(() => import("@/features/geo/3d/ChoroplethDeckLayer"));
 
 type BasemapId = "none" | "light" | "swiss";
 
@@ -97,10 +101,65 @@ export default function GeoJsonMap({
   const [errDetail, setErrDetail] = useState<string | null>(null);
   const hostRef = useRef<HTMLDivElement>(null);
 
-  const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor, selectionColor } = useTheme();
+  const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor, selectionColor, primary, adaptiveTextColorPrimary } = useTheme();
 
   const patternCacheRef = useRef<Map<string, any>>(new Map());
 
+  // 3D mode
+  const [is3DMode, setIs3DMode] = useState(false);
+  const deckViewStateRef = useRef<ViewState3D>({
+    longitude: 8.2, latitude: 46.8, zoom: 7, pitch: 40, bearing: 0,
+  });
+  const initialDeckViewStateRef = useRef({ lng: 8.2, lat: 46.8, zoom: 7 });
+
+  // 3D is available for any question with at least one positive numeric value,
+  // regardless of legend type (gradient or categorical).
+  // One pass computes both the availability flag and the normalisation maximum
+  // (passed to ChoroplethDeckLayer so it does not need to iterate again).
+  const { is3DAvailable, maxPositiveValue } = useMemo(() => {
+    const features = choropleth?.feature_collection?.features;
+    if (!features) return { is3DAvailable: false, maxPositiveValue: 0 };
+    let max = 0;
+    for (const f of features) {
+      const p = (f as any)?.properties ?? {};
+      if (p.value_kind !== "value" || p.value == null) continue;
+      const v = parseFloat(String(p.value));
+      if (!isNaN(v) && v > 0 && v > max) max = v;
+    }
+    return { is3DAvailable: max > 0, maxPositiveValue: max };
+  }, [choropleth]);
+
+  // If the active question has no positive numeric values at all while in 3D, revert.
+  // (Switching between gradient and numeric-categorical keeps is3DAvailable true,
+  // so this effect no longer fires in that case.)
+  useEffect(() => {
+    if (is3DMode && !is3DAvailable) {
+      setIs3DMode(false);
+      const map = (window as any).__leafletMap;
+      requestAnimationFrame(() => map?.invalidateSize(false));
+    }
+  }, [is3DMode, is3DAvailable]);
+
+  const handleActivate3D = useCallback(() => {
+    if (!is3DAvailable) return;
+    const map = (window as any).__leafletMap;
+    if (map) {
+      const c = map.getCenter();
+      initialDeckViewStateRef.current = { lng: c.lng, lat: c.lat, zoom: map.getZoom() };
+    }
+    setIs3DMode(true);
+  }, [is3DAvailable]);
+
+  // User clicks the "2D" button -> read current deck.gl position, sync Leaflet
+  const handleManualReturn2D = useCallback(() => {
+    const vs = deckViewStateRef.current;
+    const map = (window as any).__leafletMap;
+    if (map) {
+      map.setView([vs.latitude, vs.longitude], vs.zoom, { animate: false });
+      requestAnimationFrame(() => map.invalidateSize(false));
+    }
+    setIs3DMode(false);
+  }, []);
   const [basemap, setBasemap] = useState<BasemapId>("none");
 
   // Crée ou récupère un pattern de rayures multicolores (pour les choropleth catégorielles avec ex-aequo)
@@ -406,7 +465,7 @@ export default function GeoJsonMap({
       .replace(/'/g, "&#039;");
 
   return (
-    <div ref={hostRef} data-map-root 
+    <div ref={hostRef} data-map-root
       className={`${className} overflow-hidden`}
       style={
         {
@@ -415,6 +474,48 @@ export default function GeoJsonMap({
         } as React.CSSProperties
       }
     >
+      {/* 3D overlay (deck.gl standalone canvas) */}
+      {is3DMode && choropleth?.feature_collection && (
+        <Suspense fallback={null}>
+          <ChoroplethDeckLayer
+            choropleth={choropleth}
+            initialLng={initialDeckViewStateRef.current.lng}
+            initialLat={initialDeckViewStateRef.current.lat}
+            initialZoom={initialDeckViewStateRef.current.zoom}
+            viewStateRef={deckViewStateRef}
+            selectedArea={selectedArea ?? null}
+            onSelectArea={onSelectArea ?? (() => {})}
+            maxPositiveValue={maxPositiveValue}
+          />
+        </Suspense>
+      )}
+
+      {/* 2D / 3D toggle button */}
+      {choropleth && (
+        <Map3DControl
+          is3DMode={is3DMode}
+          is3DAvailable={is3DAvailable}
+          onToggle={
+            is3DMode
+              ? handleManualReturn2D
+              : handleActivate3D
+          }
+        />
+      )}
+
+      {/*
+       * Leaflet container — kept mounted in 3D mode to preserve its internal
+       * state (zoom, panes, event listeners).  Pointer events are disabled so
+       * the invisible map does not intercept clicks meant for the deck.gl canvas.
+       */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          visibility: is3DMode ? "hidden" : "visible",
+          pointerEvents: is3DMode ? "none" : "auto",
+        }}
+      >
       {/* Ajustements UI Leaflet */}
       <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
@@ -669,6 +770,7 @@ export default function GeoJsonMap({
           onBasemapChange={setBasemap}
         />
       </MapContainer>
+      </div>{/* end Leaflet visibility wrapper */}
 
       {/* Alerte d’erreur de chargement géo */}
       {errKey && (

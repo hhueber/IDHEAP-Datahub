@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@deck.gl/core": "9.3.10",
+    "@deck.gl/layers": "9.3.10",
     "i18next": "25.4.2",
     "i18next-browser-languagedetector": "8.2.0",
     "intro.js": "8.5.0",
