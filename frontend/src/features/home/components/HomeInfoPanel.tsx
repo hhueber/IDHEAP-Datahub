@@ -144,7 +144,8 @@ export default function HomeInfoPanel({
   };
 
   const surveyYear = data?.surveys?.find(s => s.uid === selectedSurveyUid)?.year;
-  const showGlobalTimeline = showGlobals;
+  const showGlobalTimeline =
+    showGlobals != null;
 
   return (
     <div className="space-y-4 px-3 py-2">
