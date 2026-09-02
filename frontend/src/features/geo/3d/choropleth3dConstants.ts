@@ -17,12 +17,6 @@ export const BEARING_3D = 0;
 export const MAX_ELEVATION = 50_000;
 
 /**
- * When the user tilts the view below this pitch (degrees), the map
- * automatically reverts to 2D mode.
- */
-export const PITCH_2D_THRESHOLD = 5;
-
-/**
  * Hard ceiling on the pitch the MapController will allow during drag-rotate.
  * Deck.gl default is 60°; keeping it there is fine for a first prototype.
  */
@@ -30,6 +24,6 @@ export const MAX_PITCH_3D = 60;
 
 /**
  * Background colour for the 3D canvas (shown behind polygons and below the horizon).
- * Dark navy gives contrast with the choropleth fill colours.
+ * Dark white gives contrast with the choropleth fill colours.
  */
-export const BACKGROUND_3D = '#0d1117';
+export const BACKGROUND_3D = '#FFFFFF';

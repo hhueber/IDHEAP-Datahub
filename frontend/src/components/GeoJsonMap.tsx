@@ -22,6 +22,7 @@ import type { ChoroplethGranularity } from "@/features/geo/geoApi";
 import L from "leaflet";
 import "leaflet.pattern";
 import type { ViewState3D } from "@/features/geo/3d/ChoroplethDeckLayer";
+import Map3DControl from "@/components/map/Map3DControl";
 
 const ChoroplethDeckLayer = lazy(() => import("@/features/geo/3d/ChoroplethDeckLayer"));
 
@@ -148,15 +149,6 @@ export default function GeoJsonMap({
     }
     setIs3DMode(true);
   }, [is3DAvailable]);
-
-  const handleReturnTo2D = useCallback((lng: number, lat: number, zoom: number) => {
-    const map = (window as any).__leafletMap;
-    if (map) {
-      map.setView([lat, lng], zoom, { animate: false });
-      requestAnimationFrame(() => map.invalidateSize(false));
-    }
-    setIs3DMode(false);
-  }, []);
 
   // User clicks the "2D" button -> read current deck.gl position, sync Leaflet
   const handleManualReturn2D = useCallback(() => {
@@ -490,7 +482,6 @@ export default function GeoJsonMap({
             initialLng={initialDeckViewStateRef.current.lng}
             initialLat={initialDeckViewStateRef.current.lat}
             initialZoom={initialDeckViewStateRef.current.zoom}
-            onSwitchTo2D={handleReturnTo2D}
             viewStateRef={deckViewStateRef}
             selectedArea={selectedArea ?? null}
             onSelectArea={onSelectArea ?? (() => {})}
@@ -501,41 +492,15 @@ export default function GeoJsonMap({
 
       {/* 2D / 3D toggle button */}
       {choropleth && (
-        <button
-          onClick={is3DMode ? handleManualReturn2D : handleActivate3D}
-          disabled={!is3DAvailable && !is3DMode}
-          title={
-            !is3DAvailable && !is3DMode
-              ? "Mode 3D disponible uniquement pour les données numériques"
-              : is3DMode
-              ? "Retour en mode 2D"
-              : "Activer le mode 3D"
+        <Map3DControl
+          is3DMode={is3DMode}
+          is3DAvailable={is3DAvailable}
+          onToggle={
+            is3DMode
+              ? handleManualReturn2D
+              : handleActivate3D
           }
-          style={{
-            position: "absolute",
-            bottom: "1rem",
-            left: "1rem",
-            zIndex: 2000,
-            padding: "5px 14px",
-            borderRadius: "0.5rem",
-            border: `1px solid ${borderColor}`,
-            backgroundColor: is3DMode ? primary : "#FFFFFF",
-            color: is3DMode ? adaptiveTextColorPrimary : "#111827",
-            fontSize: "0.75rem",
-            fontWeight: 700,
-            letterSpacing: "0.06em",
-            cursor: !is3DAvailable && !is3DMode ? "not-allowed" : "pointer",
-            opacity: !is3DAvailable && !is3DMode ? 0.4 : 1,
-            boxShadow: "0 2px 6px rgba(0,0,0,0.18)",
-            transition: "opacity 0.2s, background-color 0.2s",
-            userSelect: "none",
-            pointerEvents: "auto",
-          }}
-          aria-pressed={is3DMode}
-          aria-label={is3DMode ? "Retour en mode 2D" : "Activer le mode 3D"}
-        >
-          {is3DMode ? "2D" : "3D"}
-        </button>
+        />
       )}
 
       {/*

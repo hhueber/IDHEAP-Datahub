@@ -14,7 +14,6 @@ import {
   PITCH_3D,
   BEARING_3D,
   MAX_ELEVATION,
-  PITCH_2D_THRESHOLD,
   MAX_PITCH_3D,
   BACKGROUND_3D,
 } from './choropleth3dConstants';
@@ -35,12 +34,6 @@ export type ChoroplethDeckLayerProps = {
   initialLat: number;
   /** Leaflet zoom captured at the moment 3D was activated */
   initialZoom: number;
-  /**
-   * Called once when pitch drops below PITCH_2D_THRESHOLD (user flattened view).
-   * Receives the current deck.gl longitude/latitude/zoom so Leaflet can be
-   * synchronised before being shown again.
-   */
-  onSwitchTo2D: (lng: number, lat: number, zoom: number) => void;
   /**
    * Mutable ref owned by GeoJsonMap.  Updated on every deck.gl viewState change
    * (no React state, no re-render).  Read by the parent when the user manually
@@ -79,7 +72,6 @@ export default function ChoroplethDeckLayer({
   initialLng,
   initialLat,
   initialZoom,
-  onSwitchTo2D,
   viewStateRef,
   selectedArea,
   onSelectArea,
@@ -88,12 +80,9 @@ export default function ChoroplethDeckLayer({
   const containerRef = useRef<HTMLDivElement>(null);
   const deckRef = useRef<Deck<any> | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
-  const switchingRef = useRef(false);
-  const onSwitchTo2DRef = useRef(onSwitchTo2D);
   const onSelectAreaRef = useRef(onSelectArea);
   const granularityRef = useRef(choropleth.granularity);
 
-  useEffect(() => { onSwitchTo2DRef.current = onSwitchTo2D; }, [onSwitchTo2D]);
   useEffect(() => { onSelectAreaRef.current = onSelectArea; }, [onSelectArea]);
   useEffect(() => { granularityRef.current = choropleth.granularity; }, [choropleth.granularity]);
 
@@ -227,19 +216,10 @@ export default function ChoroplethDeckLayer({
       getCursor: ({ isHovering }: any) => (isHovering ? 'pointer' : 'grab'),
 
       // viewState change
-      // Updates the shared ref (no React setState) and triggers 2D revert
+      // Updates the shared ref (no React setState)
       // when pitch falls below the threshold.
       onViewStateChange: ({ viewState }: any) => {
         viewStateRef.current = viewState as ViewState3D;
-
-        if (viewState.pitch < PITCH_2D_THRESHOLD && !switchingRef.current) {
-          switchingRef.current = true;
-          onSwitchTo2DRef.current(
-            viewState.longitude,
-            viewState.latitude,
-            viewState.zoom
-          );
-        }
       },
 
       // hover imperative DOM update, zero React re-renders
@@ -299,7 +279,11 @@ export default function ChoroplethDeckLayer({
 
   // Render
   return (
-    <div className="absolute inset-0" style={{ background: BACKGROUND_3D }}>
+    <div
+      className="absolute inset-0"
+      style={{ background: BACKGROUND_3D }}
+      onContextMenu={(e) => e.preventDefault()}
+    >
       {/* deck.gl injects its canvas here */}
       <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 
