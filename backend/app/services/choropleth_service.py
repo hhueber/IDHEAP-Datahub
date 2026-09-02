@@ -1377,10 +1377,6 @@ async def build_choropleth_values(
     """
     years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
 
-    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
-    result = await db.scalars(smt)
-    options = result.all()
-
     if scope == "global":
         resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
         if resolved is None:
@@ -1393,6 +1389,10 @@ async def build_choropleth_values(
         q_uid = resolved
     else:
         q_uid = question_uid
+
+    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == q_uid)
+    result = await db.scalars(smt)
+    options = result.all()
 
     distinct_cnt = await _global_distinct_non_empty_count(db, q_uid, year)
     use_mode = distinct_cnt <= MAX_CATEGORIES
