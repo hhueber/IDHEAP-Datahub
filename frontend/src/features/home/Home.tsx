@@ -84,10 +84,6 @@ export default function Home() {
             intro: t("home.tour.zoom"),
           },
           {
-            element: ".leaflet-control-simpleMapScreenshoter-btn",
-            intro: t("home.tour.screenshot"),
-          },
-          {
             element: "#btn-center-swiss",
             intro: t("home.tour.centerswiss"),
           },
