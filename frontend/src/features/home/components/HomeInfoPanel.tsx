@@ -221,13 +221,6 @@ export default function HomeInfoPanel({
                 }
               `}
             >
-              <div
-                className="text-xs mb-2 opacity-80"
-                style={{ color: textColor }}
-              >
-                {t("home.choroplethGlobalYear")}
-              </div>
-
               <GlobalQuestionTimeline
                 visible={showGlobalTimeline}
                 isGlobal={showGlobals}
