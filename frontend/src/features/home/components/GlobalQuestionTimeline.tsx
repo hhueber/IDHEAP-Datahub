@@ -245,7 +245,7 @@ export default function GlobalQuestionTimeline({
                             height: selected ? 9 : 7,
 
                             backgroundColor: enabled
-                              ? primary
+                              ? textColor
                               : hoverText30,
 
                             border: `1px solid ${background}`,
