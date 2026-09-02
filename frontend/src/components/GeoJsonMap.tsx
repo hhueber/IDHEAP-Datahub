@@ -564,7 +564,7 @@ export default function GeoJsonMap({
       >
         {/* Utilitaires : export écran, resize, bouton recadrage Suisse */}
         <ExposeMapOnWindow />
-        <InstallScreenshoter showButton={true} hideElementsWithSelectors={['.leaflet-control-container', '[data-no-export]']} />
+        <InstallScreenshoter showButton={false} hideElementsWithSelectors={['.leaflet-control-container', '[data-no-export]']} />
         <MapSizeFixer host={hostRef.current} />
         <TooltipZoomGuard />
         <ResetSwissControl position="topleft" />
