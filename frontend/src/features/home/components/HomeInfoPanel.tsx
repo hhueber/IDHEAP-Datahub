@@ -243,7 +243,7 @@ export default function HomeInfoPanel({
 
       {/* Carte granularité */}
       <section
-        id="garnularity-selector"
+        id="granularity-selector"
         className="rounded-2xl shadow-sm p-4"
         style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
       >
