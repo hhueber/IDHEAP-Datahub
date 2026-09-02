@@ -9,5 +9,21 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+  <script>
+    // Simple script to refresh the page when no activity after one minute
+    let timer = null;
+
+    function goAway() {
+        clearTimeout(timer);
+        timer = setTimeout(function() {
+            window.location.reload();
+        }, 60000);
+    }
+
+    // Add touchscreen and click
+    // Won't fire if no click - prevents refreshing if already fresh
+    window.addEventListener('touchstart', goAway, true);
+    window.addEventListener('click', goAway, true);
+  </script>
   </body>
 </html>
