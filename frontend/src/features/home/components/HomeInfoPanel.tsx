@@ -169,6 +169,7 @@ export default function HomeInfoPanel({
 
       {/* Carte sélection année */}
       <section
+        id="year-selector"
         className="rounded-2xl shadow-sm p-4"
         style={{
           backgroundColor: background,
@@ -242,6 +243,7 @@ export default function HomeInfoPanel({
 
       {/* Carte granularité */}
       <section
+        id="garnularity-selector"
         className="rounded-2xl shadow-sm p-4"
         style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
       >
@@ -298,6 +300,7 @@ export default function HomeInfoPanel({
 
         <div className="space-y-4">
           <div
+            id="question-selector"
             className="rounded-2xl border p-3"
             style={{
               backgroundColor: background,

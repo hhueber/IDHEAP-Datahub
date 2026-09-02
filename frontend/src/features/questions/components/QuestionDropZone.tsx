@@ -105,6 +105,7 @@ export default function QuestionDropZone({
 
   return (
     <div
+      id="saved-question-selector"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
