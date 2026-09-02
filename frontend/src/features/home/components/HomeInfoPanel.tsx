@@ -401,7 +401,6 @@ export default function HomeInfoPanel({
 
         </div>
       </section>
-      <MapExportButtons />
     </div>
   );
 }
