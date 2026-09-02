@@ -43,7 +43,11 @@
       "place-menu": "Click this button to open the points of interest menu.",
       "placeonoff": "Click this button to show or hide the points of interest.",
       "floatingButton": "Click here to show or hide the control panel.",
-      "popup-right": "In the control panel, you can configure the variables displayed on the map."
+      "year-selector": "Now for the interesting part. First, select if you want to see question from a specific year, or its evolution through multiple years.",
+      "granularity-selector": "If wanted, you can change the granularity of the values, for example, to see averages by canton.",
+      "question-selector": "You can then select from the available question, to make the answers appear on the map.",
+      "saved-question-selector": "For ease of use, you can add specific questions to your local favourite.",
+      "export-selector": "Finally, you can export a screenshot from the currently showcased question."
     },
     "question_collections": {
       "saved": {
