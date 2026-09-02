@@ -115,10 +115,6 @@ export default function Home() {
             element: "#granularity-selector",
             intro: t("home.tour.granularity-selector"),
           },
-          {
-            element: "#export-selector",
-            intro: t("home.tour.export-selector"),
-          },
         ],
       })
       .start();
