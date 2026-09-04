@@ -291,15 +291,11 @@ export type DataImportWorkspaceUploadData = {
   added_resources: DataImportResourceSummary[];
 };
 
-export type AllProjectData = {
-  uid: number;
-  name: string;
-};
 
 export type AllProjectResponse = {
   success: boolean;
   detail: string;
-  data: AllProjectData;
+  data: Project[];
 };
 
 export type DataImportWorkspaceUploadResponse = {
@@ -346,3 +342,9 @@ export type DataImportCommitResponse = {
     status: "not_implemented";
   };
 };
+
+export type Project = {
+  uid: number;
+  name: string;
+  description?: string;
+}

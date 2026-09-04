@@ -4,19 +4,14 @@ import { useState } from "react";
 import { DropdownList } from "@/utils/DropdownList";
 import { useTranslation } from "react-i18next";
 import { NewProjectData, Link, Author } from "../../dataImportTypes";
-
-export interface Project {
-  uid: number;
-  name: string;
-  description?: string;
-}
+import { Project } from "../../dataImportTypes";
 
 type ProjectSelectorProps = {
   canCreateProjet: boolean;
   projects: Project[];
-  selectedProjUid: number;
+  selectedProjUid: number | null;
   onSelectedExisting: (projectUid: number) => void;
-  onCreatedNew: (newProject: NewProjectData) => void;
+  onCreatedNew: (newProject: NewProjectData) => Project;
 };
 
 export function ProjectSelector({
@@ -84,11 +79,23 @@ export function ProjectSelector({
     setNewProject(updated);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     newProject.links = links;
     newProject.authors = authors;
-    onCreatedNew(newProject);
+    const createdProject = await onCreatedNew(newProject);
+    if (createdProject) {
+      setNewProject({
+        name: "",
+        description: "",
+        licence: "",
+        links: [],
+        authors: [],
+      });
+      setLinks([]);
+      setAuthors([{ first_name: "", last_name: "", email: "" }]);
+      setIsCreating(false);
+    }
   };
 
   const selectedProject =
@@ -114,7 +121,7 @@ export function ProjectSelector({
               color: !isCreating ? primary : textColor,
             }}
           >
-            choisir projet
+            {t("dataImport.upload.project.chooseProjectButton")}
           </button>
 
           {canCreateProjet && (
@@ -128,25 +135,25 @@ export function ProjectSelector({
                 color: isCreating ? primary : textColor,
               }}
             >
-              nouveau projet1
+              {t("dataImport.upload.project.newProject")}
             </button>
           )}
         </div>
         {!isCreating && (
           <div className="space-y-3">
             <label className="block text-xs font-medium opacity-70">
-              Selectionner votre projet
+              {t("dataImport.upload.project.chooseProjectText")}
             </label>
             {projects.length == 0 ? (
               <div className="flex flex-col items-center justify-center space-y-2 py-2">
                 <p className="text-xs opacity-70 text-center">
-                  Aucun projet existant n'a été trouvé.
+                  {t("dataImport.upload.project.noProjectText")}
                 </p>
                 <button
                   className=" rounded-lg py-2 text-xs border p-1"
                   onClick={() => setIsCreating(true)}
                 >
-                  Créer un nouveau projet
+                  {t("dataImport.upload.project.createNewProject")}
                 </button>
               </div>
             ) : (
@@ -223,13 +230,15 @@ export function ProjectSelector({
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold">Auteurs du projet</span>
+              <span className="text-xs font-semibold">
+                {t("dataImport.upload.project.projectAuthor")}
+              </span>
               <button
                 type="button"
                 onClick={addAuthor}
                 className="text-xs font-medium text-primary hover:underline"
               >
-                + Ajouter un auteur
+                + {t("dataImport.upload.project.addAuthor")}
               </button>
             </div>
             {authors.map((author, index) => (
@@ -240,7 +249,9 @@ export function ProjectSelector({
               >
                 <input
                   type="text"
-                  placeholder="Prénom"
+                  placeholder={t(
+                    "dataImport.upload.project.authorFirstNamePlaceholder",
+                  )}
                   value={author.first_name}
                   onChange={(e) =>
                     updateAuthor(index, "first_name", e.target.value)
@@ -254,7 +265,9 @@ export function ProjectSelector({
                 />
                 <input
                   type="text"
-                  placeholder="Nom"
+                  placeholder={t(
+                    "dataImport.upload.project.authorLastNamePlaceholder",
+                  )}
                   value={author.last_name}
                   onChange={(e) =>
                     updateAuthor(index, "last_name", e.target.value)
@@ -269,7 +282,9 @@ export function ProjectSelector({
                 <div className="flex items-center gap-2">
                   <input
                     type="email"
-                    placeholder="Email"
+                    placeholder={t(
+                      "dataImport.upload.project.authorEmailPlaceHolder",
+                    )}
                     value={author.email}
                     onChange={(e) =>
                       updateAuthor(index, "email", e.target.value)
@@ -296,18 +311,20 @@ export function ProjectSelector({
             ))}
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold">
-                Liens externes & Ressources
+                {t("dataImport.upload.project.linkText")}
               </span>
               <button
                 type="button"
                 onClick={addLink}
                 className="text-xs font-medium text-primary hover:underline"
               >
-                + Ajouter un lien
+                + {t("dataImport.upload.project.newLink")}
               </button>
             </div>
             {links.length === 0 && (
-              <p className="text-xs opacity-50 italic">Aucun lien ajouté.</p>
+              <p className="text-xs opacity-50 italic">
+                {t("dataImport.upload.project.noLink")}
+              </p>
             )}
             {links.map((link, index) => (
               <div
@@ -317,7 +334,7 @@ export function ProjectSelector({
               >
                 <input
                   type="text"
-                  placeholder="Nom du lien (ex: Documentation)"
+                  placeholder={t("dataImport.upload.project.linkPlaceHolder")}
                   value={link.name}
                   onChange={(e) => updateLink(index, "name", e.target.value)}
                   className="h-9 flex-1 rounded-lg border px-2.5 text-xs outline-none"

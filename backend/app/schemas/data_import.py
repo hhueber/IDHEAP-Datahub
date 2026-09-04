@@ -385,10 +385,15 @@ class DataImportNewProjectData(BaseModel):
     uid: int
 
 
+class ProjectData(BaseModel):
+    uid: int
+    name: str
+
+
 class DataImportNewProjectResponse(BaseModel):
     success: bool
     detail: str
-    data: int
+    data: ProjectData
 
 
 class DataProjectPayload(BaseModel):

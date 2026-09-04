@@ -81,7 +81,7 @@ async def create_new_project(
     for project in projects:
         project_payload.append({"uid": project.uid, "name": project.name})
 
-    return {"success": True, "detai": "Sucessfully fetched all project", "data": project_payload}
+    return {"success": True, "detail": "Sucessfully fetched all project", "data": project_payload}
 
 
 @router.post("/project", response_model=DataImportNewProjectResponse)
@@ -92,7 +92,11 @@ async def create_new_project(
 ):
     project = await create_project(db, _current_user, payload)
 
-    return {"success": True, "detail": "Project created Successfully  hehehheh", "data": int(project.uid)}
+    return {
+        "success": True,
+        "detail": "Project created Successfully  hehehheh",
+        "data": {"uid": project.uid, "name": project.name},
+    }
 
 
 @router.patch("/{import_id}/name", response_model=DataImportNameResponse)

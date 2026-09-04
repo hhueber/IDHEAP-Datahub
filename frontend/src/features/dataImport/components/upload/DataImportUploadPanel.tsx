@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportYearsInput } from "@/features/dataImport/components/years/DataImportYearsInput";
 import { ProjectSelector } from "@/features/dataImport/components/project/ProjectSelector";
-import { NewProjectData } from "../../dataImportTypes";
-import { newProjectCreate } from "../../dataImportApi";
+import { NewProjectData, Project } from "../../dataImportTypes";
+import { newProjectCreate, getAllProject } from "../../dataImportApi";
 
 type DataImportUploadPanelProps = {
   loading: boolean;
@@ -28,6 +28,8 @@ export function DataImportUploadPanel({
   const [displayName, setDisplayName] = React.useState("");
   const [years, setYears] = React.useState<number[]>([]);
   const [yearsError, setYearsError] = React.useState<string | null>(null);
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [projectUid, setProjectUid] = React.useState<number | null>();
 
   const addFiles = React.useCallback((nextFiles: File[]) => {
     setFiles((currentFiles) =>
@@ -68,15 +70,32 @@ export function DataImportUploadPanel({
     [files],
   );
 
-  const handleNewProject = (newProject: NewProjectData) => {
-    newProjectCreate(newProject);
+  const handleNewProject = async (newProject: NewProjectData) => {
+    const response = await newProjectCreate(newProject);
+
+    if (response.success && response.data) {
+      const createdProject = response.data;
+      setProjects((prevProjects) => [...prevProjects, createdProject]);
+      setProjectUid(createdProject.uid);
+      return createdProject;
+    }
   };
 
   const handleSelectingOne = (projectUid: number) => {
-    console.log(projectUid);
+    setProjectUid(projectUid);
   };
 
-  const loadProjects = () => {};
+  const loadProjects = async () => {
+    return await getAllProject();
+  };
+
+  useEffect(() => {
+    async function asnycLoad() {
+      const project = await loadProjects();
+      setProjects(project);
+    }
+    asnycLoad();
+  }, []);
 
   return (
     <section
@@ -90,14 +109,21 @@ export function DataImportUploadPanel({
 
         <div className="mb-5">
           <div className="mb-2 flex items-center justify-between gap-3">
-            <span className="text-sm font-medium">projet choisir</span>
+            <span className="text-sm font-medium">
+              {t("dataImport.upload.chooseProject")}
+            </span>
 
-            <span className="text-xs opacity-55">obligatoire</span>
+            <span className="text-xs opacity-55">
+              {t("dataImport.upload.mandatory")}
+            </span>
           </div>
 
           <ProjectSelector
             onCreatedNew={handleNewProject}
             onSelectedExisting={handleSelectingOne}
+            projects={projects}
+            canCreateProjet={true}
+            selectedProjUid={projectUid}
           />
         </div>
 

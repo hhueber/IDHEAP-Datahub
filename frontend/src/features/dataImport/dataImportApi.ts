@@ -22,17 +22,18 @@ import type {
 } from "@/features/dataImport/dataImportTypes";
 
 export async function getAllProject() {
-  return apiFetch<AllProjectResponse>("/data-import/projects", {
+  const fetched = await apiFetch<AllProjectResponse>("/data-import/projects", {
     method: "GET",
     auth: true,
   });
+  return fetched.data
 }
 
 export async function uploadDataImportFile(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
-  return apiFetch<DataImportUploadResponse>("/data-import/upload", {
+  const fetched = apiFetch<DataImportUploadResponse>("/data-import/upload", {
     method: "POST",
     auth: true,
     body: formData,
