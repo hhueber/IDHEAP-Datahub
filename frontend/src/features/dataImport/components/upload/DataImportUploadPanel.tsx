@@ -1,8 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
 import { DataImportYearsInput } from "@/features/dataImport/components/years/DataImportYearsInput";
+import { ProjectSelector } from "@/features/dataImport/components/project/ProjectSelector";
+import { NewProjectData, Project } from "../../dataImportTypes";
+import { newProjectCreate, getAllProject } from "../../dataImportApi";
 
 type DataImportUploadPanelProps = {
   loading: boolean;
@@ -18,39 +21,37 @@ export function DataImportUploadPanel({
   onSubmit,
 }: DataImportUploadPanelProps) {
   const { t } = useTranslation();
-  const {textColor, background, borderColor, hoverPrimary04, primary} = useTheme();
+  const { textColor, background, borderColor, hoverPrimary04, primary } =
+    useTheme();
 
   const [files, setFiles] = React.useState<File[]>([]);
   const [displayName, setDisplayName] = React.useState("");
   const [years, setYears] = React.useState<number[]>([]);
   const [yearsError, setYearsError] = React.useState<string | null>(null);
+  const [projects, setProjects] = React.useState<Project[]>([]);
+  const [projectUid, setProjectUid] = React.useState<number | null>();
 
   const addFiles = React.useCallback((nextFiles: File[]) => {
     setFiles((currentFiles) =>
-      mergeFilesWithoutDuplicates(currentFiles, nextFiles)
+      mergeFilesWithoutDuplicates(currentFiles, nextFiles),
     );
   }, []);
 
   const removeFile = (fileToRemove: File) => {
     setFiles((currentFiles) =>
       currentFiles.filter(
-        (file) => getFileKey(file) !== getFileKey(fileToRemove)
-      )
+        (file) => getFileKey(file) !== getFileKey(fileToRemove),
+      ),
     );
   };
 
   const submit = async () => {
-    if (
-      files.length === 0 ||
-      loading
-    ) {
+    if (files.length === 0 || loading) {
       return;
     }
 
     if (years.length === 0) {
-      setYearsError(
-        t("dataImport.years.required")
-      );
+      setYearsError(t("dataImport.years.required"));
 
       return;
     }
@@ -59,16 +60,42 @@ export function DataImportUploadPanel({
 
     await onSubmit({
       files,
-      displayName:
-        displayName.trim() || null,
+      displayName: displayName.trim() || null,
       years,
     });
   };
 
   const totalSize = React.useMemo(
     () => files.reduce((total, file) => total + file.size, 0),
-    [files]
+    [files],
   );
+
+  const handleNewProject = async (newProject: NewProjectData) => {
+    const response = await newProjectCreate(newProject);
+
+    if (response.success && response.data) {
+      const createdProject = response.data;
+      setProjects((prevProjects) => [...prevProjects, createdProject]);
+      setProjectUid(createdProject.uid);
+      return createdProject;
+    }
+  };
+
+  const handleSelectingOne = (projectUid: number) => {
+    setProjectUid(projectUid);
+  };
+
+  const loadProjects = async () => {
+    return await getAllProject();
+  };
+
+  useEffect(() => {
+    async function asnycLoad() {
+      const project = await loadProjects();
+      setProjects(project);
+    }
+    asnycLoad();
+  }, []);
 
   return (
     <section
@@ -79,6 +106,26 @@ export function DataImportUploadPanel({
         <h2 className="text-lg font-semibold">
           {t("dataImport.upload.title")}
         </h2>
+
+        <div className="mb-5">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <span className="text-sm font-medium">
+              {t("dataImport.upload.chooseProject")}
+            </span>
+
+            <span className="text-xs opacity-55">
+              {t("dataImport.upload.mandatory")}
+            </span>
+          </div>
+
+          <ProjectSelector
+            onCreatedNew={handleNewProject}
+            onSelectedExisting={handleSelectingOne}
+            projects={projects}
+            canCreateProjet={true}
+            selectedProjUid={projectUid}
+          />
+        </div>
 
         <p className="mt-1 max-w-3xl text-sm leading-6 opacity-70">
           {t("dataImport.upload.description")}
@@ -135,10 +182,7 @@ export function DataImportUploadPanel({
         />
       </div>
 
-      <DataImportDropzone
-        disabled={loading}
-        onFilesSelected={addFiles}
-      />
+      <DataImportDropzone disabled={loading} onFilesSelected={addFiles} />
 
       {files.length > 0 && (
         <div
@@ -221,7 +265,7 @@ export function DataImportUploadPanel({
 
 function mergeFilesWithoutDuplicates(
   currentFiles: File[],
-  nextFiles: File[]
+  nextFiles: File[],
 ): File[] {
   const filesByKey = new Map<string, File>();
 
@@ -233,12 +277,7 @@ function mergeFilesWithoutDuplicates(
 }
 
 function getFileKey(file: File): string {
-  return [
-    file.name,
-    file.size,
-    file.lastModified,
-    file.type,
-  ].join(":");
+  return [file.name, file.size, file.lastModified, file.type].join(":");
 }
 
 function formatFileSize(size: number): string {
