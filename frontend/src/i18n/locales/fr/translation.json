@@ -833,7 +833,7 @@
         "authorEmailPlaceHolder": "Email",
         "linkText": "Lien",
         "newLink": "Nouveau lien",
-        "noLink": "Ajouter un lien",
+        "noLink": "Pas de lien",
         "linkPlaceHolder": "Nom du lien",
         "submitButton": "Créer un nouveau projet"
       }
