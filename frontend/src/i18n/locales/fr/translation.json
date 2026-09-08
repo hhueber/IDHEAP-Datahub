@@ -108,6 +108,16 @@
       "network": "Problème de réseau. Vérifiez votre connexion.",
       "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
       "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
+    },
+    "choroplethColor": {
+      "title": "Intensité des couleurs",
+      "light": "Léger",
+      "original": "Original",
+      "strong": "Marqué",
+      "lighter": "Plus léger",
+      "stronger": "Plus marqué",
+      "reset": "Réinitialiser",
+      "ariaLabel": "Intensité des couleurs du choropleth"
     }
   },
   "common": {
