@@ -104,8 +104,24 @@ export default function Home() {
             intro: t("home.tour.basemap"),
           },
           {
-            element: "#popup-right",
-            intro: t("home.tour.popup-right"),
+            element: "#year-selector",
+            intro: t("home.tour.year-selector"),
+          },
+          {
+            element: "#question-selector",
+            intro: t("home.tour.question-selector"),
+          },
+          {
+            element: "#saved-question-selector",
+            intro: t("home.tour.saved-question-selector"),
+          },
+          {
+            element: "#granularity-selector",
+            intro: t("home.tour.granularity-selector"),
+          },
+          {
+            element: "#export-selector",
+            intro: t("home.tour.export-selector"),
           },
         ],
       })
@@ -194,7 +210,7 @@ export default function Home() {
           data-open={panelOpen.toString()}
           onClick={() => setPanelOpen((v) => !v)}
           className="
-            absolute bottom-4 right-4 z-[3600]
+            absolute top-[24px] right-4 z-[3600]
             translate-x-0
             h-12 w-12 rounded-full border
             shadow-lg active:translate-y-px

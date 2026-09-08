@@ -146,7 +146,9 @@ export default function MapExportButtons() {
   );
 
   return (
-    <section className="rounded-2xl p-4 shadow-sm border"
+    <section
+      id="export-selector"
+      className="rounded-2xl p-4 shadow-sm border"
       style={{
         backgroundColor: background,
         borderColor: borderColor,
