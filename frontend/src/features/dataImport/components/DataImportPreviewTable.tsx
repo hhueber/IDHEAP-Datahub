@@ -1,7 +1,18 @@
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
-import { patchDataImportColumn, patchDataImportColumnTransform } from "@/features/dataImport/dataImportApi";
-import type { ColumnTransformAction, DataImportAnalyzeResponse, DataImportPreviewResponse, DetectedType, ImportColumnSummary, ImportSection } from "@/features/dataImport/dataImportTypes";
+import {
+  patchDataImportColumn,
+  patchDataImportColumnTransform,
+} from "@/features/dataImport/dataImportApi";
+import type {
+  ColumnTransformAction,
+  DataImportAnalyzeResponse,
+  DataImportPreviewResponse,
+  DetectedType,
+  ImportColumnSummary,
+  ImportSection,
+  RoleType,
+} from "@/features/dataImport/dataImportTypes";
 import { EditableImportCell } from "@/features/dataImport/components/EditableImportCell";
 import type { ReactNode } from "react";
 import React from "react";
@@ -41,6 +52,16 @@ const SECTION_OPTIONS: ImportSection[] = [
   "ignored",
 ];
 
+const ROLE_OPTIONS: RoleType[] = [
+  "code",
+  "label",
+  "text_de",
+  "text_en",
+  "text_fr",
+  "text_it",
+  "text_rm",
+];
+
 export function DataImportPreviewTable({
   importId,
   data,
@@ -53,15 +74,18 @@ export function DataImportPreviewTable({
   onAnalysisUpdated,
 }: DataImportPreviewTableProps) {
   const { t } = useTranslation();
-  const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
+  const { textColor, background, borderColor, hoverPrimary04, primary } =
+    useTheme();
 
   const totalPages = Math.max(1, Math.ceil(data.total_rows / perPage));
 
-  const [profileColumnIndex, setProfileColumnIndex] = React.useState<number | null>(null);
+  const [profileColumnIndex, setProfileColumnIndex] = React.useState<
+    number | null
+  >(null);
 
   const handleColumnTypeChange = async (
     columnIndex: number,
-    detectedType: DetectedType
+    detectedType: DetectedType,
   ) => {
     const json = await patchDataImportColumn({
       importId,
@@ -78,7 +102,7 @@ export function DataImportPreviewTable({
 
   const handleColumnSectionChange = async (
     columnIndex: number,
-    section: ImportSection
+    section: ImportSection,
   ) => {
     const json = await patchDataImportColumn({
       importId,
@@ -95,7 +119,7 @@ export function DataImportPreviewTable({
 
   const handleColumnTransform = async (
     columnIndex: number,
-    action: ColumnTransformAction
+    action: ColumnTransformAction,
   ) => {
     const json = await patchDataImportColumnTransform({
       importId,
@@ -112,64 +136,57 @@ export function DataImportPreviewTable({
 
   const profileColumn = React.useMemo(() => {
     if (profileColumnIndex === null) {
-        return null;
+      return null;
     }
 
     const columnFromPreview = data.columns.find(
-        (column) => Number(column.index) === Number(profileColumnIndex)
+      (column) => Number(column.index) === Number(profileColumnIndex),
     );
 
     const columnFromAnalysis = columnsSummary.find(
-        (column) => Number(column.index) === Number(profileColumnIndex)
+      (column) => Number(column.index) === Number(profileColumnIndex),
     );
 
     if (!columnFromPreview && !columnFromAnalysis) {
-        return null;
+      return null;
     }
 
     return {
-        index: columnFromPreview?.index ?? columnFromAnalysis?.index ?? profileColumnIndex,
-        original_name:
-        columnFromAnalysis?.original_name ??
-        columnFromPreview?.name ??
-        "",
-        normalized_name:
-        columnFromAnalysis?.normalized_name ??
-        columnFromPreview?.name ??
-        "",
-        section:
+      index:
+        columnFromPreview?.index ??
+        columnFromAnalysis?.index ??
+        profileColumnIndex,
+      original_name:
+        columnFromAnalysis?.original_name ?? columnFromPreview?.name ?? "",
+      normalized_name:
+        columnFromAnalysis?.normalized_name ?? columnFromPreview?.name ?? "",
+      section:
         columnFromPreview?.section ??
         columnFromAnalysis?.section ??
         "unclassified",
-        detected_type:
+      detected_type:
         columnFromPreview?.detected_type ??
         columnFromAnalysis?.detected_type ??
         "text",
-        confidence:
-        columnFromAnalysis?.confidence ??
-        0,
-        issue_count:
-        columnFromPreview?.issue_count ??
-        columnFromAnalysis?.issue_count ??
-        0,
+      confidence: columnFromAnalysis?.confidence ?? 0,
+      issue_count:
+        columnFromPreview?.issue_count ?? columnFromAnalysis?.issue_count ?? 0,
 
-        empty_count:
-        columnFromPreview?.empty_count ??
-        columnFromAnalysis?.empty_count ??
-        0,
-        non_empty_count:
+      empty_count:
+        columnFromPreview?.empty_count ?? columnFromAnalysis?.empty_count ?? 0,
+      non_empty_count:
         columnFromPreview?.non_empty_count ??
         columnFromAnalysis?.non_empty_count ??
         0,
-        unique_count:
+      unique_count:
         columnFromPreview?.unique_count ??
         columnFromAnalysis?.unique_count ??
         0,
-        sample_values:
+      sample_values:
         columnFromPreview?.sample_values ??
         columnFromAnalysis?.sample_values ??
         [],
-        most_common_values:
+      most_common_values:
         columnFromPreview?.most_common_values ??
         columnFromAnalysis?.most_common_values ??
         [],
@@ -180,11 +197,11 @@ export function DataImportPreviewTable({
     if (profileColumnIndex === null) return;
 
     const columnStillVisible = data.columns.some(
-        (column) => column.index === profileColumnIndex
+      (column) => column.index === profileColumnIndex,
     );
 
     if (!columnStillVisible) {
-        setProfileColumnIndex(null);
+      setProfileColumnIndex(null);
     }
   }, [data.columns, profileColumnIndex]);
 
@@ -193,72 +210,73 @@ export function DataImportPreviewTable({
       className="overflow-hidden rounded-3xl border"
       style={{ backgroundColor: background, borderColor, color: textColor }}
     >
-      <div
-        className="border-b p-4 sm:p-5"
-        style={{ borderColor }}
-      >
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <div
-            className="mb-2 inline-flex rounded-full border px-3 py-1 text-xs font-medium"
-            style={{ borderColor, backgroundColor: hoverPrimary04, color: primary }}
-          >
-            {t(`dataImport.sections.${data.section}`)}
+      <div className="border-b p-4 sm:p-5" style={{ borderColor }}>
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <div
+              className="mb-2 inline-flex rounded-full border px-3 py-1 text-xs font-medium"
+              style={{
+                borderColor,
+                backgroundColor: hoverPrimary04,
+                color: primary,
+              }}
+            >
+              {t(`dataImport.sections.${data.section}`)}
+            </div>
+
+            <h2 className="text-lg font-semibold">
+              {t("dataImport.preview.title")}
+            </h2>
+
+            <p className="mt-1 text-sm opacity-70">
+              {data.total_rows} {t("dataImport.summary.rows")} ·{" "}
+              {data.columns.length} {t("dataImport.summary.columns")} ·{" "}
+              {data.issues_count} {t("dataImport.summary.issues")}
+            </p>
           </div>
 
-          <h2 className="text-lg font-semibold">
-            {t("dataImport.preview.title")}
-          </h2>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              disabled={page <= 1}
+              onClick={() => onPageChange(page - 1)}
+              className="h-10 rounded-xl border px-3 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
+              style={{ borderColor, backgroundColor: hoverPrimary04 }}
+            >
+              {t("common.previous")}
+            </button>
 
-          <p className="mt-1 text-sm opacity-70">
-            {data.total_rows} {t("dataImport.summary.rows")} ·{" "}
-            {data.columns.length} {t("dataImport.summary.columns")} ·{" "}
-            {data.issues_count} {t("dataImport.summary.issues")}
-          </p>
-        </div>
+            <div
+              className="h-10 rounded-xl border px-3 text-sm leading-10"
+              style={{ borderColor }}
+            >
+              {page} / {totalPages}
+            </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            disabled={page <= 1}
-            onClick={() => onPageChange(page - 1)}
-            className="h-10 rounded-xl border px-3 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
-            style={{ borderColor, backgroundColor: hoverPrimary04 }}
-          >
-            {t("common.previous")}
-          </button>
-
-          <div
-            className="h-10 rounded-xl border px-3 text-sm leading-10"
-            style={{ borderColor }}
-          >
-            {page} / {totalPages}
+            <button
+              type="button"
+              disabled={page >= totalPages}
+              onClick={() => onPageChange(page + 1)}
+              className="h-10 rounded-xl border px-3 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
+              style={{ borderColor, backgroundColor: hoverPrimary04 }}
+            >
+              {t("common.next")}
+            </button>
           </div>
+        </div>
 
-          <button
-            type="button"
-            disabled={page >= totalPages}
-            onClick={() => onPageChange(page + 1)}
-            className="h-10 rounded-xl border px-3 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
+        {toolbar && (
+          <div
+            className="mt-4 rounded-2xl border p-3 sm:p-4"
             style={{ borderColor, backgroundColor: hoverPrimary04 }}
           >
-            {t("common.next")}
-          </button>
-        </div>
-      </div>
-
-      {toolbar && (
-        <div
-          className="mt-4 rounded-2xl border p-3 sm:p-4"
-          style={{ borderColor, backgroundColor: hoverPrimary04 }}
-        >
-          {toolbar}
-        </div>
-      )}
-      <DataImportColumnProfilePanel
-        column={profileColumn}
-        onClose={() => setProfileColumnIndex(null)}
-      />
+            {toolbar}
+          </div>
+        )}
+        <DataImportColumnProfilePanel
+          column={profileColumn}
+          onClose={() => setProfileColumnIndex(null)}
+        />
       </div>
 
       {data.rows.length === 0 ? (
@@ -294,7 +312,9 @@ export function DataImportPreviewTable({
                           </div>
 
                           <div className="mt-1 text-[11px] opacity-60">
-                            {"\u0023"}{column.index} {/* Signe Unicode pour ce symbole # */}
+                            {"\u0023"}
+                            {column.index}{" "}
+                            {/* Signe Unicode pour ce symbole # */}
                           </div>
                         </div>
 
@@ -304,35 +324,49 @@ export function DataImportPreviewTable({
                           </span>
                         )}
                         <button
-                            type="button"
-                            onClick={() => {
+                          type="button"
+                          onClick={() => {
                             const previewColumn = data.columns.find(
-                                (item) => Number(item.index) === Number(column.index)
+                              (item) =>
+                                Number(item.index) === Number(column.index),
                             );
 
                             const analysisColumn = columnsSummary.find(
-                                (item) => Number(item.index) === Number(column.index)
+                              (item) =>
+                                Number(item.index) === Number(column.index),
                             );
 
-                            console.log("Preview column profile:", previewColumn);
-                            console.log("Analysis column profile:", analysisColumn);
+                            console.log(
+                              "Preview column profile:",
+                              previewColumn,
+                            );
+                            console.log(
+                              "Analysis column profile:",
+                              analysisColumn,
+                            );
 
                             setProfileColumnIndex((current) =>
-                                current === column.index ? null : column.index
+                              current === column.index ? null : column.index,
                             );
-                            }}
-                            className="rounded-lg border px-2 py-1 text-xs font-semibold transition hover:opacity-80"
-                            style={{
-                                borderColor:
-                                profileColumnIndex === column.index ? primary : borderColor,
-                                backgroundColor:
-                                profileColumnIndex === column.index ? hoverPrimary04 : background,
-                                color:
-                                profileColumnIndex === column.index ? primary : textColor,
-                            }}
-                            title={t("dataImport.columnProfile.open")}
-                            >
-                            {"\u2630"} {/* Signe Unicode pour ce symbole ☰ */}
+                          }}
+                          className="rounded-lg border px-2 py-1 text-xs font-semibold transition hover:opacity-80"
+                          style={{
+                            borderColor:
+                              profileColumnIndex === column.index
+                                ? primary
+                                : borderColor,
+                            backgroundColor:
+                              profileColumnIndex === column.index
+                                ? hoverPrimary04
+                                : background,
+                            color:
+                              profileColumnIndex === column.index
+                                ? primary
+                                : textColor,
+                          }}
+                          title={t("dataImport.columnProfile.open")}
+                        >
+                          {"\u2630"} {/* Signe Unicode pour ce symbole ☰ */}
                         </button>
                       </div>
 
@@ -342,7 +376,7 @@ export function DataImportPreviewTable({
                           onChange={(event) =>
                             void handleColumnSectionChange(
                               column.index,
-                              event.target.value as ImportSection
+                              event.target.value as ImportSection,
                             )
                           }
                           className="rounded-xl border px-2 py-2 text-xs outline-none"
@@ -358,13 +392,30 @@ export function DataImportPreviewTable({
                             </option>
                           ))}
                         </select>
-
+                        {column.section === "questions" && (
+                          <select
+                            className="rounded-xl border px-2 py-2 text-xs outline-none"
+                            style={{
+                              backgroundColor: background,
+                              color: textColor,
+                              borderColor,
+                            }}
+                            name=""
+                            id=""
+                          >
+                            {ROLE_OPTIONS.map((role) => (
+                              <option key={role} value={role}>
+                                {role}
+                              </option>
+                            ))}
+                          </select>
+                        )}
                         <select
                           value={column.detected_type}
                           onChange={(event) =>
                             void handleColumnTypeChange(
                               column.index,
-                              event.target.value as DetectedType
+                              event.target.value as DetectedType,
                             )
                           }
                           className="rounded-xl border px-2 py-2 text-xs outline-none"
@@ -384,8 +435,9 @@ export function DataImportPreviewTable({
                         <select
                           defaultValue=""
                           onChange={(event) => {
-                            const action =
-                              event.target.value as ColumnTransformAction | "";
+                            const action = event.target.value as
+                              | ColumnTransformAction
+                              | "";
 
                             if (!action) return;
 

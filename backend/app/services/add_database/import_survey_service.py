@@ -53,6 +53,7 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
 
         bfs_column_name = None
         question_columns = []
+        role_columns = []
 
         for col in analysis.get("columns_summary", []):
             col_name = col.get("original_name")
@@ -62,6 +63,8 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
                 bfs_column_name = col_name
             elif section in {"responses", "questions"}:
                 question_columns.append(col_name)
+                if section == "questions":
+                    role_columns.append(col["role"])
 
         if not bfs_column_name:
             raise ValueError("Cannot find the municipalities column")

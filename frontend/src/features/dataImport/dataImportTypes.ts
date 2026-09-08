@@ -20,6 +20,15 @@ export type DetectedType =
   | "empty"
   | "mixed";
 
+export type RoleType =
+  | "code"
+  | "label"
+  | "text_fr"
+  | "text_en"
+  | "text_it"
+  | "text_de"
+  | "text_rm";
+
 export type DataImportUploadResponse = {
   success: boolean;
   detail: string;
@@ -296,7 +305,6 @@ export type DataImportYearsResponse = {
     years: number[];
   };
 };
-
 
 export type DataImportCommitResponse = {
   success: boolean;
