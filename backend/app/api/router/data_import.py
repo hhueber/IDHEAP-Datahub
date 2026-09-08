@@ -1,6 +1,7 @@
 from app.api.permissions import require_permission
 from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
+from app.models.user import User
 from app.schemas.data_import import (
     DataImportAnalyzeResponse,
     DataImportCellPatch,
@@ -13,6 +14,8 @@ from app.schemas.data_import import (
     DataImportListResponse,
     DataImportNamePatch,
     DataImportNameResponse,
+    DataImportNewProject,
+    DataImportNewProjectResponse,
     DataImportPatchResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
@@ -21,9 +24,11 @@ from app.schemas.data_import import (
     DataImportWorkspaceUploadResponse,
     DataImportYearsPatch,
     DataImportYearsResponse,
+    DataProjectResponse,
     ImportSectionEnum,
 )
 from app.services.add_database.import_survey_service import import_new_survey_pipeline
+from app.services.add_database.survey_project_service import create_project, get_projects
 from app.services.data_import.data_import_patch_service import (
     confirm_import_columns,
     patch_import_cell,
@@ -63,6 +68,34 @@ async def upload_data_file(
         "success": True,
         "detail": "File uploaded",
         "data": data,
+    }
+
+
+@router.get("/projects", response_model=DataProjectResponse)
+async def create_new_project(
+    db: AsyncSession = Depends(get_db),
+    _current_user: User = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+):
+    projects = await get_projects(db, _current_user)
+    project_payload = []
+    for project in projects:
+        project_payload.append({"uid": project.uid, "name": project.name})
+
+    return {"success": True, "detail": "Sucessfully fetched all project", "data": project_payload}
+
+
+@router.post("/project", response_model=DataImportNewProjectResponse)
+async def create_new_project(
+    payload: DataImportNewProject,
+    db: AsyncSession = Depends(get_db),
+    _current_user: User = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+):
+    project = await create_project(db, _current_user, payload)
+
+    return {
+        "success": True,
+        "detail": "Project created Successfully  hehehheh",
+        "data": {"uid": project.uid, "name": project.name},
     }
 
 
@@ -340,4 +373,13 @@ async def commit_change(
 ):
 
     await import_new_survey_pipeline(db, import_id)
-    return {"success": True, "detail": "Helloooo", "data": "Hellooooca"}
+    return {"success": True, "detail": "Helloooo", "data": "Helloooo"}
+
+
+@router.post("/project", response_model=DataImportNewProjectResponse)
+async def new_project(
+    payload=DataImportNewProject,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+):
+    return {"success": True}
