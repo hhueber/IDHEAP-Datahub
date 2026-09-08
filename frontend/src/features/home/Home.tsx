@@ -104,8 +104,24 @@ export default function Home() {
             intro: t("home.tour.basemap"),
           },
           {
-            element: "#popup-right",
-            intro: t("home.tour.popup-right"),
+            element: "#year-selector",
+            intro: t("home.tour.year-selector"),
+          },
+          {
+            element: "#question-selector",
+            intro: t("home.tour.question-selector"),
+          },
+          {
+            element: "#saved-question-selector",
+            intro: t("home.tour.saved-question-selector"),
+          },
+          {
+            element: "#granularity-selector",
+            intro: t("home.tour.granularity-selector"),
+          },
+          {
+            element: "#export-selector",
+            intro: t("home.tour.export-selector"),
           },
         ],
       })

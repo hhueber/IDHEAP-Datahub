@@ -44,7 +44,12 @@
       "placeonoff": "Pour afficher ou masquer lesdits points d'intérêt, vous pouvez cliquer sur ce bouton.",
       "floatingButton": "Cliquez ici pour afficher ou masquer le panneau de contrôle.",
       "popup-right": "Dans le panneau de contrôle, vous pouvez configurer les variables à afficher sur la carte.",
-      "basemap": "Cliquez sur ce bouton pour pouvoir changer le fond de base de la carte."
+      "basemap": "Cliquez sur ce bouton pour pouvoir changer le fond de base de la carte.",
+      "year-selector": "Maintenant, passons à la partie intéressante. Tout d'abord, sélectionnez si vous voulez voir des questions d'une année spécifique, ou leur évolution au fil des années.",
+      "granularity-selector": "Si nécessaire, vous pouvez changer la granularité des valeurs, pour par exemple voir des moyennes par canton.",
+      "question-selector": "Vous pouvez ensuite sélectionner parmi les questions disponibles, pour que les réponses apparaissent sur la carte.",
+      "saved-question-selector": "Pour faciliter l'utilisation, vous pouvez ajouter des questions spécifiques à vos favoris locaux.",
+      "export-selector": "Enfin, vous pouvez exporter une capture d'écran de la question actuellement présentée."
     },
     "question_collections": {
       "saved": {
