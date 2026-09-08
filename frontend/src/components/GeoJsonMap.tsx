@@ -23,6 +23,14 @@ import L from "leaflet";
 import "leaflet.pattern";
 import type { ViewState3D } from "@/features/geo/3d/ChoroplethDeckLayer";
 import Map3DControl from "@/components/map/Map3DControl";
+import MapColorControl from "@/components/map/MapColorControl";
+import MapColorAdjustmentPanel from "@/components/map/MapColorAdjustmentPanel";
+import useChoroplethColorAdjustment from "@/features/geo/choropleth/useChoroplethColorAdjustment";
+import {
+  adjustChoroplethColor,
+  adjustChoroplethOpacity,
+  shouldAdjustChoroplethFeature,
+} from "@/features/geo/choropleth/choroplethColorAdjustment";
 
 const ChoroplethDeckLayer = lazy(() => import("@/features/geo/3d/ChoroplethDeckLayer"));
 
@@ -104,6 +112,12 @@ export default function GeoJsonMap({
   const { background, countryColors, lakesColores, cantonColores, districtColores, communesColores, borderColor, selectionColor, primary, adaptiveTextColorPrimary } = useTheme();
 
   const patternCacheRef = useRef<Map<string, any>>(new Map());
+  const {
+    colorIntensity,
+    setColorIntensity,
+    resetColorIntensity,
+  } = useChoroplethColorAdjustment();
+  const [isColorPanelOpen, setIsColorPanelOpen] = useState(false);
 
   // 3D mode
   const [is3DMode, setIs3DMode] = useState(false);
@@ -163,9 +177,9 @@ export default function GeoJsonMap({
   const [basemap, setBasemap] = useState<BasemapId>("none");
 
   // Crée ou récupère un pattern de rayures multicolores (pour les choropleth catégorielles avec ex-aequo)
-  function getMultiStripePattern(map: any, colors: string[], angle = 45, stripe = 6) {
+  function getMultiStripePattern(map: any, colors: string[], opacity: number, angle = 45, stripe = 6) {
     const cols = colors.filter(Boolean).slice(0, 12);
-    const key = `${cols.join("|")}|${angle}|${stripe}`;
+    const key = `${cols.join("|")}|${opacity.toFixed(3)}|${angle}|${stripe}`;
     const cache = patternCacheRef.current;
     const existing = cache.get(key);
     if (existing) return existing;
@@ -189,7 +203,7 @@ export default function GeoJsonMap({
         height: h,
         fill: true,
         fillColor: col,
-        fillOpacity: 1,
+        fillOpacity: opacity,
         stroke: false,
       });
       pattern.addShape(rect);
@@ -417,7 +431,14 @@ export default function GeoJsonMap({
     fillOpacity: 0,
   }), []);
 
-  const choroplethFillOpacity = basemap !== "none" ? 0.45 : 0.75;
+  const baseChoroplethFillOpacity = basemap !== "none" ? 0.45 : 0.75;
+  const choroplethFillOpacity =
+    adjustChoroplethOpacity(
+      baseChoroplethFillOpacity,
+      colorIntensity
+    );
+  const choroplethFillOpacityRef = useRef(choroplethFillOpacity);
+  choroplethFillOpacityRef.current = choroplethFillOpacity;
   const activeTileConfig = basemap !== "none" ? BASEMAP_CONFIG[basemap] : null;
 
   // Alias pratiques
@@ -486,21 +507,42 @@ export default function GeoJsonMap({
             selectedArea={selectedArea ?? null}
             onSelectArea={onSelectArea ?? (() => {})}
             maxPositiveValue={maxPositiveValue}
+            colorIntensity={colorIntensity}
           />
         </Suspense>
       )}
 
-      {/* 2D / 3D toggle button */}
+      {/* Contrôles du choropleth */}
       {choropleth && (
-        <Map3DControl
-          is3DMode={is3DMode}
-          is3DAvailable={is3DAvailable}
-          onToggle={
-            is3DMode
-              ? handleManualReturn2D
-              : handleActivate3D
-          }
-        />
+        <>
+          {/* 2D / 3D */}
+          <Map3DControl
+            is3DMode={is3DMode}
+            is3DAvailable={is3DAvailable}
+            onToggle={
+              is3DMode
+                ? handleManualReturn2D
+                : handleActivate3D
+            }
+          />
+
+          {/* Intensité des couleurs */}
+          <MapColorControl
+            isOpen={isColorPanelOpen}
+            onToggle={() =>
+              setIsColorPanelOpen((current) => !current)
+            }
+          />
+
+          {/* Popup déplaçable */}
+          <MapColorAdjustmentPanel
+            open={isColorPanelOpen}
+            value={colorIntensity}
+            onChange={setColorIntensity}
+            onReset={resetColorIntensity}
+            boundaryRef={hostRef}
+          />
+        </>
       )}
 
       {/*
@@ -620,7 +662,10 @@ export default function GeoJsonMap({
               pane="choropleth"
               style={(feat: any) => {
                 const props = feat?.properties ?? {};
-                const fill = props.fill_color ?? "#cccccc";
+                const originalFill = props.fill_color ?? "#cccccc";
+                const fill = shouldAdjustChoroplethFeature(props)
+                    ? adjustChoroplethColor(originalFill, colorIntensity)
+                    : originalFill;
                 const pat = props.fill_pattern;
                 const map = (window as any).__leafletMap;
 
@@ -647,7 +692,17 @@ export default function GeoJsonMap({
                   const angle = typeof pat.angle === "number" ? pat.angle : 45;
                   const stripe = typeof pat.stripe === "number" ? pat.stripe : 6;
 
-                  const p = getMultiStripePattern(map, pat.colors, angle, stripe);
+                  const patternColors =
+                    shouldAdjustChoroplethFeature(props)
+                      ? pat.colors.map(
+                          (color: string) =>
+                            adjustChoroplethColor(
+                              color,
+                              colorIntensity
+                            )
+                        )
+                      : pat.colors;
+                  const p = getMultiStripePattern(map, patternColors, choroplethFillOpacity, angle, stripe);
 
                   return {
                     ...base,
@@ -705,10 +760,11 @@ export default function GeoJsonMap({
                 layer.on("mouseover", () => {
                   if (isSelected()) return;
 
+                  const currentOpacity = choroplethFillOpacityRef.current;
                   // effet visuel
                   layer.setStyle({
                     weight: 4,
-                    fillOpacity: 0.9,
+                    fillOpacity: Math.min(1, currentOpacity + 0.15),
                     opacity: 1,
                   });
 
@@ -726,7 +782,7 @@ export default function GeoJsonMap({
 
                 layer.setStyle({
                   weight: 1,
-                  fillOpacity: choroplethFillOpacity,
+                  fillOpacity: choroplethFillOpacityRef.current,
                   opacity: 1,
                 });
 

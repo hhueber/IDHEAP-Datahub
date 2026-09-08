@@ -17,6 +17,11 @@ import {
   MAX_PITCH_3D,
   BACKGROUND_3D,
 } from './choropleth3dConstants';
+import {
+  adjustChoroplethColor,
+  adjustChoroplethOpacity,
+  shouldAdjustChoroplethFeature,
+} from "@/features/geo/choropleth/choroplethColorAdjustment";
 
 export type ViewState3D = {
   longitude: number;
@@ -50,6 +55,7 @@ export type ChoroplethDeckLayerProps = {
    * Zero means no exploitable numeric value exists (3D unavailable).
    */
   maxPositiveValue: number;
+  colorIntensity: number;
 };
 
 /** Convert a #rrggbb hex string to a deck.gl [R, G, B, A] tuple. */
@@ -76,6 +82,7 @@ export default function ChoroplethDeckLayer({
   selectedArea,
   onSelectArea,
   maxPositiveValue,
+  colorIntensity,
 }: ChoroplethDeckLayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const deckRef = useRef<Deck<any> | null>(null);
@@ -141,13 +148,41 @@ export default function ChoroplethDeckLayer({
 
       // colour (reuses fill_color precomputed by the backend unchanged)
       getFillColor: (f: any) => {
-        const uid = f?.properties?.unit_uid;
+        const properties = f?.properties ?? {};
+        const uid = properties.unit_uid;
         const isSelected =
           uid != null &&
           uid === selectedUid &&
           granularity === selectedLevel;
-        if (isSelected) return [255, 215, 0, 255] as [number, number, number, number];
-        return hexToCssRgba(f?.properties?.fill_color ?? '#cccccc');
+        /**
+         * La couleur de sélection reste volontairement
+         * indépendante du réglage du choropleth.
+         */
+        if (isSelected) {
+          return [255, 215, 0, 255] as [number, number, number, number];
+        }
+        const originalColor = properties.fill_color ?? "#cccccc";
+        const adjustedColor = shouldAdjustChoroplethFeature(properties)
+            ? adjustChoroplethColor(
+                originalColor,
+                colorIntensity
+              )
+            : originalColor;
+        /**
+         * La 3D utilise actuellement alpha = 230.
+         * On conserve donc exactement cette valeur à 100,
+         * puis on l'ajuste avec la même logique que Leaflet.
+         */
+        const baseOpacity = 230 / 255;
+        const adjustedOpacity =
+          shouldAdjustChoroplethFeature(properties)
+            ? adjustChoroplethOpacity(
+                baseOpacity,
+                colorIntensity
+              )
+            : baseOpacity;
+        const alpha = Math.round(adjustedOpacity * 255);
+        return hexToCssRgba(adjustedColor, alpha);
       },
 
       // interaction
@@ -164,10 +199,10 @@ export default function ChoroplethDeckLayer({
 
       updateTriggers: {
         getElevation: [choropleth.question_uid, choropleth.year_requested, maxPositiveValue],
-        getFillColor: [choropleth.question_uid, choropleth.year_requested, selectedUid, selectedLevel],
+        getFillColor: [choropleth.question_uid, choropleth.year_requested, selectedUid, selectedLevel, colorIntensity],
       },
     });
-  }, [choropleth, maxPositiveValue, selectedArea]);
+  }, [choropleth, maxPositiveValue, selectedArea, colorIntensity]);
 
   // Push layer updates to the Deck instance whenever the memoized layer changes
   useEffect(() => {
