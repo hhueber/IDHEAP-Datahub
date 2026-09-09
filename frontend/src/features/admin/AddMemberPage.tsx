@@ -1,31 +1,54 @@
 // Formulaire d’ajout de membre (admin/membre) avec validation minimale et affichage d’erreurs/succès
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { createMember } from "@/services/admin";
 import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import type { Role } from "@/config/roles";
+// import type { Role } from "@/config/roles";
 import { useTheme } from "@/theme/useTheme";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  getAssignableRoles,
+  roleCanGrantRole,
+  ROLE_LABELS,
+  type PermissionRole,
+} from "@/config/roles";
 
 
 export default function AddMemberPage() {
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  const assignableRoles = useMemo(
+    () => getAssignableRoles(user?.role),
+    [user?.role]
+  );
   const [form, setForm] = useState<{
     first_name: string;
     last_name: string;
     email: string;
-    role: Role;
+    role: PermissionRole;
     password: string;
     confirm: string;
   }>({
     first_name: "",
     last_name: "",
     email: "",
-    role: "MEMBER",
+    role: "DATASET_VIEWER",
     password: "",
     confirm: "",
   });
+  useEffect(() => {
+    if (assignableRoles.length === 0) return;
+
+    if (!assignableRoles.includes(form.role)) {
+      setForm((current) => ({
+        ...current,
+        role: assignableRoles[0],
+      }));
+    }
+  }, [assignableRoles, form.role]);
   const [submitting, setSubmitting] = useState(false);
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
@@ -34,13 +57,18 @@ export default function AddMemberPage() {
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm((f) => ({ ...f, [name]: name === "role" ? (value as PermissionRole) : value }));
     setErrKey(null);
     setMsgKey(null);
   };
 
   // Validation rapide côté client
   const validate = () => {
+    // l'utilisateur n'a pas le droit d'attribuer le rôle sélectionné
+    if (!roleCanGrantRole(user?.role, form.role)) {
+      setErrKey("admin.addMember.errors.notAllowedRole");
+      return false;
+    }
     // les mots de passe ne correspndent pas coté client
     if (form.password !== form.confirm) { setErrKey("admin.addMember.errors.confirmMismatch"); return false; }
     // mot de passe trop court coté client
@@ -59,7 +87,7 @@ export default function AddMemberPage() {
       const r = await createMember(form);
       if (r.success) {
         setMsgKey("admin.addMember.success");
-        setForm({ first_name: "", last_name: "", email: "", role: "MEMBER", password: "", confirm: "" });
+        setForm({ first_name: "", last_name: "", email: "", role: assignableRoles[0] ?? "DATASET_VIEWER", password: "", confirm: ""});
       } else {
         // la creation du membre a échoué coté serveur
         setErrKey("admin.addMember.fail");
@@ -79,6 +107,23 @@ export default function AddMemberPage() {
       setSubmitting(false);
     }
   };
+
+  if (assignableRoles.length === 0) {
+    return (
+      <section
+        className="p-6 max-w-2xl rounded-xl"
+        style={{
+          backgroundColor: background,
+          color: textColor,
+          border: `1px solid ${borderColor}`,
+        }}
+      >
+        <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm">
+          {t("admin.addMember.errors.noAssignableRoles")}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="p-6 max-w-2xl rounded-xl"
@@ -129,13 +174,22 @@ export default function AddMemberPage() {
         </div>
         {/* Rôle */}
         <div><label className="block text-sm font-medium mb-1">{t("admin.addMember.roleLabel")}</label>
-          <select name="role" value={form.role} onChange={onChange} className="w-full rounded-lg border px-3 py-2"
+          <select
+            name="role"
+            value={form.role}
+            onChange={onChange}
+            className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
-              borderColor,
               color: textColor,
-            }}>
-            <option value="MEMBER">{t("admin.addMember.roles.member")}</option><option value="ADMIN">{t("admin.addMember.roles.admin")}</option>
+              borderColor: borderColor,
+            }}
+          >
+            {assignableRoles.map((roleValue) => (
+              <option key={roleValue} value={roleValue}>
+                {ROLE_LABELS[roleValue]}
+              </option>
+            ))}
           </select>
         </div>
         {/* Mot de passe */}
