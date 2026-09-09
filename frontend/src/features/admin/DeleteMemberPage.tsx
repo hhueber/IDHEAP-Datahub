@@ -1,21 +1,50 @@
 // Formulaire de suppression de membre (admin/membre) avec retour succès/erreur
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { deleteMember } from "@/services/admin";
 import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import type { Role } from "@/config/roles";
+// import type { Role } from "@/config/roles";
 import { useTheme } from "@/theme/useTheme";
+import {
+  getAssignableRoles,
+  roleCanGrantRole,
+  ROLE_LABELS,
+  type PermissionRole,
+} from "@/config/roles";
+import { useAuth } from "@/contexts/AuthContext";
 
 
 export default function DeleteMemberPage() {
   const { t } = useTranslation();
-  const [form, setForm] = useState<{ first_name: string; last_name: string; email: string; role: Role }>({
+  const { user } = useAuth();
+
+  const deletableRoles = useMemo(
+    () => getAssignableRoles(user?.role),
+    [user?.role]
+  );
+  const [form, setForm] = useState<{
+    first_name: string;
+    last_name: string;
+    email: string;
+    role: PermissionRole;
+  }>({
     first_name: "",
     last_name: "",
     email: "",
-    role: "MEMBER",
+    role: "DATASET_VIEWER",
   });
+  useEffect(() => {
+    if (deletableRoles.length === 0) return;
+
+    if (!deletableRoles.includes(form.role)) {
+      setForm((current) => ({
+        ...current,
+        role: deletableRoles[0],
+      }));
+    }
+  }, [deletableRoles, form.role]);
+
   const [submitting, setSubmitting] = useState(false);
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
@@ -25,7 +54,7 @@ export default function DeleteMemberPage() {
   // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
+    setForm((f) => ({ ...f, [name]: name === "role" ? (value as PermissionRole) : value }));
     setErrKey(null);
     setMsgKey(null);
   };
@@ -36,11 +65,16 @@ export default function DeleteMemberPage() {
     setSubmitting(true);
     setErrKey(null);
     setMsgKey(null);
+    if (!roleCanGrantRole(user?.role, form.role)) {
+      setSubmitting(false);
+      setErrKey("admin.deleteMember.errors.notAllowedRole");
+      return;
+    }
     try {
       const r = await deleteMember(form);
       if (r.success) {
         setMsgKey("admin.deleteMember.success");
-        setForm({ first_name: "", last_name: "", email: "", role: "MEMBER" });
+        setForm({ first_name: "", last_name: "", email: "", role: deletableRoles[0] ?? "DATASET_VIEWER" });
       } else {
         // la suppression a échoué
         setErrKey("admin.deleteMember.fail");
@@ -109,13 +143,22 @@ export default function DeleteMemberPage() {
         </div>
         {/* Rôle (double check côté serveur) */}
         <div><label className="block text-sm font-medium mb-1">{t("admin.deleteMember.roleLabel")}</label>
-          <select name="role" value={form.role} onChange={onChange} className="w-full rounded-lg border px-3 py-2"
+          <select
+            name="role"
+            value={form.role}
+            onChange={onChange}
+            className="w-full rounded-lg border px-3 py-2"
             style={{
               backgroundColor: background,
               color: textColor,
               borderColor: borderColor,
-            }}>
-            <option value="MEMBER">{t("admin.deleteMember.roles.member")}</option><option value="ADMIN">{t("admin.deleteMember.roles.admin")}</option>
+            }}
+          >
+            {deletableRoles.map((roleValue) => (
+              <option key={roleValue} value={roleValue}>
+                {ROLE_LABELS[roleValue]}
+              </option>
+            ))}
           </select>
         </div>
         {/* Messages */}
