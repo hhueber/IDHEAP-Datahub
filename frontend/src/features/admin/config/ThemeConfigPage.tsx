@@ -24,6 +24,7 @@ import {
 } from "@/features/admin/components/theme/themeConfigMeta";
 import { saveThemeConfig as saveThemeConfigToStorage } from "@/theme/themeStorage";
 import { useThemeMode } from "@/theme/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Logo par défaut local (fallback final).
 const DEFAULT_LOGO = "/img/idheap-dh.png";
@@ -35,6 +36,8 @@ type PendingLogoFileInfo = {
 
 export default function ThemeConfigPage() {
   const { t } = useTranslation();
+  const { can } = useAuth();
+  const canWriteProject = can("PROJECT", "WRITE");
   // État principal : config chargée depuis le backend (ou fallback local).
   const [config, setConfig] = useState<ThemeConfigDto | null>(null);
   // États UI : chargement / sauvegarde / erreurs / confirmation.
@@ -258,6 +261,7 @@ export default function ThemeConfigPage() {
 
   // Sauvegarde
   const onSave = async () => {
+    if (!canWriteProject) return;
     if (!config) return;
     setConfirmOpen(false);
     setSaveState("saving");
@@ -720,23 +724,25 @@ export default function ThemeConfigPage() {
 
       {/* Boutons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
-        <button
-          type="button"
-          disabled={saveState === "saving"}
-          onClick={() => setConfirmOpen(true)}
-          className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium hover:opacity-90 transition"
-          style={{
-            backgroundColor: primary,
-            borderColor: primary,
-            color: adaptiveTextColorPrimary,
-          }}
-        >
-          {saveState === "saving" ? (
-            <LoadingDots label={t("admin.config.themeConfigPage.saving")} />
-          ) : (
-            t("admin.config.themeConfigPage.save")
-          )}
-        </button>
+        {canWriteProject && (
+          <button
+            type="button"
+            disabled={saveState === "saving"}
+            onClick={() => setConfirmOpen(true)}
+            className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium hover:opacity-90 transition"
+            style={{
+              backgroundColor: primary,
+              borderColor: primary,
+              color: adaptiveTextColorPrimary,
+            }}
+          >
+            {saveState === "saving" ? (
+              <LoadingDots label={t("admin.config.themeConfigPage.saving")} />
+            ) : (
+              t("admin.config.themeConfigPage.save")
+            )}
+          </button>
+        )}
       </div>
 
       {/* Zone fixe pour les messages de statut */}
@@ -757,7 +763,7 @@ export default function ThemeConfigPage() {
 
       {/* Confirmation avant d’écrire la config */}
       <ConfirmModal
-        open={confirmOpen}
+        open={confirmOpen && canWriteProject}
         title={t("admin.config.themeConfigPage.confirmTitle")}
         message={t("admin.config.themeConfigPage.confirmMessage")}
         confirmLabel={t("common.confirm")}

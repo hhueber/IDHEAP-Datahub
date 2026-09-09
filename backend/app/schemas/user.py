@@ -4,10 +4,11 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from typing import Literal, Optional
+from datetime import datetime
+from typing import List, Literal, Optional
 
 
-from app.config.roles import Role
+from app.config.roles import PermissionRole
 from app.schemas.validators import NameFirstStr, NameLastStr, PasswordStr
 from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
@@ -19,7 +20,7 @@ class UserCreate(BaseModel):
     password: PasswordStr
     first_name: NameFirstStr
     last_name: NameLastStr
-    role: Role = Role.MEMBER
+    role: PermissionRole = PermissionRole.DATASET_VIEWER
 
 
 class UserBase(BaseModel):
@@ -28,24 +29,27 @@ class UserBase(BaseModel):
     email: EmailStr
     first_name: str
     last_name: str
-    role: str
+    role: PermissionRole
 
 
 class User(UserBase):
     """Representation of a read-side user (from the DB model)."""
 
     model_config = ConfigDict(from_attributes=True)
+    id: str
     first_name: str
     last_name: str
-    role: Role  # ADMIN | MEMBER ...
+    role: PermissionRole
 
 
 class UserPublic(BaseModel):
     """Minimum public view of a user (restricted exposure for frontend)."""
 
+    model_config = ConfigDict(from_attributes=True)
+
     first_name: str
     last_name: str
-    role: Role
+    role: PermissionRole
 
 
 class UserDeleteIn(BaseModel):
@@ -54,7 +58,7 @@ class UserDeleteIn(BaseModel):
     email: EmailStr
     first_name: NameFirstStr
     last_name: NameLastStr
-    role: Literal["ADMIN", "MEMBER"]
+    role: PermissionRole
 
 
 class PasswordChangeIn(BaseModel):
@@ -70,3 +74,44 @@ class PasswordChangeIn(BaseModel):
         if self.confirm is not None and self.new_password != self.confirm:
             raise ValueError("La confirmation du mot de passe ne correspond pas")
         return self
+
+
+class AdminUserItem(BaseModel):
+    """Ligne affichée dans la page admin des utilisateurs."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: str
+    email: EmailStr
+    first_name: str
+    last_name: str
+    role: PermissionRole
+    created_at: Optional[datetime] = None
+
+
+class AdminUserListPayload(BaseModel):
+    items: List[AdminUserItem]
+    total: int
+    page: int
+    per_page: int
+    pages: int
+
+
+class AdminUserListResponse(BaseModel):
+    success: bool
+    detail: str
+    data: AdminUserListPayload
+
+
+class AdminUserUpdateIn(BaseModel):
+    """Payload de modification inline côté admin."""
+
+    first_name: Optional[NameFirstStr] = None
+    last_name: Optional[NameLastStr] = None
+    email: Optional[EmailStr] = None
+    role: Optional[PermissionRole] = None
+
+
+class AdminUserActionResponse(BaseModel):
+    success: bool
+    detail: str

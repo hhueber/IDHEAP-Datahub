@@ -6,11 +6,16 @@ import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
+import { useAuth } from "@/contexts/AuthContext";
 
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 
 export default function ConfigPlaceOfInterestPage() {
   const { t } = useTranslation();
+  const { can } = useAuth();
+
+  const canWriteProject = can("PROJECT", "WRITE");
+  const canManageProject = can("PROJECT", "MANAGE");
   const { items, loading, remove, reload } = useConfigResource<PlaceOfInterestDTO>(PlaceOfInterestAPI);
   const [editing, setEditing] = useState<PlaceOfInterestDTO | null>(null);
   const [creating, setCreating] = useState(false);
@@ -20,11 +25,16 @@ export default function ConfigPlaceOfInterestPage() {
   const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07, hoverPrimary04 } = useTheme();
 
   const askDelete = (placeOfInterest: PlaceOfInterestDTO) => {
+    if (!canManageProject) return;
     if (!placeOfInterest.code) return;
     setPlaceOfInterestToDelete(placeOfInterest);
   };
 
   const confirmDelete = async () => {
+    if (!placeOfInterestToDelete?.code) {
+      setPlaceOfInterestToDelete(null);
+      return;
+    }
     if (!placeOfInterestToDelete?.code) {
       setPlaceOfInterestToDelete(null);
       return;
@@ -41,19 +51,21 @@ export default function ConfigPlaceOfInterestPage() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold" style={{ color: textColor }}>{t("admin.config.placeOfInterestPage.title")}</h2>
-        <button
-          className="rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
-          style={{
-            backgroundColor: primary,
-            color: adaptiveTextColorPrimary,
-          }}
-          onClick={() => {
-            setCreating(true);
-            setEditing(null);
-          }}
-        >
-          + {t("admin.config.placeOfInterestPage.addButton")}
-        </button>
+        {canWriteProject && (
+          <button
+            className="rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
+            style={{
+              backgroundColor: primary,
+              color: adaptiveTextColorPrimary,
+            }}
+            onClick={() => {
+              setCreating(true);
+              setEditing(null);
+            }}
+          >
+            {"\u002B"} {t("admin.config.placeOfInterestPage.addButton")} {/* Symbole unicode du + */}
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -95,32 +107,36 @@ export default function ConfigPlaceOfInterestPage() {
                     {fmt4(c.pos[0])}, {fmt4(c.pos[1])}
                   </td>
                   <td className="px-3 py-2 text-right space-x-2">
-                    <button
-                      className={`
-                        px-2 py-1 rounded text-sm border transition
-                        hover:[background-color:var(--poi-edit-hover-bg)]
-                      `}
-                      style={
-                        {
-                          backgroundColor: background,
-                          borderColor: borderColor,
-                          color: textColor,
-                          "--poi-edit-hover-bg": hoverPrimary06,
-                        } as React.CSSProperties
-                      }
-                      onClick={() => {
-                        setEditing(c);
-                        setCreating(false);
-                      }}
-                    >
-                      {t("admin.config.placeOfInterestPage.edit")}
-                    </button>
-                    <button
-                      className="px-2 py-1 rounded bg-red-600 text-white"
-                      onClick={() => askDelete(c)}
-                    >
-                      {t("admin.config.placeOfInterestPage.delete")}
-                    </button>
+                    {canWriteProject && (
+                      <button
+                        className={`
+                          px-2 py-1 rounded text-sm border transition
+                          hover:[background-color:var(--poi-edit-hover-bg)]
+                        `}
+                        style={
+                          {
+                            backgroundColor: background,
+                            borderColor: borderColor,
+                            color: textColor,
+                            "--poi-edit-hover-bg": hoverPrimary06,
+                          } as React.CSSProperties
+                        }
+                        onClick={() => {
+                          setEditing(c);
+                          setCreating(false);
+                        }}
+                      >
+                        {t("admin.config.placeOfInterestPage.edit")}
+                      </button>
+                    )}
+                    {canManageProject && (
+                      <button
+                        className="px-2 py-1 rounded bg-red-600 text-white"
+                        onClick={() => askDelete(c)}
+                      >
+                        {t("admin.config.placeOfInterestPage.delete")}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -140,7 +156,7 @@ export default function ConfigPlaceOfInterestPage() {
         </div>
       )}
 
-      {(creating || editing) && (
+      {canWriteProject && (creating || editing) && (
         <PlaceOfInterestEditor
           initial={editing}
           onClose={() => {
@@ -157,7 +173,7 @@ export default function ConfigPlaceOfInterestPage() {
 
       {/* Modale de confirmation de suppression */}
       <ConfirmModal
-        open={!!placeOfInterestToDelete}
+        open={!!placeOfInterestToDelete && canManageProject}
         title={t("admin.config.placeOfInterestPage.titleConfirm")}
         message={
           placeOfInterestToDelete
