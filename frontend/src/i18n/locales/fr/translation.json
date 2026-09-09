@@ -402,18 +402,21 @@
         "errors": {
           "updateFailed": "Impossible de modifier l'utilisateur",
           "deleteFailed": "Impossible de supprimer l'utilisateur",
-          "notAllowedRole": "Vous n'avez pas le droit d'attribuer ce rôle",
-          "loadFailed": "Échec du chargement.",
-          "saved": "Enregistré.",
-          "saveFailed": "Échec de l'enregistrement.",
-          "deleted": "Supprimé.",
-          "network": "Problème de réseau."
+          "notAllowedRole": "Vous n'avez pas le droit d'attribuer ce rôle"
         }
       },
       "configEditor": {
         "cancel": "Annuler",
         "submit": "Enregistrer",
         "saving": "Enregistrement"
+      },
+      "errors": {
+        "loadFailed": "Échec du chargement.",
+        "saved": "Enregistré.",
+        "saveFailed": "Échec de l'enregistrement.",
+        "deleted": "Supprimé.",
+        "deleteFailed": "Échec de la suppression.",
+        "network": "Problème de réseau."
       }
     }
   },
