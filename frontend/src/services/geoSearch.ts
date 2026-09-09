@@ -10,7 +10,7 @@ export type GeoSuggestion = {
   name_fr?: string;
   name_de?: string;
   name_it?: string;
-  name_ro?: string;
+  name_rm?: string;
   name_en?: string;
 };
 

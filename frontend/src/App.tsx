@@ -25,6 +25,7 @@ import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
 import RequirePermission from "@/components/RequirePermission";
 import AdminUsersPage from "@/features/admin/users/AdminUsersPage";
 import DataImportPage from "@/features/dataImport/DataImportPage";
+import ExportDataPage from "@/features/export/ExportDataPage"
 
 
 export default function App() {
@@ -36,6 +37,7 @@ export default function App() {
         <Route element={<PublicLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/export-data" element={<ExportDataPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
 
@@ -64,6 +66,15 @@ export default function App() {
             element={
               <RequirePermission scope="DATASET" level="MANAGE">
                 <DataImportPage />
+              </RequirePermission>
+            }
+          />
+
+          <Route
+            path="/admin/answers"
+            element={
+              <RequirePermission scope="DATASET" level="READ">
+                <AnswerAllPage />
               </RequirePermission>
             }
           />

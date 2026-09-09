@@ -33,13 +33,16 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Cookie auth
-    # True en prod (HTTPS)
     COOKIE_SECURE: bool = False
     COOKIE_SAMESITE: SameSite = "lax"
 
     # CORS and API
     CORS_ORIGINS: str
     API_URL: str
+
+    # Vite
+    VITE_API_BASE_URL: str
+    VITE_ALLOWED_HOSTS: str
 
     @field_validator("CORS_ORIGINS")
     @classmethod

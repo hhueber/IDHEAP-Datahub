@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import YearSelector from "@/features/home/components/YearSelector";
 import type { HomeBootstrap } from "@/features/home/services/homeApi";
@@ -88,10 +88,28 @@ export default function HomeInfoPanel({
 
   const questionScope: QuestionOriginScope = showGlobals ? "global" : "per_survey";
 
-  // auto-set globalYear sur la dernière année dispo si vide
-  const latestYear = years.length ? years[years.length - 1] : null;
-  if (showGlobals && selectedQuestionUid != null && globalYear == null && latestYear != null) {
-  }
+  // Sélectionne automatiquement l'année la plus récente uniquement
+  // si aucune année n'a encore été choisie.
+  useEffect(() => {
+    if (
+      !showGlobals ||
+      selectedQuestionUid == null ||
+      globalYear != null ||
+      years.length === 0
+    ) {
+      return;
+    }
+
+    const latestYear = Math.max(...years);
+
+    onGlobalYearChange(latestYear);
+  }, [
+    showGlobals,
+    selectedQuestionUid,
+    globalYear,
+    years,
+    onGlobalYearChange,
+  ]);
 
   const granularityItems = [
     { key: "commune" as const, label: "Communal" },
@@ -126,6 +144,8 @@ export default function HomeInfoPanel({
   };
 
   const surveyYear = data?.surveys?.find(s => s.uid === selectedSurveyUid)?.year;
+  const showGlobalTimeline =
+    showGlobals != null;
 
   return (
     <div className="space-y-4 px-3 py-2">
@@ -149,13 +169,14 @@ export default function HomeInfoPanel({
 
       {/* Carte sélection année */}
       <section
+        id="year-selector"
         className="rounded-2xl shadow-sm p-4"
         style={{
           backgroundColor: background,
           borderWidth: 1,
           borderStyle: "solid",
           borderColor: borderColor,
-          minHeight: 280,
+          // minHeight: 280,
         }}
       >
         <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>
@@ -173,75 +194,50 @@ export default function HomeInfoPanel({
           />
         </div>
 
-        {/* Timeline uniquement en GLOBAL */}
+        {/* Timeline uniquement si une question globale est sélectionnée */}
         <div
-          className="mt-4 transition-all duration-200"
-          style={{
-            minHeight: 200, // réserve l’espace
-          }}
+          className={`
+            grid
+            transition-all
+            duration-300
+            ease-in-out
+            ${
+              showGlobalTimeline
+                ? "grid-rows-[1fr] opacity-100 mt-4"
+                : "grid-rows-[0fr] opacity-0 mt-0 pointer-events-none"
+            }
+          `}
+          aria-hidden={!showGlobalTimeline}
         >
-          <>
-            <div className="text-xs mb-2 opacity-80" style={{ color: textColor }}>
-              {t("home.choroplethGlobalYear")}
+          <div className="min-h-0 overflow-hidden">
+            <div
+              className={`
+                transition-all
+                duration-300
+                ease-out
+                ${
+                  showGlobalTimeline
+                    ? "translate-y-0 scale-100"
+                    : "-translate-y-2 scale-[0.98]"
+                }
+              `}
+            >
+              <GlobalQuestionTimeline
+                visible={showGlobalTimeline}
+                isGlobal={showGlobals}
+                allYears={
+                  [...(data?.surveys ?? [])]
+                    .map((s) => s.year)
+                    .filter((y) => Number.isFinite(y))
+                }
+                enabledYears={years}
+                selectedYear={globalYear}
+                onSelect={(year) => onGlobalYearChange(year)}
+                loading={loadingYears}
+                questionSelected={selectedQuestionUid != null}
+              />
             </div>
-
-            <GlobalQuestionTimeline
-              visible={true}
-              isGlobal={showGlobals}
-              allYears={
-                [...(data?.surveys ?? [])]
-                  .map((s) => s.year)
-                  .filter((y) => Number.isFinite(y))
-              }
-              enabledYears={years}
-              selectedYear={globalYear}
-              onSelect={(year) => onGlobalYearChange(year)}
-              loading={loadingYears}
-              questionSelected={selectedQuestionUid != null}
-            />
-          </>
-        </div>
-      </section>
-
-      {/* Carte granularité */}
-      <section
-        className="rounded-2xl shadow-sm p-4"
-        style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
-      >
-        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
-          {t("home.granularity")}
-        </h2>
-
-        <div className="grid grid-cols-2 gap-2">
-          {granularityItems.map((it) => {
-            const active = granularity === it.key;
-
-            return (
-              <button
-                key={it.key}
-                type="button"
-                onClick={() => onGranularityChange(it.key)}
-                onMouseEnter={(e) => {
-                  if (!active) e.currentTarget.style.backgroundColor = hoverPrimary04;
-                }}
-                onMouseLeave={(e) => {
-                  if (!active) e.currentTarget.style.backgroundColor = background;
-                }}
-                className="
-                  rounded-xl px-3 py-2 border text-sm font-medium
-                  transition-colors duration-150
-                  active:translate-y-[1px]
-                "
-                style={{
-                  borderColor,
-                  backgroundColor: active ? hoverPrimary04 : background,
-                  color: textColor,
-                }}
-              >
-                {it.label}
-              </button>
-            );
-          })}
+          </div>
         </div>
       </section>
 
@@ -260,15 +256,8 @@ export default function HomeInfoPanel({
         </h2>
 
         <div className="space-y-4">
-          <QuestionCollectionsPanel
-            saved={saved}
-            onDropQuestion={handleDropQuestion}
-            onRemoveQuestion={handleRemoveQuestion}
-            onSelectQuestion={onQuestionSelect}
-            selectedQuestionUid={selectedQuestionUid}
-          />
-
           <div
+            id="question-selector"
             className="rounded-2xl border p-3"
             style={{
               backgroundColor: background,
@@ -361,8 +350,62 @@ export default function HomeInfoPanel({
               )}
             </div>
           </div>
+
+          <QuestionCollectionsPanel
+            saved={saved}
+            onDropQuestion={handleDropQuestion}
+            onRemoveQuestion={handleRemoveQuestion}
+            onSelectQuestion={onQuestionSelect}
+            selectedQuestionUid={selectedQuestionUid}
+          />
+
         </div>
       </section>
+
+
+      {/* Carte granularité */}
+      <section
+        id="granularity-selector"
+        className="rounded-2xl shadow-sm p-4"
+        style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
+      >
+        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
+          {t("home.granularity")}
+        </h2>
+
+        <div className="grid grid-cols-2 gap-2">
+          {granularityItems.map((it) => {
+            const active = granularity === it.key;
+
+            return (
+              <button
+                key={it.key}
+                type="button"
+                onClick={() => onGranularityChange(it.key)}
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = hoverPrimary04;
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.backgroundColor = background;
+                }}
+                className="
+                  rounded-xl px-3 py-2 border text-sm font-medium
+                  transition-colors duration-150
+                  active:translate-y-[1px]
+                "
+                style={{
+                  borderColor,
+                  backgroundColor: active ? hoverPrimary04 : background,
+                  color: textColor,
+                }}
+              >
+                {it.label}
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
       <MapExportButtons />
     </div>
   );

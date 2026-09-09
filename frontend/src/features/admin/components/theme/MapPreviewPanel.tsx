@@ -64,7 +64,7 @@ export default function MapPreviewPanel({
   React.useEffect(() => {
     let cancelled = false;
 
-    const run = async () => {
+    async function run() {
       try {
         setLoading(true);
         setError(null);
@@ -76,22 +76,23 @@ export default function MapPreviewPanel({
         }
       } catch (e) {
         console.error(e);
+
         if (!cancelled) {
-          setError(t("admin.config.themeConfigPage.loadError"));
+          setError("loadError");
         }
       } finally {
         if (!cancelled) {
           setLoading(false);
         }
       }
-    };
+    }
 
     run();
 
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, []);
 
   const mapKey = React.useMemo(() => {
     return [
@@ -121,7 +122,7 @@ export default function MapPreviewPanel({
 
         {!loading && error && (
           <div className="flex h-full items-center justify-center px-4 text-center text-sm opacity-70">
-            {error}
+            {t("admin.config.themeConfigPage.loadError")}
           </div>
         )}
 

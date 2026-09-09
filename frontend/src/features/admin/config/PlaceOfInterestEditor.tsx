@@ -31,7 +31,7 @@ export default function PlaceOfInterestEditor({
         name_fr: "",
         name_de: "",
         name_it: "",
-        name_ro: "",
+        name_rm: "",
         name_en: "",
         pos: [46.0, 7.0],
       }
@@ -99,7 +99,7 @@ export default function PlaceOfInterestEditor({
       name_fr: item.name_fr ?? form.name_fr,
       name_de: item.name_de ?? form.name_de,
       name_it: item.name_it ?? form.name_it,
-      name_ro: item.name_ro ?? form.name_ro,
+      name_rm: item.name_rm ?? form.name_rm,
       name_en: item.name_en ?? form.name_en,
       pos: pos as [number, number],
     });
@@ -236,10 +236,10 @@ export default function PlaceOfInterestEditor({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.ro")}</label>
+          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.rm")}</label>
           <input
-            name="name_ro"
-            value={form.name_ro || ""}
+            name="name_rm"
+            value={form.name_rm || ""}
             onChange={onChange}
             className="w-full rounded-lg border px-3 py-2"
             style={{

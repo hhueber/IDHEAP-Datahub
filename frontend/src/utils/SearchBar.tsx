@@ -1,10 +1,11 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import type { AllItem } from "@/features/pageAll/all_types";
+import type { AllItem, Entity } from "@/features/pageAll/all_types";
 import { useTheme } from "@/theme/useTheme";
 
 type Props = {
+  entity: Entity;
   search: string;
   searchLoading: boolean;
   suggestions: AllItem[];
@@ -15,6 +16,7 @@ type Props = {
 };
 
 export function SearchBar({
+  entity,
   search,
   searchLoading,
   suggestions,
@@ -27,6 +29,88 @@ export function SearchBar({
 
   const { primary, background, borderColor, textColor, hoverPrimary06, hoverText07 } = useTheme();
   const showDropdown = search.trim().length > 0 && (searchLoading || suggestions.length > 0);
+
+  const renderSuggestion = (suggestion: AllItem) => {
+    if (entity === "answer") {
+      return (
+        <>
+          <div className="min-w-0 flex-1">
+            <div
+              className="truncate font-medium"
+              style={{ color: textColor }}
+              title={suggestion.question ?? suggestion.name}
+            >
+              {suggestion.question ?? suggestion.name ?? "—"}
+            </div>
+
+            <div
+              className="mt-0.5 flex min-w-0 items-center gap-2 text-xs"
+              style={{ color: hoverText07 }}
+            >
+              {suggestion.commune && (
+                <span className="min-w-0 truncate"
+                  title={suggestion.commune}
+                >
+                  {suggestion.commune}
+                </span>
+              )}
+
+              {suggestion.value != null && (
+                <>
+                  {suggestion.commune && <span aria-hidden="true">•</span>}
+                  <span className="min-w-0 truncate"
+                    title={String(suggestion.value)}
+                  >
+                    {String(suggestion.value)}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+
+          {suggestion.year != null && (
+            <span className="ml-3 shrink-0 text-xs"
+              style={{ color: hoverText07 }}
+            >
+              {suggestion.year}
+            </span>
+          )}
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="min-w-0 flex-1">
+          <div className="truncate">
+            <span
+              className="font-medium"
+              style={{ color: textColor }}
+              title={suggestion.name}
+            >
+              {suggestion.name}
+            </span>
+
+            {suggestion.code && (
+              <span className="ml-2 text-xs"
+                style={{ color: hoverText07 }}
+              >
+                ({suggestion.code})
+              </span>
+            )}
+          </div>
+        </div>
+
+        {suggestion.year != null && (
+          <span className="ml-3 shrink-0 text-xs"
+            style={{ color: hoverText07 }}
+          >
+            {suggestion.year}
+          </span>
+        )}
+      </>
+    );
+  };
 
   return (
     <div className="relative w-full sm:w-64">
@@ -87,13 +171,16 @@ export function SearchBar({
           {!searchLoading &&
             suggestions.map((s) => (
             <button
-              key={s.uid}
+              key={`${s.entity}-${s.uid}`}
               type="button"
               onClick={() => onSuggestionClick(s)}
-              className="w-full text-left px-3 py-2 flex items-center justify-between
+              className="
+                flex w-full min-w-0 items-start
+                px-3 py-2 text-left
                 transition
                 [background-color:var(--search-suggest-bg)]
-                hover:[background-color:var(--search-suggest-hover-bg)]"
+                hover:[background-color:var(--search-suggest-hover-bg)]
+              "
               style={
                 {
                   color: textColor,
@@ -102,21 +189,7 @@ export function SearchBar({
                 } as React.CSSProperties
               }
             >
-              <span>
-                <span className="font-medium" style={{ color: textColor }}>
-                  {s.name}
-                </span>
-                {s.code && (
-                  <span className="text-xs ml-2" style={{ color: hoverText07 }}>
-                    ({s.code})
-                  </span>
-                )}
-              </span>
-              {s.year != null && (
-                <span className="text-xs" style={{ color: hoverText07 }}>
-                  {s.year}
-                </span>
-              )}
+              {renderSuggestion(s)}
             </button>
           ))}
         </div>

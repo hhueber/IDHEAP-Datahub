@@ -17,7 +17,7 @@ ENTITY_META = {
             ShowMetaField(key="code", label="Code"),
             ShowMetaField(key="name", label="Name"),
         ],
-        languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "ro": "name_ro"},
+        languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "rm": "name_rm"},
         actions=ShowMetaActions(can_edit=False, can_delete=False),
     ),
     "district": ShowMeta(
@@ -28,7 +28,7 @@ ENTITY_META = {
             ShowMetaField(key="code", label="Code"),
             ShowMetaField(key="name", label="Name"),
         ],
-        languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "ro": "name_ro"},
+        languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "rm": "name_rm"},
         actions=ShowMetaActions(can_edit=False, can_delete=False),
         children=[
             ShowMetaChild(
@@ -56,7 +56,7 @@ ENTITY_META = {
             ShowMetaField(key="ofs_id", label="OFS id", kind="number"),
             ShowMetaField(key="name", label="Name"),
         ],
-        languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "ro": "name_ro"},
+        languages={"de": "name_de", "fr": "name_fr", "en": "name_en", "it": "name_it", "m": "name_rm"},
         actions=ShowMetaActions(can_edit=False, can_delete=False),
         children=[
             ShowMetaChild(
@@ -115,7 +115,7 @@ ENTITY_META = {
             ShowMetaField(key="question_category_uid", label="Category uid", kind="number"),
             ShowMetaField(key="question_global_uid", label="Global uid", kind="number"),
         ],
-        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "ro": "text_ro"},
+        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "rm": "text_rm"},
         actions=ShowMetaActions(can_edit=True, can_delete=True),
         children=[
             ShowMetaChild(
@@ -159,7 +159,7 @@ ENTITY_META = {
             ShowMetaField(key="label", label="Label"),
             ShowMetaField(key="question_category_uid", label="Category uid", kind="number"),
         ],
-        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "ro": "text_ro"},
+        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "rm": "text_rm"},
         actions=ShowMetaActions(can_edit=True, can_delete=True),
         children=[
             ShowMetaChild(
@@ -203,7 +203,7 @@ ENTITY_META = {
         fields=[
             ShowMetaField(key="label", label="Label"),
         ],
-        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "ro": "text_ro"},
+        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "rm": "text_rm"},
         actions=ShowMetaActions(can_edit=True, can_delete=True),
         children=[
             ShowMetaChild(
@@ -261,7 +261,7 @@ ENTITY_META = {
             ShowMetaField(key="value", label="Value"),
             ShowMetaField(key="label", label="Label"),
         ],
-        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "ro": "text_ro"},
+        languages={"de": "text_de", "fr": "text_fr", "en": "text_en", "it": "text_it", "rm": "text_rm"},
         actions=ShowMetaActions(can_edit=True, can_delete=True),
     ),
     "answer": ShowMeta(

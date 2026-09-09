@@ -12,6 +12,10 @@ from .lake import Lake
 from .lake_map import LakeMap
 from .option import Option
 from .placeOfInterest import PlaceOfInterest
+from .project import Project
+from .project_author import ProjectAuthor
+from .project_author_association import ProjectAuthorAssociation
+from .project_metadata import ProjectMetadata
 from .question_category import QuestionCategory
 from .question_category_option_association import QuestionCategoryOptionAssociation
 from .question_global import QuestionGlobal
@@ -19,6 +23,9 @@ from .question_global_option_association import QuestionGlobalOptionAssociation
 from .question_option_association import QuestionOptionAssociation
 from .question_per_survey import QuestionPerSurvey
 from .survey import Survey
+from .survey_author import SurveyAuthor
+from .survey_author_association import SurveyAuthorAssociation
+from .survey_metadata import SurveyMetadata
 
 
 __all__ = [
@@ -43,4 +50,11 @@ __all__ = [
     "QuestionGlobalOptionAssociation",
     "QuestionOptionAssociation",
     "QuestionCategoryOptionAssociation",
+    "SurveyMetadata",
+    "SurveyAuthor",
+    "SurveyAuthorAssociation",
+    "Project",
+    "ProjectMetadata",
+    "ProjectAuthor",
+    "ProjectAuthorAssociation",
 ]

@@ -13,7 +13,7 @@ class PlaceOfInterestBase(BaseModel):
     name_fr: Optional[str] = None
     name_de: Optional[str] = None
     name_it: Optional[str] = None
-    name_ro: Optional[str] = None
+    name_rm: Optional[str] = None
     name_en: Optional[str] = None
     pos: Tuple[float, float] = Field(..., description="[lat, lon]")
 
@@ -40,6 +40,11 @@ class PlaceOfInterestClientOut(BaseModel):
     code: str
     name: str
     pos: Tuple[float, float]
+    geo_type: Literal[
+        "commune",
+        "district",
+        "canton",
+    ]
 
 
 class PlaceOfInterestIn(PlaceOfInterestBase):
@@ -65,7 +70,7 @@ class GeoSuggestionOut(BaseModel):
     name_fr: Optional[str] = None
     name_de: Optional[str] = None
     name_it: Optional[str] = None
-    name_ro: Optional[str] = None
+    name_rm: Optional[str] = None
     name_en: Optional[str] = None
 
 
@@ -98,6 +103,14 @@ class GeoPointResponse(BaseModel):
     data: Optional[GeoPointOut] = None
 
 
+class LocalizedPlaceNamesOut(BaseModel):
+    fr: str | None = None
+    de: str | None = None
+    it: str | None = None
+    rm: str | None = None
+    en: str | None = None
+
+
 class PlaceOfInterestSuggestOut(BaseModel):
     """
     Schéma pour la suggestion publique utilisée par la carte.
@@ -111,7 +124,9 @@ class PlaceOfInterestSuggestOut(BaseModel):
     uid: int
     type: GeoSuggestionType
     code: str
+    name: str
     default_name: str
+    names: LocalizedPlaceNamesOut
     pos: Tuple[float, float] = Field(..., description="[lat, lon]")
 
 
