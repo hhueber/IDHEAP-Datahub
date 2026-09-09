@@ -235,6 +235,7 @@ export default function PageAll({
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         {/* Bloc recherche (logique déportée dans usePageAllSearch) */}
         <SearchBar
+          entity={entity}
           search={search}
           searchLoading={searchLoading}
           suggestions={suggestions}

@@ -291,6 +291,274 @@ async def populate_demo_db() -> None:
                     session.add(db_question_association)
                     await session.flush()
 
+                # Option for Question globale 23 17
+                answers = {
+                    1: {"fr": "oui", "de": "ja", "it": "si", "en": "yes", "rm": "gea"},
+                    2: {"fr": "non", "de": "nein", "it": "no", "en": "no", "rm": "na"},
+                    -99: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    db_option = Option(
+                        value=(
+                            str(value) if year == 2017 else str(value) + ".0"
+                        ),  # We need to do this because 2017 want 1, 2 etc and 2023 want 1.0, 2.0 we need to fix this asap
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_global_association = QuestionGlobalOptionAssociation(
+                        option=db_option, question=db_question_globale_17_23
+                    )
+                    session.add(db_question_global_association)
+                    await session.flush()
+
+                    db_question_to_link = db_question_globale_23 if year == 2023 else db_question_globale_17
+
+                    db_question_association = QuestionOptionAssociation(question=db_question_to_link, option=db_option)
+                    session.add(db_question_association)
+                    await session.flush()
+
+                # Option for GSB23_Q58
+                answers = {
+                    1.0: {
+                        "fr": "École obligatoire",
+                        "de": "Obligatorische Schule",
+                        "it": "Scuola dell'obbligo",
+                        "en": "Compulsory schooling",
+                        "rm": "Scola obligatorica",
+                    },
+                    2.0: {
+                        "fr": "Formation professionnelle",
+                        "de": "Berufsausbildung",
+                        "it": "Formazione professionale",
+                        "en": "Vocational training",
+                        "rm": "Furmaziun professiunala",
+                    },
+                    3.0: {
+                        "fr": "École préparant à la maturité",
+                        "de": "Maturitätsschule",
+                        "it": "Scuola che prepara all'esame di maturità",
+                        "en": "School leading to the Matura",
+                        "rm": "Scola da maturitad",
+                    },
+                    4.0: {
+                        "fr": "Formation professionnelle supérieure",
+                        "de": "Höhere Berufsausbildung",
+                        "it": "Formazione professionale superiore",
+                        "en": "Higher vocational training",
+                        "rm": "Furmaziun professiunala superiura",
+                    },
+                    5.0: {
+                        "fr": "École supérieure",
+                        "de": "Höhere Fachschule",
+                        "it": "Istituto superiore di formazione professionale",
+                        "en": "College of Higher Education and Training",
+                        "rm": "Scola spezialisada superiura",
+                    },
+                    6.0: {
+                        "fr": "Haute école spécialisée",
+                        "de": "Fachhochschule",
+                        "it": "Scuola universitaria professionale",
+                        "en": "University of Applied Sciences",
+                        "rm": "Scola auta spezialisada",
+                    },
+                    7.0: {
+                        "fr": "Université, EPF",
+                        "de": "Universität, ETH",
+                        "it": "Università, ETH",
+                        "en": "University, ETH",
+                        "rm": "Universitad, SPF",
+                    },
+                    8.0: {"fr": "Autre", "de": "Andere", "it": "Altri", "en": "Other", "rm": "L’autra"},
+                    -99.0: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2023:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_23_1, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                # Option for GSB23_Q27
+                answers = {
+                    1.0: {"fr": "Bien", "de": "Gut", "it": "Bene", "en": "Good", "rm": "Rauba"},
+                    2.0: {
+                        "fr": "Plutôt bon",
+                        "de": "Eher gut",
+                        "it": "Piuttosto bene",
+                        "en": "Pretty good",
+                        "rm": "Plitost bain",
+                    },
+                    3.0: {
+                        "fr": "Médiocre",
+                        "de": "Mittelmässig",
+                        "it": "Mediocre",
+                        "en": "Mediocre",
+                        "rm": "mediocher",
+                    },
+                    4.0: {
+                        "fr": "Plutôt mauvais",
+                        "de": "Eher schlecht",
+                        "it": "Piuttosto male",
+                        "en": "Rather poor",
+                        "rm": "Plitost nausch",
+                    },
+                    5.0: {"fr": "Mauvais", "de": "Schlecht", "it": "Male", "en": "Bad", "rm": "Difficilmain"},
+                    -99.0: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2023:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_23_2, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                answers = {
+                    1: {"fr": "En hausse", "de": "Gestiegen", "it": "Aumentato", "en": "Increased", "rm": "Augment"},
+                    2: {
+                        "fr": "Resté inchangé",
+                        "de": "Gleich geblieben",
+                        "it": "Rimasto invariato",
+                        "en": "Remained the same",
+                        "rm": "Restà egual",
+                    },
+                    3: {"fr": "Baissé", "de": "Gesunken", "it": "Affondato", "en": "Sunk", "rm": "Sbassà"},
+                    -99: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2017:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_17_1, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                answers = {
+                    1: {
+                        "fr": "Dans les urnes",
+                        "de": "An der Urne",
+                        "it": "Aumentato",
+                        "en": "Increased",
+                        "rm": "Augment",
+                    },
+                    2: {
+                        "fr": "Lors de l'assemblée communale",
+                        "de": "An der Gemeindeversammlung",
+                        "it": "Rimasto invariato",
+                        "en": "Remained the same",
+                        "rm": "Restà egual",
+                    },
+                    3: {
+                        "fr": "Élection au Parlement",
+                        "de": "Wahl im Parlament",
+                        "it": "Affondato",
+                        "en": "Sunk",
+                        "rm": "Sbassà",
+                    },
+                    -99: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2017:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["fr"],
+                        text_rm=item["fr"],
+                        text_it=item["fr"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_17_2, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
         # Adding answer
         async with session.begin():
             crc = pd.read_csv(Path(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")

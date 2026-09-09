@@ -73,6 +73,7 @@ export const geoApi = {
       question_uid: number;
       year: number;
       granularity?: ChoroplethGranularity;
+      lang?: string;
     },
     signal?: AbortSignal
   ) =>
@@ -84,6 +85,7 @@ export const geoApi = {
         question_uid: params.question_uid,
         year: params.year,
         ...(params.granularity ? { granularity: params.granularity } : {}),
+        ...(params.lang ? { lang: params.lang } : {}),
       },
     }),
 
@@ -106,6 +108,7 @@ export const geoApi = {
       question_uid: number;
       year: number;
       granularity?: ChoroplethGranularity;
+      lang?: string;
     },
     signal?: AbortSignal
   ) =>
@@ -117,6 +120,7 @@ export const geoApi = {
         question_uid: params.question_uid,
         year: params.year,
         ...(params.granularity ? { granularity: params.granularity } : {}),
+        ...(params.lang ? { lang: params.lang } : {}),
       },
     }),
 };

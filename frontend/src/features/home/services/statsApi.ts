@@ -7,6 +7,7 @@ export const statsApi = {
     year: number;
     area_uid: number;
     level: "commune" | "district" | "canton";
+    lang: string;
   }) =>
     apiFetch("geo/comparison", {
       method: "GET",
