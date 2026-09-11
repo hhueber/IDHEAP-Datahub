@@ -104,9 +104,3 @@ export type ShowChildrenResponse = {
     pages: number;
   };
 };
-
-export type ShowPermissionActions = {
-  show: boolean;
-  edit: boolean;
-  delete: boolean;
-};

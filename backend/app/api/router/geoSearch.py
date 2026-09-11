@@ -1,16 +1,16 @@
 from typing import Literal
 
 
-from app.api.permissions import require_permission
-from app.config.roles import PermissionLevel, PermissionScope
+from app.api.dependencies import get_current_user
 from app.db import get_db
-from app.repositories.geo_search_repo import get_geo_point, suggest_geo_locations
+from app.repositories.geo_search_repo import build_geo_names, get_geo_point, resolve_geo_name, suggest_geo_locations
 from app.schemas.placeOfInterest import (
     GeoPointResponse,
     GeoSuggestionResponse,
     PlaceOfInterestSuggestOut,
     PlaceOfInterestSuggestResponse,
 )
+from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -23,7 +23,7 @@ async def suggest_geo(
     q: str = Query(..., min_length=3, max_length=100),
     limit: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _user: UserPublic = Depends(get_current_user),
 ):
     """
     Recherche des suggestions géographiques parmi les communes, districts et cantons.
@@ -41,7 +41,7 @@ async def suggest_geo(
         q: Texte saisi par l'utilisateur.
         limit: Nombre maximum de résultats à retourner.
         db: Session de base de données asynchrone.
-        _current_user: Utilisateur courant authentifié.
+        _user: Utilisateur courant authentifié.
 
     Returns:
         dict: Réponse JSON contenant la liste des suggestions géographiques.
@@ -55,7 +55,7 @@ async def geo_point(
     geo_type: Literal["commune", "district", "canton"],
     uid: int,
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _user: UserPublic = Depends(get_current_user),
 ):
     """
     Récupère un point géographique représentatif pour une commune, un district ou un canton.
@@ -68,7 +68,7 @@ async def geo_point(
         geo_type: Type d'entité géographique (`commune`, `district` ou `canton`).
         uid: Identifiant unique de l'entité géographique.
         db: Session de base de données asynchrone.
-        _current_user: Utilisateur courant authentifié.
+        _user: Utilisateur courant authentifié.
 
     Returns:
         dict: Réponse JSON contenant la latitude et la longitude si disponibles.
@@ -86,6 +86,7 @@ async def geo_point(
 @router.get("/suggest/public", response_model=PlaceOfInterestSuggestResponse)
 async def suggest_geo_public(
     q: str = Query(..., min_length=3, max_length=100),
+    lang: str = Query("en", description="ISO language code, e.g.: fr, de, it, rm, en"),
     limit: int = Query(50, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
 ):
@@ -129,12 +130,19 @@ async def suggest_geo_public(
         if not default_name:
             continue
 
+        localized_name = resolve_geo_name(row, lang)
+
+        if not localized_name:
+            continue
+
         place_of_interest.append(
             PlaceOfInterestSuggestOut(
                 uid=row["uid"],
                 type=row["type"],
                 code=row["code"],
+                name=localized_name,
                 default_name=default_name,
+                names=build_geo_names(row),
                 pos=(float(pos[0]), float(pos[1])),
             )
         )

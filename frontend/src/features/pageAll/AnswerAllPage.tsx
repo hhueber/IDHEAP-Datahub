@@ -2,25 +2,9 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import PageAll from "@/components/PageAll";
 import type { ColumnConfig, ActionsConfig } from "@/features/pageAll/all_types";
-import { useAuth } from "@/contexts/AuthContext";
-
-const PAGE_ACTIONS = {
-  show: true,
-  edit: true,
-  delete: true,
-} as const;
 
 export default function AnswerAllPage() {
   const { t } = useTranslation();
-  const { can } = useAuth();
-
-  const canReadDataset = can("DATASET", "READ");
-  const canWriteDataset = can("DATASET", "WRITE");
-  const canManageDataset = can("DATASET", "MANAGE");
-
-  const allowShow = PAGE_ACTIONS.show && canReadDataset;
-  const allowEdit = PAGE_ACTIONS.edit && canWriteDataset;
-  const allowDelete = PAGE_ACTIONS.delete && canManageDataset;
 
   const columns = React.useMemo<ColumnConfig[]>(
     () => [
@@ -30,7 +14,7 @@ export default function AnswerAllPage() {
         align: "right",
         sortKey: "year",
         kind: "year",
-        editable: allowEdit,
+        editable: true,
         editKey: "year",
       },
       {
@@ -56,17 +40,17 @@ export default function AnswerAllPage() {
         truncate: true,
         maxWidthClassName: "max-w-[220px]",
         kind: "text",
-        editable: allowEdit,
+        editable: true,
         editKey: "value",
       },
     ],
-    [allowEdit]
+    []
   );
 
   const actions: ActionsConfig = {
-    show: allowShow,
-    edit: allowEdit,
-    delete: allowDelete,
+    show: true,
+    edit: true,
+    delete: true,
   };
 
   return (

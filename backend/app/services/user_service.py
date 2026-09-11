@@ -1,7 +1,6 @@
 import re
 
 
-from app.config.roles import PermissionRole
 from app.repositories import user_repo
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -9,14 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 async def ensure_root_exists(
     db: AsyncSession, root_email: str, root_password: str, root_first_name: str, root_last_name: str
 ):
-    if not await user_repo.any_super_admin_exists(db):
+    if not await user_repo.any_admin_exists(db):
         user = await user_repo.create_user(
-            db,
-            root_email,
-            root_password,
-            first_name=root_first_name,
-            last_name=root_last_name,
-            role=PermissionRole.SUPER_ADMIN,
+            db, root_email, root_password, first_name=root_first_name, last_name=root_last_name, role="ADMIN"
         )
         return user
     return None

@@ -245,6 +245,35 @@
     }
   },
   "admin": {
+    "deleteMember": {
+      "title": "Supprimer un membre",
+
+      "firstNameLabel": "Prénom",
+      "firstNamePlaceholder": "Entrez le prénom",
+      "lastNameLabel": "Nom",
+      "lastNamePlaceholder": "Entrez le nom",
+      "emailLabel": "Email",
+      "emailPlaceholder": "Entrez l'email",
+      "roleLabel": "Rôle",
+
+      "roles": {
+        "member": "Membre",
+        "admin": "Admin"
+      },
+
+      "submit": "Supprimer",
+      "submitting": "Suppression",
+
+      "success": "Utilisateur·trice supprimé·e.",
+      "fail": "Échec de suppression.",
+
+      "errors": {
+        "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
+        "notFound": "Utilisateur·trice introuvable.",
+        "forbidden": "Action interdite.",
+        "generic": "Une erreur est survenue."
+      }
+    },
     "addMember": {
       "title": "Ajouter un membre",
 

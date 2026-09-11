@@ -6,10 +6,13 @@ import NotFound from "@/pages/NotFound";
 import { AuthProvider } from "@/contexts/AuthContext";
 import Dashboard from "@/features/dashboard/Dashboard";
 import RequireAuth from "@/components/RequireAuth";
+import RequireRole from "@/components/RequireRole";
 import PrivateLayout from "@/components/PrivateLayout";
 import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
+import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
+import { ADMIN, MEMBER } from "@/config/roles";
 import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
 import DistrictAllPage from "@/features/pageAll/DistrictAllPage";
@@ -22,8 +25,6 @@ import OptionAllPage from "@/features/pageAll/OptionAllPage";
 import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
 import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
-import RequirePermission from "@/components/RequirePermission";
-import AdminUsersPage from "@/features/admin/users/AdminUsersPage";
 import DataImportPage from "@/features/dataImport/DataImportPage";
 import ExportDataPage from "@/features/export/ExportDataPage"
 
@@ -56,106 +57,97 @@ export default function App() {
           <Route
             path="/admin/surveys"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <SurveyAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
           <Route
             path="/admin/surveys/new"
             element={
-              <RequirePermission scope="DATASET" level="MANAGE">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <DataImportPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/answers"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <AnswerAllPage />
-              </RequirePermission>
-            }
-          />
-
-          <Route
-            path="/admin/answers"
-            element={
-              <RequirePermission scope="DATASET" level="READ">
-                <AnswerAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/options"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <OptionAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/qglobal"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QGlobalAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/qps"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QPerSurvAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/qcat"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <QCatAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/places/communes"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <CommuneAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
           <Route
             path="/admin/places/show/:entity/:id"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <ShowPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/places/districts"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <DistrictAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
           <Route
             path="/admin/places/cantons"
             element={
-              <RequirePermission scope="DATASET" level="READ">
+              <RequireRole roles={[ADMIN, MEMBER]}>
                 <CantonAllPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
 
@@ -163,33 +155,26 @@ export default function App() {
           <Route
             path="/admin/users/new"
             element={
-              <RequirePermission scope="PROJECT" level="WRITE">
+              <RequireRole roles={[ADMIN]}>
                 <AddMemberPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
-          <Route
-            path="/admin/users"
-            element={
-              <RequirePermission scope="PROJECT" level="READ">
-                <AdminUsersPage />
-              </RequirePermission>
-            }
-          />
+          <Route path="/admin/users/delete" element={<RequireRole roles={[ADMIN]}><DeleteMemberPage /></RequireRole>} />
           <Route
             path="/admin/config/placeOfInterest"
             element={
-              <RequirePermission scope="PROJECT" level="READ">
+              <RequireRole roles={[ADMIN]}>
                 <PlaceOfInterestConfigPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
           <Route
             path="/admin/config/theme"
             element={
-              <RequirePermission scope="PROJECT" level="READ">
+              <RequireRole roles={[ADMIN]}>
                 <ThemeConfigPage />
-              </RequirePermission>
+              </RequireRole>
             }
           />
         </Route>
