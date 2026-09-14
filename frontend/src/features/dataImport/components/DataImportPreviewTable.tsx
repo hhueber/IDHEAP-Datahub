@@ -60,6 +60,8 @@ const ROLE_OPTIONS: RoleType[] = [
   "text_fr",
   "text_it",
   "text_rm",
+  "year",
+  "unchosed",
 ];
 
 export function DataImportPreviewTable({
@@ -91,6 +93,23 @@ export function DataImportPreviewTable({
       importId,
       columnIndex,
       detectedType,
+    });
+
+    if (json.success) {
+      onAnalysisUpdated(json.data);
+    }
+
+    await onReload();
+  };
+
+  const handleColumnRoleChange = async (
+    columnIndex: number,
+    role: RoleType,
+  ) => {
+    const json = await patchDataImportColumn({
+      importId,
+      columnIndex,
+      role,
     });
 
     if (json.success) {
@@ -394,6 +413,13 @@ export function DataImportPreviewTable({
                         </select>
                         {column.section === "questions" && (
                           <select
+                            onChange={(event) =>
+                              void handleColumnRoleChange(
+                                column.index,
+                                event.target.value as RoleType,
+                              )
+                            }
+                            value={column.role ? column.role : "unchosed"}
                             className="rounded-xl border px-2 py-2 text-xs outline-none"
                             style={{
                               backgroundColor: background,
@@ -403,13 +429,18 @@ export function DataImportPreviewTable({
                             name=""
                             id=""
                           >
-                            {ROLE_OPTIONS.map((role) => (
+                            {ROLE_OPTIONS.filter((role) =>
+                              column.role ? role !== "unchosed" : true,
+                            ).map((role) => (
                               <option key={role} value={role}>
-                                {role}
+                                {role === "unchosed" || !role
+                                  ? t("dataImport.sections.unchosed")
+                                  : role}
                               </option>
                             ))}
                           </select>
                         )}
+
                         <select
                           value={column.detected_type}
                           onChange={(event) =>

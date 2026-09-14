@@ -41,6 +41,7 @@ class ImportRoleEnum(str, Enum):
     text_it = "text_it"
     text_de = "text_de"
     text_rm = "text_rm"
+    year = "year"
 
 
 class DataImportUploadData(BaseModel):
@@ -128,6 +129,7 @@ class ImportPreviewColumn(BaseModel):
     index: int
     name: str
     section: ImportSectionEnum
+    role: Optional[ImportRoleEnum] = None
     detected_type: DetectedTypeEnum
     issue_count: int
 

@@ -27,7 +27,9 @@ export type RoleType =
   | "text_en"
   | "text_it"
   | "text_de"
-  | "text_rm";
+  | "text_rm"
+  | "year"
+  | "unchosed";
 
 export type DataImportUploadResponse = {
   success: boolean;
@@ -109,6 +111,7 @@ export type ImportPreviewColumn = {
   index: number;
   name: string;
   section: ImportSection;
+  role: RoleType | null;
   detected_type: DetectedType;
   issue_count: number;
 
