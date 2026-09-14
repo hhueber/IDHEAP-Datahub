@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, DragEvent, ChangeEvent } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   fetchThemeConfig,
@@ -24,6 +24,7 @@ import {
 } from "@/features/admin/components/theme/themeConfigMeta";
 import { saveThemeConfig as saveThemeConfigToStorage } from "@/theme/themeStorage";
 import { useThemeMode } from "@/theme/ThemeContext";
+import { FileDropzone } from "@/utils/FileDropzone";
 
 // Logo par défaut local (fallback final).
 const DEFAULT_LOGO = "/img/idheap-dh.png";
@@ -48,16 +49,11 @@ export default function ThemeConfigPage() {
   // Infos du fichier en attente (à afficher uniquement avant save / avant reload).
   const [pendingLogoFileInfo, setPendingLogoFileInfo] = useState<PendingLogoFileInfo | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, hoverPrimary10, hoverPrimary15, cfg } = useTheme();
+  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, hoverPrimary10, cfg } = useTheme();
   // Logo actuel en cache (thème local) pour fallback si le backend ne renvoie rien.
   const logoUrlRaw = cfg.logo_url;
   // Permet de rafraîchir le thème après sauvegarde (ex: reload des tokens/couleurs).
   const { refreshTheme } = useThemeMode();
-
-  // Drag and drop logo
-  const [isDragActive, setIsDragActive] = useState(false);
-  const [isDragReject, setIsDragReject] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Charger la config au montage
   useEffect(() => {
@@ -116,18 +112,7 @@ export default function ThemeConfigPage() {
 
   const MAX_LOGO_MB = 3;
   const ACCEPTED_MIME = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
-
-  // Valide un fichier logo (type + tailles)
-  function validateLogoFile(file: File): string | null {
-    if (!ACCEPTED_MIME.includes(file.type)) {
-      return t("admin.config.themeConfigPage.logoInvalidType");
-    }
-    const maxBytes = MAX_LOGO_MB * 1024 * 1024;
-    if (file.size > maxBytes) {
-      return t("admin.config.themeConfigPage.logoTooLarge", {size: MAX_LOGO_MB});
-    }
-    return null;
-  }
+  const ACCEPTED_EXTENSIONS = [".png", ".jpg", ".jpeg", ".webp", ".svg"];
 
   // Convertit un fichier en data URL (data:image/...;base64,...) pour preview et upload.
   function readFileAsDataUrl(file: File): Promise<string> {
@@ -153,107 +138,36 @@ export default function ThemeConfigPage() {
     return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
   };
 
-  // Gestion du drag & drop logo
-  const handleLogoUrlDrop = async (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    setIsDragActive(false);
-    setIsDragReject(false);
-
-    const text = e.dataTransfer.getData("text/plain");
-
-    // Cas 1 : URL directe -> pas d'upload backend
-    if (text && (text.startsWith("http://") || text.startsWith("https://") || text.startsWith("/"))) {
-        setPendingLogoDataUrl(null);
-        setPendingLogoFileInfo(null);
-        updateField("logo_url", text.trim());
-        return;
-    }
-
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-        const err = validateLogoFile(file);
-        if (err) {
-        setError(err);
-        return;
-        }
-
-        try {
-        const dataUrl = await readFileAsDataUrl(file);
-        setPendingLogoDataUrl(dataUrl);
-        setPendingLogoFileInfo({
-          name: file.name,
-          size: file.size,
-        });
-        setError(null);
-        } catch (err) {
-        console.error(err);
-        setError(t("admin.config.themeConfigPage.logoUploadError"));
-        }
-    }
-  };
-
-  // Cas sélection fichier via input.
-  const handleLogoFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const err = validateLogoFile(file);
-    if (err) {
-        setError(err);
-        e.target.value = ""; // permet de re-choisir le même fichier
-        return;
-    }
-
+  const handleLogoFileAccepted = async (file: File) => {
     try {
-        const dataUrl = await readFileAsDataUrl(file);
-        setPendingLogoDataUrl(dataUrl);
-        setPendingLogoFileInfo({
-          name: file.name,
-          size: file.size,
-        });
-        setError(null);
+      const dataUrl = await readFileAsDataUrl(file);
+
+      setPendingLogoDataUrl(dataUrl);
+      setPendingLogoFileInfo({
+        name: file.name,
+        size: file.size,
+      });
+
+      setError(null);
     } catch (err) {
-        console.error(err);
-        setError(t("admin.config.themeConfigPage.logoUploadError"));
-    } finally {
-        e.target.value = "";
+      console.error(err);
+      setError(t("admin.config.themeConfigPage.logoUploadError"));
     }
   };
 
-  // Empêche le navigateur d’ouvrir le fichier quand on drop.
-  const onDragEnter = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const handleLogoUrlAccepted = (url: string) => {
+    setPendingLogoDataUrl(null);
+    setPendingLogoFileInfo(null);
 
-    setIsDragActive(true);
+    updateField("logo_url", url);
 
-    const file = e.dataTransfer?.files?.[0];
-    if (file) {
-        const err = validateLogoFile(file);
-        setIsDragReject(!!err);
-    } else {
-        // Si c'est juste du texte/URL, pas un reject
-        setIsDragReject(false);
-    }
-    };
+    setError(null);
+  };
 
-    const onDragOver = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragActive(true);
-    };
-
-    const onDragLeave = (e: DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // Quand on quitte la zone
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-
-    setIsDragActive(false);
-    setIsDragReject(false);
+  const handleLogoClear = () => {
+    setPendingLogoDataUrl(null);
+    setPendingLogoFileInfo(null);
+    setError(null);
   };
 
   // Sauvegarde
@@ -272,7 +186,7 @@ export default function ThemeConfigPage() {
             cfgToSave = { ...cfgToSave, logo_url: uploadedUrl };
         }
         // Enregistre la config côté backend.
-        const res = await saveThemeConfig(cfgToSave);
+        await saveThemeConfig(cfgToSave);
         // Recharge depuis backend pour être sûr d’avoir la source de vérité.
         const fresh = await fetchThemeConfig();
         const freshCfg = { ...cfgToSave, ...fresh };
@@ -474,138 +388,28 @@ export default function ThemeConfigPage() {
                 </div>
 
                 {/* Dropzone */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium opacity-80">
-                    {t("admin.config.themeConfigPage.logoUpload")}
-                  </label>
-
-                  <div
-                    className={[
-                      "group relative rounded-2xl border p-6 transition-all duration-200 cursor-pointer overflow-hidden",
-                      "hover:-translate-y-[1px] hover:shadow-md",
-                      isDragActive ? "scale-[1.01]" : "scale-100",
-                    ].join(" ")}
-                    style={{
-                      borderColor: isDragReject
-                        ? "#ef4444"
-                        : isDragActive
-                          ? primary
-                          : borderColor,
-                      backgroundColor: isDragActive ? hoverPrimary10 : background,
-                      boxShadow: isDragActive
-                        ? `0 0 0 3px ${hoverPrimary15}`
-                        : "0 1px 2px rgba(0,0,0,0.04)",
-                    }}
-                    onClick={() => fileInputRef.current?.click()}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        fileInputRef.current?.click();
-                      }
-                    }}
-                    onDrop={handleLogoUrlDrop}
-                    onDragEnter={onDragEnter}
-                    onDragOver={onDragOver}
-                    onDragLeave={onDragLeave}
-                    role="button"
-                    tabIndex={0}
-                    aria-label={t("admin.config.themeConfigPage.logoDropZone")}
-                  >
-                    {isDragActive && (
-                      <div
-                        className="absolute inset-0 flex items-center justify-center"
-                        style={{ backgroundColor: hoverPrimary10 }}
-                        aria-hidden
-                      >
-                        <div
-                          className="rounded-full border px-4 py-2 text-sm font-semibold shadow-sm"
-                          style={{
-                            borderColor: isDragReject ? "#ef4444" : primary,
-                            color: isDragReject ? "#ef4444" : primary,
-                            backgroundColor: background,
-                          }}
-                        >
-                          {isDragReject
-                            ? t("admin.config.themeConfigPage.logoDropReject")
-                            : t("admin.config.themeConfigPage.logoDropActive")}
-                        </div>
-                      </div>
-                    )}
-
-                    <div
-                      className={[
-                        "flex flex-col items-center justify-center text-center transition-all duration-200",
-                        isDragActive ? "opacity-0 scale-95" : "opacity-100 scale-100",
-                      ].join(" ")}
-                    >
-                      <div
-                        className="mb-3 flex h-12 w-12 items-center justify-center rounded-full border text-lg font-semibold transition-transform duration-200 group-hover:scale-110"
-                        style={{
-                          borderColor,
-                          backgroundColor: hoverPrimary10,
-                          color: primary,
-                        }}
-                      >
-                        ↑
-                      </div>
-
-                      <p className="text-sm font-medium">
-                        {t("admin.config.themeConfigPage.logoDropZone")}
-                      </p>
-                      <p className="mt-1 text-xs opacity-60">
-                        {t("admin.config.themeConfigPage.logoDropHint")}
-                      </p>
-
-                      <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
-                          style={{
-                            borderColor,
-                            color: textColor,
-                            backgroundColor: hoverPrimary10,
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            fileInputRef.current?.click();
-                          }}
-                        >
-                          {t("admin.config.themeConfigPage.logoBrowse")}
-                        </button>
-
-                        {pendingLogoDataUrl && (
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
-                            style={{
-                              borderColor,
-                              color: textColor,
-                              backgroundColor: background,
-                            }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPendingLogoDataUrl(null);
-                              setPendingLogoFileInfo(null);
-                            }}
-                          >
-                            {t("common.clear")}
-                          </button>
-                        )}
-                      </div>
-
-                      <div className="mt-3 text-[11px] opacity-50">
-                        {t("admin.config.themeConfigPage.logoFormats", { size: MAX_LOGO_MB })}
-                      </div>
-                    </div>
-
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handleLogoFileChange}
-                    />
-                  </div>
-                </div>
+                <FileDropzone
+                  labels={{
+                    labelKey: "admin.config.themeConfigPage.logoUpload",
+                    dropZoneKey: "admin.config.themeConfigPage.logoDropZone",
+                    dropHintKey: "admin.config.themeConfigPage.logoDropHint",
+                    browseKey: "admin.config.themeConfigPage.logoBrowse",
+                    formatsKey: "admin.config.themeConfigPage.logoFormats",
+                    dropActiveKey: "admin.config.themeConfigPage.logoDropActive",
+                    dropRejectKey: "admin.config.themeConfigPage.logoDropReject",
+                  }}
+                  accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml"
+                  acceptedMimeTypes={ACCEPTED_MIME}
+                  acceptedExtensions={ACCEPTED_EXTENSIONS}
+                  maxSizeMb={MAX_LOGO_MB}
+                  showFormats
+                  allowTextUrl
+                  hasValue={pendingLogoDataUrl !== null}
+                  onFileAccepted={handleLogoFileAccepted}
+                  onUrlAccepted={handleLogoUrlAccepted}
+                  onClear={handleLogoClear}
+                  onError={setError}
+                />
               </div>
             </div>
           </div>
