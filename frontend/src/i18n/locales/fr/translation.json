@@ -372,18 +372,22 @@
           "selection": "Élément sélectionné"
         }
       },
-      "configEditor": {
-        "cancel": "Annuler",
-        "submit": "Enregistrer",
-        "saving": "Enregistrement"
-      },
-      "errors": {
-        "loadFailed": "Échec du chargement.",
-        "saved": "Enregistré.",
-        "saveFailed": "Échec de l'enregistrement.",
-        "deleted": "Supprimé.",
-        "deleteFailed": "Échec de la suppression.",
-        "network": "Problème de réseau."
+      "users": {
+        "title": "Utilisateurs privés",
+        "firstName": "Prénom",
+        "lastName": "Nom",
+        "email": "Email",
+        "role": "Rôle",
+        "createdAt": "Créé le",
+        "updated": "Utilisateur modifié",
+        "deleted": "Utilisateur supprimé",
+        "confirmDeleteTitle": "Supprimer l'utilisateur",
+        "confirmDeleteMessage": "Voulez-vous vraiment supprimer {{name}} ?",
+        "errors": {
+          "updateFailed": "Impossible de modifier l'utilisateur",
+          "deleteFailed": "Impossible de supprimer l'utilisateur",
+          "notAllowedRole": "Vous n'avez pas le droit d'attribuer ce rôle"
+        }
       }
     },
     "users": {

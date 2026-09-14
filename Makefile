@@ -87,6 +87,11 @@ docker_empty:
 	@echo "✅  Services started"
 	$(COMPOSE) logs -f $(INIT_EMPTY_SERVICE) $(API_SERVICE) $(FRONT_SERVICE)
 
+docker_run:
+	$(COMPOSE) up -d --build $(DB_SERVICE) $(API_SERVICE)
+	$(COMPOSE) up -d --build $(FRONT_SERVICE)
+	@echo "✅  Services started"
+	$(COMPOSE) logs -f $(API_SERVICE) $(FRONT_SERVICE)
 
 # Stop the project's Docker services and delete the containers + volumes
 docker_clean:

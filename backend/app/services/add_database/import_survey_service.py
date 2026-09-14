@@ -50,7 +50,6 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
         if not db_survey:
             db_survey = Survey(name=survey_name, year=year)
             db.add(db_survey)
-            print("Aded")
             await db.flush()
 
         bfs_column_name = None
@@ -115,8 +114,7 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
             if not commune_uid:
                 continue
 
-            for col_name in answer_columns:
-                print(col_name)
+            for col_name in question_columns:
                 val = row.get(col_name)
                 if pd.isna(val) or str(val).strip() == "":
                     continue
