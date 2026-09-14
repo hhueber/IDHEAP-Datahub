@@ -66,7 +66,6 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
             elif section == "questions":
                 question_columns.append(col_name)
                 role: ImportRoleEnum = col.get("role")
-                print(f"role = {role}")
                 if role in ImportRoleEnum:
                     question_role_map[role] = col_name
             elif section == "responses":
