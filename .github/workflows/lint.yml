@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend # Adapte si ton dossier backend a un autre nom
+        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -24,25 +24,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+          cache: "pip"
 
       - name: Install dependencies
-        run: poetry install --no-interaction
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Check formatting (Ruff)
-        run: poetry run ruff format --check .
+        run: ruff format --check .
 
       - name: Check linter & imports (Ruff)
-        run: poetry run ruff check .
+        run: ruff check .
 
   lint-frontend:
     name: Frontend Check (React / ESLint / Prettier)
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./frontend # Adapte si ton dossier front a un autre nom
+        working-directory: ./frontend
 
     steps:
       - name: Checkout code
