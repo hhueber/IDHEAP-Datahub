@@ -12,9 +12,6 @@ jobs:
   lint-backend:
     name: Backend Check (Python / Ruff)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./backend
 
     steps:
       - name: Checkout code
@@ -25,13 +22,12 @@ jobs:
         with:
           python-version: "3.11"
           cache: "pip"
-          cache-dependeny-path: backend/requirements.txt
+          cache-dependeny-path: requirements.txt
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          working-directory: ./backend
 
       - name: Check formatting (Ruff)
         run: ruff format --check .
