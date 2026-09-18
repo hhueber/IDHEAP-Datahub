@@ -1,3 +1,5 @@
+from project_author import ProjectAuthor
+from project_metadata import ProjectMetadata
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

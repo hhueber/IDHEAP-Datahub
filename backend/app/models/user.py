@@ -1,7 +1,7 @@
 import uuid
 
 
-from app.config.roles import Role, ROLE_VALUES
+from app.config.roles import ROLE_VALUES
 from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as SAEnum
 from sqlalchemy import String, Text
@@ -26,5 +26,6 @@ class User(Base):
     )
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     last_token_created_at = Column(
-        DateTime(timezone=True), nullable=True  # volontairement NULL possible : on efface la date au logout
+        DateTime(timezone=True),
+        nullable=True,  # volontairement NULL possible : on efface la date au logout
     )

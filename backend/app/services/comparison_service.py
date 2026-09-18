@@ -72,7 +72,7 @@ def _complete_distribution(distribution: list[dict], options: list[dict]) -> lis
     def sort_key(x):
         try:
             return (0, int(x["value"]))
-        except:
+        except (ValueError, TypeError, KeyError):
             return (1, str(x["value"]))
 
     return sorted(distribution, key=sort_key)
@@ -94,7 +94,7 @@ def _mode(values: list[str]) -> str | None:
     max_count = max(counts.values())
     top_values = [k for k, c in counts.items() if c == max_count]
     # tie-break stable: ordre alphabétique / numérique en string
-    return sorted(top_values)[0]
+    return min(top_values)
 
 
 def _build_distribution(values: list[str]) -> list[dict]:
@@ -103,7 +103,7 @@ def _build_distribution(values: list[str]) -> list[dict]:
     def sort_key(x: str):
         try:
             return (0, int(x))
-        except Exception:
+        except (TypeError, ValueError):
             return (1, x)
 
     return [{"value": k, "count": v} for k, v in sorted(counts.items(), key=lambda kv: sort_key(kv[0]))]

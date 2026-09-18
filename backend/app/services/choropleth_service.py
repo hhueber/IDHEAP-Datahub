@@ -2,7 +2,7 @@
 # Une carte choroplèthe est une carte thématique où des zones géographiques
 # (par exemple des communes) sont colorées en fonction d'une valeur de données
 # (statistique, réponse à un sondage, score numérique, etc.).
-from typing import Any, List, Optional
+from typing import Any
 
 
 from app.models.answer import Answer
@@ -195,7 +195,7 @@ def _apply_fill_colors(
         # gradient
         try:
             x = float(v)
-        except Exception:
+        except (ValueError, TypeError):
             props["fill_color"] = NO_DATA_COLOR
             continue
 
@@ -214,14 +214,17 @@ async def _resolve_question_per_survey_uid_for_global(
     stmt = (
         select(QuestionPerSurvey.uid)
         .join(Survey, Survey.uid == QuestionPerSurvey.survey_uid)
-        .where(QuestionPerSurvey.question_global_uid == question_global_uid, Survey.year == year)
+        .where(
+            QuestionPerSurvey.question_global_uid == question_global_uid,
+            Survey.year == year,
+        )
         .limit(1)
     )
     uid = (await db.execute(stmt)).scalar_one_or_none()
     return int(uid) if uid is not None else None
 
 
-def _normalize_value(v: Optional[str]) -> tuple[str, Optional[str]]:
+def _normalize_value(v: str | None) -> tuple[str, str | None]:
     """
     kind:
       - no_data: NULL (ou pas d'answer => outerjoin value=None)
@@ -261,22 +264,20 @@ def _hex_to_rgb(h: str) -> tuple[int, int, int]:
 
 
 def _rgb_to_hex(r: int, g: int, b: int) -> str:
-    return "#{:02x}{:02x}{:02x}".format(r, g, b)
+    return f"#{r:02x}{g:02x}{b:02x}"
 
 
 def _interp_color(c1: str, c2: str, t: float) -> str:
     t = max(0.0, min(1.0, t))
     r1, g1, b1 = _hex_to_rgb(c1)
     r2, g2, b2 = _hex_to_rgb(c2)
-    r = int(round(r1 + (r2 - r1) * t))
-    g = int(round(g1 + (g2 - g1) * t))
-    b = int(round(b1 + (b2 - b1) * t))
+    r = round(r1 + (r2 - r1) * t)
+    g = round(g1 + (g2 - g1) * t)
+    b = round(b1 + (b2 - b1) * t)
     return _rgb_to_hex(r, g, b)
 
 
-async def _compute_global_value(
-    db: AsyncSession, q_uid: int, year: int, *, use_mode: bool
-) -> tuple[str, Optional[str]]:
+async def _compute_global_value(db: AsyncSession, q_uid: int, year: int, *, use_mode: bool) -> tuple[str, str | None]:
     vtrim = func.btrim(Answer.value)
     is_num = _numeric_regex_col()
 
@@ -311,21 +312,20 @@ async def _compute_global_value(
 
 def _build_legend_and_colors(
     features: list[Feature],
-    options: List[Option],
+    options: list[Option],
     lang: str = "en",
 ) -> MapLegend:
-    raw_values: list[tuple[str, Optional[str]]] = []
+    raw_values: list[tuple[str, str | None]] = []
     numeric_values: list[float] = []
 
     for f in features:
         k = f.properties.get("value_kind")
         v = f.properties.get("value")
         raw_values.append((k, v))
-        option = next((opt for opt in options if opt.value == str(v)), None)
         if k == "value" and v is not None:
             try:
                 numeric_values.append(float(v))
-            except Exception:
+            except (ValueError, TypeError):
                 pass
 
     real_values = [v for (k, v) in raw_values if k == "value" and v is not None]
@@ -438,7 +438,7 @@ def _build_legend_and_colors(
     return legend
 
 
-async def _nearest_year_sql_window(db: AsyncSession, model, target_year: int, year_window: int = 1) -> Optional[int]:
+async def _nearest_year_sql_window(db: AsyncSession, model, target_year: int, year_window: int = 1) -> int | None:
     """
     Renvoie l’année dispo la plus proche dans une fenêtre de +- year_window
     """
@@ -467,10 +467,10 @@ def _pick_aggregated_value(
     cnt_null: int,
     cnt_non_empty: int,
     cnt_num: int,
-    avg_num_int: Optional[int],
-    mode_text: Optional[str],
+    avg_num_int: int | None,
+    mode_text: str | None,
     use_mode: bool,
-) -> tuple[str, Optional[str]]:
+) -> tuple[str, str | None]:
     if cnt_non_empty == 0 and cnt_empty > 0:
         return ("no_response", "")
     if cnt_non_empty == 0:
@@ -527,7 +527,10 @@ def _best_commune_map_for_requested_cte_window(
             .label("rn"),
         )
         .select_from(CommuneMap)
-        .join(requested_communes_cte, requested_communes_cte.c.gid == CommuneMap.commune_uid)
+        .join(
+            requested_communes_cte,
+            requested_communes_cte.c.gid == CommuneMap.commune_uid,
+        )
         .where(and_(CommuneMap.year >= y_min, CommuneMap.year <= y_max))
     ).cte("cm_ranked_window")
 
@@ -720,7 +723,13 @@ def _canton_agg_cte(q_uid: int, year: int) -> Any:
 
 
 def _add_warning(
-    years_meta: dict[str, Any], *, code: str, message: str, q_uid: int, year: int, granularity: str
+    years_meta: dict[str, Any],
+    *,
+    code: str,
+    message: str,
+    q_uid: int,
+    year: int,
+    granularity: str,
 ) -> None:
     warnings = years_meta.get("warnings")
     if not isinstance(warnings, list):
@@ -736,7 +745,9 @@ def _add_warning(
     )
 
 
-def _empty_return(years_meta: dict[str, Any]) -> tuple["FeatureCollection", "MapLegend", dict[str, Any]]:
+def _empty_return(
+    years_meta: dict[str, Any],
+) -> tuple["FeatureCollection", "MapLegend", dict[str, Any]]:
     # Une légende minimale qui explique "No data"
     legend = MapLegend(
         type="categorical",
@@ -828,7 +839,11 @@ def _rows_to_features(
 
             if len(candidates) >= 2:
                 props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
-                props["fill_pattern_opts"] = {"type": "stripes", "angle": 45, "stripe": 6}
+                props["fill_pattern_opts"] = {
+                    "type": "stripes",
+                    "angle": 45,
+                    "stripe": 6,
+                }
 
         feats.append(Feature(geometry=Geometry(**gj), properties=props))
 
@@ -918,7 +933,10 @@ async def build_choropleth(
 
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_features(
-            level="commune", rows=[dict(r) for r in rows], use_mode=use_mode, include_geo_year_used=True
+            level="commune",
+            rows=[dict(r) for r in rows],
+            use_mode=use_mode,
+            include_geo_year_used=True,
         )
 
         if not feats:
@@ -973,7 +991,10 @@ async def build_choropleth(
 
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_features(
-            level="district", rows=[dict(r) for r in rows], use_mode=use_mode, include_geo_year_used=False
+            level="district",
+            rows=[dict(r) for r in rows],
+            use_mode=use_mode,
+            include_geo_year_used=False,
         )
 
         if not feats:
@@ -1028,7 +1049,10 @@ async def build_choropleth(
 
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_features(
-            level="canton", rows=[dict(r) for r in rows], use_mode=use_mode, include_geo_year_used=False
+            level="canton",
+            rows=[dict(r) for r in rows],
+            use_mode=use_mode,
+            include_geo_year_used=False,
         )
 
         if not feats:
@@ -1092,7 +1116,10 @@ async def build_choropleth(
                 _geojson_col(CantonMap.geometry).label("geojson"),
             )
             .select_from(Canton)
-            .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo))
+            .join(
+                CantonMap,
+                and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo),
+            )
         )
 
         rows = (await db.execute(stmt)).mappings().all()
@@ -1237,7 +1264,11 @@ def _rows_to_value_features(
 
             if len(candidates) >= 2:
                 props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
-                props["fill_pattern_opts"] = {"type": "stripes", "angle": 45, "stripe": 6}
+                props["fill_pattern_opts"] = {
+                    "type": "stripes",
+                    "angle": 45,
+                    "stripe": 6,
+                }
 
         feats.append(Feature(geometry=_DUMMY_GEOM, properties=props))
 
@@ -1320,13 +1351,21 @@ async def build_choropleth_geometries(
                 _geojson_col(DistrictMap.geometry).label("geojson"),
             )
             .select_from(District)
-            .join(DistrictMap, and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo))
+            .join(
+                DistrictMap,
+                and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo),
+            )
         )
         rows = (await db.execute(stmt)).mappings().all()
         feats = [
             Feature(
                 geometry=Geometry(**orjson.loads(r["geojson"])),
-                properties={"level": "district", "unit_uid": int(r["uid"]), "name": r["name"], "code": r["code"]},
+                properties={
+                    "level": "district",
+                    "unit_uid": int(r["uid"]),
+                    "name": r["name"],
+                    "code": r["code"],
+                },
             )
             for r in rows
             if r.get("geojson") is not None
@@ -1347,13 +1386,21 @@ async def build_choropleth_geometries(
                 _geojson_col(CantonMap.geometry).label("geojson"),
             )
             .select_from(Canton)
-            .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo))
+            .join(
+                CantonMap,
+                and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo),
+            )
         )
         rows = (await db.execute(stmt)).mappings().all()
         feats = [
             Feature(
                 geometry=Geometry(**orjson.loads(r["geojson"])),
-                properties={"level": level, "unit_uid": int(r["uid"]), "name": r["name"], "code": r["code"]},
+                properties={
+                    "level": level,
+                    "unit_uid": int(r["uid"]),
+                    "name": r["name"],
+                    "code": r["code"],
+                },
             )
             for r in rows
             if r.get("geojson") is not None
@@ -1437,7 +1484,10 @@ async def build_choropleth_values(
             )
             .select_from(district_agg)
             .join(District, District.uid == district_agg.c.gid)
-            .join(DistrictMap, and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo))
+            .join(
+                DistrictMap,
+                and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo),
+            )
         )
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_value_features(level="district", rows=[dict(r) for r in rows], use_mode=use_mode)
@@ -1466,7 +1516,10 @@ async def build_choropleth_values(
             )
             .select_from(canton_agg)
             .join(Canton, Canton.uid == canton_agg.c.gid)
-            .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo))
+            .join(
+                CantonMap,
+                and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == y_geo),
+            )
         )
         rows = (await db.execute(stmt)).mappings().all()
         feats = _rows_to_value_features(level="canton", rows=[dict(r) for r in rows], use_mode=use_mode)

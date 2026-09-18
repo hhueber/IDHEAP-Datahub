@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Set
 
 
-from app.schemas.pageAll import EntityEnum
+from backend.app.schemas.page_all import EntityEnum
 
 
 class EditAction(str, Enum):
@@ -12,7 +11,7 @@ class EditAction(str, Enum):
 
 @dataclass(frozen=True)
 class EditPolicy:
-    deny_update_entities: Set[EntityEnum]
+    deny_update_entities: set[EntityEnum]
 
 
 DEFAULT_EDIT_POLICY = EditPolicy(

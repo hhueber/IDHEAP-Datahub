@@ -4,9 +4,6 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from typing import List, Optional
-
-
 from app.schemas.theme_config import ThemeConfig
 from pydantic import BaseModel
 
@@ -18,7 +15,7 @@ class QuestionItem(BaseModel):
 
 
 class QuestionList(BaseModel):
-    items: List[QuestionItem]
+    items: list[QuestionItem]
 
 
 class SurveyBrief(BaseModel):
@@ -30,6 +27,6 @@ class HomeBootstrap(BaseModel):
     """Initial payload returned by the API for the home page."""
 
     message: str
-    surveys: List[SurveyBrief]
+    surveys: list[SurveyBrief]
     globals: QuestionList
     themeConfig: ThemeConfig

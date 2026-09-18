@@ -1,8 +1,7 @@
-from typing import List
-
-
+from project import Project
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from survey_metadata import SurveyMetadata
 
 
 from . import QuestionPerSurvey
@@ -16,7 +15,7 @@ class Survey(Base):
     name: Mapped[str] = mapped_column(String, unique=True)
     year: Mapped[int] = mapped_column(Integer)
 
-    questions: Mapped[List["QuestionPerSurvey"]] = relationship(
+    questions: Mapped[list["QuestionPerSurvey"]] = relationship(
         "QuestionPerSurvey", back_populates="survey", cascade="all, delete-orphan"
     )
 

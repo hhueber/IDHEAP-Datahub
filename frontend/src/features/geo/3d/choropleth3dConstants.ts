@@ -26,4 +26,4 @@ export const MAX_PITCH_3D = 60;
  * Background colour for the 3D canvas (shown behind polygons and below the horizon).
  * Dark white gives contrast with the choropleth fill colours.
  */
-export const BACKGROUND_3D = '#FFFFFF';
+export const BACKGROUND_3D = "#FFFFFF";

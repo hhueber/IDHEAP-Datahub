@@ -1,9 +1,9 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
 
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
-from sqlalchemy import case, func, select
+from sqlalchemy import case, func, literal, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
@@ -18,7 +18,7 @@ LANG_COL = {
 }
 
 
-def normalize_lang(lang_header: Optional[str]) -> str:
+def normalize_lang(lang_header: str | None) -> str:
     if not lang_header:
         return "en"
     code = lang_header.split(",")[0].strip().lower()

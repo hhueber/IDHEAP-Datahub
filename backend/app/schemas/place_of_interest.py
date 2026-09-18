@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional, Tuple
+from typing import Literal
 
 
 from pydantic import BaseModel, Field, field_validator
@@ -8,18 +8,18 @@ GeoSuggestionType = Literal["commune", "district", "canton"]
 
 
 class PlaceOfInterestBase(BaseModel):
-    code: Optional[str] = None
+    code: str | None = None
     default_name: str
-    name_fr: Optional[str] = None
-    name_de: Optional[str] = None
-    name_it: Optional[str] = None
-    name_rm: Optional[str] = None
-    name_en: Optional[str] = None
-    pos: Tuple[float, float] = Field(..., description="[lat, lon]")
+    name_fr: str | None = None
+    name_de: str | None = None
+    name_it: str | None = None
+    name_rm: str | None = None
+    name_en: str | None = None
+    pos: tuple[float, float] = Field(..., description="[lat, lon]")
 
     @field_validator("code")
     @classmethod
-    def normalize_code(cls, v: Optional[str]) -> Optional[str]:
+    def normalize_code(cls, v: str | None) -> str | None:
         if v is None:
             return None
         v = v.strip().lower()
@@ -29,7 +29,7 @@ class PlaceOfInterestBase(BaseModel):
 
     @field_validator("pos")
     @classmethod
-    def check_pos(cls, p: Tuple[float, float]) -> Tuple[float, float]:
+    def check_pos(cls, p: tuple[float, float]) -> tuple[float, float]:
         lat, lon = p
         if not (-90 <= lat <= 90) or not (-180 <= lon <= 180):
             raise ValueError("invalid lat/lon")
@@ -39,7 +39,7 @@ class PlaceOfInterestBase(BaseModel):
 class PlaceOfInterestClientOut(BaseModel):
     code: str
     name: str
-    pos: Tuple[float, float]
+    pos: tuple[float, float]
     geo_type: Literal[
         "commune",
         "district",
@@ -67,11 +67,11 @@ class GeoSuggestionOut(BaseModel):
     type: GeoSuggestionType
     code: str
     name: str
-    name_fr: Optional[str] = None
-    name_de: Optional[str] = None
-    name_it: Optional[str] = None
-    name_rm: Optional[str] = None
-    name_en: Optional[str] = None
+    name_fr: str | None = None
+    name_de: str | None = None
+    name_it: str | None = None
+    name_rm: str | None = None
+    name_en: str | None = None
 
 
 class GeoSuggestionResponse(BaseModel):
@@ -81,7 +81,7 @@ class GeoSuggestionResponse(BaseModel):
 
     success: bool
     detail: str
-    data: List[GeoSuggestionOut]
+    data: list[GeoSuggestionOut]
 
 
 class GeoPointOut(BaseModel):
@@ -100,7 +100,7 @@ class GeoPointResponse(BaseModel):
 
     success: bool
     detail: str
-    data: Optional[GeoPointOut] = None
+    data: GeoPointOut | None = None
 
 
 class LocalizedPlaceNamesOut(BaseModel):
@@ -127,7 +127,7 @@ class PlaceOfInterestSuggestOut(BaseModel):
     name: str
     default_name: str
     names: LocalizedPlaceNamesOut
-    pos: Tuple[float, float] = Field(..., description="[lat, lon]")
+    pos: tuple[float, float] = Field(..., description="[lat, lon]")
 
 
 class PlaceOfInterestSuggestResponse(BaseModel):
@@ -137,4 +137,4 @@ class PlaceOfInterestSuggestResponse(BaseModel):
 
     success: bool
     detail: str
-    data: List[PlaceOfInterestSuggestOut]
+    data: list[PlaceOfInterestSuggestOut]

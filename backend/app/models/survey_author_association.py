@@ -1,5 +1,7 @@
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from survey_author import SurveyAuthor
+from survey_metadata import SurveyMetadata
 
 
 from .base import Base
