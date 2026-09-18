@@ -1,10 +1,9 @@
-from typing import Dict, List
-
-
-from app.repositories.pageAll_repo import ENTITY_CONFIG
-from app.schemas.pageAll import EntityEnum
 from sqlalchemy import and_, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.repositories.page_all_repo import ENTITY_CONFIG
+from backend.app.schemas.page_all import EntityEnum
 
 
 FORBIDDEN_UPDATE_FIELDS = {"uid", "id"}  # protège PK/identifiants a updater
@@ -14,8 +13,8 @@ async def update_rows(
     db: AsyncSession,
     *,
     entity: EntityEnum,
-    filters: List[tuple[str, object]],
-    updates: Dict[str, object],
+    filters: list[tuple[str, object]],
+    updates: dict[str, object],
 ) -> int:
     """
     Update des lignes ciblées par filters avec updates (field -> value).

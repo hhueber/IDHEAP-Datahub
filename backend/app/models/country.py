@@ -1,9 +1,5 @@
-from typing import List, Optional
-
-
 from geoalchemy2.types import Geometry
-from sqlalchemy import ForeignKey, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 
 from .base import Base

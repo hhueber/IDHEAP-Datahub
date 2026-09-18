@@ -1,4 +1,3 @@
-from typing import Dict, List
 import csv
 import io
 
@@ -15,7 +14,7 @@ def get_text(row, lang: str) -> str:
 
 async def export_csv_service(
     db: AsyncSession,
-    questions: List[ExportQuestion],
+    questions: list[ExportQuestion],
     lang: str,
 ) -> bytes:
 
@@ -95,7 +94,7 @@ async def export_csv_service(
     answers = res.mappings().all()
 
     # pivot: avoir une ligne par commune, une colonne par question + année
-    data: Dict[str, Dict[str, str]] = {}
+    data: dict[str, dict[str, str]] = {}
     columns_set = set()
 
     for row in answers:

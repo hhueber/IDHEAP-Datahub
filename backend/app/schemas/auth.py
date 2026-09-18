@@ -4,10 +4,7 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from typing import Optional
-
-
-from pydantic import BaseModel, constr, EmailStr
+from pydantic import BaseModel, EmailStr
 
 
 class Token(BaseModel):

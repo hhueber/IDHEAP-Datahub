@@ -1,17 +1,16 @@
-from typing import List
-
-
-from app.repositories.pageAll_repo import ENTITY_CONFIG  # on réutilise le mapping
-from app.schemas.pageAll import EntityEnum
 from sqlalchemy import and_, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.repositories.page_all_repo import ENTITY_CONFIG  # on réutilise le mapping
+from backend.app.schemas.page_all import EntityEnum
 
 
 async def delete_rows(
     db: AsyncSession,
     *,
     entity: EntityEnum,
-    filters: List[tuple[str, object]],
+    filters: list[tuple[str, object]],
 ) -> int:
     """
     Supprime des lignes dans la table de l'entité donnée,
@@ -46,8 +45,8 @@ async def clear_fields(
     db: AsyncSession,
     *,
     entity: EntityEnum,
-    filters: List[tuple[str, object]],
-    clear_fields: List[str],
+    filters: list[tuple[str, object]],
+    clear_fields: list[str],
 ) -> int:
     """
     Met à NULL une ou plusieurs colonnes sur les lignes ciblées par les filtres.

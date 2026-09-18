@@ -1,16 +1,18 @@
 from app.api.dependencies import get_current_user
 from app.db import get_db
-from app.repositories.pageShow_children_repo import enrich_children_display_names, get_children_paginated
-from app.repositories.pageShow_repo import get_by_uid
-from app.schemas.pageAll import EntityEnum, PageAllLangEnum
-from app.schemas.pageShow import ShowChildrenResponse, ShowInsightsResponse, ShowResponse
 from app.schemas.user import UserPublic
-from app.services.pageShow_insight_service import build_insights
-from app.services.pageShow_meta import get_meta_for_entity
-from app.services.pageShow_relation_display_service import enrich_show_relation_display_names
-from app.services.pageShow_service import serialize_columns
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.repositories.page_show_children_repo import enrich_children_display_names, get_children_paginated
+from backend.app.repositories.page_show_repo import get_by_uid
+from backend.app.schemas.page_all import EntityEnum, PageAllLangEnum
+from backend.app.schemas.page_show import ShowChildrenResponse, ShowInsightsResponse, ShowResponse
+from backend.app.services.page_show_insight_service import build_insights
+from backend.app.services.page_show_meta import get_meta_for_entity
+from backend.app.services.page_show_relation_display_service import enrich_show_relation_display_names
+from backend.app.services.page_show_service import serialize_columns
 
 
 router = APIRouter()
@@ -58,12 +60,22 @@ async def show_children(
         return {
             "success": True,
             "detail": "No children",
-            "data": {"items": [], "total": 0, "page": page, "per_page": per_page, "pages": 0},
+            "data": {
+                "items": [],
+                "total": 0,
+                "page": page,
+                "per_page": per_page,
+                "pages": 0,
+            },
         }
 
     child = next((c for c in meta.children if c.key == child_key), None)
     if not child:
-        return {"success": False, "detail": f"Unknown child_key: {child_key}", "data": None}
+        return {
+            "success": False,
+            "detail": f"Unknown child_key: {child_key}",
+            "data": None,
+        }
 
     child_entity = EntityEnum(child.entity)  # ex: "district"
     items, total = await get_children_paginated(
