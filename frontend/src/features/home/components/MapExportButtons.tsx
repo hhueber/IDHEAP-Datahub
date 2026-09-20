@@ -3,6 +3,7 @@ import { useState } from "react";
 import { jsPDF } from "jspdf";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
+import { SectionCard } from "@/utils/UI";
 
 // Déclenche un téléchargement à partir d’une DataURL (PNG ou autre)
 function downloadDataUrl(filename: string, dataUrl: string) {
@@ -44,7 +45,7 @@ export default function MapExportButtons() {
   const { t } = useTranslation();
   const [busy, setBusy] = useState<null | "png" | "pdf">(null);
 
-  const { primary, textColor, background, borderColor, hoverPrimary06, hoverText07 } = useTheme();
+  const { primary, background, borderColor, hoverPrimary06, hoverText07 } = useTheme();
 
   const filenamePrefix = t("export.filenamePrefix");
   const today = new Date().toISOString().slice(0, 10);
@@ -146,15 +147,7 @@ export default function MapExportButtons() {
   );
 
   return (
-    <section
-      id="export-selector"
-      className="rounded-2xl p-4 shadow-sm border"
-      style={{
-        backgroundColor: background,
-        borderColor: borderColor,
-        color: textColor,
-      }}>
-      <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>{t("export.title")}</h2>
+    <SectionCard id="export-selector" title={t("export.title")} cascadeTextColor>
       {/* Actions PNG / PDF */}
       <div className="flex flex-wrap gap-2">
         <button onClick={exportPNG} disabled={busy !== null} 
@@ -205,6 +198,6 @@ export default function MapExportButtons() {
       <div className="sr-only" aria-live="polite">
         {busy === "png" ? t("export.ariaExportPng") : busy === "pdf" ? t("export.ariaExportPdf") : ""}
       </div>
-    </section>
+    </SectionCard>
   );
 }

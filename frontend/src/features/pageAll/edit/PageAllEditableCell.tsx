@@ -4,6 +4,7 @@ import type {
   ColumnConfig,
 } from "@/features/pageAll/all_types";
 import type { PageAllLang } from "@/features/pageAll/pageAllLang";
+import { TruncatedCell } from "@/features/pageAll/TruncatedCell";
 import {
   getColumnEditKey,
   getColumnKind,
@@ -42,14 +43,11 @@ export default function PageAllEditableCell({
   if (!isEditing) {
     if (col.truncate && typeof content === "string") {
       return (
-        <span
+        <TruncatedCell
+          value={content}
           title={content}
-          className={`block overflow-hidden text-ellipsis whitespace-nowrap ${
-            col.maxWidthClassName ?? "max-w-[280px]"
-          }`}
-        >
-          {content}
-        </span>
+          className={col.maxWidthClassName ?? "max-w-[280px]"}
+        />
       );
     }
     return <>{content}</>;
