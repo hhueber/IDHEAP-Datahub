@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
+import { SectionCard } from "@/utils/UI";
 
 type Props = {
   allYears: number[];
@@ -150,13 +151,7 @@ export default function GlobalQuestionTimeline({
       }}
       aria-hidden={!visible}
     >
-      <div
-        className="relative rounded-2xl px-4 py-4"
-        style={{
-          backgroundColor: background,
-          border: `1px solid ${borderColor}`,
-        }}
-      >
+      <SectionCard as="div" shadow={false} className="relative">
         {sortedYears.length === 0 ? (
           <div
             className="rounded-xl px-3 py-3 text-sm"
@@ -399,7 +394,7 @@ export default function GlobalQuestionTimeline({
             }
           `}
         </style>
-      </div>
+      </SectionCard>
     </div>
   );
 }

@@ -4,6 +4,146 @@ import { useTheme } from "@/theme/useTheme";
 
 export type Kpi = { label: string; value: string; sub?: string };
 
+/** Bouton primaire (fond thème, hover:opacity-90). Étend les attributs natifs d'un <button>. */
+export function Button({
+  className = "",
+  style,
+  children,
+  ...rest
+}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const { primary, adaptiveTextColorPrimary } = useTheme();
+
+  return (
+    <button
+      {...rest}
+      className={["rounded-lg px-4 py-2 disabled:opacity-60 transition hover:opacity-90", className]
+        .filter(Boolean)
+        .join(" ")}
+      style={{
+        backgroundColor: primary,
+        color: adaptiveTextColorPrimary,
+        ...style,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Champ de formulaire texte (label + input, thème). Étend les attributs natifs d'un <input>. */
+export function TextField({
+  label,
+  className = "",
+  style,
+  ...rest
+}: { label: string } & React.InputHTMLAttributes<HTMLInputElement>) {
+  const { background, borderColor, textColor } = useTheme();
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <input
+        {...rest}
+        className={["w-full rounded-lg border px-3 py-2", className]
+          .filter(Boolean)
+          .join(" ")}
+        style={{
+          backgroundColor: background,
+          borderColor: borderColor,
+          color: textColor,
+          ...style,
+        }}
+      />
+    </div>
+  );
+}
+
+/** Bannière de message succès/erreur pour formulaires. Étend les attributs natifs d'un <div>. */
+export function FormMessage({
+  tone,
+  className = "",
+  children,
+  ...rest
+}: {
+  tone: "success" | "error";
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  const toneClass =
+    tone === "success"
+      ? "border-green-200 bg-green-50 text-green-700"
+      : "border-red-200 bg-red-50 text-red-700";
+
+  return (
+    <div
+      {...rest}
+      className={["rounded border px-3 py-2 text-sm", toneClass, className]
+        .filter(Boolean)
+        .join(" ")}
+    >
+      {children}
+    </div>
+  );
+}
+
+/** Carte de section thématique (fond opaque du thème, bordure, ombre légère, titre optionnel) */
+export function SectionCard({
+  id,
+  title,
+  titleClassName = "text-sm font-semibold mb-2",
+  compact = false,
+  cascadeTextColor = false,
+  shadow = true,
+  className,
+  as = "section",
+  children,
+}: {
+  id?: string;
+  title?: React.ReactNode;
+  titleClassName?: string;
+  /** Réduit le padding à p-3 au lieu de p-4 */
+  compact?: boolean;
+  /** Applique aussi la couleur de texte du thème sur le conteneur (cascade vers les enfants) */
+  cascadeTextColor?: boolean;
+  /** Affiche shadow-sm (défaut true) */
+  shadow?: boolean;
+  /** Classes additionnelles ajoutées aux classes de base */
+  className?: string;
+  /** Balise HTML rendue (défaut "section") */
+  as?: "section" | "div";
+  children: React.ReactNode;
+}) {
+  const { textColor, background, borderColor } = useTheme();
+  const Tag = as;
+
+  return (
+    <Tag
+      id={id}
+      className={[
+        "rounded-2xl",
+        shadow ? "shadow-sm" : "",
+        compact ? "p-3" : "p-4",
+        className ?? "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{
+        backgroundColor: background,
+        borderWidth: 1,
+        borderStyle: "solid",
+        borderColor: borderColor,
+        ...(cascadeTextColor ? { color: textColor } : null),
+      }}
+    >
+      {title && (
+        <h2 className={titleClassName} style={{ color: textColor }}>
+          {title}
+        </h2>
+      )}
+      {children}
+    </Tag>
+  );
+}
+
 export function Card({
   children,
   bg,
