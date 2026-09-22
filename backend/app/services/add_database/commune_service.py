@@ -201,7 +201,6 @@ def extract_geo_package(url: str, tempdir: str) -> str:
     Args:
         url (str): url to extract from
     """
-    print(f"url = {url}")
     zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=tempdir)
     response = requests.get(url)
     zip_file.write(response.content)
@@ -284,7 +283,6 @@ async def add_commune_geodata_for_year(
     db: AsyncSession, year: int, communes: List[Commune], districts: List[District], cantons: List[Canton]
 ):
     url = get_geodata_url_from_stac(year)
-    print(f"url = {url}")
     commune_map = {int(commune.code): commune for commune in communes}
     district_map = {district.code: district for district in districts}
     cantons_map = {canton.ofs_id: canton for canton in cantons}
@@ -370,6 +368,5 @@ async def add_commune_geodata_for_year(
                         district=district,
                     )
                     db.add(db_district_map)
-                    # print(f"Adding district {district.name}")
 
             await db.commit()
