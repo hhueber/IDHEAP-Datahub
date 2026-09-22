@@ -16,6 +16,7 @@ import type {
   DataImportWorkspaceUploadResponse,
   DataImportYearsResponse,
   DataImportCommitResponse,
+  RoleType,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function uploadDataImportFile(file: File) {
@@ -29,15 +30,13 @@ export async function uploadDataImportFile(file: File) {
   });
 }
 
-export async function analyzeDataImportFile(
-  importId: string
-) {
+export async function analyzeDataImportFile(importId: string) {
   return apiFetch<DataImportAnalyzeResponse>(
     `/data-import/${importId}/analyze`,
     {
       method: "POST",
       auth: true,
-    }
+    },
   );
 }
 
@@ -65,16 +64,14 @@ export async function fetchDataImportPreview(params: {
         issues_only: params.issuesOnly,
         search: params.search?.trim() || undefined,
         detected_type:
-          params.detectedType &&
-          params.detectedType !== "all"
+          params.detectedType && params.detectedType !== "all"
             ? params.detectedType
             : undefined,
         column_index: params.columnIndex ?? undefined,
-        sort_column_index:
-          params.sortColumnIndex ?? undefined,
+        sort_column_index: params.sortColumnIndex ?? undefined,
         sort_direction: params.sortDirection ?? "asc",
       },
-    }
+    },
   );
 }
 
@@ -94,7 +91,7 @@ export async function patchDataImportCell(params: {
         column_index: params.columnIndex,
         value: params.value,
       },
-    }
+    },
   );
 }
 
@@ -103,6 +100,7 @@ export async function patchDataImportColumn(params: {
   columnIndex: number;
   section?: ImportSection;
   detectedType?: DetectedType;
+  role?: RoleType;
   ignored?: boolean;
 }) {
   return apiFetch<DataImportPatchWithAnalysisResponse>(
@@ -114,9 +112,10 @@ export async function patchDataImportColumn(params: {
         column_index: params.columnIndex,
         section: params.section,
         detected_type: params.detectedType,
+        role: params.role,
         ignored: params.ignored,
       },
-    }
+    },
   );
 }
 
@@ -138,7 +137,7 @@ export async function patchDataImportColumnTransform(params: {
         search: params.search,
         replacement: params.replacement,
       },
-    }
+    },
   );
 }
 
@@ -149,15 +148,13 @@ export async function fetchDataImportJobs() {
   });
 }
 
-export async function fetchDataImportSummary(
-  importId: string
-) {
+export async function fetchDataImportSummary(importId: string) {
   return apiFetch<DataImportAnalyzeResponse>(
     `/data-import/${importId}/summary`,
     {
       method: "GET",
       auth: true,
-    }
+    },
   );
 }
 
@@ -180,20 +177,15 @@ export async function patchDataImportDisplayName(params: {
       body: {
         display_name: params.displayName,
       },
-    }
+    },
   );
 }
 
-export async function fetchDataImportIssues(
-  importId: string,
-) {
-  return apiFetch<DataImportIssuesResponse>(
-    `/data-import/${importId}/issues`,
-    {
-      method: "GET",
-      auth: true,
-    }
-  );
+export async function fetchDataImportIssues(importId: string) {
+  return apiFetch<DataImportIssuesResponse>(`/data-import/${importId}/issues`, {
+    method: "GET",
+    auth: true,
+  });
 }
 
 export async function confirmDataImportColumns(params: {
@@ -208,7 +200,7 @@ export async function confirmDataImportColumns(params: {
       body: {
         column_indexes: params.columnIndexes,
       },
-    }
+    },
   );
 }
 
@@ -224,17 +216,11 @@ export async function uploadDataImportFiles(params: {
   }
 
   if (params.displayName?.trim()) {
-    formData.append(
-      "display_name",
-      params.displayName.trim()
-    );
+    formData.append("display_name", params.displayName.trim());
   }
 
   for (const year of params.years) {
-    formData.append(
-      "years",
-      String(year)
-    );
+    formData.append("years", String(year));
   }
 
   return apiFetch<DataImportWorkspaceUploadResponse>(
@@ -243,7 +229,7 @@ export async function uploadDataImportFiles(params: {
       method: "POST",
       auth: true,
       body: formData,
-    }
+    },
   );
 }
 
@@ -263,19 +249,17 @@ export async function addDataImportFiles(params: {
       method: "POST",
       auth: true,
       body: formData,
-    }
+    },
   );
 }
 
-export async function fetchDataImportResources(
-  importId: string
-) {
+export async function fetchDataImportResources(importId: string) {
   return apiFetch<DataImportResourcesResponse>(
     `/data-import/${importId}/files`,
     {
       method: "GET",
       auth: true,
-    }
+    },
   );
 }
 
@@ -291,7 +275,7 @@ export async function selectDataImportResource(params: {
       body: {
         resource_id: params.resourceId,
       },
-    }
+    },
   );
 }
 
@@ -307,18 +291,13 @@ export async function patchDataImportYears(params: {
       body: {
         years: params.years,
       },
-    }
+    },
   );
 }
 
-export async function commitDataImport(
-  importId: string
-) {
-  return apiFetch<DataImportCommitResponse>(
-    `/data-import/${importId}/commit`,
-    {
-      method: "POST",
-      auth: true,
-    }
-  );
+export async function commitDataImport(importId: string) {
+  return apiFetch<DataImportCommitResponse>(`/data-import/${importId}/commit`, {
+    method: "POST",
+    auth: true,
+  });
 }
