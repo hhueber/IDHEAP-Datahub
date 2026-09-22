@@ -48,7 +48,7 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
         result = await db.execute(select(Survey).filter_by(year=year, name="hab" + str(year)))
         db_survey = result.scalar_one_or_none()
         if not db_survey:
-            db_survey = Survey(name=survey_name, year=year)
+            db_survey = Survey(name=survey_name + str(year), year=year)
             db.add(db_survey)
             await db.flush()
 
@@ -114,7 +114,7 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
             if not commune_uid:
                 continue
 
-            for col_name in question_columns:
+            for answer_columns in question_columns:
                 val = row.get(col_name)
                 if pd.isna(val) or str(val).strip() == "":
                     continue

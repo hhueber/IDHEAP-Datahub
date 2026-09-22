@@ -13,6 +13,7 @@ from app.models.district import District
 from app.models.district_map import DistrictMap
 from geoalchemy2.shape import from_shape
 from pyproj import Transformer
+from pystac_client import Client
 from shapely.geometry import shape
 from shapely.ops import transform
 from sqlalchemy import select
@@ -200,6 +201,7 @@ def extract_geo_package(url: str, tempdir: str) -> str:
     Args:
         url (str): url to extract from
     """
+    print(f"url = {url}")
     zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=tempdir)
     response = requests.get(url)
     zip_file.write(response.content)
@@ -211,13 +213,38 @@ def extract_geo_package(url: str, tempdir: str) -> str:
     return url
 
 
-def get_geodata_url(year: int) -> str:
-    if year < 2016:
-        url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
-    else:
-        url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
+def get_geodata_url_from_stac(year: int) -> str:
+    url = "https://data.geo.admin.ch/api/stac/v1/"
+    catalog = Client.open(url)
 
-    return url
+    collection_id = (
+        "ch.bfs.historisierte-administrative_grenzen_g1" if year < 2016 else "ch.swisstopo.swissboundaries3d"
+    )
+
+    search = catalog.search(collections=[collection_id], max_items=1000)
+
+    year_to_asset = {}
+
+    for item in search.items():
+        dt_str = item.properties.get("datetime")
+        if dt_str:
+            item_year = int(dt_str[:4])  # year extraction
+
+            for _, asset in item.assets.items():
+                if asset.href.endswith((".gpkg", ".zip")):
+                    year_to_asset[item_year] = asset.href
+                    break
+
+    if not year_to_asset:
+        raise ValueError(f"Aucune géodonnée trouvée dans la collection {collection_id}")
+
+    if year in year_to_asset:
+        return year_to_asset[year]
+
+    closest_year = min(year_to_asset.keys(), key=lambda y: abs(y - year))
+    print(f"Année {year} non trouvée. Utilisation de l'année la plus proche : {closest_year}")
+
+    return year_to_asset[closest_year]
 
 
 async def get_closest_year(db: AsyncSession, target_year: int):
@@ -256,14 +283,15 @@ async def get_commune_mapping_year(db: AsyncSession, year: int):
 async def add_commune_geodata_for_year(
     db: AsyncSession, year: int, communes: List[Commune], districts: List[District], cantons: List[Canton]
 ):
-    url = get_geodata_url(year)
-
+    url = get_geodata_url_from_stac(year)
+    print(f"url = {url}")
     commune_map = {int(commune.code): commune for commune in communes}
     district_map = {district.code: district for district in districts}
     cantons_map = {canton.ofs_id: canton for canton in cantons}
 
     if year < 2016:
-        url = extract_geo_package(url, ".")
+        pass
+        # url = extract_geo_package(url, ".")
 
     layers = fiona.listlayers(url)
 
