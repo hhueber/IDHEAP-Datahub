@@ -13,6 +13,7 @@ from app.models.district import District
 from app.models.district_map import DistrictMap
 from geoalchemy2.shape import from_shape
 from pyproj import Transformer
+from pystac_client import Client
 from shapely.geometry import shape
 from shapely.ops import transform
 from sqlalchemy import select
@@ -211,13 +212,38 @@ def extract_geo_package(url: str, tempdir: str) -> str:
     return url
 
 
-def get_geodata_url(year: int) -> str:
-    if year < 2016:
-        url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
-    else:
-        url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
+def get_geodata_url_from_stac(year: int) -> str:
+    url = "https://data.geo.admin.ch/api/stac/v1/"
+    catalog = Client.open(url)
 
-    return url
+    collection_id = (
+        "ch.bfs.historisierte-administrative_grenzen_g1" if year < 2016 else "ch.swisstopo.swissboundaries3d"
+    )
+
+    search = catalog.search(collections=[collection_id], max_items=1000)
+
+    year_to_asset = {}
+
+    for item in search.items():
+        dt_str = item.properties.get("datetime")
+        if dt_str:
+            item_year = int(dt_str[:4])  # year extraction
+
+            for _, asset in item.assets.items():
+                if asset.href.endswith((".gpkg", ".zip")):
+                    year_to_asset[item_year] = asset.href
+                    break
+
+    if not year_to_asset:
+        raise ValueError(f"Aucune géodonnée trouvée dans la collection {collection_id}")
+
+    if year in year_to_asset:
+        return year_to_asset[year]
+
+    closest_year = min(year_to_asset.keys(), key=lambda y: abs(y - year))
+    print(f"Année {year} non trouvée. Utilisation de l'année la plus proche : {closest_year}")
+
+    return year_to_asset[closest_year]
 
 
 async def get_closest_year(db: AsyncSession, target_year: int):
@@ -233,15 +259,13 @@ async def get_closest_year(db: AsyncSession, target_year: int):
 
 
 async def get_commune_mapping_year(db: AsyncSession, year: int):
-    target_year = 1989 if year == 1988 else year
-
-    year_existing_req = select(CommuneMap.year == target_year).limit(1)
+    year_existing_req = select(CommuneMap).filter(CommuneMap.year == year).limit(1)
     year_existing_result = await db.execute(year_existing_req)
 
     if year_existing_result.scalar_one_or_none() is None:
-        query_year = await get_closest_year(db, target_year)
+        query_year = await get_closest_year(db, year)
     else:
-        query_year = target_year
+        query_year = year
 
     query = (
         select(Commune.uid, Commune.code)
@@ -256,14 +280,10 @@ async def get_commune_mapping_year(db: AsyncSession, year: int):
 async def add_commune_geodata_for_year(
     db: AsyncSession, year: int, communes: List[Commune], districts: List[District], cantons: List[Canton]
 ):
-    url = get_geodata_url(year)
-
+    url = get_geodata_url_from_stac(year)
     commune_map = {int(commune.code): commune for commune in communes}
     district_map = {district.code: district for district in districts}
     cantons_map = {canton.ofs_id: canton for canton in cantons}
-
-    if year < 2016:
-        url = extract_geo_package(url, ".")
 
     layers = fiona.listlayers(url)
 
@@ -273,19 +293,19 @@ async def add_commune_geodata_for_year(
     for layer in layers:
 
         with fiona.open(url, layer=layer) as src:
-            if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
+            if "TLM_HOHEITSGEBIET" in layer or "Communes" in layer:
                 for feature in src:
                     props = feature.get("properties")
+
                     if year < 2016:
                         if props.get("GDENR") == 253 or props.get("GARTE") != 11 or props.get("CODE_ISO") != "CH":
                             continue
-
                         bfs_number = props.get("GDENR")
                     else:
-                        if props.get("objektart") != "Gemeindegebiet" or props.get("icc") != "CH":
+                        if props.get("OBJEKTART") != 0 or props.get("ICC") != "CH":
                             continue
 
-                        bfs_number = props.get("bfs_nummer")
+                        bfs_number = props.get("BFS_NUMMER")
 
                     commune = commune_map.get(bfs_number)
                     multi = shape(feature["geometry"])
@@ -297,17 +317,18 @@ async def add_commune_geodata_for_year(
                         geo_data_type=feature["geometry"]["type"],
                         geometry=from_shape(multi, srid=4326),
                     )
+
                     db.add(db_commune_map)
 
                 await db.commit()
 
-            if "kanton" in layer or "Canton" in layer:
+            if "KANTON" in layer or "Canton" in layer:
                 for feature in src:
                     props = feature["properties"]
                     if year < 2016:
                         bfs_number = props.get("KTNR")
                     else:
-                        bfs_number = props.get("kantonsnummer")
+                        bfs_number = props.get("KANTONSNUMMER")
 
                     canton = cantons_map.get(bfs_number)
                     multi = shape(feature["geometry"])
@@ -323,13 +344,13 @@ async def add_commune_geodata_for_year(
 
                 await db.commit()
 
-            if "bezirk" in layer or "District" in layer:
+            if "BEZIRK" in layer or "District" in layer:
                 for feature in src:
                     props = feature["properties"]
                     if year < 2016:
                         bfs_number = props.get("BEZNR")
                     else:
-                        bfs_number = props.get("bezirksnummer")
+                        bfs_number = props.get("BEZIRKSNUMMER")
 
                     district = district_map.get("B" + str(bfs_number))
                     multi = shape(feature["geometry"])
@@ -342,6 +363,5 @@ async def add_commune_geodata_for_year(
                         district=district,
                     )
                     db.add(db_district_map)
-                    # print(f"Adding district {district.name}")
 
             await db.commit()
