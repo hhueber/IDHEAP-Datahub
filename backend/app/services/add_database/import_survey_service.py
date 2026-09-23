@@ -43,9 +43,8 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
         raise ValueError("Cannot find name or survey year")
 
     await add_update_geo_data(db, years)
-
     for year in years:
-        result = await db.execute(select(Survey).filter_by(year=year, name="hab" + str(year)))
+        result = await db.execute(select(Survey).filter_by(year=year, name=survey_name))
         db_survey = result.scalar_one_or_none()
         if not db_survey:
             db_survey = Survey(name=survey_name + str(year), year=year)
@@ -76,18 +75,18 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
                 "Cannot find the municipalities column"
             )  # TODO: Pouvoir mieux gerer les erreurs afin de les envoyer a l'utilisateur
 
-        result = await db.execute(select(QuestionPerSurvey))
+        result = await db.execute(select(QuestionPerSurvey).filter_by(survey_uid=db_survey.uid))
         questions = result.scalars().all()
-
         question_mapping_insert = {}
         for question in questions:
-            question_mapping_insert.setdefault(question.code, question)
+            question_mapping_insert.setdefault((question.code, db_survey.uid), question)
 
         for _, row in df.iterrows():
             if row[question_role_map["code"]] != "":
                 if int(row[question_role_map["year"]]) != int(db_survey.year):
                     continue
-                if row[question_role_map["code"]] not in question_mapping_insert:
+                key = (row[question_role_map["code"]], db_survey.uid)
+                if key not in question_mapping_insert:
                     db_question_per_survey = QuestionPerSurvey(
                         code=row[question_role_map["code"]], label=row[question_role_map["label"]], survey=db_survey
                     )
@@ -113,9 +112,17 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
             if not commune_uid:
                 continue
 
-            for answer_columns in question_columns:
+            row_year = str(row[question_role_map["year"]]).strip()
+            if row_year != "" and int(row_year) != db_survey.year:
+                continue
+
+            for col_name in answer_columns:
                 val = row.get(col_name)
                 if pd.isna(val) or str(val).strip() == "":
+                    continue
+
+                question = question_mapping_insert[col_name]
+                if question is None or question.survey_uid != db_survey.uid:
                     continue
 
                 answer_to_insert.append(
