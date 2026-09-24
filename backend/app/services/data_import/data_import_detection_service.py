@@ -185,6 +185,7 @@ def analyze_columns(df: pd.DataFrame) -> list[dict[str, Any]]:
                 "normalized_name": normalize_name(str(column_name)),
                 "section": section_result.section.value,
                 "section_confidence": section_result.confidence,
+                "role": None,  # TODO : Add NLP to avoid unecessary work for the moment
                 "section_source": section_result.source,
                 "section_reason": section_result.reason,
                 "section_needs_user_confirmation": section_result.needs_user_confirmation,

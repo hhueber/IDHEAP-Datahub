@@ -5,7 +5,7 @@ from typing import Any
 import uuid
 
 
-from app.schemas.data_import import ImportOrientationEnum, ImportSectionEnum
+from app.schemas.data_import import ImportOrientationEnum, ImportRoleEnum, ImportSectionEnum
 from app.services.data_import.data_import_column_profile_service import (
     columns_have_valid_profiles,
     enrich_columns_with_profiles,
