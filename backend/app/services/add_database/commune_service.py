@@ -11,6 +11,8 @@ from app.models.commune import Commune
 from app.models.commune_map import CommuneMap
 from app.models.district import District
 from app.models.district_map import DistrictMap
+from app.models.lake import Lake
+from app.models.lake_map import LakeMap
 from geoalchemy2.shape import from_shape
 from pyproj import Transformer
 from pystac_client import Client
@@ -216,9 +218,7 @@ def get_geodata_url_from_stac(year: int) -> str:
     url = "https://data.geo.admin.ch/api/stac/v1/"
     catalog = Client.open(url)
 
-    collection_id = (
-        "ch.bfs.historisierte-administrative_grenzen_g1" if year < 2016 else "ch.swisstopo.swissboundaries3d"
-    )
+    collection_id = "ch.bfs.historisierte-administrative_grenzen_g1"
 
     search = catalog.search(collections=[collection_id], max_items=1000)
 
@@ -277,6 +277,12 @@ async def get_commune_mapping_year(db: AsyncSession, year: int):
     return {row.code: row.uid for row in result.all()}
 
 
+def to_2d(geometry):
+    multi = shape(geometry)
+    multi = transform(lambda x, y, z=None: (x, y), multi)
+    return transform(transformer.transform, multi)
+
+
 async def add_commune_geodata_for_year(
     db: AsyncSession, year: int, communes: List[Commune], districts: List[District], cantons: List[Canton]
 ):
@@ -286,31 +292,23 @@ async def add_commune_geodata_for_year(
     cantons_map = {canton.ofs_id: canton for canton in cantons}
 
     layers = fiona.listlayers(url)
-
-    if year < 2016:
-        layers.reverse()
+    layers.reverse()
 
     for layer in layers:
 
         with fiona.open(url, layer=layer) as src:
-            if "TLM_HOHEITSGEBIET" in layer or "Communes" in layer:
+            if "Communes" in layer:
                 for feature in src:
                     props = feature.get("properties")
 
-                    if year < 2016:
-                        if props.get("GDENR") == 253 or props.get("GARTE") != 11 or props.get("CODE_ISO") != "CH":
-                            continue
-                        bfs_number = props.get("GDENR")
-                    else:
-                        if props.get("OBJEKTART") != 0 or props.get("ICC") != "CH":
-                            continue
-
-                        bfs_number = props.get("BFS_NUMMER")
+                    if props.get("GDENR") == 253 or props.get("GARTE") != 11 or props.get("CODE_ISO") != "CH":
+                        continue
+                    bfs_number = props.get("GDENR")
 
                     commune = commune_map.get(bfs_number)
-                    multi = shape(feature["geometry"])
-                    multi = transform(lambda x, y, z=None: (x, y), multi)
-                    multi = transform(transformer.transform, multi)
+
+                    multi = to_2d(feature["geometry"])
+
                     db_commune_map = CommuneMap(
                         year=year,
                         commune=commune,
@@ -322,18 +320,15 @@ async def add_commune_geodata_for_year(
 
                 await db.commit()
 
-            if "KANTON" in layer or "Canton" in layer:
+            if "Canton" in layer:
                 for feature in src:
                     props = feature["properties"]
-                    if year < 2016:
-                        bfs_number = props.get("KTNR")
-                    else:
-                        bfs_number = props.get("KANTONSNUMMER")
+                    bfs_number = props.get("KTNR")
 
                     canton = cantons_map.get(bfs_number)
-                    multi = shape(feature["geometry"])
-                    multi = transform(lambda x, y, z=None: (x, y), multi)
-                    multi = transform(transformer.transform, multi)
+
+                    multi = to_2d(feature["geometry"])
+
                     db_canton_map = CantonMap(
                         year=year,
                         geo_data_type=feature["geometry"]["type"],
@@ -344,18 +339,16 @@ async def add_commune_geodata_for_year(
 
                 await db.commit()
 
-            if "BEZIRK" in layer or "District" in layer:
+            if "District" in layer:
                 for feature in src:
                     props = feature["properties"]
-                    if year < 2016:
-                        bfs_number = props.get("BEZNR")
-                    else:
-                        bfs_number = props.get("BEZIRKSNUMMER")
+
+                    bfs_number = props.get("BEZNR")
 
                     district = district_map.get("B" + str(bfs_number))
-                    multi = shape(feature["geometry"])
-                    multi = transform(lambda x, y, z=None: (x, y), multi)
-                    multi = transform(transformer.transform, multi)
+
+                    multi = to_2d(feature["geometry"])
+
                     db_district_map = DistrictMap(
                         year=year,
                         geometry=from_shape(multi, srid=4326),
@@ -363,5 +356,27 @@ async def add_commune_geodata_for_year(
                         district=district,
                     )
                     db.add(db_district_map)
+
+            if "Lac" in layer:
+                for feature in src:
+
+                    result = await db.execute(select(Lake).filter_by(code=str(feature["properties"]["SEENR"])))
+                    db_lake = result.scalar_one_or_none()
+                    if db_lake is None:
+                        db_lake = Lake(code=str(feature["properties"]["SEENR"]), name=feature["properties"]["SEENAME"])
+                        db.add(db_lake)
+                        await db.flush()
+
+                    multi = to_2d(feature["geometry"])
+
+                    db_lake_map = LakeMap(
+                        year=year,
+                        geometry=from_shape(multi, srid=4326),
+                        geo_data_type=feature["geometry"]["type"],
+                        lake=db_lake,
+                    )
+                    db.add(db_lake_map)
+
+                await db.commit()
 
             await db.commit()
