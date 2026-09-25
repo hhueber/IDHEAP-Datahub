@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
+import { Button, SectionCard } from "@/utils/UI";
 import type { DataImportAnalyzeResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
 
 type DataImportAnalysisPanelProps = {
@@ -24,10 +25,7 @@ export function DataImportAnalysisPanel({
   const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
 
   return (
-    <section
-      className="rounded-3xl border p-4 sm:p-5"
-      style={{ backgroundColor: background, borderColor, color: textColor }}
-    >
+    <SectionCard radius="3xl" shadow={false} cascadeTextColor className="sm:p-5">
       <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="text-lg font-semibold">
@@ -39,11 +37,13 @@ export function DataImportAnalysisPanel({
           </p>
         </div>
 
-        <button
+        <Button
+          variant="outline"
+          size="md"
           type="button"
           disabled={loading}
           onClick={() => void onToggleIssuesOnly()}
-          className="w-fit rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
+          className="w-fit"
           style={{
             borderColor: issuesOnly ? primary : borderColor,
             backgroundColor: issuesOnly ? hoverPrimary04 : background,
@@ -53,7 +53,7 @@ export function DataImportAnalysisPanel({
           {issuesOnly
             ? t("dataImport.actions.showAllRows")
             : t("dataImport.actions.showIssuesOnly")}
-        </button>
+        </Button>
       </div>
 
       <div className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
@@ -120,7 +120,7 @@ export function DataImportAnalysisPanel({
           );
         })}
       </div>
-    </section>
+    </SectionCard>
   );
 }
 

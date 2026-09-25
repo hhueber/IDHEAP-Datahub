@@ -1,5 +1,6 @@
 import React from "react";
 import { ThemeConfigDto } from "@/services/config";
+import { SectionCard } from "@/utils/UI";
 
 export type Preset = {
   name: string;
@@ -25,11 +26,14 @@ export function PresetsSection({
   onApplyPreset,
 }: PresetsSectionProps) {
   return (
-    <div
-      className="mb-6 rounded-xl border p-4 md:p-5 space-y-3"
-      style={{ backgroundColor: cardBg, borderColor: cardBorder }}
+    <SectionCard
+      as="div"
+      radius="xl"
+      shadow={false}
+      title={title}
+      titleClassName="text-lg font-semibold"
+      className="mb-6 md:p-5 space-y-3"
     >
-      <h2 className="text-lg font-semibold">{title}</h2>
       <p className="text-xs opacity-80 mb-2">{helpText}</p>
       <div className="flex flex-wrap gap-2">
         {presets.map((p) => (
@@ -44,6 +48,6 @@ export function PresetsSection({
           </button>
         ))}
       </div>
-    </div>
+    </SectionCard>
   );
 }

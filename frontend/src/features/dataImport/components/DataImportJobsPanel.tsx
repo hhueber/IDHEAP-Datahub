@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
+import { Button, SectionCard } from "@/utils/UI";
 import type { DataImportJobSummary } from "@/features/dataImport/dataImportTypes";
 
 type DataImportJobsPanelProps = {
@@ -21,17 +22,14 @@ export function DataImportJobsPanel({
   onDelete,
 }: DataImportJobsPanelProps) {
   const { t } = useTranslation();
-  const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
+  const { background, borderColor, hoverPrimary04, primary } = useTheme();
 
   if (jobs.length === 0) {
     return null;
   }
 
   return (
-    <section
-      className="rounded-3xl border p-4 sm:p-5"
-      style={{ backgroundColor: background, borderColor, color: textColor }}
-    >
+    <SectionCard radius="3xl" shadow={false} cascadeTextColor className="sm:p-5">
       <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="font-semibold">{t("dataImport.jobs.title")}</h2>
@@ -40,15 +38,17 @@ export function DataImportJobsPanel({
           </p>
         </div>
 
-        <button
+        <Button
+          variant="outline"
+          size="md"
           type="button"
           disabled={loading}
           onClick={() => void onRefresh()}
-          className="w-fit rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
-          style={{ borderColor, backgroundColor: hoverPrimary04 }}
+          className="w-fit"
+          style={{ backgroundColor: hoverPrimary04 }}
         >
           {t("common.refresh")}
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-3 lg:grid-cols-2">
@@ -103,15 +103,15 @@ export function DataImportJobsPanel({
                 </div>
 
                 <div className="flex shrink-0 gap-2">
-                  <button
+                  <Button
+                    variant="outline"
+                    size="sm"
                     type="button"
                     disabled={loading}
                     onClick={() => void onResume(job)}
-                    className="rounded-xl border px-3 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
-                    style={{ borderColor }}
                   >
                     {t("dataImport.jobs.resume")}
-                  </button>
+                  </Button>
 
                   <button
                     type="button"
@@ -127,6 +127,6 @@ export function DataImportJobsPanel({
           );
         })}
       </div>
-    </section>
+    </SectionCard>
   );
 }

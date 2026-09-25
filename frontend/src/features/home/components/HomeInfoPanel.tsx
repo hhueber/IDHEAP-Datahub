@@ -225,16 +225,7 @@ export default function HomeInfoPanel({
       {/* Carte questions */}
       <SectionCard title={t("home.sectionQuestions")} titleClassName="text-sm font-semibold mb-3">
         <div className="space-y-4">
-          <div
-            id="question-selector"
-            className="rounded-2xl border p-3"
-            style={{
-              backgroundColor: background,
-              borderColor,
-              borderWidth: 1,
-              borderStyle: "solid",
-            }}
-          >
+          <SectionCard id="question-selector" as="div" compact shadow={false}>
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold" style={{ color: textColor }}>
@@ -318,7 +309,7 @@ export default function HomeInfoPanel({
                 </>
               )}
             </div>
-          </div>
+          </SectionCard>
 
           <QuestionCollectionsPanel
             saved={saved}

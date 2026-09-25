@@ -4,7 +4,7 @@ import { deleteMember } from "@/services/admin";
 import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
-import { Button, TextField, FormMessage } from "@/utils/UI";
+import { Button, TextField, SelectField, FormMessage } from "@/utils/UI";
 import type { Role } from "@/config/roles";
 import { useTheme } from "@/theme/useTheme";
 
@@ -21,7 +21,7 @@ export default function DeleteMemberPage() {
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
 
-  const { textColor, background, borderColor, primary } = useTheme();
+  const { textColor, background, primary } = useTheme();
 
   // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -101,16 +101,9 @@ export default function DeleteMemberPage() {
           required
         />
         {/* Rôle (double check côté serveur) */}
-        <div><label className="block text-sm font-medium mb-1">{t("admin.deleteMember.roleLabel")}</label>
-          <select name="role" value={form.role} onChange={onChange} className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              color: textColor,
-              borderColor: borderColor,
-            }}>
-            <option value="MEMBER">{t("admin.deleteMember.roles.member")}</option><option value="ADMIN">{t("admin.deleteMember.roles.admin")}</option>
-          </select>
-        </div>
+        <SelectField label={t("admin.deleteMember.roleLabel")} name="role" value={form.role} onChange={onChange}>
+          <option value="MEMBER">{t("admin.deleteMember.roles.member")}</option><option value="ADMIN">{t("admin.deleteMember.roles.admin")}</option>
+        </SelectField>
         {/* Messages */}
         {msgKey && <FormMessage tone="success">{t(msgKey)}</FormMessage>}
         {errKey && <FormMessage tone="error">{t(errKey)}</FormMessage>}

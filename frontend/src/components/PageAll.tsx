@@ -17,6 +17,7 @@ import { SearchBar } from "@/utils/SearchBar";
 import type { FindPageResponse } from "@/features/pageAll/all_types";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
+import { Button, StatusMessage } from "@/utils/UI";
 import { useTheme } from "@/theme/useTheme";
 import { useNavigate } from "react-router-dom";
 import { getPageAllLang } from "@/features/pageAll/pageAllLang";
@@ -305,21 +306,21 @@ export default function PageAll({
           </div>
         )}
         {error && (
-          <div className="text-sm text-red-500 mb-2">
+          <StatusMessage tone="error" className="mb-2">
             {t("dashboardSidebar.pageAll.error")} {error}
-          </div>
+          </StatusMessage>
         )}
         {deleteError && (
-          <div className="text-sm text-red-500 mb-2">
+          <StatusMessage tone="error" className="mb-2">
             {t("dashboardSidebar.pageAll.deleteError")}{" "}
             {deleteError}
-          </div>
+          </StatusMessage>
         )}
         {inlineEdit.error && (
-          <div className="text-sm text-red-500 mb-2">
+          <StatusMessage tone="error" className="mb-2">
             {t("dashboardSidebar.pageAll.editError")}{" "}
             {inlineEdit.error}
-          </div>
+          </StatusMessage>
         )}
 
         {/* table avec scroll horizontal si besoin */}
@@ -440,20 +441,9 @@ export default function PageAll({
                         <td className="border-b px-3 py-2 whitespace-nowrap" style={{ borderColor }}>
                           <div className="flex flex-wrap gap-1">
                             {actions?.show && (
-                              <button
+                              <Button
+                                variant="secondaryCompact"
                                 type="button"
-                                className={`
-                                  px-2 py-1 text-xs rounded border
-                                  hover:[background-color:var(--pageall-btn-hover-bg)]
-                                `}
-                                style={
-                                  {
-                                    backgroundColor: background,
-                                    borderColor,
-                                    color: textColor,
-                                    "--pageall-btn-hover-bg": hoverPrimary04,
-                                  } as React.CSSProperties
-                                }
                                 onClick={() => {
                                   if (inlineEdit.isEditingRow(row)) {
                                     inlineEdit.cancelEditing();
@@ -463,28 +453,17 @@ export default function PageAll({
                                 }}
                               >
                                 {t("dashboardSidebar.pageAll.show")}
-                              </button>
+                              </Button>
                             )}
                             {actions?.edit && (
-                              <button
+                              <Button
+                                variant="secondaryCompact"
                                 type="button"
                                 disabled={
                                   inlineEdit.isEditingRow(row) &&
                                   (!inlineEdit.hasChanges(row) || inlineEdit.loading)
                                 }
-                                className={`
-                                  px-2 py-1 text-xs rounded border
-                                  hover:[background-color:var(--pageall-btn-hover-bg)]
-                                  disabled:opacity-60
-                                `}
-                                style={
-                                  {
-                                    backgroundColor: background,
-                                    borderColor,
-                                    color: textColor,
-                                    "--pageall-btn-hover-bg": hoverPrimary04,
-                                  } as React.CSSProperties
-                                }
+                                className="disabled:opacity-60"
                                 onClick={() => {
                                   if (inlineEdit.isEditingRow(row)) {
                                     setEditConfirmTarget(row);
@@ -499,7 +478,7 @@ export default function PageAll({
                                     ? t("dashboardSidebar.pageAll.saving")
                                     : t("dashboardSidebar.pageAll.save")
                                   : t("dashboardSidebar.pageAll.edit")}
-                              </button>
+                              </Button>
                             )}
                             {actions?.delete && (
                               <button

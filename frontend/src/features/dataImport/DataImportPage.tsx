@@ -5,6 +5,7 @@ import { useTheme } from "@/theme/useTheme";
 import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
 import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
+import { SectionCard } from "@/utils/UI";
 import { DataImportPreviewTable } from "@/features/dataImport/components/DataImportPreviewTable";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
 import { DataImportAnalysisPanel } from "@/features/dataImport/components/DataImportAnalysisPanel";
@@ -330,12 +331,9 @@ export default function DataImportPage() {
       )}
 
       {showDropzone && (
-        <section
-          className="rounded-3xl border p-4 sm:p-6"
-          style={{ backgroundColor: background, borderColor }}
-        >
+        <SectionCard radius="3xl" shadow={false} className="sm:p-6">
           <DataImportDropzone disabled={loading} onFileSelected={handleFileSelected} />
-        </section>
+        </SectionCard>
       )}
 
       {showJobs && (

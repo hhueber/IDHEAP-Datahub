@@ -1,27 +1,87 @@
+
 import React from "react";
 import { hexToRgba } from "@/utils/color";
 import { useTheme } from "@/theme/useTheme";
 
 export type Kpi = { label: string; value: string; sub?: string };
 
-/** Bouton primaire (fond thème, hover:opacity-90). Étend les attributs natifs d'un <button>. */
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "secondaryCompact"
+  | "outline"
+  | "outlineCompact";
+export type ButtonSize = "sm" | "md";
+
+export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  variant?: ButtonVariant;
+  /** Uniquement pour variant="outline" (défaut "md") */
+  size?: ButtonSize;
+};
+
+const BUTTON_CLASSES: Record<Exclude<ButtonVariant, "outline">, string> = {
+  primary: "rounded-lg px-4 py-2 disabled:opacity-60 transition hover:opacity-90",
+  secondary:
+    "px-3 py-2 rounded-lg border text-sm transition hover:[background-color:var(--button-hover-bg)]",
+  secondaryCompact:
+    "px-2 py-1 text-xs rounded border hover:[background-color:var(--button-hover-bg)]",
+  outlineCompact:
+    "inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90",
+};
+
+const OUTLINE_CLASSES: Record<ButtonSize, string> = {
+  sm: "rounded-xl border px-3 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40",
+  md: "rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40",
+};
+
+/** Bouton d'action (primary par défaut : fond thème, hover:opacity-90). Étend les attributs natifs d'un <button>. */
 export function Button({
+  variant = "primary",
+  size = "md",
   className = "",
   style,
   children,
   ...rest
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
-  const { primary, adaptiveTextColorPrimary } = useTheme();
+}: ButtonProps) {
+  const {
+    primary,
+    adaptiveTextColorPrimary,
+    background,
+    borderColor,
+    textColor,
+    hoverPrimary06,
+    hoverPrimary04,
+  } = useTheme();
+
+  const variantClass = variant === "outline" ? OUTLINE_CLASSES[size] : BUTTON_CLASSES[variant];
+
+  const variantStyle: React.CSSProperties =
+    variant === "secondary"
+      ? ({
+          backgroundColor: background,
+          borderColor,
+          color: textColor,
+          "--button-hover-bg": hoverPrimary06,
+        } as React.CSSProperties)
+      : variant === "secondaryCompact"
+        ? ({
+            backgroundColor: background,
+            borderColor,
+            color: textColor,
+            "--button-hover-bg": hoverPrimary04,
+          } as React.CSSProperties)
+        : variant === "outline"
+          ? { borderColor }
+          : variant === "outlineCompact"
+            ? { borderColor, color: textColor }
+            : { backgroundColor: primary, color: adaptiveTextColorPrimary };
 
   return (
     <button
       {...rest}
-      className={["rounded-lg px-4 py-2 disabled:opacity-60 transition hover:opacity-90", className]
-        .filter(Boolean)
-        .join(" ")}
+      className={[variantClass, className].filter(Boolean).join(" ")}
       style={{
-        backgroundColor: primary,
-        color: adaptiveTextColorPrimary,
+        ...variantStyle,
         ...style,
       }}
     >
@@ -58,6 +118,130 @@ export function TextField({
   );
 }
 
+/** Champ de formulaire liste déroulante (label + select, thème). Étend les attributs natifs d'un <select>. */
+export function SelectField({
+  label,
+  className = "",
+  style,
+  children,
+  ...rest
+}: {
+  label: string;
+  children: React.ReactNode;
+} & React.SelectHTMLAttributes<HTMLSelectElement>) {
+  const { background, borderColor, textColor } = useTheme();
+
+  return (
+    <div>
+      <label className="block text-sm font-medium mb-1">{label}</label>
+      <select
+        {...rest}
+        className={["w-full rounded-lg border px-3 py-2", className]
+          .filter(Boolean)
+          .join(" ")}
+        style={{
+          backgroundColor: background,
+          borderColor: borderColor,
+          color: textColor,
+          ...style,
+        }}
+      >
+        {children}
+      </select>
+    </div>
+  );
+}
+
+/** Boîte d'édition inline (bordure/fond thème + icône crayon). Aucune logique d'édition : le contenu (input) est fourni par l'appelant. Étend les attributs natifs d'un <div>. */
+export function InlineEditBox({
+  className = "",
+  style,
+  children,
+  ...rest
+}: React.HTMLAttributes<HTMLDivElement>) {
+  const { borderColor, background, hoverText07 } = useTheme();
+
+  return (
+    <div
+      {...rest}
+      className={["inline-flex items-center gap-2 rounded-md border px-2 py-1 min-h-[30px] w-full", className]
+        .filter(Boolean)
+        .join(" ")}
+      style={{
+        borderColor,
+        backgroundColor: background,
+        ...style,
+      }}
+    >
+      {children}
+      <span className="text-xs opacity-70 select-none" style={{ color: hoverText07 }}>
+        {"\u270E"} {/* Signe Unicode pour ce symbole ✎ */}
+      </span>
+    </div>
+  );
+}
+
+export type ModalShellProps = {
+  title: React.ReactNode;
+  onClose: () => void;
+  titleClassName?: string;
+  overlayClassName?: string;
+} & React.HTMLAttributes<HTMLDivElement>;
+
+/** Coquille de modale (overlay + conteneur + en-tête titre/fermeture, thème). Body/footer entièrement fournis par l'appelant via children. */
+export function ModalShell({
+  title,
+  onClose,
+  titleClassName = "text-lg font-semibold",
+  overlayClassName = "",
+  className = "",
+  style,
+  children,
+  ...rest
+}: ModalShellProps) {
+  const { background, borderColor, textColor, primary, hoverText30 } = useTheme();
+
+  return (
+    <div
+      className={["fixed inset-0 z-50 flex justify-center", overlayClassName]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ backgroundColor: hoverText30 }}
+    >
+      <div
+        {...rest}
+        className={["border shadow-xl", className].filter(Boolean).join(" ")}
+        style={{
+          backgroundColor: background,
+          borderColor,
+          color: textColor,
+          ...style,
+        }}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className={titleClassName} style={{ color: textColor }}>
+            {title}
+          </h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-sm transition hover:[color:var(--modal-close-hover-color)]"
+            style={
+              {
+                color: textColor,
+                "--modal-close-hover-color": primary,
+              } as React.CSSProperties
+            }
+          >
+            {"\u00D7"} {/* Signe Unicode pour ce symbole × */}
+          </button>
+        </div>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 /** Bannière de message succès/erreur pour formulaires. Étend les attributs natifs d'un <div>. */
 export function FormMessage({
   tone,
@@ -85,6 +269,51 @@ export function FormMessage({
   );
 }
 
+export type StatusMessageTone = "muted" | "error";
+
+const STATUS_MESSAGE_CLASSES: Record<StatusMessageTone, string> = {
+  muted: "text-sm",
+  error: "text-sm text-red-500",
+};
+
+/** Texte d'état minimal (loading/error/empty), sans bordure ni fond. Étend les attributs natifs d'un <div>. */
+export function StatusMessage({
+  tone,
+  className = "",
+  style,
+  children,
+  ...rest
+}: {
+  tone: StatusMessageTone;
+  children: React.ReactNode;
+} & React.HTMLAttributes<HTMLDivElement>) {
+  const { hoverText07 } = useTheme();
+
+  const toneStyle: React.CSSProperties | undefined =
+    tone === "muted" ? { color: hoverText07 } : undefined;
+
+  return (
+    <div
+      {...rest}
+      className={[STATUS_MESSAGE_CLASSES[tone], className].filter(Boolean).join(" ")}
+      style={{
+        ...toneStyle,
+        ...style,
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+export type SectionCardRadius = "xl" | "2xl" | "3xl";
+
+const SECTION_CARD_RADIUS_CLASSES: Record<SectionCardRadius, string> = {
+  xl: "rounded-xl",
+  "2xl": "rounded-2xl",
+  "3xl": "rounded-3xl",
+};
+
 /** Carte de section thématique (fond opaque du thème, bordure, ombre légère, titre optionnel) */
 export function SectionCard({
   id,
@@ -93,6 +322,7 @@ export function SectionCard({
   compact = false,
   cascadeTextColor = false,
   shadow = true,
+  radius = "2xl",
   className,
   as = "section",
   children,
@@ -106,6 +336,8 @@ export function SectionCard({
   cascadeTextColor?: boolean;
   /** Affiche shadow-sm (défaut true) */
   shadow?: boolean;
+  /** Rayon de la carte (défaut "2xl", comportement actuel inchangé) */
+  radius?: SectionCardRadius;
   /** Classes additionnelles ajoutées aux classes de base */
   className?: string;
   /** Balise HTML rendue (défaut "section") */
@@ -119,7 +351,7 @@ export function SectionCard({
     <Tag
       id={id}
       className={[
-        "rounded-2xl",
+        SECTION_CARD_RADIUS_CLASSES[radius],
         shadow ? "shadow-sm" : "",
         compact ? "p-3" : "p-4",
         className ?? "",

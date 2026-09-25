@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { DropdownList } from "@/utils/DropdownList";
+import { FormMessage } from "@/utils/UI";
 import { resolveAssetUrl } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
 import { useThemeMode } from "@/theme/ThemeContext";
@@ -169,13 +170,14 @@ export default function Navbar() {
 
               {/* Erreur éventuelle (changement de langue) */}
               {errKey && (
-                <div
-                  className="mb-2 rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm"
+                <FormMessage
+                  tone="error"
                   role="alert"
                   aria-live="assertive"
+                  className="mb-2"
                 >
                   {t(errKey)}
-                </div>
+                </FormMessage>
               )}
 
               {/* Liens */}

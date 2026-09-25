@@ -5,6 +5,7 @@ import type {
 } from "@/features/pageAll/all_types";
 import type { PageAllLang } from "@/features/pageAll/pageAllLang";
 import { TruncatedCell } from "@/features/pageAll/TruncatedCell";
+import { InlineEditBox } from "@/utils/UI";
 import {
   getColumnEditKey,
   getColumnKind,
@@ -54,17 +55,10 @@ export default function PageAllEditableCell({
   }
 
   const inputBaseClass = "w-full bg-transparent outline-none text-sm leading-tight";
-  const boxClass = "inline-flex items-center gap-2 rounded-md border px-2 py-1 min-h-[30px] w-full";
 
   if (kind === "bool") {
     return (
-      <div
-        className={boxClass}
-        style={{
-          borderColor,
-          backgroundColor: background,
-        }}
-      >
+      <InlineEditBox>
         <input
           type="checkbox"
           checked={draftValue === "true"}
@@ -72,22 +66,13 @@ export default function PageAllEditableCell({
             onChange(editKey, e.target.checked ? "true" : "false");
           }}
         />
-        <span className="text-xs opacity-70 select-none" style={{ color: hoverText07 }}>
-          {"\u270E"} {/* Unicode pencil icon */}
-        </span>
-      </div>
+      </InlineEditBox>
     );
   }
 
   if (kind === "number" || kind === "year") {
     return (
-      <div
-        className={boxClass}
-        style={{
-          borderColor,
-          backgroundColor: background,
-        }}
-      >
+      <InlineEditBox>
         <input
           type="number"
           value={draftValue}
@@ -95,21 +80,12 @@ export default function PageAllEditableCell({
           className={inputBaseClass}
           style={{ color: textColor }}
         />
-        <span className="text-xs opacity-70 select-none" style={{ color: hoverText07 }}>
-          {"\u270E"} {/* Unicode pencil icon */}
-        </span>
-      </div>
+      </InlineEditBox>
     );
   }
 
   return (
-    <div
-      className={boxClass}
-      style={{
-        borderColor,
-        backgroundColor: background,
-      }}
-    >
+    <InlineEditBox>
       <input
         type="text"
         value={draftValue}
@@ -117,9 +93,6 @@ export default function PageAllEditableCell({
         className={inputBaseClass}
         style={{ color: textColor }}
       />
-      <span className="text-xs opacity-70 select-none" style={{ color: hoverText07 }}>
-        {"\u270E"} {/* Unicode pencil icon */}
-      </span>
-    </div>
+    </InlineEditBox>
   );
 }

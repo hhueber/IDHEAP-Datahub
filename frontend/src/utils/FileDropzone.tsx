@@ -2,6 +2,7 @@
 import React, { ChangeEvent, DragEvent, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
+import { Button } from "@/utils/UI";
 
 export type FileDropzoneLabels = {
   labelKey?: string;
@@ -56,7 +57,7 @@ export function FileDropzone({
   className = "",
 }: FileDropzoneProps) {
   const { t } = useTranslation();
-  const {primary, background, borderColor, textColor, hoverPrimary10, hoverPrimary15} = useTheme();
+  const {primary, background, borderColor, hoverPrimary10, hoverPrimary15} = useTheme();
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const dragCounterRef = useRef(0);
@@ -291,14 +292,10 @@ export function FileDropzone({
           </p>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-            <button
+            <Button
+              variant="outlineCompact"
               type="button"
-              className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
-              style={{
-                borderColor,
-                color: textColor,
-                backgroundColor: hoverPrimary10,
-              }}
+              style={{ backgroundColor: hoverPrimary10 }}
               onClick={(event) => {
                 event.stopPropagation();
 
@@ -308,24 +305,20 @@ export function FileDropzone({
               }}
             >
               {t(labels.browseKey)}
-            </button>
+            </Button>
 
             {hasValue && onClear && (
-              <button
+              <Button
+                variant="outlineCompact"
                 type="button"
-                className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
-                style={{
-                  borderColor,
-                  color: textColor,
-                  backgroundColor: background,
-                }}
+                style={{ backgroundColor: background }}
                 onClick={(event) => {
                   event.stopPropagation();
                   onClear();
                 }}
               >
                 {t("common.clear")}
-              </button>
+              </Button>
             )}
           </div>
 

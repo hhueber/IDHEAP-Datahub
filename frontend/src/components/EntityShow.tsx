@@ -6,6 +6,7 @@ import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsRes
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
+import { StatusMessage, InlineEditBox } from "@/utils/UI";
 import { useEdit } from "@/shared/useEdit";
 import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
 import InsightsPanel from "@/features/pageShow/InsightsPanel";
@@ -346,16 +347,8 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
 
   // Styles UI pour l’édition inline : donnent des indices visuels clairs (fond léger, bordure, icône)
   // indiquant qu’un champ est modifiable, tout en conservant une mise en page stable
-  const editableBoxClass =
-    "inline-flex items-center gap-2 rounded-md border px-2 py-1 min-h-[30px] w-full";
-  const editableBoxIdle =
-    "border-black/10 bg-black/3";
-  const editableBoxFocus =
-    "focus-within:border-black/30 focus-within:bg-black/5";
   const editableInputClass =
     "w-full bg-transparent outline-none text-sm leading-tight";
-  const pencilIconClass =
-    "text-xs opacity-70 select-none";
 
   return (
     <div className="w-full h-full" style={{ backgroundColor: background, color: textColor }}>
@@ -474,9 +467,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
 
             <div className="px-6 py-5">
               {loading && (
-                <div className="text-sm" style={{ color: hoverText07 }}>
+                <StatusMessage tone="muted">
                   {t("dashboardSidebar.pageShow.loading")}
-                </div>
+                </StatusMessage>
               )}
 
               {error && (
@@ -486,9 +479,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
               )}
 
               {!loading && !error && !data && (
-                <div className="text-sm" style={{ color: hoverText07 }}>
+                <StatusMessage tone="muted">
                   {t("dashboardSidebar.pageShow.noData")}
-                </div>
+                </StatusMessage>
               )}
 
               {data && (
@@ -537,13 +530,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                 )}
 
                                 {showEditInput && (
-                                  <div
-                                    className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
-                                    style={{
-                                      borderColor,
-                                      backgroundColor: background,
-                                    }}
-                                  >
+                                  <InlineEditBox className="border-black/10 bg-black/3 focus-within:border-black/30 focus-within:bg-black/5">
                                     {/* BOOL */}
                                     {f.kind === "bool" ? (
                                       <input
@@ -553,7 +540,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                           updateDraft(f.key, e.target.checked ? "true" : "false")
                                         }
                                       />
-                                    ) : 
+                                    ) :
                                     /* NUMBER */
                                     f.kind === "number" || f.kind === "year" ? (
                                       <input
@@ -573,11 +560,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                         style={{ color: textColor }}
                                       />
                                     )}
-
-                                    <span className={pencilIconClass} style={{ color: hoverText07 }}>
-                                      {"\u270E"}
-                                    </span>
-                                  </div>
+                                  </InlineEditBox>
                                 )}
                               </div>
                             </React.Fragment>
@@ -661,23 +644,14 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                 )}
 
                                 {showEditInput && (
-                                  <div
-                                    className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
-                                    style={{
-                                      borderColor,
-                                      backgroundColor: background,
-                                    }}
-                                  >
+                                  <InlineEditBox className="border-black/10 bg-black/3 focus-within:border-black/30 focus-within:bg-black/5">
                                     <input
                                       value={draft[key] ?? normalizeToString(data[key])}
                                       onChange={(e) => updateDraft(key, e.target.value)}
                                       className={`${editableInputClass} italic`}
                                       style={{ color: textColor }}
                                     />
-                                    <span className={pencilIconClass} style={{ color: hoverText07 }}>
-                                      {"\u270E"}
-                                    </span>
-                                  </div>
+                                  </InlineEditBox>
                                 )}
                               </div>
                             </React.Fragment>

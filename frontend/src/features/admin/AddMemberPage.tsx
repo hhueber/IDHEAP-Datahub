@@ -5,7 +5,7 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import { Button, TextField, FormMessage } from "@/utils/UI";
+import { Button, TextField, SelectField, FormMessage } from "@/utils/UI";
 import type { Role } from "@/config/roles";
 import { useTheme } from "@/theme/useTheme";
 
@@ -121,16 +121,9 @@ export default function AddMemberPage() {
           required
         />
         {/* Rôle */}
-        <div><label className="block text-sm font-medium mb-1">{t("admin.addMember.roleLabel")}</label>
-          <select name="role" value={form.role} onChange={onChange} className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor,
-              color: textColor,
-            }}>
-            <option value="MEMBER">{t("admin.addMember.roles.member")}</option><option value="ADMIN">{t("admin.addMember.roles.admin")}</option>
-          </select>
-        </div>
+        <SelectField label={t("admin.addMember.roleLabel")} name="role" value={form.role} onChange={onChange}>
+          <option value="MEMBER">{t("admin.addMember.roles.member")}</option><option value="ADMIN">{t("admin.addMember.roles.admin")}</option>
+        </SelectField>
         {/* Mot de passe */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>

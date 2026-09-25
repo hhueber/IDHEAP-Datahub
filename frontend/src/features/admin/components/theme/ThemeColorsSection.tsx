@@ -2,6 +2,7 @@ import React from "react";
 import { ThemeConfigDto } from "@/services/config";
 import { ColorField } from "./ColorField";
 import { ThemePreviewPanel } from "@/features/admin/components/theme/ThemePreviewPanels";
+import { SectionCard } from "@/utils/UI";
 
 type ColorFieldDef = {
   key: keyof ThemeConfigDto;
@@ -56,11 +57,14 @@ export function ThemeColorsSection({
   const selectionColor = config[selectionKey] ?? undefined;
 
   return (
-    <div
-      className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-      style={{ backgroundColor: background, borderColor: cardBorder }}
+    <SectionCard
+      as="div"
+      radius="xl"
+      shadow={false}
+      title={title}
+      titleClassName="text-lg font-semibold"
+      className="mb-6 md:p-5 space-y-4"
     >
-      <h2 className="text-lg font-semibold">{title}</h2>
       <div className="space-y-4 lg:flex lg:gap-6">
         <div className="space-y-3 flex-1">
           {fields.map((f) => (
@@ -93,6 +97,6 @@ export function ThemeColorsSection({
           />
         </div>
       </div>
-    </div>
+    </SectionCard>
   );
 }

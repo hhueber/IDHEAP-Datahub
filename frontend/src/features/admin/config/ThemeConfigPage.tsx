@@ -9,6 +9,7 @@ import {
 } from "@/services/config";
 import LoadingDots from "@/utils/LoadingDots";
 import { ConfirmModal } from "@/utils/ConfirmModal";
+import { Button, SectionCard } from "@/utils/UI";
 import { useTheme } from "@/theme/useTheme";
 import { resolveAssetUrl } from "@/shared/apiFetch";
 import { PresetsSection, Preset } from "@/features/admin/components/theme/PresetsSection";
@@ -367,14 +368,14 @@ export default function ThemeConfigPage() {
       )}
 
       {/* Informations générales */}
-      <div
-        className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: background, borderColor: borderColor }}
+      <SectionCard
+        as="div"
+        radius="xl"
+        shadow={false}
+        title={t("admin.config.themeConfigPage.general")}
+        titleClassName="text-lg font-semibold mb-2"
+        className="mb-6 md:p-5 space-y-4"
       >
-        <h2 className="text-lg font-semibold mb-2">
-          {t("admin.config.themeConfigPage.general")}
-        </h2>
-
         <div className="space-y-4">
           {/* Nom d'instance */}
           <div className="flex flex-col md:flex-row md:items-center gap-2">
@@ -395,13 +396,7 @@ export default function ThemeConfigPage() {
           </div>
 
           {/* Logo URL + upload */}
-          <div
-            className="rounded-2xl border p-4 md:p-5"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-            }}
-          >
+          <SectionCard as="div" shadow={false} className="md:p-5">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
               {/* Preview panel */}
               <div
@@ -556,31 +551,23 @@ export default function ThemeConfigPage() {
                       </p>
 
                       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
-                        <button
+                        <Button
+                          variant="outlineCompact"
                           type="button"
-                          className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
-                          style={{
-                            borderColor,
-                            color: textColor,
-                            backgroundColor: hoverPrimary10,
-                          }}
+                          style={{ backgroundColor: hoverPrimary10 }}
                           onClick={(e) => {
                             e.stopPropagation();
                             fileInputRef.current?.click();
                           }}
                         >
                           {t("admin.config.themeConfigPage.logoBrowse")}
-                        </button>
+                        </Button>
 
                         {pendingLogoDataUrl && (
-                          <button
+                          <Button
+                            variant="outlineCompact"
                             type="button"
-                            className="inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90"
-                            style={{
-                              borderColor,
-                              color: textColor,
-                              backgroundColor: background,
-                            }}
+                            style={{ backgroundColor: background }}
                             onClick={(e) => {
                               e.stopPropagation();
                               setPendingLogoDataUrl(null);
@@ -588,7 +575,7 @@ export default function ThemeConfigPage() {
                             }}
                           >
                             {t("common.clear")}
-                          </button>
+                          </Button>
                         )}
                       </div>
 
@@ -608,7 +595,7 @@ export default function ThemeConfigPage() {
                 </div>
               </div>
             </div>
-          </div>
+          </SectionCard>
 
           {/* Mode par défaut */}
           <div className="flex flex-col md:flex-row md:items-center gap-2">
@@ -639,7 +626,7 @@ export default function ThemeConfigPage() {
             </div>
           </div>
         </div>
-      </div>
+      </SectionCard>
 
       {/* Presets */}
       <PresetsSection
@@ -682,14 +669,14 @@ export default function ThemeConfigPage() {
       />
 
       {/* Couleurs carte */}
-      <div
-        className="mb-6 rounded-xl border p-4 md:p-5 space-y-4"
-        style={{ backgroundColor: background, borderColor: borderColor }}
+      <SectionCard
+        as="div"
+        radius="xl"
+        shadow={false}
+        title={t("admin.config.themeConfigPage.mapSection")}
+        titleClassName="text-lg font-semibold"
+        className="mb-6 md:p-5 space-y-4"
       >
-        <h2 className="text-lg font-semibold">
-          {t("admin.config.themeConfigPage.mapSection")}
-        </h2>
-
         <div className="space-y-6">
           {/* Carte - Light */}
           <MapColorsSection
@@ -716,7 +703,7 @@ export default function ThemeConfigPage() {
             textColor={textColor}
           />
         </div>
-      </div>
+      </SectionCard>
 
       {/* Boutons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">

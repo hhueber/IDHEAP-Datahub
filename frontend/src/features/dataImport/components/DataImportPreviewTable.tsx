@@ -1,6 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/theme/useTheme";
+import { Button } from "@/utils/UI";
 import { patchDataImportColumn, patchDataImportColumnTransform } from "@/features/dataImport/dataImportApi";
 import type { ColumnTransformAction, DataImportAnalyzeResponse, DataImportPreviewResponse, DetectedType, ImportSection } from "@/features/dataImport/dataImportTypes";
 import { EditableImportCell } from "@/features/dataImport/components/EditableImportCell";
@@ -131,15 +132,16 @@ export function DataImportPreviewTable({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             type="button"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            className="rounded-xl border px-3 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
-            style={{ borderColor, backgroundColor: hoverPrimary04 }}
+            style={{ backgroundColor: hoverPrimary04 }}
           >
             {t("common.previous")}
-          </button>
+          </Button>
 
           <div
             className="rounded-xl border px-3 py-2 text-sm"
@@ -148,15 +150,16 @@ export function DataImportPreviewTable({
             {page} / {totalPages}
           </div>
 
-          <button
+          <Button
+            variant="outline"
+            size="sm"
             type="button"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            className="rounded-xl border px-3 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40"
-            style={{ borderColor, backgroundColor: hoverPrimary04 }}
+            style={{ backgroundColor: hoverPrimary04 }}
           >
             {t("common.next")}
-          </button>
+          </Button>
         </div>
       </div>
 
