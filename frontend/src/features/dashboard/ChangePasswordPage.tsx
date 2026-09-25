@@ -5,6 +5,7 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
+import { FormMessage } from "@/utils/UI";
 import { useTheme } from "@/theme/useTheme";
 
 export default function ChangePasswordPage() {
@@ -111,23 +112,15 @@ export default function ChangePasswordPage() {
 
         {/* Messages de succès / erreur */}
         {msgKey && (
-          <div
-            className="rounded border border-green-200 bg-green-50 px-3 py-2 text-green-700 text-sm"
-            role="status"
-            aria-live="polite"
-          >
+          <FormMessage tone="success" role="status" aria-live="polite">
             {t(msgKey)}
-          </div>
+          </FormMessage>
         )}
 
         {errKey && (
-          <div
-            className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm"
-            role="alert"
-            aria-live="assertive"
-          >
+          <FormMessage tone="error" role="alert" aria-live="assertive">
             {t(errKey)}
-          </div>
+          </FormMessage>
         )}
 
         {/* Action */}

@@ -5,6 +5,7 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
+import { Button, TextField, SelectField, FormMessage } from "@/utils/UI";
 import type { Role } from "@/config/roles";
 import { useTheme } from "@/theme/useTheme";
 
@@ -30,7 +31,7 @@ export default function AddMemberPage() {
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverText07 } = useTheme();
+  const { textColor, background, borderColor, hoverText07 } = useTheme();
 
   const onChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -91,53 +92,38 @@ export default function AddMemberPage() {
       <form className="space-y-4" onSubmit={onSubmit}>
         {/* Identité */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div><label className="block text-sm font-medium mb-1">{t("admin.addMember.firstNameLabel")}</label>
-            <input name="first_name" value={form.first_name} onChange={onChange} className="w-full rounded-lg border px-3 py-2"
-              placeholder={t("admin.addMember.firstNamePlaceholder")}
-              autoComplete="given-name"
-              style={{
-                backgroundColor: background,
-                borderColor,
-                color: textColor,
-              }}
-            />
-          </div>
-          <div><label className="block text-sm font-medium mb-1">{t("admin.addMember.lastNameLabel")}</label>
-            <input name="last_name" value={form.last_name} onChange={onChange} className="w-full rounded-lg border px-3 py-2" 
-              placeholder={t("admin.addMember.lastNamePlaceholder")}
-              autoComplete="family-name"
-              style={{
-                backgroundColor: background,
-                borderColor,
-                color: textColor,
-              }}
-            />
-          </div>
+          <TextField
+            label={t("admin.addMember.firstNameLabel")}
+            name="first_name"
+            value={form.first_name}
+            onChange={onChange}
+            placeholder={t("admin.addMember.firstNamePlaceholder")}
+            autoComplete="given-name"
+          />
+          <TextField
+            label={t("admin.addMember.lastNameLabel")}
+            name="last_name"
+            value={form.last_name}
+            onChange={onChange}
+            placeholder={t("admin.addMember.lastNamePlaceholder")}
+            autoComplete="family-name"
+          />
         {/* Email */}
         </div>
-        <div><label className="block text-sm font-medium mb-1">{t("admin.addMember.emailLabel")}</label>
-          <input name="email" type="email" value={form.email} onChange={onChange} className="w-full rounded-lg border px-3 py-2" 
-            placeholder={t("admin.addMember.emailPlaceholder")}
-            autoComplete="email"
-            required
-            style={{
-              backgroundColor: background,
-              borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
+        <TextField
+          label={t("admin.addMember.emailLabel")}
+          name="email"
+          type="email"
+          value={form.email}
+          onChange={onChange}
+          placeholder={t("admin.addMember.emailPlaceholder")}
+          autoComplete="email"
+          required
+        />
         {/* Rôle */}
-        <div><label className="block text-sm font-medium mb-1">{t("admin.addMember.roleLabel")}</label>
-          <select name="role" value={form.role} onChange={onChange} className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor,
-              color: textColor,
-            }}>
-            <option value="MEMBER">{t("admin.addMember.roles.member")}</option><option value="ADMIN">{t("admin.addMember.roles.admin")}</option>
-          </select>
-        </div>
+        <SelectField label={t("admin.addMember.roleLabel")} name="role" value={form.role} onChange={onChange}>
+          <option value="MEMBER">{t("admin.addMember.roles.member")}</option><option value="ADMIN">{t("admin.addMember.roles.admin")}</option>
+        </SelectField>
         {/* Mot de passe */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -163,16 +149,12 @@ export default function AddMemberPage() {
           />
         {/* Messages */}
         </div>
-        {msgKey && <div className="rounded border border-green-200 bg-green-50 px-3 py-2 text-green-700 text-sm">{t(msgKey)}</div>}
-        {errKey && <div className="rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm">{t(errKey)}</div>}
+        {msgKey && <FormMessage tone="success">{t(msgKey)}</FormMessage>}
+        {errKey && <FormMessage tone="error">{t(errKey)}</FormMessage>}
         {/* Action */}
-        <button type="submit" disabled={submitting} className="rounded-lg px-4 py-2 disabled:opacity-60 transition hover:opacity-90"
-          style={{
-            backgroundColor: primary,
-            color: adaptiveTextColorPrimary,
-          }}>
+        <Button type="submit" disabled={submitting}>
           {submitting ? <LoadingDots label={t("admin.addMember.submitting")} /> : t("admin.addMember.submit")}
-        </button>
+        </Button>
       </form>
     </section>
   );

@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { SectionCard } from "@/utils/UI";
 import YearSelector from "@/features/home/components/YearSelector";
 import type { HomeBootstrap } from "@/features/home/services/homeApi";
 import { useSurveyQuestions } from "@/features/questions/hooks/useSurveyQuestions";
@@ -151,38 +152,18 @@ export default function HomeInfoPanel({
     <div className="space-y-4 px-3 py-2">
       {/* État global */}
       {(loading || error) && (
-        <section className="rounded-2xl shadow-sm  p-3" 
-          style={{
-            backgroundColor: background,
-            borderWidth: 1,
-            borderStyle: "solid",
-            borderColor: borderColor,
-          }}>
+        <SectionCard compact>
           {loading && <p className="text-sm" style={{ color: hoverPrimary04 }}>{t("common.loading")}</p>}
           {error && (
             <p className="text-red-600">
               {t(errorKey ?? "home.bootstrapError")}
             </p>
           )}
-        </section>
+        </SectionCard>
       )}
 
       {/* Carte sélection année */}
-      <section
-        id="year-selector"
-        className="rounded-2xl shadow-sm p-4"
-        style={{
-          backgroundColor: background,
-          borderWidth: 1,
-          borderStyle: "solid",
-          borderColor: borderColor,
-          // minHeight: 280,
-        }}
-      >
-        <h2 className="text-sm font-semibold mb-2" style={{ color: textColor }}>
-          {t("home.sectionDates")}
-        </h2>
-
+      <SectionCard id="year-selector" title={t("home.sectionDates")}>
         {/* Dropdown choix année ou global */}
         <div className="max-w-sm">
           <YearSelector
@@ -239,33 +220,12 @@ export default function HomeInfoPanel({
             </div>
           </div>
         </div>
-      </section>
+      </SectionCard>
 
       {/* Carte questions */}
-      <section
-        className="rounded-2xl shadow-sm p-4"
-        style={{
-          backgroundColor: background,
-          borderWidth: 1,
-          borderStyle: "solid",
-          borderColor,
-        }}
-      >
-        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
-          {t("home.sectionQuestions")}
-        </h2>
-
+      <SectionCard title={t("home.sectionQuestions")} titleClassName="text-sm font-semibold mb-3">
         <div className="space-y-4">
-          <div
-            id="question-selector"
-            className="rounded-2xl border p-3"
-            style={{
-              backgroundColor: background,
-              borderColor,
-              borderWidth: 1,
-              borderStyle: "solid",
-            }}
-          >
+          <SectionCard id="question-selector" as="div" compact shadow={false}>
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-semibold" style={{ color: textColor }}>
@@ -349,7 +309,7 @@ export default function HomeInfoPanel({
                 </>
               )}
             </div>
-          </div>
+          </SectionCard>
 
           <QuestionCollectionsPanel
             saved={saved}
@@ -360,19 +320,11 @@ export default function HomeInfoPanel({
           />
 
         </div>
-      </section>
+      </SectionCard>
 
 
       {/* Carte granularité */}
-      <section
-        id="granularity-selector"
-        className="rounded-2xl shadow-sm p-4"
-        style={{ backgroundColor: background, borderWidth: 1, borderStyle: "solid", borderColor }}
-      >
-        <h2 className="text-sm font-semibold mb-3" style={{ color: textColor }}>
-          {t("home.granularity")}
-        </h2>
-
+      <SectionCard id="granularity-selector" title={t("home.granularity")} titleClassName="text-sm font-semibold mb-3">
         <div className="grid grid-cols-2 gap-2">
           {granularityItems.map((it) => {
             const active = granularity === it.key;
@@ -404,7 +356,7 @@ export default function HomeInfoPanel({
             );
           })}
         </div>
-      </section>
+      </SectionCard>
 
       <MapExportButtons />
     </div>

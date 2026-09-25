@@ -25,6 +25,7 @@ import OptionAllPage from "@/features/pageAll/OptionAllPage";
 import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
 import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
+import DataImportPage from "@/features/dataImport/DataImportPage";
 import ExportDataPage from "@/features/export/ExportDataPage"
 
 
@@ -58,6 +59,14 @@ export default function App() {
             element={
               <RequireRole roles={[ADMIN, MEMBER]}>
                 <SurveyAllPage />
+              </RequireRole>
+            }
+          />
+          <Route
+            path="/admin/surveys/new"
+            element={
+              <RequireRole roles={[ADMIN, MEMBER]}>
+                <DataImportPage />
               </RequireRole>
             }
           />

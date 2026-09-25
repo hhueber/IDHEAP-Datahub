@@ -1,5 +1,6 @@
 import React from "react";
 import Pagination from "@/utils/Pagination";
+import { Button, StatusMessage } from "@/utils/UI";
 import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
 import { useTranslation } from "react-i18next";
@@ -211,12 +212,12 @@ export default function ChildrenTable({
 
       <div className="p-4">
         {loading && (
-          <div className="text-sm" style={{ color: hoverText07 }}>
+          <StatusMessage tone="muted">
             {t("dashboardSidebar.pageShow.loading")}
-          </div>
+          </StatusMessage>
         )}
 
-        {error && <div className="text-sm text-red-500">{error}</div>}
+        {error && <StatusMessage tone="error">{error}</StatusMessage>}
 
         <div
           className="overflow-x-auto border rounded mt-3"
@@ -316,17 +317,9 @@ export default function ChildrenTable({
                         className="border-b px-3 py-2 whitespace-nowrap"
                         style={{ borderColor }}
                       >
-                        <button
+                        <Button
+                          variant="secondaryCompact"
                           type="button"
-                          className="px-2 py-1 text-xs rounded border hover:[background-color:var(--child-btn-hover-bg)]"
-                          style={
-                            {
-                              backgroundColor: background,
-                              borderColor,
-                              color: textColor,
-                              "--child-btn-hover-bg": hoverPrimary04,
-                            } as React.CSSProperties
-                          }
                           onClick={() => {
                             if (!row.uid) {
                               return;
@@ -338,7 +331,7 @@ export default function ChildrenTable({
                           }}
                         >
                           {t("dashboardSidebar.pageAll.show")}
-                        </button>
+                        </Button>
                       </td>
                     )}
                   </tr>

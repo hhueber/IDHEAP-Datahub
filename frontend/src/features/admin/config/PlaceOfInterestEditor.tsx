@@ -5,6 +5,7 @@ import { ConfigEditorModal } from "./ConfigEditorModal";
 import AutocompleteField from "../components/AutocompleteField";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
+import { TextField } from "@/utils/UI";
 import { useTheme } from "@/theme/useTheme";
 
 
@@ -174,95 +175,47 @@ export default function PlaceOfInterestEditor({
       </div>
 
       {/* Form principal */}
-      <div>
-        <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.canonicalLabel")}</label>
-        <input
-          name="default_name"
-          value={form.default_name}
-          onChange={onChange}
-          className="w-full rounded-lg border px-3 py-2"
-          style={{
-            backgroundColor: background,
-            borderColor: borderColor,
-            color: textColor,
-          }}
-          placeholder="Lausanne, Genève, Zürich…"
-          required
-        />
-      </div>
+      <TextField
+        label={t("admin.config.placeOfInterestEditor.canonicalLabel")}
+        name="default_name"
+        value={form.default_name}
+        onChange={onChange}
+        placeholder="Lausanne, Genève, Zürich…"
+        required
+      />
 
       {/* Traductions éditables */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.fr")}</label>
-          <input
-            name="name_fr"
-            value={form.name_fr || ""}
-            onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.de")}</label>
-          <input
-            name="name_de"
-            value={form.name_de || ""}
-            onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.it")}</label>
-          <input
-            name="name_it"
-            value={form.name_it || ""}
-            onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.rm")}</label>
-          <input
-            name="name_rm"
-            value={form.name_rm || ""}
-            onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.en")}</label>
-          <input
-            name="name_en"
-            value={form.name_en || ""}
-            onChange={onChange}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
+        <TextField
+          label={t("admin.config.placeOfInterestEditor.labels.fr")}
+          name="name_fr"
+          value={form.name_fr || ""}
+          onChange={onChange}
+        />
+        <TextField
+          label={t("admin.config.placeOfInterestEditor.labels.de")}
+          name="name_de"
+          value={form.name_de || ""}
+          onChange={onChange}
+        />
+        <TextField
+          label={t("admin.config.placeOfInterestEditor.labels.it")}
+          name="name_it"
+          value={form.name_it || ""}
+          onChange={onChange}
+        />
+        <TextField
+          label={t("admin.config.placeOfInterestEditor.labels.rm")}
+          name="name_rm"
+          value={form.name_rm || ""}
+          onChange={onChange}
+        />
+        <TextField
+          label={t("admin.config.placeOfInterestEditor.labels.en")}
+          name="name_en"
+          value={form.name_en || ""}
+          onChange={onChange}
+        />
       </div>
 
       {/* Position (arrondi visuel à 4 décimales sinon trop long) */}

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { DropdownList } from "@/utils/DropdownList";
+import { FormMessage } from "@/utils/UI";
 import { useTheme } from "@/theme/useTheme";
 import { useThemeMode } from "@/theme/ThemeContext";
 import { resolveAssetUrl } from "@/shared/apiFetch";
@@ -155,13 +156,14 @@ export default function PrivateTopbar() {
 
           {/* Erreur */}
           {errKey && (
-            <div
-              className="hidden lg:block rounded border border-red-200 bg-red-50 px-3 py-2 text-red-700 text-sm"
+            <FormMessage
+              tone="error"
               role="alert"
               aria-live="assertive"
+              className="hidden lg:block"
             >
               {t(errKey)}
-            </div>
+            </FormMessage>
           )}
 
           {/* Theme */}
