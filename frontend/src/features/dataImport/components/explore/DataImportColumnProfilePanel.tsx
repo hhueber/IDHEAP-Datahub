@@ -23,7 +23,8 @@ export function DataImportColumnProfilePanel({
   onClose,
 }: DataImportColumnProfilePanelProps) {
   const { t } = useTranslation();
-  const { textColor, background, borderColor, hoverPrimary04, primary } = useTheme();
+  const { textColor, background, borderColor, hoverPrimary04, primary } =
+    useTheme();
 
   if (!column) {
     return null;
@@ -32,7 +33,9 @@ export function DataImportColumnProfilePanel({
   const profile = getSafeProfile(column);
   const totalValues = profile.emptyCount + profile.nonEmptyCount;
   const filledRatio =
-    totalValues > 0 ? Math.round((profile.nonEmptyCount / totalValues) * 100) : 0;
+    totalValues > 0
+      ? Math.round((profile.nonEmptyCount / totalValues) * 100)
+      : 0;
 
   return (
     <div
@@ -44,7 +47,11 @@ export function DataImportColumnProfilePanel({
           <div className="flex flex-wrap items-center gap-2">
             <span
               className="rounded-full border px-3 py-1 text-xs font-medium"
-              style={{ borderColor: primary, color: primary, background: background }}
+              style={{
+                borderColor: primary,
+                color: primary,
+                background: background,
+              }}
             >
               {t("dataImport.columnProfile.badge")}
             </span>
@@ -235,9 +242,7 @@ function ValuePreview({
       </h4>
 
       {values.length === 0 ? (
-        <div className="text-xs opacity-50">
-          {emptyLabel}
-        </div>
+        <div className="text-xs opacity-50">{emptyLabel}</div>
       ) : (
         <div className="flex flex-wrap gap-1.5">
           {values.map((value, index) => (
@@ -274,9 +279,7 @@ function MostCommonPreview({
       </h4>
 
       {values.length === 0 ? (
-        <div className="text-xs opacity-50">
-          {emptyLabel}
-        </div>
+        <div className="text-xs opacity-50">{emptyLabel}</div>
       ) : (
         <div className="space-y-1.5">
           {values.map((item, index) => (
@@ -285,10 +288,7 @@ function MostCommonPreview({
               className="flex items-center justify-between gap-3 rounded-xl border px-2.5 py-1.5 text-xs"
               style={{ borderColor, backgroundColor: background }}
             >
-              <span
-                className="min-w-0 truncate"
-                title={item.value ?? ""}
-              >
+              <span className="min-w-0 truncate" title={item.value ?? ""}>
                 {item.value || "—"}
               </span>
 

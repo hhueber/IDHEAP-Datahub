@@ -83,6 +83,9 @@ async def patch_import_column(
         target_column["detected_type"] = payload.detected_type.value
         target_column["confidence"] = 1.0
 
+    if payload.role is not None:
+        target_column["role"] = payload.role
+
     write_analysis(import_dir, analysis)
 
     return recalculate_after_column_change(

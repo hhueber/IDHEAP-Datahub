@@ -4,6 +4,7 @@ import logging
 from app.models.answer import Answer
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
+from app.schemas.data_import import ImportRoleEnum
 from app.services.add_database.commune_service import add_update_geo_data, get_commune_mapping_year
 from app.services.data_import.data_import_storage_service import (
     get_import_dir,
@@ -35,24 +36,25 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
     df = read_frame(import_dir)
 
     detected_survey = analysis.get("detected_survey") or {}
-    survey_name = detected_survey.get("name")
-    survey_years = metadata.get("years")
+    survey_name = metadata.get("display_name")
+    years = metadata.get("years")
 
-    if not survey_name or not survey_years:
+    if not survey_name or not years:
         raise ValueError("Cannot find name or survey year")
 
-    await add_update_geo_data(db, survey_years)
-
-    for year in survey_years:
+    await add_update_geo_data(db, years)
+    for year in years:
         result = await db.execute(select(Survey).filter_by(year=year, name=survey_name))
         db_survey = result.scalar_one_or_none()
         if not db_survey:
-            db_survey = Survey(name=survey_name, year=year)
+            db_survey = Survey(name=survey_name + str(year), year=year)
             db.add(db_survey)
             await db.flush()
 
         bfs_column_name = None
         question_columns = []
+        answer_columns = []
+        question_role_map = {}
 
         for col in analysis.get("columns_summary", []):
             col_name = col.get("original_name")
@@ -60,25 +62,37 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
 
             if section == "municipalities" and col.get("detected_type") == "integer":
                 bfs_column_name = col_name
-            elif section in {"responses", "questions"}:
+            elif section == "questions":
                 question_columns.append(col_name)
+                role: ImportRoleEnum = col.get("role")
+                if role in ImportRoleEnum:
+                    question_role_map[role] = col_name
+            elif section == "responses":
+                answer_columns.append(col_name)
 
         if not bfs_column_name:
-            raise ValueError("Cannot find the municipalities column")
+            raise ValueError(
+                "Cannot find the municipalities column"
+            )  # TODO: Pouvoir mieux gerer les erreurs afin de les envoyer a l'utilisateur
 
-        question_uid_map = {}
-        for col_name in question_columns:
-            q_code = str(col_name).strip()
-            result = await db.execute(select(QuestionPerSurvey).filter_by(code=q_code))
-            db_question_per_survey = result.scalar_one_or_none()
+        result = await db.execute(select(QuestionPerSurvey).filter_by(survey_uid=db_survey.uid))
+        questions = result.scalars().all()
+        question_mapping_insert = {}
+        for question in questions:
+            question_mapping_insert.setdefault((question.code, db_survey.uid), question)
 
-            if not db_question_per_survey:
-                # TODO Remplacer par le bon label et la bonne maniere de recuperer le label
-                db_question_per_survey = QuestionPerSurvey(code=q_code, label=q_code, survey=db_survey)
-                db.add(db_question_per_survey)
-                await db.flush()
-
-            question_uid_map[col_name] = db_question_per_survey.uid
+        for _, row in df.iterrows():
+            if row[question_role_map["code"]] != "":
+                if int(row[question_role_map["year"]]) != int(db_survey.year):
+                    continue
+                key = (row[question_role_map["code"]], db_survey.uid)
+                if key not in question_mapping_insert:
+                    db_question_per_survey = QuestionPerSurvey(
+                        code=row[question_role_map["code"]], label=row[question_role_map["label"]], survey=db_survey
+                    )
+                    question_mapping_insert[db_question_per_survey.code] = db_question_per_survey
+                    db.add(db_question_per_survey)
+                    await db.flush()
 
         commune_mapping = await get_commune_mapping_year(db, year)
 
@@ -98,15 +112,23 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
             if not commune_uid:
                 continue
 
-            for col_name in question_columns:
+            row_year = str(row[question_role_map["year"]]).strip()
+            if row_year != "" and int(row_year) != db_survey.year:
+                continue
+
+            for col_name in answer_columns:
                 val = row.get(col_name)
                 if pd.isna(val) or str(val).strip() == "":
+                    continue
+
+                question = question_mapping_insert[col_name]
+                if question is None or question.survey_uid != db_survey.uid:
                     continue
 
                 answer_to_insert.append(
                     {
                         "year": year,
-                        "question_uid": question_uid_map[col_name],
+                        "question_uid": question_mapping_insert[col_name].uid,
                         "commune_uid": commune_uid,
                         "value": str(val).strip(),
                     }
