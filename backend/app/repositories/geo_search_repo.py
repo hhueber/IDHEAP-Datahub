@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 import unicodedata
 
 
@@ -54,7 +54,7 @@ def build_geo_names(item: dict) -> dict:
     }
 
 
-def normalize_search_text(value: Optional[str]) -> str:
+def normalize_search_text(value: str | None) -> str:
     if not value:
         return ""
 
@@ -199,7 +199,7 @@ async def get_geo_point(
     db: AsyncSession,
     geo_type: GeoType,
     uid: int,
-) -> Optional[tuple[float, float]]:
+) -> tuple[float, float] | None:
     if geo_type == "commune":
         return await get_commune_point(db, uid)
 

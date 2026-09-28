@@ -7,48 +7,48 @@ export type Position = [number, number];
 
 // Géométrie GeoJSON (types courants)
 export type Geometry =
-  | { type: "Polygon"; coordinates: Position[][] }
-  | { type: "MultiPolygon"; coordinates: Position[][][] }
-  | { type: "MultiLineString"; coordinates: Position[][] }
-  | { type: "LineString"; coordinates: Position[] }
-  | { type: "Point"; coordinates: Position }
-  | { type: "MultiPoint"; coordinates: Position[] };
+    | { type: "Polygon"; coordinates: Position[][] }
+    | { type: "MultiPolygon"; coordinates: Position[][][] }
+    | { type: "MultiLineString"; coordinates: Position[][] }
+    | { type: "LineString"; coordinates: Position[] }
+    | { type: "Point"; coordinates: Position }
+    | { type: "MultiPoint"; coordinates: Position[] };
 
 // Entité GeoJSON générique (avec propriétés typées)
 export type Feature<P = Record<string, any>> = {
-  type: "Feature";
-  geometry: Geometry;
-  properties: P;
+    type: "Feature";
+    geometry: Geometry;
+    properties: P;
 };
 
 // Collection GeoJSON
 export type FeatureCollection<P = Record<string, any>> = {
-  type: "FeatureCollection";
-  features: Feature<P>[];
+    type: "FeatureCollection";
+    features: Feature<P>[];
 };
 
 // Métadonnées de l’année demandée (compteurs par couche)
 export type YearMeta = {
-  requested: number;
-  country?: number | null;
-  lakes?: number | null;
-  cantons?: number | null;
-  districts?: number | null;
+    requested: number;
+    country?: number | null;
+    lakes?: number | null;
+    cantons?: number | null;
+    districts?: number | null;
 };
 
 export type GeoFeatureProperties = {
-  uid: number;
-  code?: string;
-  name?: string;
+    uid: number;
+    code?: string;
+    name?: string;
 };
 
 // Regroupe toutes les couches géo pour une année
 export type GeoBundle = {
-  year: YearMeta;
-  country?: FeatureCollection<{ uid: number }>;
-  lakes?: FeatureCollection<{ uid: number; name: string; code: string }>;
-  cantons?: FeatureCollection<{ uid: number; code: string; name: string }>;
-  districts?: FeatureCollection<{ uid: number; name: string; code?: string }>;
+    year: YearMeta;
+    country?: FeatureCollection<{ uid: number }>;
+    lakes?: FeatureCollection<{ uid: number; name: string; code: string }>;
+    cantons?: FeatureCollection<{ uid: number; code: string; name: string }>;
+    districts?: FeatureCollection<{ uid: number; name: string; code?: string }>;
 };
 
 type GeoLayer = "country" | "lakes" | "cantons" | "districts" | "communes";
@@ -56,179 +56,194 @@ type GeoLayer = "country" | "lakes" | "cantons" | "districts" | "communes";
 // Client API : récupère les couches géo pour une année donnée
 // Donne le choix des GeoLayer souhaiter
 export const geoApi = {
-  getByYear: (year?: number, signal?: AbortSignal, opts?: { layers?: GeoLayer[]; clearOthers?: boolean }) =>
-    apiFetch<GeoBundle>("geo/by_year", {
-      method: "GET",
-      signal,
-      query: {
-        ...(typeof year === "number" ? { year } : {}),
-        ...(opts?.layers?.length ? { layers: opts.layers.join(",") } : {}),
-        ...(typeof opts?.clearOthers === "boolean" ? { clear_others: String(opts.clearOthers) } : {}),
-      },
-    }),
+    getByYear: (
+        year?: number,
+        signal?: AbortSignal,
+        opts?: { layers?: GeoLayer[]; clearOthers?: boolean },
+    ) =>
+        apiFetch<GeoBundle>("geo/by_year", {
+            method: "GET",
+            signal,
+            query: {
+                ...(typeof year === "number" ? { year } : {}),
+                ...(opts?.layers?.length
+                    ? { layers: opts.layers.join(",") }
+                    : {}),
+                ...(typeof opts?.clearOthers === "boolean"
+                    ? { clear_others: String(opts.clearOthers) }
+                    : {}),
+            },
+        }),
 
-  getChoropleth: (
-    params: {
-      scope: "per_survey" | "global";
-      question_uid: number;
-      year: number;
-      granularity?: ChoroplethGranularity;
-      lang?: string;
-    },
-    signal?: AbortSignal
-  ) =>
-    apiFetch<ChoroplethResponse>("geo/choropleth", {
-      method: "GET",
-      signal,
-      query: {
-        scope: params.scope,
-        question_uid: params.question_uid,
-        year: params.year,
-        ...(params.granularity ? { granularity: params.granularity } : {}),
-        ...(params.lang ? { lang: params.lang } : {}),
-      },
-    }),
+    getChoropleth: (
+        params: {
+            scope: "per_survey" | "global";
+            question_uid: number;
+            year: number;
+            granularity?: ChoroplethGranularity;
+            lang?: string;
+        },
+        signal?: AbortSignal,
+    ) =>
+        apiFetch<ChoroplethResponse>("geo/choropleth", {
+            method: "GET",
+            signal,
+            query: {
+                scope: params.scope,
+                question_uid: params.question_uid,
+                year: params.year,
+                ...(params.granularity
+                    ? { granularity: params.granularity }
+                    : {}),
+                ...(params.lang ? { lang: params.lang } : {}),
+            },
+        }),
 
-  getChoroplethGeometries: (
-    params: { year: number; granularity?: ChoroplethGranularity },
-    signal?: AbortSignal
-  ) =>
-    apiFetch<ChoroplethGeometriesResponse>("geo/choropleth/geometries", {
-      method: "GET",
-      signal,
-      query: {
-        year: params.year,
-        ...(params.granularity ? { granularity: params.granularity } : {}),
-      },
-    }),
+    getChoroplethGeometries: (
+        params: { year: number; granularity?: ChoroplethGranularity },
+        signal?: AbortSignal,
+    ) =>
+        apiFetch<ChoroplethGeometriesResponse>("geo/choropleth/geometries", {
+            method: "GET",
+            signal,
+            query: {
+                year: params.year,
+                ...(params.granularity
+                    ? { granularity: params.granularity }
+                    : {}),
+            },
+        }),
 
-  getChoroplethValues: (
-    params: {
-      scope: "per_survey" | "global";
-      question_uid: number;
-      year: number;
-      granularity?: ChoroplethGranularity;
-      lang?: string;
-    },
-    signal?: AbortSignal
-  ) =>
-    apiFetch<ChoroplethValuesResponse>("geo/choropleth/values", {
-      method: "GET",
-      signal,
-      query: {
-        scope: params.scope,
-        question_uid: params.question_uid,
-        year: params.year,
-        ...(params.granularity ? { granularity: params.granularity } : {}),
-        ...(params.lang ? { lang: params.lang } : {}),
-      },
-    }),
+    getChoroplethValues: (
+        params: {
+            scope: "per_survey" | "global";
+            question_uid: number;
+            year: number;
+            granularity?: ChoroplethGranularity;
+            lang?: string;
+        },
+        signal?: AbortSignal,
+    ) =>
+        apiFetch<ChoroplethValuesResponse>("geo/choropleth/values", {
+            method: "GET",
+            signal,
+            query: {
+                scope: params.scope,
+                question_uid: params.question_uid,
+                year: params.year,
+                ...(params.granularity
+                    ? { granularity: params.granularity }
+                    : {}),
+                ...(params.lang ? { lang: params.lang } : {}),
+            },
+        }),
 };
 
-export type PlaceOfInterestGeoType =
-  | "commune"
-  | "district"
-  | "canton";
+export type PlaceOfInterestGeoType = "commune" | "district" | "canton";
 
 export type PlaceOfInterestMapDTO = {
-  code: string;
-  name: string;
-  pos: [number, number];
-  geo_type: PlaceOfInterestGeoType;
+    code: string;
+    name: string;
+    pos: [number, number];
+    geo_type: PlaceOfInterestGeoType;
 };
 
 // Client API pour récupérer la liste des villes affichées sur la carte.
 export const PlaceOfInterestApi = {
-  list: (lang: string, signal?: AbortSignal) =>
-    apiFetch<PlaceOfInterestMapDTO[]>("geo/placeOfInterest", {
-      method: "GET",
-      signal,
-      query: { lang: normalizeGeoLanguage(lang) },
-    }),
+    list: (lang: string, signal?: AbortSignal) =>
+        apiFetch<PlaceOfInterestMapDTO[]>("geo/placeOfInterest", {
+            method: "GET",
+            signal,
+            query: { lang: normalizeGeoLanguage(lang) },
+        }),
 };
 
 export type LegendItem = {
-  label: string;
-  color: string;
-  value?: any | null;   // categorical
-  min?: number | null;  // gradient
-  max?: number | null;  // gradient
+    label: string;
+    color: string;
+    value?: any | null; // categorical
+    min?: number | null; // gradient
+    max?: number | null; // gradient
 };
 
 export type GradientMeta = {
-  mode: "continuous";
-  start: string;
-  end: string;
-  vmin: number;
-  vmax: number;
-  ticks: number[];
+    mode: "continuous";
+    start: string;
+    end: string;
+    vmin: number;
+    vmax: number;
+    ticks: number[];
 };
 
 export type MapLegend = {
-  type: "categorical" | "gradient";
-  title: string;
-  items: LegendItem[];
-  gradient?: GradientMeta | null;
+    type: "categorical" | "gradient";
+    title: string;
+    items: LegendItem[];
+    gradient?: GradientMeta | null;
 };
 
-export type ChoroplethGranularity = "commune" | "district" | "canton" | "federal";
+export type ChoroplethGranularity =
+    | "commune"
+    | "district"
+    | "canton"
+    | "federal";
 
 export type ChoroplethResponse = {
-  question_uid: number;
-  year_requested: number;
-  year_geo_communes?: number | null;
-  year_geo_districts?: number | null;
-  year_geo_cantons?: number | null;
-  granularity: ChoroplethGranularity;
-  legend: MapLegend;
-  feature_collection: FeatureCollection<{
+    question_uid: number;
+    year_requested: number;
+    year_geo_communes?: number | null;
+    year_geo_districts?: number | null;
+    year_geo_cantons?: number | null;
+    granularity: ChoroplethGranularity;
+    legend: MapLegend;
+    feature_collection: FeatureCollection<{
+        level: ChoroplethGranularity;
+        unit_uid: number;
+        name?: string;
+        code?: string;
+        value: string | null;
+        value_kind?: "value" | "no_data" | "no_response";
+        fill_color?: string;
+        fill_pattern?: {
+            type: "stripes";
+            angle?: number;
+            stripe?: number;
+            colors?: string[];
+        };
+    }>;
+};
+
+export type ChoroplethGeometryFeatureProps = {
     level: ChoroplethGranularity;
     unit_uid: number;
     name?: string;
     code?: string;
-    value: string | null;
-    value_kind?: "value" | "no_data" | "no_response";
-    fill_color?: string;
-    fill_pattern?: {
-      type: "stripes";
-      angle?: number;
-      stripe?: number;
-      colors?: string[];
-    };
-  }>;
-};
-
-export type ChoroplethGeometryFeatureProps = {
-  level: ChoroplethGranularity;
-  unit_uid: number;
-  name?: string;
-  code?: string;
-  geo_year_used?: number | null;
+    geo_year_used?: number | null;
 };
 
 export type ChoroplethGeometriesResponse = {
-  year_requested: number;
-  year_geo_districts?: number | null;
-  year_geo_cantons?: number | null;
-  granularity: ChoroplethGranularity;
-  feature_collection: FeatureCollection<ChoroplethGeometryFeatureProps>;
+    year_requested: number;
+    year_geo_districts?: number | null;
+    year_geo_cantons?: number | null;
+    granularity: ChoroplethGranularity;
+    feature_collection: FeatureCollection<ChoroplethGeometryFeatureProps>;
 };
 
 export type ChoroplethValueEntry = {
-  value?: any | null;
-  value_kind: "value" | "no_data" | "no_response";
-  fill_color: string;
-  fill_pattern?: any | null;
-  special_dominant: boolean;
-  top_real_count: number;
-  cnt_null: number;
-  cnt_empty: number;
+    value?: any | null;
+    value_kind: "value" | "no_data" | "no_response";
+    fill_color: string;
+    fill_pattern?: any | null;
+    special_dominant: boolean;
+    top_real_count: number;
+    cnt_null: number;
+    cnt_empty: number;
 };
 
 export type ChoroplethValuesResponse = {
-  question_uid: number;
-  year_requested: number;
-  granularity: ChoroplethGranularity;
-  legend: MapLegend;
-  values: Record<string, ChoroplethValueEntry>;
+    question_uid: number;
+    year_requested: number;
+    granularity: ChoroplethGranularity;
+    legend: MapLegend;
+    values: Record<string, ChoroplethValueEntry>;
 };

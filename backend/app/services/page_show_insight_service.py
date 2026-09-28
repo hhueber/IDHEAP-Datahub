@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 from app.models.answer import Answer
@@ -9,7 +9,10 @@ from app.models.question_global import QuestionGlobal
 from app.models.question_global_option_association import QuestionGlobalOptionAssociation
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
-from app.repositories.pageShow_insights_repo import (
+from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.repositories.page_show_insights_repo import (
     count_by_column,
     count_by_columns,
     count_distinct_by_column,
@@ -22,15 +25,14 @@ from app.repositories.pageShow_insights_repo import (
     get_district_focus_feature,
     get_survey_year_by_uid,
 )
-from app.schemas.pageAll import EntityEnum
-from sqlalchemy.ext.asyncio import AsyncSession
+from backend.app.schemas.page_all import EntityEnum
 
 
 def _entity_value(entity: EntityEnum | str) -> str:
     return entity.value if hasattr(entity, "value") else str(entity)
 
 
-async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Optional[Dict[str, Any]]:
+async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> dict[str, Any] | None:
     e = _entity_value(entity)
 
     if e == "commune":
@@ -95,7 +97,7 @@ def stat_item(key: str, value: Any) -> dict[str, Any]:
     }
 
 
-async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Dict[str, Any]:
+async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> dict[str, Any]:
     e = _entity_value(entity)
 
     if e == "commune":
@@ -383,7 +385,7 @@ async def build_child_layers(entity: EntityEnum | str, obj: Any, db: AsyncSessio
     return layers
 
 
-async def build_insights(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> Optional[Dict[str, Any]]:
+async def build_insights(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> dict[str, Any] | None:
     map_data = await build_map(entity, obj, db)
     stats = await build_stats(entity, obj, db)
 

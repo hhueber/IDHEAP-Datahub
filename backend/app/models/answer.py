@@ -1,7 +1,6 @@
-from typing import Optional
-
-
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, String, UniqueConstraint
+from commune import Commune
+from question_per_survey import QuestionPerSurvey
+from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -20,6 +19,6 @@ class Answer(Base):
     commune_uid: Mapped[int] = mapped_column(ForeignKey("commune.uid", ondelete="CASCADE"))
     commune: Mapped["Commune"] = relationship(back_populates="answers")
 
-    value: Mapped[Optional[str]] = mapped_column(String, nullable=True)
+    value: Mapped[str | None] = mapped_column(String, nullable=True)
 
     __table_args__ = (UniqueConstraint("question_uid", "commune_uid", "year"),)

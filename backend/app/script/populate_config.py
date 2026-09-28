@@ -5,7 +5,7 @@ import logging
 
 from app.db import AsyncSessionLocal
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import SQLAlchemyError
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ async def populate_config_if_empty() -> None:
         try:
             result = await session.execute(text("SELECT COUNT(*) FROM config"))
             count = result.scalar_one()
-        except Exception as e:
+        except SQLAlchemyError as e:
             logger.error("Unable to check config table: %s", e)
             return
 
@@ -50,7 +50,7 @@ async def populate_config_if_empty() -> None:
         try:
             with CONFIG_SEED_PATH.open("r", encoding="utf-8") as f:
                 data = json.load(f)
-        except Exception as e:
+        except (OSError, json.JSONDecodeError) as e:
             logger.error("Failed to load config_defaults.json: %s", e)
             return
 

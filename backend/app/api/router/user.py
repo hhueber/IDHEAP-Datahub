@@ -5,7 +5,7 @@ from app.models.user import User as UserModel
 from app.repositories.user_repo import create_user_record, delete_user_by_instance, update_user_password_hash
 from app.schemas.user import PasswordChangeIn, Role, User, UserCreate, UserDeleteIn, UserPublic
 from app.services.user_service import normalize_name
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -109,7 +109,8 @@ async def delete_user(
     # empêcher l'admin de se supprimer lui-même
     if target.id == current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Impossible de supprimer votre propre compte"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible de supprimer votre propre compte",
         )
 
     await delete_user_by_instance(db, target)
@@ -142,12 +143,16 @@ async def change_password(
 
     # Vérifie l'ancien mot de passe
     if not verify_password(payload.old_password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ancien mot de passe incorrect")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ancien mot de passe incorrect",
+        )
 
     # empêcher la réutilisation du même mot de passe
     if verify_password(payload.new_password, user.password_hash):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Le nouveau mot de passe doit être différent"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le nouveau mot de passe doit être différent",
         )
 
     new_hash = get_password_hash(payload.new_password)

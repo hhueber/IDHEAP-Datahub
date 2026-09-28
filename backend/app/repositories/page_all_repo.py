@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple, Type
+from typing import Any
 import unicodedata
 
 
@@ -12,13 +12,15 @@ from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.schemas.pageAll import AllItem, EntityEnum, OrderByEnum, OrderDirEnum, PageAllLangEnum
 from sqlalchemy import and_, case, cast, func, Integer, Numeric, or_, select, String
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
 
 
-ModelType = Type[Base]
+from backend.app.schemas.page_all import AllItem, EntityEnum, OrderByEnum, OrderDirEnum, PageAllLangEnum
+
+
+ModelType = type[Base]
 
 SUPPORTED_LANGS = {"fr", "de", "it", "rm", "en"}
 
@@ -119,9 +121,9 @@ class EntityConfig:
     def __init__(
         self,
         model: ModelType,
-        code_attr: Optional[str],
+        code_attr: str | None,
         default_sort: OrderByEnum = OrderByEnum.name,
-        search_extra_attrs: Optional[List[str]] = None,
+        search_extra_attrs: list[str] | None = None,
     ):
         self.model = model
         self.code_attr = code_attr
@@ -129,7 +131,7 @@ class EntityConfig:
         self.search_extra_attrs = search_extra_attrs or []
 
 
-ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
+ENTITY_CONFIG: dict[EntityEnum, EntityConfig] = {
     EntityEnum.commune: EntityConfig(
         Commune,
         "code",
@@ -347,7 +349,7 @@ def _order_column_for_entity(
         return getattr(model, cfg.code_attr)
 
     if order_by == OrderByEnum.year and hasattr(model, "year"):
-        return getattr(model, "year")
+        return model.year
 
     if order_by == OrderByEnum.value:
         if entity == EntityEnum.option:
@@ -555,7 +557,7 @@ async def get_pageAll_paginated(
     order_dir: OrderDirEnum = OrderDirEnum.asc,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
     q: str | None = None,
-) -> Tuple[List[AllItem], int]:
+) -> tuple[list[AllItem], int]:
     cfg = ENTITY_CONFIG.get(entity)
 
     if cfg is None:
@@ -563,8 +565,7 @@ async def get_pageAll_paginated(
 
     model = cfg.model
 
-    if page < 1:
-        page = 1
+    page = max(page, 1)
 
     if per_page < 1:
         per_page = 20
@@ -614,7 +615,7 @@ async def suggest_pageAll(
     q: str,
     limit: int = 10,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
-) -> List[AllItem]:
+) -> list[AllItem]:
     cfg = ENTITY_CONFIG.get(entity)
 
     if cfg is None:

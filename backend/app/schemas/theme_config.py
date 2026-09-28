@@ -1,4 +1,4 @@
-from typing import Literal, Optional
+from typing import Literal
 
 
 from pydantic import BaseModel, ConfigDict
@@ -7,38 +7,38 @@ from pydantic import BaseModel, ConfigDict
 class ThemeConfig(BaseModel):
     model_config = ConfigDict(extra="forbid")  # interdit les clés inconnues
 
-    instance_name: Optional[str] = None
-    logo_url: Optional[str] = None
+    instance_name: str | None = None
+    logo_url: str | None = None
 
     # LIGHT
-    colour_light_primary: Optional[str] = None
-    colour_light_secondary: Optional[str] = None
-    colour_light_background: Optional[str] = None
-    colour_light_text: Optional[str] = None
-    navbar_overlay_light_bg: Optional[str] = None
-    logoBackground_light: Optional[str] = None
-    selection_light: Optional[str] = None
+    colour_light_primary: str | None = None
+    colour_light_secondary: str | None = None
+    colour_light_background: str | None = None
+    colour_light_text: str | None = None
+    navbar_overlay_light_bg: str | None = None
+    logoBackground_light: str | None = None
+    selection_light: str | None = None
 
-    communes_light: Optional[str] = None
-    district_light: Optional[str] = None
-    canton_light: Optional[str] = None
-    country_light: Optional[str] = None
-    lakes_light: Optional[str] = None
+    communes_light: str | None = None
+    district_light: str | None = None
+    canton_light: str | None = None
+    country_light: str | None = None
+    lakes_light: str | None = None
 
     # DARK
-    colour_dark_primary: Optional[str] = None
-    colour_dark_secondary: Optional[str] = None
-    colour_dark_background: Optional[str] = None
-    colour_dark_text: Optional[str] = None
-    navbar_overlay_dark_bg: Optional[str] = None
-    logoBackground_dark: Optional[str] = None
-    selection_dark: Optional[str] = None
+    colour_dark_primary: str | None = None
+    colour_dark_secondary: str | None = None
+    colour_dark_background: str | None = None
+    colour_dark_text: str | None = None
+    navbar_overlay_dark_bg: str | None = None
+    logoBackground_dark: str | None = None
+    selection_dark: str | None = None
 
-    communes_dark: Optional[str] = None
-    district_dark: Optional[str] = None
-    canton_dark: Optional[str] = None
-    country_dark: Optional[str] = None
-    lakes_dark: Optional[str] = None
+    communes_dark: str | None = None
+    district_dark: str | None = None
+    canton_dark: str | None = None
+    country_dark: str | None = None
+    lakes_dark: str | None = None
 
     theme_default_mode: Literal["light", "dark"] = "light"
 

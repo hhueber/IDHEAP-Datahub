@@ -1,27 +1,26 @@
-from typing import Dict, List, Union
-
-
-from app.schemas.pageAll import EntityEnum
 from pydantic import BaseModel, Field, field_validator
 
 
-EditValue = Union[str, int, float, bool]
+from backend.app.schemas.page_all import EntityEnum
+
+
+EditValue = str | int | float | bool
 
 
 class EditFilter(BaseModel):
     field: str
-    value: Union[int, str]
+    value: int | str
 
 
 class EditRequest(BaseModel):
     entity: EntityEnum
-    filters: List[EditFilter]
+    filters: list[EditFilter]
     # field -> value (non vide pour les strings)
-    updates: Dict[str, EditValue] = Field(default_factory=dict)
+    updates: dict[str, EditValue] = Field(default_factory=dict)
 
     @field_validator("updates")
     @classmethod
-    def validate_updates_not_empty(cls, v: Dict[str, EditValue]):
+    def validate_updates_not_empty(cls, v: dict[str, EditValue]):
         if not v:
             raise ValueError("No updates provided")
         # interdiction d'envoyer des strings vides / whitespace

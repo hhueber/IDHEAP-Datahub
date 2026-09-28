@@ -1,4 +1,4 @@
-from typing import Any, Type
+from typing import Any
 
 
 from app.models.canton import Canton
@@ -9,9 +9,11 @@ from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.schemas.pageAll import PageAllLangEnum
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.schemas.page_all import PageAllLangEnum
 
 
 SUPPORTED_LANGS = {"fr", "de", "it", "ro", "en"}
@@ -39,7 +41,7 @@ def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
-def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
+def _localized_name(model: type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
     translated_name = getattr(model, f"name_{safe_lang}", None)
@@ -48,7 +50,7 @@ def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
     return _coalesce_not_empty(translated_name, fallback_name)
 
 
-def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
+def _localized_text_or_label(model: type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
     translated_text = getattr(model, f"text_{safe_lang}", None)
@@ -74,7 +76,7 @@ def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> A
 
 def _relation_display_config(
     lang: PageAllLangEnum | str,
-) -> dict[str, tuple[Type[Any], str, Any]]:
+) -> dict[str, tuple[type[Any], str, Any]]:
     return {
         "commune_uid": (
             Commune,

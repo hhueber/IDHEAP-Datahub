@@ -1,6 +1,4 @@
-from datetime import date
-from typing import Optional, Set, Tuple
-import orjson
+from datetime import datetime, timezone
 
 
 from app.core.geo_config import THEME_MAP_PREVIEW_CANTON_OFS_ID
@@ -17,6 +15,7 @@ from app.schemas.geo import Feature, FeatureCollection, GeoBundle, Geometry, Yea
 from geoalchemy2 import functions as geofunc
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+import orjson
 
 
 async def _fc_for_layer(
@@ -25,7 +24,7 @@ async def _fc_for_layer(
     EntModel,
     rel_attr: str,
     year_val: int,
-    props: Tuple[Tuple[str, str, bool], ...],
+    props: tuple[tuple[str, str, bool], ...],
 ) -> FeatureCollection:
     labeled_cols = []
     prop_keys = []
@@ -50,13 +49,13 @@ async def _fc_for_layer(
     return await _features_from_stmt(session, stmt, tuple(prop_keys))
 
 
-async def _max_year_leq(session: AsyncSession, model, y: int) -> Optional[int]:
+async def _max_year_leq(session: AsyncSession, model, y: int) -> int | None:
     q = select(func.max(model.year)).where(model.year <= y)
     res = await session.execute(q)
     return res.scalar_one_or_none()
 
 
-async def _features_from_stmt(session: AsyncSession, stmt, prop_keys: Tuple[str, ...]) -> FeatureCollection:
+async def _features_from_stmt(session: AsyncSession, stmt, prop_keys: tuple[str, ...]) -> FeatureCollection:
     rows = (await session.execute(stmt)).all()
     feats = []
     for row in rows:
@@ -72,8 +71,8 @@ ALL_LAYERS = {"country", "lakes", "cantons", "districts", "communes"}
 
 async def get_geo_by_year_selective(
     session: AsyncSession,
-    requested_year: Optional[int],
-    layers: Set[str],
+    requested_year: int | None,
+    layers: set[str],
     clear_others: bool = False,
 ) -> GeoBundle:
     """
@@ -82,7 +81,7 @@ async def get_geo_by_year_selective(
     - clear_others: if True, explicitly includes other layers set to None
                     if False, omits them to facilitate front-end merging
     """
-    y_req = int(requested_year or date.today().year)
+    y_req = int(requested_year or datetime.now(tz=timezone.utc).year)
 
     # Calcule les années pour les couches versionnées demandées en un seul round-trip SQL.
     # Chaque sous-requête scalaire est évaluée par la DB en parallèle dans une seule exécution.
@@ -181,14 +180,14 @@ async def get_geo_by_year_selective(
     # Prépare YearMeta (remplit uniquement ce qui est demandé)
     year_meta = YearMeta(
         requested=y_req,
-        country=(None if "country" in layers else None),  # pas de notion d'année country
+        country=(None),  # pas de notion d'année country
         lakes=y_lakes if "lakes" in layers else None,
         cantons=y_cantons if "cantons" in layers else None,
         districts=y_districts if "districts" in layers else None,
     )
 
     # On construit la réponse GeoBundle, en incluant ou omettant les clés non demandées
-    bundle_kwargs = dict(year=year_meta)
+    bundle_kwargs = {"year": year_meta}
     if "country" in layers or clear_others:
         bundle_kwargs["country"] = country_fc
     if "lakes" in layers or clear_others:
@@ -206,7 +205,7 @@ async def get_geo_by_year_selective(
 async def get_geo_by_canton_preview(
     session: AsyncSession,
     canton_ofs_id: int = THEME_MAP_PREVIEW_CANTON_OFS_ID,
-    requested_year: Optional[int] = None,
+    requested_year: int | None = None,
 ) -> GeoBundle:
     """
     Retourne les couches GeoJSON nécessaires à une preview de carte limitée
@@ -235,7 +234,7 @@ async def get_geo_by_canton_preview(
         GeoBundle: Bundle GeoJSON contenant uniquement les couches utiles à
         la preview ciblée.
     """
-    y_req = int(requested_year or date.today().year)
+    y_req = int(requested_year or datetime.now(tz=timezone.utc).year)
 
     canton_uid = (await session.execute(select(Canton.uid).where(Canton.ofs_id == canton_ofs_id))).scalar_one_or_none()
 

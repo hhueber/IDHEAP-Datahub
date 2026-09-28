@@ -1,8 +1,7 @@
-from typing import List
-
-
+from project_metadata import ProjectMetadata
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from survey import Survey
 
 
 from . import Base
@@ -14,7 +13,7 @@ class Project(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
 
-    surveys: Mapped[List["Survey"]] = relationship("Survey", back_populates="project")
+    surveys: Mapped[list["Survey"]] = relationship("Survey", back_populates="project")
 
     project_metadata_uid: Mapped[int] = mapped_column(
         ForeignKey("project_metadata.uid", ondelete="CASCADE"), nullable=False

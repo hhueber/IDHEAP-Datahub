@@ -1,4 +1,3 @@
-from typing import List, Optional
 import re
 import unicodedata
 
@@ -7,7 +6,7 @@ from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
 from app.models.placeOfInterest import PlaceOfInterest
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -52,14 +51,14 @@ def placeOfInterest_to_dict(c: PlaceOfInterest) -> dict:
     }
 
 
-async def list_placeOfInterest(db: AsyncSession) -> List[dict]:
+async def list_placeOfInterest(db: AsyncSession) -> list[dict]:
     res = await db.execute(
         select(PlaceOfInterest).where(PlaceOfInterest.active == True).order_by(PlaceOfInterest.default_name.asc())
     )
     return [placeOfInterest_to_dict(c) for c in res.scalars().all()]
 
 
-async def get_placeOfInterest(db: AsyncSession, code: str) -> Optional[PlaceOfInterest]:
+async def get_placeOfInterest(db: AsyncSession, code: str) -> PlaceOfInterest | None:
     res = await db.execute(select(PlaceOfInterest).where(PlaceOfInterest.code == code.lower()))
     return res.scalars().first()
 
@@ -132,11 +131,11 @@ def placeOfInterest_to_client_dict(
     }
 
 
-async def list_placeOfInterest_for_lang(db: AsyncSession, lang: str) -> List[dict]:
+async def list_placeOfInterest_for_lang(db: AsyncSession, lang: str) -> list[dict]:
     stmt = select(PlaceOfInterest).where(PlaceOfInterest.active == True).order_by(PlaceOfInterest.default_name.asc())
     res = await db.execute(stmt)
     placeOfInterest = res.scalars().all()
-    result: List[dict] = []
+    result: list[dict] = []
     for c in placeOfInterest:
         geo_type = await resolve_place_of_interest_geo_type(db, c.code)
         result.append(placeOfInterest_to_client_dict(c, lang, geo_type))

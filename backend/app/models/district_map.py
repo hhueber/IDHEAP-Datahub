@@ -1,3 +1,4 @@
+from district import District
 from geoalchemy2.types import Geometry
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship

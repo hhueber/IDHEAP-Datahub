@@ -1,9 +1,10 @@
-from typing import Dict, List
 import enum
 
 
-from sqlalchemy import Enum, ForeignKey, Integer, String
+from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from survey import Survey
+from survey_author_association import SurveyAuthorAssociation
 
 
 from .base import Base
@@ -30,12 +31,14 @@ class SurveyMetadata(Base):
 
     links_: Mapped[str] = mapped_column(String, nullable=False)
 
-    author_association: Mapped[List["SurveyAuthorAssociation"]] = relationship(
-        "SurveyAuthorAssociation", back_populates="survey_metadata", cascade="all, delete-orphan"
+    author_association: Mapped[list["SurveyAuthorAssociation"]] = relationship(
+        "SurveyAuthorAssociation",
+        back_populates="survey_metadata",
+        cascade="all, delete-orphan",
     )
 
     @property
-    def links(self) -> List[Dict[str, str]]:
+    def links(self) -> list[dict[str, str]]:
         if not self.links_:
             return []
 
@@ -48,7 +51,7 @@ class SurveyMetadata(Base):
         return return_links
 
     @links.setter
-    def links(self, value: List[Dict[str, str]]):
+    def links(self, value: list[dict[str, str]]):
 
         if not value:
             self.links_ = ""

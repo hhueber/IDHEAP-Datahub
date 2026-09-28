@@ -1,8 +1,5 @@
-from typing import List, Optional
-
-
-from geoalchemy2.types import Geometry
-from sqlalchemy import ForeignKey, String
+from lake_map import LakeMap
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
@@ -16,7 +13,7 @@ class Lake(Base):
     code: Mapped[str] = mapped_column(String)
     name: Mapped[str] = mapped_column(String)
 
-    lake_map: Mapped[List["LakeMap"]] = relationship(
+    lake_map: Mapped[list["LakeMap"]] = relationship(
         "LakeMap",
         back_populates="lake",
         cascade="all, delete-orphan",

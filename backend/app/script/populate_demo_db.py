@@ -26,7 +26,6 @@ async def populate_demo_db() -> None:
         # Add canton
         async with session.begin():
             index = 1
-            total_item = len(CANTONS)
             for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
                 db_canton = Canton(
                     code=code,
@@ -55,7 +54,7 @@ async def populate_demo_db() -> None:
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
-                    RuntimeError("Canton not found")
+                    raise RuntimeError("Canton not found")
 
                 result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
                 db_district = result.scalar_one_or_none()
@@ -92,7 +91,6 @@ async def populate_demo_db() -> None:
                 # print(f">>> INSERTING COMMUNE {rows['Nom de la commune']} {row_number}/{len(communes)} ")
 
         async with session.begin():
-
             db_question_globale_kant = QuestionGlobal(
                 label="kant",
                 text_de="Kantonszugehörigkeit Gemeinden",
@@ -196,7 +194,6 @@ async def populate_demo_db() -> None:
 
                     session.add(db_question_unique_17_2)
                 elif year == 2023:
-
                     db_question_kant = QuestionPerSurvey(
                         code="kant23",
                         label="kant23",
@@ -381,7 +378,13 @@ async def populate_demo_db() -> None:
                         "en": "University, ETH",
                         "rm": "Universitad, SPF",
                     },
-                    8.0: {"fr": "Autre", "de": "Andere", "it": "Altri", "en": "Other", "rm": "L’autra"},
+                    8.0: {
+                        "fr": "Autre",
+                        "de": "Andere",
+                        "it": "Altri",
+                        "en": "Other",
+                        "rm": "L’autra",
+                    },
                     -99.0: {
                         "fr": "Aucune réponse",
                         "de": "Keine Antwort",
@@ -414,7 +417,13 @@ async def populate_demo_db() -> None:
 
                 # Option for GSB23_Q27
                 answers = {
-                    1.0: {"fr": "Bien", "de": "Gut", "it": "Bene", "en": "Good", "rm": "Rauba"},
+                    1.0: {
+                        "fr": "Bien",
+                        "de": "Gut",
+                        "it": "Bene",
+                        "en": "Good",
+                        "rm": "Rauba",
+                    },
                     2.0: {
                         "fr": "Plutôt bon",
                         "de": "Eher gut",
@@ -436,7 +445,13 @@ async def populate_demo_db() -> None:
                         "en": "Rather poor",
                         "rm": "Plitost nausch",
                     },
-                    5.0: {"fr": "Mauvais", "de": "Schlecht", "it": "Male", "en": "Bad", "rm": "Difficilmain"},
+                    5.0: {
+                        "fr": "Mauvais",
+                        "de": "Schlecht",
+                        "it": "Male",
+                        "en": "Bad",
+                        "rm": "Difficilmain",
+                    },
                     -99.0: {
                         "fr": "Aucune réponse",
                         "de": "Keine Antwort",
@@ -468,7 +483,13 @@ async def populate_demo_db() -> None:
                     await session.flush()
 
                 answers = {
-                    1: {"fr": "En hausse", "de": "Gestiegen", "it": "Aumentato", "en": "Increased", "rm": "Augment"},
+                    1: {
+                        "fr": "En hausse",
+                        "de": "Gestiegen",
+                        "it": "Aumentato",
+                        "en": "Increased",
+                        "rm": "Augment",
+                    },
                     2: {
                         "fr": "Resté inchangé",
                         "de": "Gleich geblieben",
@@ -476,7 +497,13 @@ async def populate_demo_db() -> None:
                         "en": "Remained the same",
                         "rm": "Restà egual",
                     },
-                    3: {"fr": "Baissé", "de": "Gesunken", "it": "Affondato", "en": "Sunk", "rm": "Sbassà"},
+                    3: {
+                        "fr": "Baissé",
+                        "de": "Gesunken",
+                        "it": "Affondato",
+                        "en": "Sunk",
+                        "rm": "Sbassà",
+                    },
                     -99: {
                         "fr": "Aucune réponse",
                         "de": "Keine Antwort",
@@ -561,7 +588,12 @@ async def populate_demo_db() -> None:
 
         # Adding answer
         async with session.begin():
-            crc = pd.read_csv(Path(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
+            crc = pd.read_csv(
+                Path(BASE_DIR, "data", "mon_fichier_indexed.csv"),
+                index_col=0,
+                header=0,
+                sep=";",
+            )
 
             for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
                 if pd.isna(row["gemid"]):
@@ -589,7 +621,10 @@ async def populate_demo_db() -> None:
                         result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant2017"))
                         db_question = result.scalar_one_or_none()
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -599,7 +634,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -609,7 +647,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -618,7 +659,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -627,13 +671,20 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
             GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
-            for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing Commune for 2023"):
+            for index, row in tqdm(
+                GSB_2023.iterrows(),
+                total=len(GSB_2023),
+                desc="Processing Commune for 2023",
+            ):
                 if pd.isna(row["BFS_2023"]):
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
@@ -657,7 +708,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -667,7 +721,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -677,7 +734,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -687,7 +747,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -696,7 +759,10 @@ async def populate_demo_db() -> None:
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()

@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Type
+from typing import Any
 
 
 from app.models.canton import Canton
@@ -12,11 +12,13 @@ from app.models.question_global_option_association import QuestionGlobalOptionAs
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.repositories.pageShow_repo import ENTITY_MODEL_MAP
-from app.schemas.pageAll import EntityEnum, PageAllLangEnum
-from app.schemas.pageShow import ShowMetaChild
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.repositories.page_show_repo import ENTITY_MODEL_MAP
+from backend.app.schemas.page_all import EntityEnum, PageAllLangEnum
+from backend.app.schemas.page_show import ShowMetaChild
 
 
 ASSOCIATION_MODEL_MAP = {
@@ -53,7 +55,7 @@ def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
-def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
+def _localized_name(model: type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
     translated_name = getattr(model, f"name_{safe_lang}", None)
@@ -62,7 +64,7 @@ def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
     return _coalesce_not_empty(translated_name, fallback_name)
 
 
-def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
+def _localized_text_or_label(model: type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
     # Récupère dynamiquement le champ traduit correspondant à la langue
@@ -90,9 +92,9 @@ def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> A
 
 async def enrich_children_display_names(
     db: AsyncSession,
-    rows: List[dict[str, Any]],
+    rows: list[dict[str, Any]],
     lang: PageAllLangEnum | str = PageAllLangEnum.fr,
-) -> List[dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Ajoute des champs display-friendly aux enfants.
 
@@ -106,7 +108,7 @@ async def enrich_children_display_names(
     if not rows:
         return rows
 
-    relation_configs: dict[str, tuple[Type[Any], str, Any]] = {
+    relation_configs: dict[str, tuple[type[Any], str, Any]] = {
         "commune_uid": (
             Commune,
             "commune_name",
@@ -182,8 +184,8 @@ async def get_children_paginated(
     parent_uid: int,
     page: int,
     per_page: int,
-) -> tuple[List[Any], int]:
-    model: Optional[Type[Any]] = ENTITY_MODEL_MAP.get(child_entity)
+) -> tuple[list[Any], int]:
+    model: type[Any] | None = ENTITY_MODEL_MAP.get(child_entity)
     if model is None:
         return [], 0
 

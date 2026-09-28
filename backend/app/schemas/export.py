@@ -1,4 +1,4 @@
-from typing import List, Literal, Optional
+from typing import Literal
 
 
 from pydantic import BaseModel
@@ -7,8 +7,8 @@ from pydantic import BaseModel
 class ExportQuestion(BaseModel):
     uid: int
     scope: Literal["global", "per_survey"]
-    survey_uid: Optional[int]
+    survey_uid: int | None
 
 
 class ExportRequest(BaseModel):
-    questions: List[ExportQuestion]
+    questions: list[ExportQuestion]

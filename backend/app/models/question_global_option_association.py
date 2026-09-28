@@ -1,3 +1,5 @@
+from option import Option
+from question_global import QuestionGlobal
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 

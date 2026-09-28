@@ -1,320 +1,356 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { PlaceOfInterestMarker } from "@/features/geo/hooks/usePlaceOfInterestMarkers";
-import { communesApi, PlaceOfInterestSuggestDTO } from "@/features/geo/communesApi";
+import {
+    communesApi,
+    PlaceOfInterestSuggestDTO,
+} from "@/features/geo/communesApi";
 import { useTheme } from "@/theme/useTheme";
 
-
 type Props = {
-  isOpen: boolean;
-  onClose: () => void;
-  lang: string;
+    isOpen: boolean;
+    onClose: () => void;
+    lang: string;
 
-  backendPlaceOfInterest: PlaceOfInterestMarker[];
-  extraPlaceOfInterest: PlaceOfInterestMarker[];
+    backendPlaceOfInterest: PlaceOfInterestMarker[];
+    extraPlaceOfInterest: PlaceOfInterestMarker[];
 
-  hideAllBackend: boolean;
-  hiddenCodes: Set<string>;
-  togglePlaceOfInterestHidden: (code: string) => void;
+    hideAllBackend: boolean;
+    hiddenCodes: Set<string>;
+    togglePlaceOfInterestHidden: (code: string) => void;
 
-  addExtraPlaceOfInterest: (c: Omit<PlaceOfInterestMarker, "source">) => void;
-  removeExtraPlaceOfInterest: (code: string) => void;
+    addExtraPlaceOfInterest: (c: Omit<PlaceOfInterestMarker, "source">) => void;
+    removeExtraPlaceOfInterest: (code: string) => void;
 };
 
 export default function PlaceOfInterestMenuModal({
-  isOpen,
-  onClose,
-  lang,
-  backendPlaceOfInterest,
-  extraPlaceOfInterest,
-  hideAllBackend,
-  hiddenCodes,
-  togglePlaceOfInterestHidden,
-  addExtraPlaceOfInterest,
-  removeExtraPlaceOfInterest,
+    isOpen,
+    onClose,
+    lang,
+    backendPlaceOfInterest,
+    extraPlaceOfInterest,
+    hideAllBackend,
+    hiddenCodes,
+    togglePlaceOfInterestHidden,
+    addExtraPlaceOfInterest,
+    removeExtraPlaceOfInterest,
 }: Props) {
-  const { t } = useTranslation();
+    const { t } = useTranslation();
 
-  const [query, setQuery] = useState("");
-  const [suggestions, setSuggestions] = useState<PlaceOfInterestSuggestDTO[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
+    const [query, setQuery] = useState("");
+    const [suggestions, setSuggestions] = useState<PlaceOfInterestSuggestDTO[]>(
+        [],
+    );
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const abortRef = useRef<AbortController | null>(null);
 
-  const { textColor, background, borderColor, navbarOverlayBg, hoverText07, hoverPrimary06 } = useTheme();
+    const {
+        textColor,
+        background,
+        borderColor,
+        navbarOverlayBg,
+        hoverText07,
+        hoverPrimary06,
+    } = useTheme();
 
-  const getSuggestionTypeLabel = (
-    type: PlaceOfInterestSuggestDTO["type"]
-  ): string => {
-    return t(`map.menu.placeOfInterestTypes.${type}`);
-  };
+    const getSuggestionTypeLabel = (
+        type: PlaceOfInterestSuggestDTO["type"],
+    ): string => {
+        return t(`map.menu.placeOfInterestTypes.${type}`);
+    };
 
-  useEffect(() => {
-    if (!isOpen) {
-      setQuery("");
-      setSuggestions([]);
-      setLoading(false);
-      setError(null);
-      abortRef.current?.abort();
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setQuery(value);
-
-    if (value.trim().length < 3) {
-      abortRef.current?.abort();
-      setSuggestions([]);
-      setLoading(false);
-      setError(null);
-      return;
-    }
-
-    abortRef.current?.abort();
-    const ctrl = new AbortController();
-    abortRef.current = ctrl;
-
-    setLoading(true);
-    setError(null);
-
-    communesApi
-      .suggest(value.trim(), lang, ctrl.signal, 10)
-      .then((res) => {
-        if (!res.success) {
-          setError(res.detail || t("map.errors.failedToFetchSuggestions"));
-          setSuggestions([]);
-          return;
+    useEffect(() => {
+        if (!isOpen) {
+            setQuery("");
+            setSuggestions([]);
+            setLoading(false);
+            setError(null);
+            abortRef.current?.abort();
         }
-        setSuggestions(res.data);
-      })
-      .catch((err: any) => {
-        if (ctrl.signal.aborted) return;
-        setError(err?.message || t("map.errors.failedToFetchSuggestions"));
-        setSuggestions([]);
-      })
-      .finally(() => {
-        if (!ctrl.signal.aborted) setLoading(false);
-      });
-  };
+    }, [isOpen]);
 
-  const handleAddSuggestion = (s: PlaceOfInterestSuggestDTO) => {
-    const code = `local-${s.type}-${s.uid}`;
-    const fallbackName = s.name?.trim() || s.default_name?.trim();
-    if (!fallbackName) {
-      setError(t("map.errors.failedToFetchSuggestions"));
-      return;
-    }
+    if (!isOpen) return null;
 
-    addExtraPlaceOfInterest({
-      code,
-      geoCode: s.code,
-      geoType: s.type,
-      name: fallbackName,
-      names: s.names,
-      pos: s.pos,
-    });
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        setQuery(value);
 
-    setQuery("");
-    setSuggestions([]);
-  };
-
-  const isPlaceOfInterestVisible = (code: string) => {
-    if (hideAllBackend) return false;
-    return !hiddenCodes.has(code);
-  };
-
-  const handleBackdropClick = () => {
-    onClose();
-  };
-
-  return (
-    <div className="fixed inset-0 z-[700] flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0"
-        onClick={handleBackdropClick}
-        style={
-          {
-            backgroundColor: navbarOverlayBg,
-          } as React.CSSProperties
+        if (value.trim().length < 3) {
+            abortRef.current?.abort();
+            setSuggestions([]);
+            setLoading(false);
+            setError(null);
+            return;
         }
-      />
-      {/* Contenu */}
-      <div className="relative rounded-lg shadow-xl max-w-lg w-[90%] p-4 z-[710] border"
-        style={
-          {
-            backgroundColor: background,
-            borderColor,
-            color: textColor,
-          } as React.CSSProperties
-        }>
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold">
-            {t("map.menu.global")}
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:[background-color:var(--poi-close-hover-bg)]"
-            aria-label={t("common.close")}
-            style={
-              {
-                color: textColor,
-                "--poi-close-hover-bg": hoverPrimary06,
-              } as React.CSSProperties
-            }
-          >
-            {/* Symbole de croix de fermeture */}
-            {"\u00D7"}
-          </button>
-        </div>
 
-        {/* Villes backend */}
-        <section className="mb-4">
-          <h3 className="text-sm font-semibold mb-1">
-            {t("map.menu.instancePlaceOfInterest")}
-          </h3>
-          {backendPlaceOfInterest.length === 0 ? (
-            <p className="text-xs" style={{ color: hoverText07 }}>
-              {t("map.menu.noInstancePlaceOfInterest")}
-            </p>
-          ) : (
-            <ul className="max-h-40 overflow-auto text-sm space-y-1">
-              {backendPlaceOfInterest.map((placeOfInterest) => {
-                const visible = isPlaceOfInterestVisible(placeOfInterest.code);
-                return (
-                  <li
-                    key={placeOfInterest.code}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <label className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        disabled={hideAllBackend}
-                        checked={visible}
-                        onChange={() => togglePlaceOfInterestHidden(placeOfInterest.code)}
-                      />
-                      <span>{placeOfInterest.name}</span>
-                    </label>
-                  </li>
+        abortRef.current?.abort();
+        const ctrl = new AbortController();
+        abortRef.current = ctrl;
+
+        setLoading(true);
+        setError(null);
+
+        communesApi
+            .suggest(value.trim(), lang, ctrl.signal, 10)
+            .then((res) => {
+                if (!res.success) {
+                    setError(
+                        res.detail || t("map.errors.failedToFetchSuggestions"),
+                    );
+                    setSuggestions([]);
+                    return;
+                }
+                setSuggestions(res.data);
+            })
+            .catch((err: any) => {
+                if (ctrl.signal.aborted) return;
+                setError(
+                    err?.message || t("map.errors.failedToFetchSuggestions"),
                 );
-              })}
-            </ul>
-          )}
-        </section>
+                setSuggestions([]);
+            })
+            .finally(() => {
+                if (!ctrl.signal.aborted) setLoading(false);
+            });
+    };
 
-        {/* Villes locales (frontend only) */}
-        <section className="mb-4">
-          <h3 className="text-sm font-semibold mb-1">
-              {t("map.menu.localPlaceOfInterest")}
-          </h3>
-          {extraPlaceOfInterest.length === 0 ? (
-              <p className="text-xs" style={{ color: hoverText07 }}>
-              {t("map.menu.noLocalPlaceOfInterest")}
-              </p>
-          ) : (
-              <ul className="max-h-32 overflow-auto text-sm space-y-1">
-              {extraPlaceOfInterest.map((placeOfInterest) => {
-                  const visible = isPlaceOfInterestVisible(placeOfInterest.code);
-                  return (
-                  <li
-                      key={placeOfInterest.code}
-                      className="flex items-center justify-between gap-2"
-                  >
-                      <label className="flex items-center gap-2">
-                      <input
-                          type="checkbox"
-                          disabled={hideAllBackend}
-                          checked={visible}
-                          onChange={() => togglePlaceOfInterestHidden(placeOfInterest.code)}
-                      />
-                      <span>{placeOfInterest.name}</span>
-                      </label>
-                      <button
-                      type="button"
-                      onClick={() => removeExtraPlaceOfInterest(placeOfInterest.code)}
-                      className="text-xs text-red-600 hover:underline"
-                      >
-                      {t("map.menu.removePlaceOfInterest")}
-                      </button>
-                  </li>
-                  );
-              })}
-              </ul>
-          )}
-        </section>
+    const handleAddSuggestion = (s: PlaceOfInterestSuggestDTO) => {
+        const code = `local-${s.type}-${s.uid}`;
+        const fallbackName = s.name?.trim() || s.default_name?.trim();
+        if (!fallbackName) {
+            setError(t("map.errors.failedToFetchSuggestions"));
+            return;
+        }
 
-        {/* Ajout de villes via suggest publique */}
-        <section>
-          <h3 className="text-sm font-semibold mb-1">
-            {t("map.menu.addPlaceOfInterest")}
-          </h3>
-          <input
-            type="text"
-            value={query}
-            onChange={handleSearchChange}
-            placeholder={t("map.menu.addPlaceOfInterestPlaceholder")}
-            className="w-full rounded px-2 py-1 text-sm mb-2 border"
-            style={
-              {
-                backgroundColor: background,
-                borderColor,
-                color: textColor,
-              } as React.CSSProperties
-            }
-          />
-          {loading && (
-            <p className="text-xs" style={{ color: hoverText07 }}>
-              {t("map.menu.loadingSuggestions")}
-            </p>
-          )}
-          {error && (
-            <p className="text-xs text-red-600">
-              {error}
-            </p>
-          )}
-          {suggestions.length > 0 && (
-            <ul
-              className="max-h-32 overflow-auto text-sm border rounded"
-              style={
-                {
-                  borderColor,
-                  backgroundColor: background,
-                  color: textColor,
-                } as React.CSSProperties
-              }
-            >
-              {suggestions.map((s) => (
-                <li
-                  key={`${s.type}-${s.uid}`}
-                  className="px-2 py-1 cursor-pointer flex items-center justify-between gap-2 hover:[background-color:var(--poi-suggest-hover-bg)]"
-                  onClick={() => handleAddSuggestion(s)}
-                  style={
+        addExtraPlaceOfInterest({
+            code,
+            geoCode: s.code,
+            geoType: s.type,
+            name: fallbackName,
+            names: s.names,
+            pos: s.pos,
+        });
+
+        setQuery("");
+        setSuggestions([]);
+    };
+
+    const isPlaceOfInterestVisible = (code: string) => {
+        if (hideAllBackend) return false;
+        return !hiddenCodes.has(code);
+    };
+
+    const handleBackdropClick = () => {
+        onClose();
+    };
+
+    return (
+        <div className="fixed inset-0 z-[700] flex items-center justify-center">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0"
+                onClick={handleBackdropClick}
+                style={
                     {
-                      "--poi-suggest-hover-bg": hoverPrimary06,
+                        backgroundColor: navbarOverlayBg,
                     } as React.CSSProperties
-                  }
-                >
-                  <span className="truncate font-medium">{s.name || s.default_name}</span>
+                }
+            />
+            {/* Contenu */}
+            <div
+                className="relative rounded-lg shadow-xl max-w-lg w-[90%] p-4 z-[710] border"
+                style={
+                    {
+                        backgroundColor: background,
+                        borderColor,
+                        color: textColor,
+                    } as React.CSSProperties
+                }
+            >
+                <div className="flex items-center justify-between mb-3">
+                    <h2 className="text-lg font-semibold">
+                        {t("map.menu.global")}
+                    </h2>
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        className="w-8 h-8 flex items-center justify-center rounded-full hover:[background-color:var(--poi-close-hover-bg)]"
+                        aria-label={t("common.close")}
+                        style={
+                            {
+                                color: textColor,
+                                "--poi-close-hover-bg": hoverPrimary06,
+                            } as React.CSSProperties
+                        }
+                    >
+                        {/* Symbole de croix de fermeture */}
+                        {"\u00D7"}
+                    </button>
+                </div>
 
-                  <span
-                    className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium"
-                    style={{
-                      borderColor,
-                      color: hoverText07,
-                    }}
-                  >
-                    {getSuggestionTypeLabel(s.type)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-      </div>
-    </div>
-  );
+                {/* Villes backend */}
+                <section className="mb-4">
+                    <h3 className="text-sm font-semibold mb-1">
+                        {t("map.menu.instancePlaceOfInterest")}
+                    </h3>
+                    {backendPlaceOfInterest.length === 0 ? (
+                        <p className="text-xs" style={{ color: hoverText07 }}>
+                            {t("map.menu.noInstancePlaceOfInterest")}
+                        </p>
+                    ) : (
+                        <ul className="max-h-40 overflow-auto text-sm space-y-1">
+                            {backendPlaceOfInterest.map((placeOfInterest) => {
+                                const visible = isPlaceOfInterestVisible(
+                                    placeOfInterest.code,
+                                );
+                                return (
+                                    <li
+                                        key={placeOfInterest.code}
+                                        className="flex items-center justify-between gap-2"
+                                    >
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                disabled={hideAllBackend}
+                                                checked={visible}
+                                                onChange={() =>
+                                                    togglePlaceOfInterestHidden(
+                                                        placeOfInterest.code,
+                                                    )
+                                                }
+                                            />
+                                            <span>{placeOfInterest.name}</span>
+                                        </label>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </section>
+
+                {/* Villes locales (frontend only) */}
+                <section className="mb-4">
+                    <h3 className="text-sm font-semibold mb-1">
+                        {t("map.menu.localPlaceOfInterest")}
+                    </h3>
+                    {extraPlaceOfInterest.length === 0 ? (
+                        <p className="text-xs" style={{ color: hoverText07 }}>
+                            {t("map.menu.noLocalPlaceOfInterest")}
+                        </p>
+                    ) : (
+                        <ul className="max-h-32 overflow-auto text-sm space-y-1">
+                            {extraPlaceOfInterest.map((placeOfInterest) => {
+                                const visible = isPlaceOfInterestVisible(
+                                    placeOfInterest.code,
+                                );
+                                return (
+                                    <li
+                                        key={placeOfInterest.code}
+                                        className="flex items-center justify-between gap-2"
+                                    >
+                                        <label className="flex items-center gap-2">
+                                            <input
+                                                type="checkbox"
+                                                disabled={hideAllBackend}
+                                                checked={visible}
+                                                onChange={() =>
+                                                    togglePlaceOfInterestHidden(
+                                                        placeOfInterest.code,
+                                                    )
+                                                }
+                                            />
+                                            <span>{placeOfInterest.name}</span>
+                                        </label>
+                                        <button
+                                            type="button"
+                                            onClick={() =>
+                                                removeExtraPlaceOfInterest(
+                                                    placeOfInterest.code,
+                                                )
+                                            }
+                                            className="text-xs text-red-600 hover:underline"
+                                        >
+                                            {t(
+                                                "map.menu.removePlaceOfInterest",
+                                            )}
+                                        </button>
+                                    </li>
+                                );
+                            })}
+                        </ul>
+                    )}
+                </section>
+
+                {/* Ajout de villes via suggest publique */}
+                <section>
+                    <h3 className="text-sm font-semibold mb-1">
+                        {t("map.menu.addPlaceOfInterest")}
+                    </h3>
+                    <input
+                        type="text"
+                        value={query}
+                        onChange={handleSearchChange}
+                        placeholder={t(
+                            "map.menu.addPlaceOfInterestPlaceholder",
+                        )}
+                        className="w-full rounded px-2 py-1 text-sm mb-2 border"
+                        style={
+                            {
+                                backgroundColor: background,
+                                borderColor,
+                                color: textColor,
+                            } as React.CSSProperties
+                        }
+                    />
+                    {loading && (
+                        <p className="text-xs" style={{ color: hoverText07 }}>
+                            {t("map.menu.loadingSuggestions")}
+                        </p>
+                    )}
+                    {error && <p className="text-xs text-red-600">{error}</p>}
+                    {suggestions.length > 0 && (
+                        <ul
+                            className="max-h-32 overflow-auto text-sm border rounded"
+                            style={
+                                {
+                                    borderColor,
+                                    backgroundColor: background,
+                                    color: textColor,
+                                } as React.CSSProperties
+                            }
+                        >
+                            {suggestions.map((s) => (
+                                <li
+                                    key={`${s.type}-${s.uid}`}
+                                    className="px-2 py-1 cursor-pointer flex items-center justify-between gap-2 hover:[background-color:var(--poi-suggest-hover-bg)]"
+                                    onClick={() => handleAddSuggestion(s)}
+                                    style={
+                                        {
+                                            "--poi-suggest-hover-bg":
+                                                hoverPrimary06,
+                                        } as React.CSSProperties
+                                    }
+                                >
+                                    <span className="truncate font-medium">
+                                        {s.name || s.default_name}
+                                    </span>
+
+                                    <span
+                                        className="shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                                        style={{
+                                            borderColor,
+                                            color: hoverText07,
+                                        }}
+                                    >
+                                        {getSuggestionTypeLabel(s.type)}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            </div>
+        </div>
+    );
 }

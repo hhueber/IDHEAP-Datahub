@@ -5,7 +5,7 @@ import asyncio
 from app.api.dependencies import get_current_user
 from app.core.config import settings
 from app.core.security import create_access_token
-from app.db import AsyncSessionLocal, get_db
+from app.db import get_db
 from app.models.user import User as UserModel
 from app.repositories.user_repo import authenticate_user, mark_token_created
 from app.schemas.auth import Token, UserLogin
@@ -47,7 +47,11 @@ async def login(user_credentials: UserLogin, response: Response, db: AsyncSessio
     # request to refresh this token in 55 minutes
     refresh_in = total_seconds - (5 * 60)
 
-    return {"access_token": access_token, "token_type": "bearer", "refresh_in": refresh_in}
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "refresh_in": refresh_in,
+    }
 
 
 @router.post("/logout")

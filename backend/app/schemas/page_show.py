@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Literal, Optional
+from typing import Any, Literal
 
 
 from pydantic import BaseModel
@@ -13,14 +13,14 @@ class ShowMetaField(BaseModel):
     key: str
     label: str
     kind: str = "text"
-    group: Optional[str] = None
+    group: str | None = None
 
 
 class ShowChildColumn(BaseModel):
     key: str
     label: str
     kind: str = "text"
-    align: Optional[str] = None
+    align: str | None = None
 
 
 class ShowMetaChildActions(BaseModel):
@@ -37,45 +37,45 @@ class ShowMetaChild(BaseModel):
     relation_type: Literal["direct", "association"] = "direct"
 
     # direct relation
-    fk_field: Optional[str] = None
+    fk_field: str | None = None
 
     # association relation
-    association_table: Optional[str] = None
-    association_source_field: Optional[str] = None
-    association_target_field: Optional[str] = None
+    association_table: str | None = None
+    association_source_field: str | None = None
+    association_target_field: str | None = None
     target_uid_field: str = "uid"
 
     per_page: int = 10
-    columns: List[ShowChildColumn]
+    columns: list[ShowChildColumn]
     actions: ShowMetaChildActions = ShowMetaChildActions()
 
 
 class ShowMeta(BaseModel):
     entity: str
     title_key: str
-    hide_keys: List[str] = []
-    fields: List[ShowMetaField] = []
-    languages: Optional[Dict[str, str]] = None
-    actions: Optional[ShowMetaActions] = None
-    children: Optional[List[ShowMetaChild]] = None
+    hide_keys: list[str] = []
+    fields: list[ShowMetaField] = []
+    languages: dict[str, str] | None = None
+    actions: ShowMetaActions | None = None
+    children: list[ShowMetaChild] | None = None
 
 
 class ShowResponse(BaseModel):
     success: bool
     detail: str
-    meta: Optional[ShowMeta] = None
-    data: Optional[Dict[str, Any]] = None
+    meta: ShowMeta | None = None
+    data: dict[str, Any] | None = None
 
 
 # réponse paginée pour un child
 class ShowInsightsResponse(BaseModel):
     success: bool
     detail: str
-    data: Optional[Dict[str, Any]] = None
+    data: dict[str, Any] | None = None
 
 
 class ShowChildrenData(BaseModel):
-    items: List[Dict[str, Any]]
+    items: list[dict[str, Any]]
     total: int
     page: int
     per_page: int
@@ -85,11 +85,11 @@ class ShowChildrenData(BaseModel):
 class ShowChildrenResponse(BaseModel):
     success: bool
     detail: str
-    data: Optional[ShowChildrenData] = None
+    data: ShowChildrenData | None = None
 
 
 class ShowInsightsMapChildLayer(BaseModel):
     child_key: str
     child_title: str
     child_entity: str
-    features: List[Dict[str, Any]] = []
+    features: list[dict[str, Any]] = []

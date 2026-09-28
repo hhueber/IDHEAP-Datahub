@@ -5,21 +5,21 @@ import type { Role } from "@/config/roles";
 
 // Garde d’accès par rôle : autorise l’accès seulement si l’utilisateur possède l’un des rôles requis
 export default function RequireRole({
-  roles,
-  children,
+    roles,
+    children,
 }: {
-  roles: Array<Role>;
-  children: JSX.Element;
+    roles: Array<Role>;
+    children: JSX.Element;
 }) {
-  const { isAuthenticated, hasRole } = useAuth();
+    const { isAuthenticated, hasRole } = useAuth();
 
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
 
-  if (!hasRole(...roles)) {
-    return <Navigate to="/404" replace />;
-  }
+    if (!hasRole(...roles)) {
+        return <Navigate to="/404" replace />;
+    }
 
-  return children;
+    return children;
 }

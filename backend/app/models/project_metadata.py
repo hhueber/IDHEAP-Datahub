@@ -1,6 +1,5 @@
-from typing import Dict, List
-
-
+from project import Project
+from project_author_association import ProjectAuthorAssociation
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -19,12 +18,14 @@ class ProjectMetadata(Base):
 
     project: Mapped["Project"] = relationship("Project", back_populates="project_metadata")
 
-    author_association: Mapped[List["ProjectAuthorAssociation"]] = relationship(
-        "ProjectAuthorAssociation", back_populates="project_metadata", cascade="all, delete-orphan"
+    author_association: Mapped[list["ProjectAuthorAssociation"]] = relationship(
+        "ProjectAuthorAssociation",
+        back_populates="project_metadata",
+        cascade="all, delete-orphan",
     )
 
     @property
-    def links(self) -> List[Dict[str, str]]:
+    def links(self) -> list[dict[str, str]]:
         if not self.links_:
             return []
 
@@ -37,7 +38,7 @@ class ProjectMetadata(Base):
         return return_links
 
     @links.setter
-    def links(self, value: List[Dict[str, str]]):
+    def links(self, value: list[dict[str, str]]):
 
         if not value:
             self.links_ = ""

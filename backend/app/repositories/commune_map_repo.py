@@ -1,6 +1,6 @@
 # calcule le point central des communes
 from app.models.commune_map import CommuneMap
-from sqlalchemy import desc, func, select
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

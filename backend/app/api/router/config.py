@@ -1,20 +1,21 @@
 from app.api.dependencies import get_current_user
 from app.db import get_db
 from app.repositories.config_repo import get_theme_config, upsert_theme_config
-from app.repositories.placeOfInterest_repo import (
-    delete_placeOfInterest,
-    get_placeOfInterest,
-    list_placeOfInterest,
-    upsert_placeOfInterest,
-)
-from app.schemas.geo import GeoBundle
-from app.schemas.placeOfInterest import PlaceOfInterestIn
 from app.schemas.theme_config import LogoUploadPayload, ThemeConfig
 from app.schemas.user import Role, UserPublic
 from app.services.config_service import handle_logo_data_url
 from app.services.geo_service import get_geo_by_canton_preview
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
+
+
+from backend.app.repositories.place_of_interest_repo import (
+    delete_placeOfInterest,
+    get_placeOfInterest,
+    list_placeOfInterest,
+    upsert_placeOfInterest,
+)
+from backend.app.schemas.place_of_interest import PlaceOfInterestIn
 
 
 router = APIRouter()
@@ -34,7 +35,9 @@ async def placeOfInterest_list(db: AsyncSession = Depends(get_db), current: User
 
 @router.get("/placeOfInterest/{code}")
 async def placeOfInterest_get(
-    code: str, db: AsyncSession = Depends(get_db), current: UserPublic = Depends(get_current_user)
+    code: str,
+    db: AsyncSession = Depends(get_db),
+    current: UserPublic = Depends(get_current_user),
 ):
     ensure_admin(current)
     c = await get_placeOfInterest(db, code)
@@ -58,7 +61,9 @@ async def placeOfInterest_get(
 
 @router.post("/placeOfInterest")
 async def placeOfInterest_upsert(
-    payload: PlaceOfInterestIn, db: AsyncSession = Depends(get_db), current: UserPublic = Depends(get_current_user)
+    payload: PlaceOfInterestIn,
+    db: AsyncSession = Depends(get_db),
+    current: UserPublic = Depends(get_current_user),
 ):
     ensure_admin(current)
     await upsert_placeOfInterest(db, payload.model_dump())
@@ -68,7 +73,9 @@ async def placeOfInterest_upsert(
 
 @router.delete("/placeOfInterest/{code}")
 async def placeOfInterest_delete(
-    code: str, db: AsyncSession = Depends(get_db), current: UserPublic = Depends(get_current_user)
+    code: str,
+    db: AsyncSession = Depends(get_db),
+    current: UserPublic = Depends(get_current_user),
 ):
     ensure_admin(current)
     ok = await delete_placeOfInterest(db, code)

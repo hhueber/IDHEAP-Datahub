@@ -1,4 +1,4 @@
-from typing import Any, Optional
+from typing import Any
 import json
 
 
@@ -26,14 +26,14 @@ async def _count_from_stmt(db: AsyncSession, stmt: Select[Any]) -> int:
     return int(result.scalar_one() or 0)
 
 
-async def _latest_year(db: AsyncSession, model: Any) -> Optional[int]:
+async def _latest_year(db: AsyncSession, model: Any) -> int | None:
     stmt = select(func.max(model.year))
     result = await db.execute(stmt)
     year = result.scalar_one_or_none()
     return int(year) if year is not None else None
 
 
-async def _nearest_year(db: AsyncSession, model: Any, target_year: int, window: int = 2) -> Optional[int]:
+async def _nearest_year(db: AsyncSession, model: Any, target_year: int, window: int = 2) -> int | None:
     y = model.year
     stmt = (
         select(y)
@@ -51,7 +51,7 @@ async def _nearest_year(db: AsyncSession, model: Any, target_year: int, window: 
     return int(year) if year is not None else None
 
 
-async def get_survey_year_by_uid(db: AsyncSession, survey_uid: int) -> Optional[int]:
+async def get_survey_year_by_uid(db: AsyncSession, survey_uid: int) -> int | None:
     stmt = select(Survey.year).where(Survey.uid == survey_uid).limit(1)
     result = await db.execute(stmt)
     year = result.scalar_one_or_none()
@@ -70,7 +70,10 @@ async def get_all_canton_features(db: AsyncSession) -> list[dict]:
             Canton.code.label("code"),
             _geojson_col(CantonMap.geometry).label("geojson"),
         )
-        .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == map_year))
+        .join(
+            CantonMap,
+            and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == map_year),
+        )
         .order_by(Canton.uid.asc())
     )
     rows = (await db.execute(stmt)).mappings().all()
@@ -97,9 +100,7 @@ async def get_all_canton_features(db: AsyncSession) -> list[dict]:
     return features
 
 
-async def get_commune_focus_feature(
-    db: AsyncSession, commune_uid: int, target_year: Optional[int] = None
-) -> Optional[dict]:
+async def get_commune_focus_feature(db: AsyncSession, commune_uid: int, target_year: int | None = None) -> dict | None:
     map_year = (
         await _nearest_year(db, CommuneMap, target_year)
         if target_year is not None
@@ -116,7 +117,10 @@ async def get_commune_focus_feature(
             Commune.district_uid.label("district_uid"),
             _geojson_col(CommuneMap.geometry).label("geojson"),
         )
-        .join(CommuneMap, and_(CommuneMap.commune_uid == Commune.uid, CommuneMap.year == map_year))
+        .join(
+            CommuneMap,
+            and_(CommuneMap.commune_uid == Commune.uid, CommuneMap.year == map_year),
+        )
         .where(Commune.uid == commune_uid)
         .limit(1)
     )
@@ -138,7 +142,7 @@ async def get_commune_focus_feature(
     }
 
 
-async def get_district_focus_feature(db: AsyncSession, district_uid: int) -> Optional[dict]:
+async def get_district_focus_feature(db: AsyncSession, district_uid: int) -> dict | None:
     map_year = await _latest_year(db, DistrictMap)
     if map_year is None:
         return None
@@ -151,7 +155,10 @@ async def get_district_focus_feature(db: AsyncSession, district_uid: int) -> Opt
             District.canton_uid.label("canton_uid"),
             _geojson_col(DistrictMap.geometry).label("geojson"),
         )
-        .join(DistrictMap, and_(DistrictMap.district_id == District.uid, DistrictMap.year == map_year))
+        .join(
+            DistrictMap,
+            and_(DistrictMap.district_id == District.uid, DistrictMap.year == map_year),
+        )
         .where(District.uid == district_uid)
         .limit(1)
     )
@@ -173,7 +180,7 @@ async def get_district_focus_feature(db: AsyncSession, district_uid: int) -> Opt
     }
 
 
-async def get_canton_focus_feature(db: AsyncSession, canton_uid: int) -> Optional[dict]:
+async def get_canton_focus_feature(db: AsyncSession, canton_uid: int) -> dict | None:
     map_year = await _latest_year(db, CantonMap)
     if map_year is None:
         return None
@@ -185,7 +192,10 @@ async def get_canton_focus_feature(db: AsyncSession, canton_uid: int) -> Optiona
             Canton.code.label("code"),
             _geojson_col(CantonMap.geometry).label("geojson"),
         )
-        .join(CantonMap, and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == map_year))
+        .join(
+            CantonMap,
+            and_(CantonMap.canton_uid == Canton.uid, CantonMap.year == map_year),
+        )
         .where(Canton.uid == canton_uid)
         .limit(1)
     )

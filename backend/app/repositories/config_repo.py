@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Dict, Optional
 
 
 from app.core.paths import LOGO_PUBLIC_PREFIX, LOGO_UPLOAD_DIR
@@ -9,7 +8,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def list_config(db: AsyncSession) -> Dict[str, str]:
+async def list_config(db: AsyncSession) -> dict[str, str]:
     """Retourne toutes les paires key/value de la table config."""
     result = await db.execute(select(Config))
     rows = result.scalars().all()
@@ -20,7 +19,7 @@ async def upsert_config_value(
     db: AsyncSession,
     key: str,
     value: str,
-    description: Optional[str] = None,
+    description: str | None = None,
 ) -> None:
     """Insère ou met à jour une clé de config."""
     existing = await db.get(Config, key)
@@ -56,7 +55,7 @@ def _delete_logo_file_if_exists(url: str | None) -> None:
     try:
         if file_path.is_file():
             file_path.unlink()
-    except Exception:
+    except OSError:
         # On évite de faire échouer toute la requête juste pour un unlink
         pass
 
@@ -68,7 +67,7 @@ async def get_theme_config(db: AsyncSession) -> ThemeConfig:
     """
     all_conf = await list_config(db)
     allowed_keys = set(ThemeConfig.model_fields.keys())
-    payload: Dict[str, str] = {}
+    payload: dict[str, str] = {}
 
     for k, v in all_conf.items():
         if k in allowed_keys:
