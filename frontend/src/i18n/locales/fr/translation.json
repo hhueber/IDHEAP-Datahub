@@ -812,7 +812,7 @@
       "clear": "Tout retirer",
       "create": "Créer le dossier et importer",
       "mandatory": "Obligatoire",
-      "chooseProject": "Veuillez choisir le projet auxquel rattacher l'étude",
+      "chooseProject": "Veuillez choisir le projet auquel rattacher l'étude",
       "project": {
         "chooseProjectButton": "Choisir un projet",
         "newProject": "Créer un nouveau projet",
