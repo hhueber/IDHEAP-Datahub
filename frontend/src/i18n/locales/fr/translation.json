@@ -323,7 +323,7 @@
         "logoUrl": "URL du logo",
         "logoPreview": "Aperçu du logo",
         "logoUpload": "Importer un logo",
-        "logoInvalidType": "Format non supporté. Utilise PNG/JPG/WebP/SVG.",
+        "logoInvalidType": "Format non supporté. Utilisez PNG/JPG/WebP/SVG.",
         "logoTooLarge": "Fichier trop volumineux (maximum {{size}} MB).",
         "logoDropZone": "Zone de dépot du logo",
         "logoDropReject": "Fichier non supporté.",
