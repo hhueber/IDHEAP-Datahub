@@ -42,7 +42,10 @@ class ProjectMetadata(Base):
 
     @links.setter
     def links(self, value: List[Dict[str, str]]):
-
+        """
+        We store link as follow name1|url1,name2|url2
+        We use it that way cause its easier to identify tuple visually than juste putting coma everywhere and easier to handler
+        """
         if not value:
             self.links_ = ""
         else:
