@@ -25,6 +25,10 @@ class ProjectMetadata(Base):
 
     @property
     def links(self) -> List[Dict[str, str]]:
+        """
+        We store link as follow name1|url1,name2|url2
+        We use it that way cause its easier to identify tuple visually than juste putting coma everywhere and easier to handler
+        """
         if not self.links_:
             return []
 
