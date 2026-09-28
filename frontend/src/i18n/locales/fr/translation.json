@@ -271,7 +271,7 @@
     "config": {
       "placeOfInterestEditor": {
         "titleCreate": "Ajouter une ville",
-        "titleEdit": "Éditer une ville",
+        "titleEdit": "Modifier une ville",
 
         "importFromCommunes": "Importer depuis les communes",
         "searchPlaceholder": "Tapez au moins 3 lettres...",
