@@ -25,6 +25,7 @@ from app.schemas.data_import import (
     DataImportYearsPatch,
     DataImportYearsResponse,
     DataProjectResponse,
+    ImportRoleEnum,
     ImportSectionEnum,
 )
 from app.services.add_database.import_survey_service import import_new_survey_pipeline

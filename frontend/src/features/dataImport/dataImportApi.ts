@@ -19,6 +19,7 @@ import type {
   NewProjectData,
   NewProjectResponse,
   AllProjectResponse,
+  RoleType,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function getAllProject() {
@@ -118,6 +119,7 @@ export async function patchDataImportColumn(params: {
   columnIndex: number;
   section?: ImportSection;
   detectedType?: DetectedType;
+  role?: RoleType;
   ignored?: boolean;
 }) {
   return apiFetch<DataImportPatchWithAnalysisResponse>(
@@ -129,6 +131,7 @@ export async function patchDataImportColumn(params: {
         column_index: params.columnIndex,
         section: params.section,
         detected_type: params.detectedType,
+        role: params.role,
         ignored: params.ignored,
       },
     },
