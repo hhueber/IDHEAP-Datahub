@@ -25,7 +25,7 @@ export function ProjectSelector({
     useTheme();
 
   const { t } = useTranslation();
-  const [isCreating, setIsCreating] = useState<boolean>(false);
+  const [isCreating, setIsCreating] = useState<boolean>(true);
 
   const [newProject, setNewProject] = useState<NewProjectData>({
     name: "",
