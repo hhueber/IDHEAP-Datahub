@@ -1,9 +1,8 @@
 from sqlalchemy import and_, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from backend.app.repositories.page_all_repo import ENTITY_CONFIG  # on réutilise le mapping
-from backend.app.schemas.page_all import EntityEnum
+from app.repositories.page_all_repo import ENTITY_CONFIG  # on réutilise le mapping
+from app.schemas.page_all import EntityEnum
 
 
 async def delete_rows(

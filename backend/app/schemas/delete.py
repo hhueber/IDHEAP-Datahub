@@ -1,7 +1,6 @@
 from pydantic import BaseModel
 
-
-from backend.app.schemas.page_all import EntityEnum
+from app.schemas.page_all import EntityEnum
 
 
 class DeleteFilter(BaseModel):

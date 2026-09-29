@@ -1,5 +1,7 @@
 from typing import Any
 
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.canton import Canton
 from app.models.commune import Commune
@@ -9,12 +11,7 @@ from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-
-from backend.app.schemas.page_all import PageAllLangEnum
-
+from app.schemas.page_all import PageAllLangEnum
 
 SUPPORTED_LANGS = {"fr", "de", "it", "ro", "en"}
 
@@ -147,7 +144,9 @@ async def enrich_show_relation_display_names(
         if related_uid is None:
             continue
 
-        stmt = select(display_expr.label("display_name")).where(model.uid == related_uid)
+        stmt = select(display_expr.label("display_name")).where(
+            model.uid == related_uid
+        )
 
         result = await db.execute(stmt)
         display_name = result.scalar_one_or_none()

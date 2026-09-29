@@ -1,5 +1,7 @@
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.answer import Answer
 from app.models.canton import Canton
@@ -10,12 +12,7 @@ from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-
-from backend.app.schemas.page_all import EntityEnum
-
+from app.schemas.page_all import EntityEnum
 
 ENTITY_MODEL_MAP: dict[EntityEnum, type[Any]] = {
     EntityEnum.commune: Commune,

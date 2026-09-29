@@ -1,12 +1,15 @@
-from answer import Answer
-from canton import Canton
-from commune_map import CommuneMap
-from district import District
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .answer import Answer
+    from .canton import Canton
+    from .commune_map import CommuneMap
+    from .district import District
 
 
 class Commune(Base):
@@ -22,7 +25,9 @@ class Commune(Base):
     name_rm: Mapped[str | None] = mapped_column(String, nullable=True)
     name_en: Mapped[str | None] = mapped_column(String, nullable=True)
 
-    district_uid: Mapped[int] = mapped_column(ForeignKey("district.uid", ondelete="CASCADE"))
+    district_uid: Mapped[int] = mapped_column(
+        ForeignKey("district.uid", ondelete="CASCADE")
+    )
     district: Mapped["District"] = relationship("District", back_populates="communes")
 
     commune_map: Mapped[list["CommuneMap"]] = relationship(

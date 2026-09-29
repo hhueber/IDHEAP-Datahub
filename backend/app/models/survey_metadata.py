@@ -1,13 +1,14 @@
 import enum
-
+from typing import TYPE_CHECKING
 
 from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from survey import Survey
-from survey_author_association import SurveyAuthorAssociation
-
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .survey import Survey
+    from .survey_author_association import SurveyAuthorAssociation
 
 
 class GranularityEnum(enum.Enum):
@@ -21,7 +22,9 @@ class SurveyMetadata(Base):
 
     uid: Mapped[int] = mapped_column(primary_key=True)
 
-    survey_uid: Mapped[int] = mapped_column(ForeignKey("survey.uid", ondelete="CASCADE"), nullable=False)
+    survey_uid: Mapped[int] = mapped_column(
+        ForeignKey("survey.uid", ondelete="CASCADE"), nullable=False
+    )
     survey: Mapped["Survey"] = relationship("Survey", back_populates="survey_metadata")
 
     name: Mapped[str] = mapped_column(String, nullable=False)
@@ -47,7 +50,9 @@ class SurveyMetadata(Base):
         for pair in pairs:
             if "|" in pair:
                 link_name, link_url = pair.split("|", 1)
-                return_links.append({"name": link_name.strip(), "url": link_url.strip()})
+                return_links.append(
+                    {"name": link_name.strip(), "url": link_url.strip()}
+                )
         return return_links
 
     @links.setter

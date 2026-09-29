@@ -1,8 +1,6 @@
 from pydantic import BaseModel, Field, field_validator
 
-
-from backend.app.schemas.page_all import EntityEnum
-
+from app.schemas.page_all import EntityEnum
 
 EditValue = str | int | float | bool
 

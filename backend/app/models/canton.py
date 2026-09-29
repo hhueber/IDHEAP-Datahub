@@ -1,11 +1,14 @@
-from canton_map import CantonMap
-from commune import Commune
-from district import District
+from typing import TYPE_CHECKING
+
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .canton_map import CantonMap
+    from .commune import Commune
+    from .district import District
 
 
 class Canton(Base):
@@ -25,7 +28,9 @@ class Canton(Base):
     districts: Mapped[list["District"]] = relationship(
         "District", back_populates="canton", cascade="all, delete-orphan"
     )
-    canton_map: Mapped[list["CantonMap"]] = relationship("CantonMap", back_populates="canton")
+    canton_map: Mapped[list["CantonMap"]] = relationship(
+        "CantonMap", back_populates="canton"
+    )
 
     @property
     def communes(self) -> list["Commune"]:

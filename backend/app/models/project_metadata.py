@@ -1,10 +1,13 @@
-from project import Project
-from project_author_association import ProjectAuthorAssociation
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from .base import Base
 
-from . import Base
+if TYPE_CHECKING:
+    from .project import Project
+    from .project_author_association import ProjectAuthorAssociation
 
 
 class ProjectMetadata(Base):
@@ -16,7 +19,9 @@ class ProjectMetadata(Base):
     licence: Mapped[str] = mapped_column(String)
     links_: Mapped[str] = mapped_column(String)
 
-    project: Mapped["Project"] = relationship("Project", back_populates="project_metadata")
+    project: Mapped["Project"] = relationship(
+        "Project", back_populates="project_metadata"
+    )
 
     author_association: Mapped[list["ProjectAuthorAssociation"]] = relationship(
         "ProjectAuthorAssociation",
@@ -34,7 +39,9 @@ class ProjectMetadata(Base):
         for pair in pairs:
             if "|" in pair:
                 link_name, link_url = pair.split("|", 1)
-                return_links.append({"name": link_name.strip(), "url": link_url.strip()})
+                return_links.append(
+                    {"name": link_name.strip(), "url": link_url.strip()}
+                )
         return return_links
 
     @links.setter

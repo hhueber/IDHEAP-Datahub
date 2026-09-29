@@ -1,11 +1,14 @@
-from question_category_option_association import QuestionCategoryOptionAssociation
-from question_global_option_association import QuestionGlobalOptionAssociation
-from question_option_association import QuestionOptionAssociation
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .question_category_option_association import QuestionCategoryOptionAssociation
+    from .question_global_option_association import QuestionGlobalOptionAssociation
+    from .question_option_association import QuestionOptionAssociation
 
 
 class Option(Base):
@@ -28,16 +31,20 @@ class Option(Base):
         cascade="all, delete-orphan",
     )
 
-    question_global_association: Mapped[list["QuestionGlobalOptionAssociation"]] = relationship(
-        "QuestionGlobalOptionAssociation",
-        back_populates="option",
-        cascade="all, delete-orphan",
+    question_global_association: Mapped[list["QuestionGlobalOptionAssociation"]] = (
+        relationship(
+            "QuestionGlobalOptionAssociation",
+            back_populates="option",
+            cascade="all, delete-orphan",
+        )
     )
 
-    question_category_association: Mapped[list["QuestionCategoryOptionAssociation"]] = relationship(
-        "QuestionCategoryOptionAssociation",
-        back_populates="option",
-        cascade="all, delete-orphan",
+    question_category_association: Mapped[list["QuestionCategoryOptionAssociation"]] = (
+        relationship(
+            "QuestionCategoryOptionAssociation",
+            back_populates="option",
+            cascade="all, delete-orphan",
+        )
     )
 
     @property

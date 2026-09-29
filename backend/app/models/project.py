@@ -1,10 +1,13 @@
-from project_metadata import ProjectMetadata
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from survey import Survey
 
+from .base import Base
 
-from . import Base
+if TYPE_CHECKING:
+    from .project_metadata import ProjectMetadata
+    from .survey import Survey
 
 
 class Project(Base):
@@ -18,4 +21,6 @@ class Project(Base):
     project_metadata_uid: Mapped[int] = mapped_column(
         ForeignKey("project_metadata.uid", ondelete="CASCADE"), nullable=False
     )
-    project_metadata: Mapped["ProjectMetadata"] = relationship("ProjectMetadata", back_populates="project")
+    project_metadata: Mapped["ProjectMetadata"] = relationship(
+        "ProjectMetadata", back_populates="project"
+    )

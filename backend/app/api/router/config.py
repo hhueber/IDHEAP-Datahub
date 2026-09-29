@@ -1,22 +1,20 @@
-from app.api.dependencies import get_current_user
-from app.db import get_db
-from app.repositories.config_repo import get_theme_config, upsert_theme_config
-from app.schemas.theme_config import LogoUploadPayload, ThemeConfig
-from app.schemas.user import Role, UserPublic
-from app.services.config_service import handle_logo_data_url
-from app.services.geo_service import get_geo_by_canton_preview
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from backend.app.repositories.place_of_interest_repo import (
+from app.api.dependencies import get_current_user
+from app.db import get_db
+from app.repositories.config_repo import get_theme_config, upsert_theme_config
+from app.repositories.place_of_interest_repo import (
     delete_placeOfInterest,
     get_placeOfInterest,
     list_placeOfInterest,
     upsert_placeOfInterest,
 )
-from backend.app.schemas.place_of_interest import PlaceOfInterestIn
-
+from app.schemas.place_of_interest import PlaceOfInterestIn
+from app.schemas.theme_config import LogoUploadPayload, ThemeConfig
+from app.schemas.user import Role, UserPublic
+from app.services.config_service import handle_logo_data_url
+from app.services.geo_service import get_geo_by_canton_preview
 
 router = APIRouter()
 
@@ -27,7 +25,9 @@ def ensure_admin(u: UserPublic):
 
 
 @router.get("/placeOfInterest")
-async def placeOfInterest_list(db: AsyncSession = Depends(get_db), current: UserPublic = Depends(get_current_user)):
+async def placeOfInterest_list(
+    db: AsyncSession = Depends(get_db), current: UserPublic = Depends(get_current_user)
+):
     ensure_admin(current)
     data = await list_placeOfInterest(db)
     return {"success": True, "detail": "OK", "data": data}
@@ -42,7 +42,9 @@ async def placeOfInterest_get(
     ensure_admin(current)
     c = await get_placeOfInterest(db, code)
     if not c:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PlaceOfInterest not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="PlaceOfInterest not found"
+        )
     return {
         "success": True,
         "detail": "OK",
@@ -80,7 +82,9 @@ async def placeOfInterest_delete(
     ensure_admin(current)
     ok = await delete_placeOfInterest(db, code)
     if not ok:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="PlaceOfInterest not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="PlaceOfInterest not found"
+        )
     await db.commit()
     return {"success": True, "detail": "Deleted"}
 
