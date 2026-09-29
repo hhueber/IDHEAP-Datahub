@@ -2,7 +2,7 @@
 from typing import Any
 
 
-from app.schemas.data_import import ImportSectionEnum
+from app.schemas.data_import import ImportRoleEnum, ImportSectionEnum
 import pandas as pd
 
 
@@ -106,6 +106,7 @@ def _build_preview_column(column: dict[str, Any]) -> dict[str, Any]:
         "index": int(column.get("index")),
         "name": column.get("original_name") or column.get("normalized_name") or "",
         "section": column.get("section"),
+        "role": column.get("role"),
         "detected_type": column.get("detected_type"),
         "issue_count": int(column.get("issue_count") or 0),
         "empty_count": int(column.get("empty_count") or 0),

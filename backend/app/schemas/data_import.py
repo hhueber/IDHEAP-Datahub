@@ -33,6 +33,17 @@ class DetectedTypeEnum(str, Enum):
     mixed = "mixed"
 
 
+class ImportRoleEnum(str, Enum):
+    code = "code"
+    label = "label"
+    text_fr = "text_fr"
+    text_en = "text_en"
+    text_it = "text_it"
+    text_de = "text_de"
+    text_rm = "text_rm"
+    year = "year"
+
+
 class DataImportUploadData(BaseModel):
     import_id: str
     filename: str
@@ -118,6 +129,7 @@ class ImportPreviewColumn(BaseModel):
     index: int
     name: str
     section: ImportSectionEnum
+    role: Optional[ImportRoleEnum] = None
     detected_type: DetectedTypeEnum
     issue_count: int
 
@@ -159,6 +171,7 @@ class DataImportCellPatch(BaseModel):
 class DataImportColumnPatch(BaseModel):
     column_index: int
     section: Optional[ImportSectionEnum] = None
+    role: Optional[ImportRoleEnum] = None
     detected_type: Optional[DetectedTypeEnum] = None
     ignored: Optional[bool] = None
 
