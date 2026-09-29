@@ -16,17 +16,36 @@ import type {
   DataImportWorkspaceUploadResponse,
   DataImportYearsResponse,
   DataImportCommitResponse,
+  NewProjectData,
+  NewProjectResponse,
+  AllProjectResponse,
   RoleType,
 } from "@/features/dataImport/dataImportTypes";
+
+export async function getAllProject() {
+  const fetched = await apiFetch<AllProjectResponse>("/data-import/projects", {
+    method: "GET",
+    auth: true,
+  });
+  return fetched.data
+}
 
 export async function uploadDataImportFile(file: File) {
   const formData = new FormData();
   formData.append("file", file);
 
-  return apiFetch<DataImportUploadResponse>("/data-import/upload", {
+  const fetched = apiFetch<DataImportUploadResponse>("/data-import/upload", {
     method: "POST",
     auth: true,
     body: formData,
+  });
+}
+
+export async function newProjectCreate(payload: NewProjectData) {
+  return apiFetch<NewProjectResponse>(`/data-import/project`, {
+    method: "POST",
+    auth: true,
+    body: payload,
   });
 }
 
