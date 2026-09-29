@@ -181,6 +181,36 @@ export type DataImportJobSummary = {
   years: number[];
 };
 
+export type Link = {
+  name: string;
+  url: string;
+};
+
+export type Author = {
+  first_name: string;
+  last_name: string;
+  email: string;
+};
+
+export type NewProjectData = {
+  name: string;
+  description: string;
+  licence: string;
+  links: Link[];
+  authors: Author[];
+};
+
+export type NewProjectResponseData = {
+  uid: number;
+  name: string;
+};
+
+export type NewProjectResponse = {
+  success: boolean;
+  detail: string;
+  data: NewProjectResponseData;
+};
+
 export type DataImportListResponse = {
   success: boolean;
   detail: string;
@@ -273,6 +303,13 @@ export type DataImportWorkspaceUploadData = {
   added_resources: DataImportResourceSummary[];
 };
 
+
+export type AllProjectResponse = {
+  success: boolean;
+  detail: string;
+  data: Project[];
+};
+
 export type DataImportWorkspaceUploadResponse = {
   success: boolean;
   detail: string;
@@ -317,3 +354,9 @@ export type DataImportCommitResponse = {
     status: "not_implemented";
   };
 };
+
+export type Project = {
+  uid: number;
+  name: string;
+  description?: string;
+}
