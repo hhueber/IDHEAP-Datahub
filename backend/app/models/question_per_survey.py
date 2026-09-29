@@ -12,7 +12,7 @@ class QuestionPerSurvey(Base):
     __tablename__ = "question_per_survey"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String, unique=True, index=True)
+    code: Mapped[str] = mapped_column(String, unique=False, index=True)
     label: Mapped[str] = mapped_column(String)
 
     private: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)

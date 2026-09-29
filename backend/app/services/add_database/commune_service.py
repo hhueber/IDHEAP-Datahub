@@ -259,15 +259,13 @@ async def get_closest_year(db: AsyncSession, target_year: int):
 
 
 async def get_commune_mapping_year(db: AsyncSession, year: int):
-    target_year = 1989 if year == 1988 else year
-
-    year_existing_req = select(CommuneMap.year == target_year).limit(1)
+    year_existing_req = select(CommuneMap).filter(CommuneMap.year == year).limit(1)
     year_existing_result = await db.execute(year_existing_req)
 
     if year_existing_result.scalar_one_or_none() is None:
-        query_year = await get_closest_year(db, target_year)
+        query_year = await get_closest_year(db, year)
     else:
-        query_year = target_year
+        query_year = year
 
     query = (
         select(Commune.uid, Commune.code)
@@ -287,10 +285,6 @@ async def add_commune_geodata_for_year(
     district_map = {district.code: district for district in districts}
     cantons_map = {canton.ofs_id: canton for canton in cantons}
 
-    if year < 2016:
-        pass
-        # url = extract_geo_package(url, ".")
-
     layers = fiona.listlayers(url)
 
     if year < 2016:
@@ -299,19 +293,19 @@ async def add_commune_geodata_for_year(
     for layer in layers:
 
         with fiona.open(url, layer=layer) as src:
-            if "tlm_hoheitsgebiet" in layer or "Communes" in layer:
+            if "TLM_HOHEITSGEBIET" in layer or "Communes" in layer:
                 for feature in src:
                     props = feature.get("properties")
+
                     if year < 2016:
                         if props.get("GDENR") == 253 or props.get("GARTE") != 11 or props.get("CODE_ISO") != "CH":
                             continue
-
                         bfs_number = props.get("GDENR")
                     else:
-                        if props.get("objektart") != "Gemeindegebiet" or props.get("icc") != "CH":
+                        if props.get("OBJEKTART") != 0 or props.get("ICC") != "CH":
                             continue
 
-                        bfs_number = props.get("bfs_nummer")
+                        bfs_number = props.get("BFS_NUMMER")
 
                     commune = commune_map.get(bfs_number)
                     multi = shape(feature["geometry"])
@@ -323,17 +317,18 @@ async def add_commune_geodata_for_year(
                         geo_data_type=feature["geometry"]["type"],
                         geometry=from_shape(multi, srid=4326),
                     )
+
                     db.add(db_commune_map)
 
                 await db.commit()
 
-            if "kanton" in layer or "Canton" in layer:
+            if "KANTON" in layer or "Canton" in layer:
                 for feature in src:
                     props = feature["properties"]
                     if year < 2016:
                         bfs_number = props.get("KTNR")
                     else:
-                        bfs_number = props.get("kantonsnummer")
+                        bfs_number = props.get("KANTONSNUMMER")
 
                     canton = cantons_map.get(bfs_number)
                     multi = shape(feature["geometry"])
@@ -349,13 +344,13 @@ async def add_commune_geodata_for_year(
 
                 await db.commit()
 
-            if "bezirk" in layer or "District" in layer:
+            if "BEZIRK" in layer or "District" in layer:
                 for feature in src:
                     props = feature["properties"]
                     if year < 2016:
                         bfs_number = props.get("BEZNR")
                     else:
-                        bfs_number = props.get("bezirksnummer")
+                        bfs_number = props.get("BEZIRKSNUMMER")
 
                     district = district_map.get("B" + str(bfs_number))
                     multi = shape(feature["geometry"])
