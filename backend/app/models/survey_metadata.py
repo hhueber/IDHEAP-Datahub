@@ -1,4 +1,4 @@
-from typing import List
+from typing import Dict, List
 import enum
 
 
@@ -28,8 +28,29 @@ class SurveyMetadata(Base):
     license: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String, nullable=False)
 
-    links: Mapped[str] = mapped_column(String, nullable=False)
+    links_: Mapped[str] = mapped_column(String, nullable=False)
 
     author_association: Mapped[List["SurveyAuthorAssociation"]] = relationship(
         "SurveyAuthorAssociation", back_populates="survey_metadata", cascade="all, delete-orphan"
     )
+
+    @property
+    def links(self) -> List[Dict[str, str]]:
+        if not self.links_:
+            return []
+
+        return_links = []
+        pairs = self.links_.split(",")
+        for pair in pairs:
+            if "|" in pair:
+                link_name, link_url = pair.split("|", 1)
+                return_links.append({"name": link_name.strip(), "url": link_url.strip()})
+        return return_links
+
+    @links.setter
+    def links(self, value: List[Dict[str, str]]):
+
+        if not value:
+            self.links_ = ""
+        else:
+            self.links_ = ",".join([f"{item['name']}|{item['url']}" for item in value])
