@@ -178,7 +178,7 @@ export function ProjectSelector({
               <input
                 type="text"
                 value={newProject.name}
-                placeholder={t("dataImport.upload.project.namePlaceholder")} // TODO: Change this7
+                placeholder={t("dataImport.upload.project.namePlaceholder")}
                 onChange={(e) => handleChangeProject("name", e.target.value)}
                 className="w-full h-10 rounded-xl border px-3 text-sm outline-none"
                 style={{
@@ -218,7 +218,7 @@ export function ProjectSelector({
               <input
                 type="text"
                 value={newProject.licence}
-                placeholder={t("dataImport.upload.project.licencePlaceholder")} // TODO: Change this7
+                placeholder={t("dataImport.upload.project.licencePlaceholder")}
                 onChange={(e) => handleChangeProject("licence", e.target.value)}
                 className="w-full h-10 rounded-xl border px-3 text-sm outline-none"
                 style={{
