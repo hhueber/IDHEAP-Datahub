@@ -1,5 +1,8 @@
 import math
 
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
 from app.api.permissions import require_permission
@@ -16,23 +19,22 @@ from app.repositories.admin_user_repo import (
     list_admin_users,
     update_admin_user,
 )
-from app.repositories.user_repo import create_user_record, delete_user_by_instance, update_user_password_hash
+from app.repositories.user_repo import (
+    create_user_record,
+    delete_user_by_instance,
+    update_user_password_hash,
+)
 from app.schemas.user import (
     AdminUserActionResponse,
     AdminUserListResponse,
     AdminUserUpdateIn,
     PasswordChangeIn,
-    User,
     UserCreate,
     UserDeleteIn,
     UserPublic,
 )
 from app.services.permission_service import role_can_manage_role
 from app.services.user_service import normalize_name
-from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -51,7 +53,9 @@ def get_current_user_profile(current_user: UserModel = Depends(get_current_user)
 async def create_user(
     payload: UserCreate,
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)),
+    current_user=Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)
+    ),
 ):
     """Create a new user (admin-only operation).
         - Requires the caller to be an administrator.
@@ -71,9 +75,13 @@ async def create_user(
             detail="You are not allowed to create a user with this role",
         )
 
-    exists = await db.scalar(select(UserModel.id).where(UserModel.email == payload.email))
+    exists = await db.scalar(
+        select(UserModel.id).where(UserModel.email == payload.email)
+    )
     if exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already exists"
+        )
 
     pwd_hash = get_password_hash(payload.password)
     await create_user_record(
@@ -89,6 +97,57 @@ async def create_user(
         "success": True,
         "detail": "User created",
     }
+
+
+@router.post("/deleteUser")
+async def delete_user(
+    payload: UserDeleteIn,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_user),
+):
+    """Deletes a user (operation reserved for administrators).
+        - Verifies that the caller is an administrator.
+        - Searches for the user by email.
+        - Validates the identity (standardised full_name + role) before deletion.
+        - Prevents the deletion of their own account.
+
+    Args:
+        payload (UserDeleteIn): Identification data of the user to be deleted
+            (email, full_name, role).
+        db (AsyncSession): Database session (dependency injection).
+        current_user (UserModel): Guarantees that User has a valid cookie (auth required) and
+        the UserModel mask guarantees that the information returned is in accordance with the UserModel schema.
+
+    """
+
+    result = await db.execute(select(UserModel).where(UserModel.email == payload.email))
+    target = result.scalar_one_or_none()
+    if not target:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
+
+    # permet de normaliser la string pour comparer les informations
+    if (
+        normalize_name(target.first_name) != normalize_name(payload.first_name)
+        or normalize_name(target.last_name) != normalize_name(payload.last_name)
+        or target.role != payload.role
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Les informations fournies ne correspondent pas à l'utilisateur",
+        )
+
+    # empêcher l'admin de se supprimer lui-même
+    if target.id == current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible de supprimer votre propre compte",
+        )
+
+    await delete_user_by_instance(db, target)
+
+    return {"success": True, "detail": "User deleted"}
 
 
 @router.post("/changePassword")
@@ -112,16 +171,22 @@ async def change_password(
     # On charge l'utilisateur courant
     user = await db.get(UserModel, current_user.id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Vérifie l'ancien mot de passe
     if not verify_password(payload.old_password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ancien mot de passe incorrect")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ancien mot de passe incorrect",
+        )
 
     # empêcher la réutilisation du même mot de passe
     if verify_password(payload.new_password, user.password_hash):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Le nouveau mot de passe doit être différent"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le nouveau mot de passe doit être différent",
         )
 
     new_hash = get_password_hash(payload.new_password)
@@ -138,7 +203,9 @@ async def get_admin_users(
     order_dir: AdminUserSortDir = "asc",
     q: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-    _current_user: UserModel = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.READ)),
+    _current_user: UserModel = Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.READ)
+    ),
 ):
     """
     Liste les comptes de la partie privée.
@@ -147,7 +214,9 @@ async def get_admin_users(
     - PROJECT READ
     """
 
-    users, total = await list_admin_users(db, page=page, per_page=per_page, order_by=order_by, order_dir=order_dir, q=q)
+    users, total = await list_admin_users(
+        db, page=page, per_page=per_page, order_by=order_by, order_dir=order_dir, q=q
+    )
     pages = max(1, math.ceil(total / per_page))
 
     return {
@@ -168,7 +237,9 @@ async def patch_admin_user(
     user_id: str,
     payload: AdminUserUpdateIn,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)),
+    current_user: UserModel = Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)
+    ),
 ):
     """
     Modifie un utilisateur.
@@ -179,20 +250,33 @@ async def patch_admin_user(
 
     target = await get_admin_user_by_id(db, user_id)
     if not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     if not role_can_manage_role(current_user.role, target.role):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to edit this user")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to edit this user",
+        )
     if payload.role is not None:
         if target.id == current_user.id:
             raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot change your own role from this page"
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="You cannot change your own role from this page",
             )
         if not role_can_manage_role(current_user.role, payload.role):
-            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to assign this role")
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You are not allowed to assign this role",
+            )
     if payload.email is not None:
-        exists = await email_exists_for_other_user(db, email=str(payload.email), user_id=target.id)
+        exists = await email_exists_for_other_user(
+            db, email=str(payload.email), user_id=target.id
+        )
         if exists:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail="Email already exists"
+            )
     await update_admin_user(
         db,
         user=target,
@@ -212,7 +296,9 @@ async def patch_admin_user(
 async def remove_admin_user(
     user_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+    current_user: UserModel = Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
+    ),
 ):
     """
     Supprime un utilisateur.
@@ -223,11 +309,19 @@ async def remove_admin_user(
 
     target = await get_admin_user_by_id(db, user_id)
     if not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
     if target.id == current_user.id:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="You cannot delete your own account")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="You cannot delete your own account",
+        )
     if not role_can_manage_role(current_user.role, target.role):
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="You are not allowed to delete this user")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to delete this user",
+        )
     await delete_admin_user(db, user=target)
 
     return {

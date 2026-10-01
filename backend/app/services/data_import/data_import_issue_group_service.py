@@ -1,7 +1,6 @@
 from collections import Counter, defaultdict
 from typing import Any
 
-
 MAX_SAMPLE_VALUES = 5
 
 
@@ -12,7 +11,9 @@ def build_issue_groups(
     issues_by_column: dict[str, list[dict[str, Any]]],
 ) -> dict[str, Any]:
     columns_by_index = _build_columns_by_index(analysis)
-    grouped: dict[tuple[int, str, str, str | None], list[dict[str, Any]]] = defaultdict(list)
+    grouped: dict[tuple[int, str, str, str | None], list[dict[str, Any]]] = defaultdict(
+        list
+    )
 
     for raw_column_index, issues in issues_by_column.items():
         fallback_column_index = _safe_int(raw_column_index, default=-1)
@@ -54,8 +55,12 @@ def build_issue_groups(
     )
 
     total_issues = sum(group["count"] for group in groups)
-    blocking_issues = sum(group["count"] for group in groups if group["severity"] == "error")
-    warning_issues = sum(group["count"] for group in groups if group["severity"] == "warning")
+    blocking_issues = sum(
+        group["count"] for group in groups if group["severity"] == "error"
+    )
+    warning_issues = sum(
+        group["count"] for group in groups if group["severity"] == "warning"
+    )
 
     return {
         "import_id": import_id,
@@ -104,10 +109,16 @@ def _build_group_payload(
         ),
         "code": code,
         "severity": severity if severity in {"warning", "error"} else "warning",
-        "message_key": str(issues[0].get("message_key") if issues else "dataImport.issues.unknown"),
+        "message_key": str(
+            issues[0].get("message_key") if issues else "dataImport.issues.unknown"
+        ),
         "section": column.get("section") or "unclassified",
         "column_index": column_index,
-        "column_name": (column.get("original_name") or column.get("normalized_name") or f"Column {column_index}"),
+        "column_name": (
+            column.get("original_name")
+            or column.get("normalized_name")
+            or f"Column {column_index}"
+        ),
         "detected_type": column.get("detected_type") or "text",
         "expected_type": expected_type,
         "count": len(issues),

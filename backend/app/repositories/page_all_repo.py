@@ -1,6 +1,9 @@
-from typing import Any, Dict, List, Optional, Tuple, Type
 import unicodedata
+from typing import Any
 
+from sqlalchemy import Integer, Numeric, String, and_, case, cast, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 from app.models.answer import Answer
 from app.models.base import Base
@@ -12,15 +15,17 @@ from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.schemas.pageAll import AllItem, EntityEnum, OrderByEnum, OrderDirEnum, PageAllLangEnum
-from sqlalchemy import and_, case, cast, func, Integer, Numeric, or_, select, String
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
+from app.schemas.page_all import (
+    AllItem,
+    EntityEnum,
+    OrderByEnum,
+    OrderDirEnum,
+    PageAllLangEnum,
+)
 
+ModelType = type[Base]
 
-ModelType = Type[Base]
-
-SUPPORTED_LANGS = {"fr", "de", "it", "ro", "en"}
+SUPPORTED_LANGS = {"fr", "de", "it", "rm", "en"}
 
 
 def _safe_lang(lang: PageAllLangEnum | str) -> str:
@@ -54,7 +59,9 @@ def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
-def _localized_text_or_label(model: ModelType, lang: PageAllLangEnum | str) -> Any | None:
+def _localized_text_or_label(
+    model: ModelType, lang: PageAllLangEnum | str
+) -> Any | None:
     """
     Pour les questions et options.
 
@@ -119,9 +126,9 @@ class EntityConfig:
     def __init__(
         self,
         model: ModelType,
-        code_attr: Optional[str],
+        code_attr: str | None,
         default_sort: OrderByEnum = OrderByEnum.name,
-        search_extra_attrs: Optional[List[str]] = None,
+        search_extra_attrs: list[str] | None = None,
     ):
         self.model = model
         self.code_attr = code_attr
@@ -129,7 +136,7 @@ class EntityConfig:
         self.search_extra_attrs = search_extra_attrs or []
 
 
-ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
+ENTITY_CONFIG: dict[EntityEnum, EntityConfig] = {
     EntityEnum.commune: EntityConfig(
         Commune,
         "code",
@@ -139,7 +146,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "name_fr",
             "name_de",
             "name_it",
-            "name_ro",
+            "name_rm",
             "name_en",
             "code",
         ],
@@ -153,7 +160,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "name_fr",
             "name_de",
             "name_it",
-            "name_ro",
+            "name_rm",
             "name_en",
             "code",
         ],
@@ -167,7 +174,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "name_fr",
             "name_de",
             "name_it",
-            "name_ro",
+            "name_rm",
             "name_en",
             "code",
         ],
@@ -182,7 +189,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
@@ -195,7 +202,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
@@ -208,7 +215,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
@@ -222,7 +229,7 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
             "text_fr",
             "text_de",
             "text_it",
-            "text_ro",
+            "text_rm",
             "text_en",
         ],
     ),
@@ -245,7 +252,9 @@ ENTITY_CONFIG: Dict[EntityEnum, EntityConfig] = {
 }
 
 
-def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> Any | None:
+def _name_expr_for_entity(
+    entity: EntityEnum, lang: PageAllLangEnum | str
+) -> Any | None:
     if entity in {
         EntityEnum.commune,
         EntityEnum.district,
@@ -270,7 +279,9 @@ def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> An
     return None
 
 
-def _build_columns_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> list[Any]:
+def _build_columns_for_entity(
+    entity: EntityEnum, lang: PageAllLangEnum | str
+) -> list[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
@@ -347,7 +358,7 @@ def _order_column_for_entity(
         return getattr(model, cfg.code_attr)
 
     if order_by == OrderByEnum.year and hasattr(model, "year"):
-        return getattr(model, "year")
+        return model.year
 
     if order_by == OrderByEnum.value:
         if entity == EntityEnum.option:
@@ -555,7 +566,7 @@ async def get_pageAll_paginated(
     order_dir: OrderDirEnum = OrderDirEnum.asc,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
     q: str | None = None,
-) -> Tuple[List[AllItem], int]:
+) -> tuple[list[AllItem], int]:
     cfg = ENTITY_CONFIG.get(entity)
 
     if cfg is None:
@@ -563,8 +574,7 @@ async def get_pageAll_paginated(
 
     model = cfg.model
 
-    if page < 1:
-        page = 1
+    page = max(page, 1)
 
     if per_page < 1:
         per_page = 20
@@ -592,9 +602,13 @@ async def get_pageAll_paginated(
 
     order_exprs = _order_exprs_for_entity(entity, order_by, order_dir, lang)
 
+    stmt = _build_base_stmt(entity, lang)
+
+    if search_conditions:
+        stmt = stmt.where(or_(*search_conditions))
+
     stmt = (
-        _build_base_stmt(entity, lang)
-        .order_by(*order_exprs, model.uid.asc())
+        stmt.order_by(*order_exprs, model.uid.asc())
         .offset((page - 1) * per_page)
         .limit(per_page)
     )
@@ -614,7 +628,7 @@ async def suggest_pageAll(
     q: str,
     limit: int = 10,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
-) -> List[AllItem]:
+) -> list[AllItem]:
     cfg = ENTITY_CONFIG.get(entity)
 
     if cfg is None:
@@ -627,42 +641,48 @@ async def suggest_pageAll(
     if len(q_norm) < 1:
         return []
 
-    q = q.strip().lower()
-    qprefix = f"{q}%"
+    q_exact = q_norm
+    q_prefix = f"{q_norm}%"
+    q_contains = f"%{q_norm}%"
 
-    u = func.unaccent
-    l = func.lower
+    searchable_exprs = _searchable_exprs_for_entity(entity, lang)
 
-    search_conditions = []
-
-    name_expr = _name_expr_for_entity(entity, lang)
-
-    if name_expr is not None:
-        search_conditions.append(l(u(name_expr)).like(qprefix))
-
-    if cfg.code_attr:
-        code_col = getattr(model, cfg.code_attr)
-        search_conditions.append(l(u(code_col)).like(qprefix))
-
-    for attr in cfg.search_extra_attrs:
-        if hasattr(model, attr):
-            col = getattr(model, attr)
-            search_conditions.append(l(u(col)).like(qprefix))
-
-    if entity == EntityEnum.answer:
-        question_expr = _localized_text_or_label(QuestionPerSurvey, lang)
-        commune_expr = _localized_name(Commune, lang)
-
-        if question_expr is not None:
-            search_conditions.append(l(u(question_expr)).like(qprefix))
-
-        if commune_expr is not None:
-            search_conditions.append(l(u(commune_expr)).like(qprefix))
-
-    if not search_conditions:
+    if not searchable_exprs:
         return []
 
-    stmt = _build_base_stmt(entity, lang).where(or_(*search_conditions)).limit(limit)
+    rank_exprs: list[Any] = []
+    search_conditions: list[Any] = []
+
+    for expr in searchable_exprs:
+        normalized_expr = _normalized_sql_text(expr)
+
+        search_conditions.append(normalized_expr.like(q_contains))
+
+        rank_exprs.append(
+            case(
+                (normalized_expr == q_exact, 0),
+                (normalized_expr.like(q_prefix), 1),
+                (normalized_expr.like(q_contains), 2),
+                else_=9,
+            )
+        )
+
+    best_rank = func.least(*rank_exprs).label("search_rank")
+
+    stmt = (
+        _build_base_stmt(entity, lang)
+        .where(or_(*search_conditions))
+        .order_by(
+            best_rank.asc(),
+            (
+                _name_expr_for_entity(entity, lang).asc()
+                if _name_expr_for_entity(entity, lang) is not None
+                else model.uid.asc()
+            ),
+            model.uid.asc(),
+        )
+        .limit(limit)
+    )
 
     result = await db.execute(stmt)
     rows = result.all()

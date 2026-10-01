@@ -1,8 +1,6 @@
 from typing import Any
 
-
 import pandas as pd
-
 
 MAX_SAMPLE_VALUES = 5
 MAX_MOST_COMMON_VALUES = 5

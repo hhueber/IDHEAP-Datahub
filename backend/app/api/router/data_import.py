@@ -1,3 +1,6 @@
+from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.permissions import require_permission
 from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
@@ -16,20 +19,20 @@ from app.schemas.data_import import (
     DataImportNameResponse,
     DataImportNewProject,
     DataImportNewProjectResponse,
-    DataImportPatchResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
-    DataImportResourcesResponse,
     DataImportUploadResponse,
     DataImportWorkspaceUploadResponse,
     DataImportYearsPatch,
     DataImportYearsResponse,
     DataProjectResponse,
-    ImportRoleEnum,
     ImportSectionEnum,
 )
 from app.services.add_database.import_survey_service import import_new_survey_pipeline
-from app.services.add_database.survey_project_service import create_project, get_projects
+from app.services.add_database.survey_project_service import (
+    create_project,
+    get_projects,
+)
 from app.services.data_import.data_import_patch_service import (
     confirm_import_columns,
     patch_import_cell,
@@ -37,7 +40,6 @@ from app.services.data_import.data_import_patch_service import (
     patch_import_column_transform,
 )
 from app.services.data_import.data_import_service import (
-    add_files_to_import_workspace,
     analyze_import_file,
     create_import_workspace,
     delete_import_job,
@@ -50,9 +52,6 @@ from app.services.data_import.data_import_service import (
     update_import_display_name,
     update_import_years,
 )
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -61,7 +60,9 @@ router = APIRouter()
 async def upload_data_file(
     file: UploadFile = File(...),
     years: list[int] = Form(...),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await save_import_upload(file=file, years=years)
 
@@ -73,23 +74,31 @@ async def upload_data_file(
 
 
 @router.get("/projects", response_model=DataProjectResponse)
-async def create_new_project(
+async def fwetch_all_project(
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+    _current_user: User = Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
+    ),
 ):
     projects = await get_projects(db, _current_user)
     project_payload = []
     for project in projects:
         project_payload.append({"uid": project.uid, "name": project.name})
 
-    return {"success": True, "detail": "Sucessfully fetched all project", "data": project_payload}
+    return {
+        "success": True,
+        "detail": "Sucessfully fetched all project",
+        "data": project_payload,
+    }
 
 
 @router.post("/project", response_model=DataImportNewProjectResponse)
 async def create_new_project(
     payload: DataImportNewProject,
     db: AsyncSession = Depends(get_db),
-    _current_user: User = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+    _current_user: User = Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
+    ),
 ):
     project = await create_project(db, _current_user, payload)
 
@@ -104,7 +113,9 @@ async def create_new_project(
 async def update_data_import_name(
     import_id: str,
     payload: DataImportNamePatch,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await update_import_display_name(
         import_id=import_id,
@@ -122,7 +133,9 @@ async def update_data_import_name(
 async def analyze_data_file(
     import_id: str,
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await analyze_import_file(db, import_id=import_id)
 
@@ -145,7 +158,9 @@ async def preview_data_file(
     column_index: int | None = Query(None, ge=0),
     sort_column_index: int | None = Query(None, ge=0),
     sort_direction: str = Query("asc", pattern="^(asc|desc)$"),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await preview_import_section(
         import_id=import_id,
@@ -171,7 +186,9 @@ async def preview_data_file(
 async def update_import_cell(
     import_id: str,
     payload: DataImportCellPatch,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     analysis = await patch_import_cell(import_id=import_id, payload=payload)
 
@@ -186,7 +203,9 @@ async def update_import_cell(
 async def update_import_column(
     import_id: str,
     payload: DataImportColumnPatch,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     analysis = await patch_import_column(import_id=import_id, payload=payload)
 
@@ -197,11 +216,15 @@ async def update_import_column(
     }
 
 
-@router.patch("/{import_id}/column-transform", response_model=DataImportPatchWithAnalysisResponse)
+@router.patch(
+    "/{import_id}/column-transform", response_model=DataImportPatchWithAnalysisResponse
+)
 async def update_import_column_transform(
     import_id: str,
     payload: DataImportColumnTransformPatch,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     analysis = await patch_import_column_transform(import_id=import_id, payload=payload)
 
@@ -214,7 +237,9 @@ async def update_import_column_transform(
 
 @router.get("", response_model=DataImportListResponse)
 async def list_data_imports(
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await list_import_jobs()
 
@@ -228,7 +253,9 @@ async def list_data_imports(
 @router.get("/{import_id}/issues", response_model=DataImportIssuesResponse)
 async def get_data_import_issues(
     import_id: str,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await get_import_issue_groups(import_id)
 
@@ -242,7 +269,9 @@ async def get_data_import_issues(
 @router.get("/{import_id}/summary", response_model=DataImportAnalyzeResponse)
 async def get_data_import_summary(
     import_id: str,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await get_import_summary(import_id)
 
@@ -257,7 +286,9 @@ async def get_data_import_summary(
 async def update_data_import_years(
     import_id: str,
     payload: DataImportYearsPatch,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     data = await update_import_years(
         import_id=import_id,
@@ -274,7 +305,9 @@ async def update_data_import_years(
 @router.delete("/{import_id}", response_model=DataImportDeleteResponse)
 async def delete_data_import(
     import_id: str,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     await delete_import_job(import_id)
 
@@ -284,11 +317,15 @@ async def delete_data_import(
     }
 
 
-@router.patch("/{import_id}/columns/confirm", response_model=DataImportPatchWithAnalysisResponse)
+@router.patch(
+    "/{import_id}/columns/confirm", response_model=DataImportPatchWithAnalysisResponse
+)
 async def confirm_data_import_columns(
     import_id: str,
     payload: DataImportColumnsConfirmPatch,
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
     analysis = await confirm_import_columns(
         import_id=import_id,
@@ -347,30 +384,13 @@ async def get_data_import_files(
     }
 
 
-@router.get("/{import_id}/files", response_model=DataImportResourcesResponse)
-async def get_data_import_files(
-    import_id: str,
-    _current_user=Depends(
-        require_permission(
-            PermissionScope.DATASET,
-            PermissionLevel.MANAGE,
-        )
-    ),
-):
-    data = await list_import_resources(import_id)
-
-    return {
-        "success": True,
-        "detail": "Import resources loaded",
-        "data": data,
-    }
-
-
 @router.post("/{import_id}/commit", response_model=DataImportCommitResponse)
 async def commit_change(
     import_id: str,
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
 ):
 
     await import_new_survey_pipeline(db, import_id)
@@ -381,6 +401,8 @@ async def commit_change(
 async def new_project(
     payload=DataImportNewProject,
     db: AsyncSession = Depends(get_db),
-    current_user=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)),
+    current_user=Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
+    ),
 ):
     return {"success": True}

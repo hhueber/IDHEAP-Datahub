@@ -1,14 +1,16 @@
 import logging
 
-
+import pandas as pd
 from app.models.answer import Answer
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from app.schemas.data_import import ImportRoleEnum
-from app.services.add_database.commune_service import add_update_geo_data, get_commune_mapping_year
+from app.services.add_database.commune_service import (
+    add_update_geo_data,
+    get_commune_mapping_year,
+)
 from app.services.data_import.data_import_storage_service import (
     get_import_dir,
-    get_workspace_dir,
     read_analysis,
     read_frame,
     read_metadata,
@@ -16,8 +18,6 @@ from app.services.data_import.data_import_storage_service import (
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
-import pandas as pd
-
 
 logger = logging.getLogger(__name__)
 
@@ -28,14 +28,12 @@ async def import_new_survey_pipeline(db: AsyncSession, upload_id: str):
 
 async def import_survey_to_db(db: AsyncSession, upload_id: str):
     import_dir = get_import_dir(upload_id)
-    workspace_dir = get_workspace_dir(import_dir)
 
     analysis = read_analysis(import_dir)
     metadata = read_metadata(import_dir)
 
     df = read_frame(import_dir)
 
-    detected_survey = analysis.get("detected_survey") or {}
     survey_name = metadata.get("display_name")
     years = metadata.get("years")
 
@@ -75,7 +73,9 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
                 "Cannot find the municipalities column"
             )  # TODO: Pouvoir mieux gerer les erreurs afin de les envoyer a l'utilisateur
 
-        result = await db.execute(select(QuestionPerSurvey).filter_by(survey_uid=db_survey.uid))
+        result = await db.execute(
+            select(QuestionPerSurvey).filter_by(survey_uid=db_survey.uid)
+        )
         questions = result.scalars().all()
         question_mapping_insert = {}
         for question in questions:
@@ -88,9 +88,13 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
                 key = (row[question_role_map["code"]], db_survey.uid)
                 if key not in question_mapping_insert:
                     db_question_per_survey = QuestionPerSurvey(
-                        code=row[question_role_map["code"]], label=row[question_role_map["label"]], survey=db_survey
+                        code=row[question_role_map["code"]],
+                        label=row[question_role_map["label"]],
+                        survey=db_survey,
                     )
-                    question_mapping_insert[db_question_per_survey.code] = db_question_per_survey
+                    question_mapping_insert[db_question_per_survey.code] = (
+                        db_question_per_survey
+                    )
                     db.add(db_question_per_survey)
                     await db.flush()
 

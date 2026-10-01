@@ -1,6 +1,7 @@
-from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+
+from app.core.config import settings
 
 
 def setup_middlewares(app):

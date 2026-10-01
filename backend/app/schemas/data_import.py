@@ -1,6 +1,5 @@
 from enum import Enum
-from typing import Any, List, Literal, Optional
-
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -59,10 +58,10 @@ class DataImportUploadResponse(BaseModel):
 
 
 class DetectedSurvey(BaseModel):
-    name: Optional[str] = None
-    year: Optional[int] = None
+    name: str | None = None
+    year: int | None = None
     confidence: float = 0.0
-    existing_survey_uid: Optional[int] = None
+    existing_survey_uid: int | None = None
     needs_user_confirmation: bool = True
 
 
@@ -121,15 +120,15 @@ class ImportCellIssue(BaseModel):
     code: str
     severity: Literal["warning", "error"]
     message_key: str
-    expected_type: Optional[DetectedTypeEnum] = None
-    actual_value: Optional[str] = None
+    expected_type: DetectedTypeEnum | None = None
+    actual_value: str | None = None
 
 
 class ImportPreviewColumn(BaseModel):
     index: int
     name: str
     section: ImportSectionEnum
-    role: Optional[ImportRoleEnum] = None
+    role: ImportRoleEnum | None = None
     detected_type: DetectedTypeEnum
     issue_count: int
 
@@ -165,15 +164,15 @@ class DataImportPreviewResponse(BaseModel):
 class DataImportCellPatch(BaseModel):
     row_index: int
     column_index: int
-    value: Optional[str]
+    value: str | None
 
 
 class DataImportColumnPatch(BaseModel):
     column_index: int
-    section: Optional[ImportSectionEnum] = None
-    role: Optional[ImportRoleEnum] = None
-    detected_type: Optional[DetectedTypeEnum] = None
-    ignored: Optional[bool] = None
+    section: ImportSectionEnum | None = None
+    role: ImportRoleEnum | None = None
+    detected_type: DetectedTypeEnum | None = None
+    ignored: bool | None = None
 
 
 class DataImportPatchResponse(BaseModel):
@@ -194,8 +193,8 @@ class ColumnTransformActionEnum(str, Enum):
 class DataImportColumnTransformPatch(BaseModel):
     column_index: int
     action: ColumnTransformActionEnum
-    search: Optional[str] = None
-    replacement: Optional[str] = None
+    search: str | None = None
+    replacement: str | None = None
 
 
 class DataImportPatchWithAnalysisResponse(BaseModel):
@@ -213,13 +212,13 @@ class DataImportJobSummary(BaseModel):
     filename: str
     display_name: str | None = None
     size: int
-    created_at: Optional[str] = None
+    created_at: str | None = None
     analyzed: bool
-    rows: Optional[int] = None
-    columns: Optional[int] = None
-    total_issues: Optional[int] = None
-    detected_survey_name: Optional[str] = None
-    detected_survey_year: Optional[int] = None
+    rows: int | None = None
+    columns: int | None = None
+    total_issues: int | None = None
+    detected_survey_name: str | None = None
+    detected_survey_year: int | None = None
     files_count: int = 0
     resources_count: int = 0
     years: list[int] = Field(default_factory=list)
@@ -269,7 +268,7 @@ class ImportIssueGroup(BaseModel):
     column_index: int
     column_name: str
     detected_type: DetectedTypeEnum
-    expected_type: Optional[DetectedTypeEnum] = None
+    expected_type: DetectedTypeEnum | None = None
     count: int
     affected_rows: int
     sample_values: list[ImportIssueGroupSample] = Field(default_factory=list)
@@ -390,8 +389,8 @@ class DataImportNewProject(BaseModel):
     name: str
     description: str
     licence: str
-    links: List[Link]
-    authors: List[Author]
+    links: list[Link]
+    authors: list[Author]
 
 
 class DataImportNewProjectData(BaseModel):
@@ -417,4 +416,4 @@ class DataProjectPayload(BaseModel):
 class DataProjectResponse(BaseModel):
     success: bool
     detail: str
-    data: List[DataProjectPayload]
+    data: list[DataProjectPayload]

@@ -1,9 +1,7 @@
 from dataclasses import dataclass
 from enum import Enum
-from typing import Iterable, Set
 
-
-from app.schemas.pageAll import EntityEnum
+from app.schemas.page_all import EntityEnum
 
 
 class DeleteAction(str, Enum):
@@ -13,8 +11,8 @@ class DeleteAction(str, Enum):
 
 @dataclass(frozen=True)
 class DeletePolicy:
-    deny_delete_entities: Set[EntityEnum]
-    deny_clear_entities: Set[EntityEnum]
+    deny_delete_entities: set[EntityEnum]
+    deny_clear_entities: set[EntityEnum]
 
 
 # actuellement /delete ne peut déjà pas toucher Lake, Country, CantonMap car pas dans EntityEnum

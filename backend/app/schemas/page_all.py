@@ -1,6 +1,4 @@
 from enum import Enum
-from typing import List, Optional
-
 
 from pydantic import BaseModel
 
@@ -35,28 +33,28 @@ class PageAllLangEnum(str, Enum):
     fr = "fr"
     de = "de"
     it = "it"
-    ro = "ro"
+    rm = "rm"
     en = "en"
 
 
 class AllItem(BaseModel):
     uid: int
-    code: Optional[str] = None
+    code: str | None = None
     name: str
     entity: EntityEnum
-    year: Optional[int] = None
-    value: Optional[str] = None
-    question_uid: Optional[int] = None
-    commune_uid: Optional[int] = None
-    question: Optional[str] = None
-    commune: Optional[str] = None
+    year: int | None = None
+    value: str | None = None
+    question_uid: int | None = None
+    commune_uid: int | None = None
+    question: str | None = None
+    commune: str | None = None
 
     class Config:
         orm_mode = True
 
 
 class AllPayload(BaseModel):
-    items: List[AllItem]
+    items: list[AllItem]
     total: int
     page: int
     per_page: int
@@ -72,7 +70,7 @@ class AllResponse(BaseModel):
 class SuggestResponse(BaseModel):
     success: bool
     detail: str
-    data: List[AllItem]
+    data: list[AllItem]
 
 
 class FindPageData(BaseModel):

@@ -1,23 +1,26 @@
-from typing import Any, List, Optional, Type
+from typing import Any
 
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
 from app.models.option import Option
 from app.models.question_category import QuestionCategory
-from app.models.question_category_option_association import QuestionCategoryOptionAssociation
+from app.models.question_category_option_association import (
+    QuestionCategoryOptionAssociation,
+)
 from app.models.question_global import QuestionGlobal
-from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_global_option_association import (
+    QuestionGlobalOptionAssociation,
+)
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.repositories.pageShow_repo import ENTITY_MODEL_MAP
-from app.schemas.pageAll import EntityEnum, PageAllLangEnum
-from app.schemas.pageShow import ShowMetaChild
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.repositories.page_show_repo import ENTITY_MODEL_MAP
+from app.schemas.page_all import EntityEnum, PageAllLangEnum
+from app.schemas.page_show import ShowMetaChild
 
 ASSOCIATION_MODEL_MAP = {
     "question_option_association": QuestionOptionAssociation,
@@ -26,7 +29,7 @@ ASSOCIATION_MODEL_MAP = {
 }
 
 
-SUPPORTED_LANGS = {"fr", "de", "it", "ro", "en"}
+SUPPORTED_LANGS = {"fr", "de", "it", "rm", "en"}
 
 
 def _safe_lang(lang: PageAllLangEnum | str) -> str:
@@ -48,10 +51,12 @@ def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     if not valid_columns:
         return None
 
+    # Applique _not_empty() à chaque colonne afin de traiter les chaînes vides
+    # comme des valeurs NULL, puis retourne la première valeur non NULL avec COALESCE.
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
-def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
+def _localized_name(model: type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
     translated_name = getattr(model, f"name_{safe_lang}", None)
@@ -60,9 +65,11 @@ def _localized_name(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
     return _coalesce_not_empty(translated_name, fallback_name)
 
 
-def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> Any:
+def _localized_text_or_label(model: type[Any], lang: PageAllLangEnum | str) -> Any:
     safe_lang = _safe_lang(lang)
 
+    # Récupère dynamiquement le champ traduit correspondant à la langue
+    # (ex. text_fr, text_de, text_it, etc.). Retourne None si le champ n'existe pas.
     translated_text = getattr(model, f"text_{safe_lang}", None)
 
     if model is Option:
@@ -86,9 +93,9 @@ def _localized_text_or_label(model: Type[Any], lang: PageAllLangEnum | str) -> A
 
 async def enrich_children_display_names(
     db: AsyncSession,
-    rows: List[dict[str, Any]],
+    rows: list[dict[str, Any]],
     lang: PageAllLangEnum | str = PageAllLangEnum.fr,
-) -> List[dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Ajoute des champs display-friendly aux enfants.
 
@@ -102,7 +109,7 @@ async def enrich_children_display_names(
     if not rows:
         return rows
 
-    relation_configs: dict[str, tuple[Type[Any], str, Any]] = {
+    relation_configs: dict[str, tuple[type[Any], str, Any]] = {
         "commune_uid": (
             Commune,
             "commune_name",
@@ -178,8 +185,8 @@ async def get_children_paginated(
     parent_uid: int,
     page: int,
     per_page: int,
-) -> tuple[List[Any], int]:
-    model: Optional[Type[Any]] = ENTITY_MODEL_MAP.get(child_entity)
+) -> tuple[list[Any], int]:
+    model: type[Any] | None = ENTITY_MODEL_MAP.get(child_entity)
     if model is None:
         return [], 0
 
@@ -216,8 +223,12 @@ async def get_children_paginated(
         if association_model is None:
             return [], 0
 
-        source_col = getattr(association_model, child_meta.association_source_field, None)
-        target_col = getattr(association_model, child_meta.association_target_field, None)
+        source_col = getattr(
+            association_model, child_meta.association_source_field, None
+        )
+        target_col = getattr(
+            association_model, child_meta.association_target_field, None
+        )
         target_uid_col = getattr(model, child_meta.target_uid_field, None)
 
         if source_col is None or target_col is None or target_uid_col is None:

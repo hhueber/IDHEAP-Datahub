@@ -5,12 +5,11 @@ Conventions:
 """
 
 from datetime import datetime
-from typing import List, Literal, Optional
 
+from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 from app.config.roles import PermissionRole
 from app.schemas.validators import NameFirstStr, NameLastStr, PasswordStr
-from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 
 class UserCreate(BaseModel):
@@ -66,7 +65,7 @@ class PasswordChangeIn(BaseModel):
 
     old_password: str
     new_password: PasswordStr
-    confirm: Optional[str] = None
+    confirm: str | None = None
 
     @model_validator(mode="after")
     def _confirm_matches(self):
@@ -86,11 +85,11 @@ class AdminUserItem(BaseModel):
     first_name: str
     last_name: str
     role: PermissionRole
-    created_at: Optional[datetime] = None
+    created_at: datetime | None = None
 
 
 class AdminUserListPayload(BaseModel):
-    items: List[AdminUserItem]
+    items: list[AdminUserItem]
     total: int
     page: int
     per_page: int
@@ -106,10 +105,10 @@ class AdminUserListResponse(BaseModel):
 class AdminUserUpdateIn(BaseModel):
     """Payload de modification inline côté admin."""
 
-    first_name: Optional[NameFirstStr] = None
-    last_name: Optional[NameLastStr] = None
-    email: Optional[EmailStr] = None
-    role: Optional[PermissionRole] = None
+    first_name: NameFirstStr | None = None
+    last_name: NameLastStr | None = None
+    email: EmailStr | None = None
+    role: PermissionRole | None = None
 
 
 class AdminUserActionResponse(BaseModel):

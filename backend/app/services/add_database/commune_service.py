@@ -1,10 +1,11 @@
-from typing import Any, Dict, List
-from zipfile import ZipFile
 import os
 import tempfile as tf
 import xml.etree.ElementTree as ET
+from typing import Any
+from zipfile import ZipFile
 
-
+import fiona
+import requests
 from app.models.canton import Canton
 from app.models.canton_map import CantonMap
 from app.models.commune import Commune
@@ -20,26 +21,26 @@ from shapely.geometry import shape
 from shapely.ops import transform
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-import fiona
-import pandas as pd
-import requests
-
 
 transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 
 
 def dl_extract_commune_data(url: str, temp_dir: str = ".") -> str:
-    zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=temp_dir)
-    response = requests.get(url)
-    zip_file.write(response.content)
-    zip_file.close()
-    with ZipFile(zip_file.name) as zip:
+    with tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=temp_dir) as zip_file:
+        response = requests.get(url, timeout=30)
+        zip_file.write(response.content)
+        zip_file_path = zip_file.name
+
+    with ZipFile(zip_file_path) as zip_ref:
         xml_files = [
-            f for f in zip.namelist() if f.lower().endswith(".xml") and ("1.2.0/" in f or f.startswith("1.2.0"))
+            f
+            for f in zip_ref.namelist()
+            if f.lower().endswith(".xml") and ("1.2.0/" in f or f.startswith("1.2.0"))
         ]
-        zip.extractall(members=xml_files)
-    os.remove(zip_file.name)
-    return xml_files[0]
+        zip_ref.extractall(path=temp_dir, members=xml_files)
+
+    os.remove(zip_file_path)
+    return os.path.join(temp_dir, xml_files[0])
 
 
 def get_xml_root(url: str) -> ET.Element:
@@ -48,7 +49,7 @@ def get_xml_root(url: str) -> ET.Element:
     return tree.getroot()
 
 
-def get_canton_mapping(root: ET.Element) -> Dict[int, Any]:
+def get_canton_mapping(root: ET.Element) -> dict[int, Any]:
     canton_mapping = {}
     for canton in root.findall("./cantons/canton"):
         canton_id = int(canton.find("cantonId").text)
@@ -56,11 +57,15 @@ def get_canton_mapping(root: ET.Element) -> Dict[int, Any]:
         canton_code = canton.find("cantonAbbreviation").text
 
         if canton_id not in canton_mapping:
-            canton_mapping[canton_id] = {"ofs_id": canton_id, "code": canton_code, "name": canton_name}
+            canton_mapping[canton_id] = {
+                "ofs_id": canton_id,
+                "code": canton_code,
+                "name": canton_name,
+            }
     return canton_mapping
 
 
-def get_district_mapping(root: ET.Element) -> Dict[int, Any]:
+def get_district_mapping(root: ET.Element) -> dict[int, Any]:
     district_mapping = {}
 
     for district in root.findall("./districts/district"):
@@ -79,7 +84,7 @@ def get_district_mapping(root: ET.Element) -> Dict[int, Any]:
     return district_mapping
 
 
-def get_commune_mapping(root: ET.Element) -> Dict[int, Any]:
+def get_commune_mapping(root: ET.Element) -> dict[int, Any]:
     commune_mapping = {}
 
     for commune in root.findall("./municipalities/municipality"):
@@ -88,20 +93,27 @@ def get_commune_mapping(root: ET.Element) -> Dict[int, Any]:
         commune_name = commune.find("municipalityLongName").text
 
         if commune_id not in commune_mapping:
-            commune_mapping[commune_id] = {"name": commune_name, "district_id": district_id}
+            commune_mapping[commune_id] = {
+                "name": commune_name,
+                "district_id": district_id,
+            }
 
     return commune_mapping
 
 
-async def insert_canton(db: AsyncSession, canton_mapping: Dict[int, Any]) -> List[Canton]:
+async def insert_canton(
+    db: AsyncSession, canton_mapping: dict[int, Any]
+) -> list[Canton]:
     result = await db.execute(select(Canton.ofs_id))
     existing_canton_ofs = set(result.scalars().all())
 
     canton_to_insert = []
 
-    for _, data in canton_mapping.items():
+    for data in canton_mapping.values():
         if data["ofs_id"] not in existing_canton_ofs:
-            new_canton = Canton(code=str(data["code"]), ofs_id=data["ofs_id"], name=data["name"])
+            new_canton = Canton(
+                code=str(data["code"]), ofs_id=data["ofs_id"], name=data["name"]
+            )
             canton_to_insert.append(new_canton)
             db.add(new_canton)
 
@@ -112,11 +124,12 @@ async def insert_canton(db: AsyncSession, canton_mapping: Dict[int, Any]) -> Lis
     return list(final_result.scalars().all())
 
 
-async def insert_district(db: AsyncSession, district_mapping: Dict[int, Any], cantons: List[Canton]) -> List[District]:
+async def insert_district(
+    db: AsyncSession, district_mapping: dict[int, Any], cantons: list[Canton]
+) -> list[District]:
     result = await db.execute(select(District.hist_id))
     existing_district_code = set(result.scalars().all())
     district_to_insert = []
-    existing_codde = set()
 
     for district_id, data in district_mapping.items():
         if district_id not in existing_district_code:
@@ -130,7 +143,12 @@ async def insert_district(db: AsyncSession, district_mapping: Dict[int, Any], ca
                     break
 
             if canton_found:
-                new_district = District(code=data["code"], name=data["name"], canton=canton_found, hist_id=district_id)
+                new_district = District(
+                    code=data["code"],
+                    name=data["name"],
+                    canton=canton_found,
+                    hist_id=district_id,
+                )
                 db.add(new_district)
                 district_to_insert.append(new_district)
 
@@ -141,7 +159,9 @@ async def insert_district(db: AsyncSession, district_mapping: Dict[int, Any], ca
     return list(final_result.scalars().all())
 
 
-async def insert_commune(db: AsyncSession, commune_mapping: Dict[int, Any], districts: List[District]) -> List[Commune]:
+async def insert_commune(
+    db: AsyncSession, commune_mapping: dict[int, Any], districts: list[District]
+) -> list[Commune]:
     result = await db.execute(select(Commune.code))
     existing_commune_code = set(result.scalars().all())
 
@@ -154,16 +174,17 @@ async def insert_commune(db: AsyncSession, commune_mapping: Dict[int, Any], dist
             district_found = None
 
             for district in districts:
-                district.hist_id == district_id
                 if district.hist_id == district_id:
                     district_found = district
 
             if district_found:
-                new_commune = Commune(code=commune_id, name=data["name"], district=district_found)
+                new_commune = Commune(
+                    code=commune_id, name=data["name"], district=district_found
+                )
                 db.add(new_commune)
                 commune_to_insert.append(new_commune)
             else:
-                print(f"PROBLEM WITH COMMUNE {data["name"]} NO DISTRICT")
+                print(f"PROBLEM WITH COMMUNE {data['name']} NO DISTRICT")
 
     if commune_to_insert:
         await db.commit()
@@ -172,8 +193,10 @@ async def insert_commune(db: AsyncSession, commune_mapping: Dict[int, Any], dist
     return list(final_result.scalars().all())
 
 
-async def add_update_geo_data(db: AsyncSession, years: List[int]):
-    root = get_xml_root("https://www.agvchapp.bfs.admin.ch/file/xml/dz-b-00.04-hgv-02.zip")
+async def add_update_geo_data(db: AsyncSession, years: list[int]):
+    root = get_xml_root(
+        "https://www.agvchapp.bfs.admin.ch/file/xml/dz-b-00.04-hgv-02.zip"
+    )
 
     canton_mapping = get_canton_mapping(root)
 
@@ -187,14 +210,18 @@ async def add_update_geo_data(db: AsyncSession, years: List[int]):
 
     list_commune = await insert_commune(db, commune_mapping, list_district)
 
-    result = await db.execute(select(CantonMap.year).distinct().order_by(CantonMap.year))
+    result = await db.execute(
+        select(CantonMap.year).distinct().order_by(CantonMap.year)
+    )
     years_in_db = result.scalars().all()
 
     existing_set = set(years_in_db)
 
     years_to_process = [y for y in years if y not in existing_set]
     for year in years_to_process:
-        await add_commune_geodata_for_year(db, year, list_commune, list_district, list_canton)
+        await add_commune_geodata_for_year(
+            db, year, list_commune, list_district, list_canton
+        )
 
 
 def extract_geo_package(url: str, tempdir: str) -> str:
@@ -203,15 +230,17 @@ def extract_geo_package(url: str, tempdir: str) -> str:
     Args:
         url (str): url to extract from
     """
-    zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=tempdir)
-    response = requests.get(url)
-    zip_file.write(response.content)
-    zip_file.close()
-    with ZipFile(zip_file.name) as zip:
-        url = zip.namelist()[0]
-        zip.extractall()
-    os.remove(zip_file.name)
-    return url
+    with tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=tempdir) as zip_file:
+        response = requests.get(url, timeout=30)
+        zip_file.write(response.content)
+        zip_file_path = zip_file.name
+
+    with ZipFile(zip_file_path) as zip_ref:
+        first_file = zip_ref.namelist()[0]
+        zip_ref.extractall(path=tempdir)
+
+    os.remove(zip_file_path)
+    return os.path.join(tempdir, first_file)
 
 
 def get_geodata_url_from_stac(year: int) -> str:
@@ -229,7 +258,7 @@ def get_geodata_url_from_stac(year: int) -> str:
         if dt_str:
             item_year = int(dt_str[:4])  # year extraction
 
-            for _, asset in item.assets.items():
+            for asset in item.assets.values():
                 if asset.href.endswith((".gpkg", ".zip")):
                     year_to_asset[item_year] = asset.href
                     break
@@ -241,7 +270,9 @@ def get_geodata_url_from_stac(year: int) -> str:
         return year_to_asset[year]
 
     closest_year = min(year_to_asset.keys(), key=lambda y: abs(y - year))
-    print(f"Année {year} non trouvée. Utilisation de l'année la plus proche : {closest_year}")
+    print(
+        f"Année {year} non trouvée. Utilisation de l'année la plus proche : {closest_year}"
+    )
 
     return year_to_asset[closest_year]
 
@@ -284,7 +315,11 @@ def to_2d(geometry):
 
 
 async def add_commune_geodata_for_year(
-    db: AsyncSession, year: int, communes: List[Commune], districts: List[District], cantons: List[Canton]
+    db: AsyncSession,
+    year: int,
+    communes: list[Commune],
+    districts: list[District],
+    cantons: list[Canton],
 ):
     url = get_geodata_url_from_stac(year)
     commune_map = {int(commune.code): commune for commune in communes}
@@ -295,13 +330,16 @@ async def add_commune_geodata_for_year(
     layers.reverse()
 
     for layer in layers:
-
         with fiona.open(url, layer=layer) as src:
             if "Communes" in layer:
                 for feature in src:
                     props = feature.get("properties")
 
-                    if props.get("GDENR") == 253 or props.get("GARTE") != 11 or props.get("CODE_ISO") != "CH":
+                    if (
+                        props.get("GDENR") == 253
+                        or props.get("GARTE") != 11
+                        or props.get("CODE_ISO") != "CH"
+                    ):
                         continue
                     bfs_number = props.get("GDENR")
 
@@ -359,11 +397,15 @@ async def add_commune_geodata_for_year(
 
             if "Lac" in layer:
                 for feature in src:
-
-                    result = await db.execute(select(Lake).filter_by(code=str(feature["properties"]["SEENR"])))
+                    result = await db.execute(
+                        select(Lake).filter_by(code=str(feature["properties"]["SEENR"]))
+                    )
                     db_lake = result.scalar_one_or_none()
                     if db_lake is None:
-                        db_lake = Lake(code=str(feature["properties"]["SEENR"]), name=feature["properties"]["SEENAME"])
+                        db_lake = Lake(
+                            code=str(feature["properties"]["SEENR"]),
+                            name=feature["properties"]["SEENAME"],
+                        )
                         db.add(db_lake)
                         await db.flush()
 

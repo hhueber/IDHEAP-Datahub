@@ -1,22 +1,21 @@
-from datetime import datetime
-from typing import Optional
+from datetime import datetime, timezone
 
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config.roles import PermissionRole
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
-async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
+async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
     """recover a user with their email address."""
     q = select(User).where(User.email == email)
     res = await db.execute(q)
     return res.scalars().first()
 
 
-async def get_user_by_id(db: AsyncSession, id: str) -> Optional[User]:
+async def get_user_by_id(db: AsyncSession, id: str) -> User | None:
     """retrieve a user with the ID."""
     q = select(User).where(User.id == id)
     res = await db.execute(q)
@@ -52,7 +51,7 @@ async def any_super_admin_exists(db: AsyncSession) -> bool:
     return res.scalars().first() is not None
 
 
-async def authenticate_user(db: AsyncSession, email: str, password: str) -> Optional[User]:
+async def authenticate_user(db: AsyncSession, email: str, password: str) -> User | None:
     """Verify that the user is valid and therefore has access."""
     user = await get_user_by_email(db, email)
     if not user:
@@ -66,14 +65,22 @@ async def mark_token_created(db: AsyncSession, user_id: str) -> datetime:
     """Saves the creation time of the last token in the database and returns it.
     A UTC datetime is used.
     """
-    issued_at = datetime.utcnow()
-    await db.execute(update(User).where(User.id == user_id).values(last_token_created_at=issued_at))
+    issued_at = datetime.now(timezone.utc)
+    await db.execute(
+        update(User).where(User.id == user_id).values(last_token_created_at=issued_at)
+    )
     await db.commit()
     return issued_at
 
 
 async def create_user_record(
-    db: AsyncSession, *, email: str, first_name: str, last_name: str, role: str, password_hash: str
+    db: AsyncSession,
+    *,
+    email: str,
+    first_name: str,
+    last_name: str,
+    role: str,
+    password_hash: str,
 ) -> User:
     """Inserts a user and commit into the database."""
     user = User(
@@ -95,7 +102,9 @@ async def delete_user_by_instance(db: AsyncSession, user: User) -> None:
     await db.commit()
 
 
-async def update_user_password_hash(db: AsyncSession, user: User, new_hash: str) -> None:
+async def update_user_password_hash(
+    db: AsyncSession, user: User, new_hash: str
+) -> None:
     """Updates the password hash and commits it to the database."""
     user.password_hash = new_hash
     await db.commit()

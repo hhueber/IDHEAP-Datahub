@@ -1,11 +1,10 @@
-from typing import Literal, Optional
+from typing import Literal
 
-
-from app.config.roles import PermissionRole
-from app.models.user import User
 from sqlalchemy import asc, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config.roles import PermissionRole
+from app.models.user import User
 
 AdminUserSortBy = Literal[
     "first_name",
@@ -34,7 +33,7 @@ async def list_admin_users(
     per_page: int,
     order_by: AdminUserSortBy,
     order_dir: AdminUserSortDir,
-    q: Optional[str] = None,
+    q: str | None = None,
 ) -> tuple[list[User], int]:
     """Retourne les utilisateurs paginés pour l'administration."""
 
@@ -70,7 +69,7 @@ async def list_admin_users(
     return list(users_result.scalars().all()), int(total_result.scalar_one())
 
 
-async def get_admin_user_by_id(db: AsyncSession, user_id: str) -> Optional[User]:
+async def get_admin_user_by_id(db: AsyncSession, user_id: str) -> User | None:
     """Récupère un utilisateur par son id."""
 
     result = await db.execute(select(User).where(User.id == user_id))
@@ -85,7 +84,9 @@ async def email_exists_for_other_user(
 ) -> bool:
     """Vérifie si un email est déjà utilisé par un autre utilisateur."""
 
-    result = await db.execute(select(User.id).where(User.email == email).where(User.id != user_id).limit(1))
+    result = await db.execute(
+        select(User.id).where(User.email == email).where(User.id != user_id).limit(1)
+    )
     return result.scalar_one_or_none() is not None
 
 
@@ -93,10 +94,10 @@ async def update_admin_user(
     db: AsyncSession,
     *,
     user: User,
-    first_name: Optional[str] = None,
-    last_name: Optional[str] = None,
-    email: Optional[str] = None,
-    role: Optional[PermissionRole] = None,
+    first_name: str | None = None,
+    last_name: str | None = None,
+    email: str | None = None,
+    role: PermissionRole | None = None,
 ) -> User:
     """Met à jour un utilisateur depuis la page admin."""
 

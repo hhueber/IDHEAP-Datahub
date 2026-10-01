@@ -1,9 +1,9 @@
 #  Sert a construire la prévisualisation des données importées.
 from typing import Any
 
-
-from app.schemas.data_import import ImportRoleEnum, ImportSectionEnum
 import pandas as pd
+
+from app.schemas.data_import import ImportSectionEnum
 
 
 def build_preview_payload(
@@ -23,7 +23,9 @@ def build_preview_payload(
     sort_direction: str = "asc",
 ) -> dict[str, Any]:
     clean_search = search.strip().lower() if search else ""
-    clean_detected_type = detected_type if detected_type and detected_type != "all" else None
+    clean_detected_type = (
+        detected_type if detected_type and detected_type != "all" else None
+    )
     clean_sort_direction = "desc" if sort_direction == "desc" else "asc"
 
     columns_summary = _filter_columns(
@@ -93,10 +95,14 @@ def _filter_columns(
     columns = [column for column in columns_summary if column.get("section") == section]
 
     if detected_type:
-        columns = [column for column in columns if column.get("detected_type") == detected_type]
+        columns = [
+            column for column in columns if column.get("detected_type") == detected_type
+        ]
 
     if column_index is not None:
-        columns = [column for column in columns if int(column.get("index")) == column_index]
+        columns = [
+            column for column in columns if int(column.get("index")) == column_index
+        ]
 
     return columns
 
@@ -286,7 +292,10 @@ def _count_issues_for_rows(
     issue_lookup: dict[tuple[int, int], dict[str, Any]],
 ) -> int:
     return sum(
-        1 for row_index in row_indices for column_index in column_indices if (row_index, column_index) in issue_lookup
+        1
+        for row_index in row_indices
+        for column_index in column_indices
+        if (row_index, column_index) in issue_lookup
     )
 
 
@@ -301,7 +310,9 @@ def _build_preview_row(
 
     for column_index in column_indices:
         value = df.iat[row_index, column_index]
-        issue = issue_lookup.get((row_index, column_index)) or issue_lookup.get((-1, column_index))
+        issue = issue_lookup.get((row_index, column_index)) or issue_lookup.get(
+            (-1, column_index)
+        )
 
         cells[str(column_index)] = {
             "value": None if _is_empty(value) else _stringify_value(value),

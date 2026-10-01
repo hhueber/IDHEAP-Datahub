@@ -1,7 +1,6 @@
 # Sert a lire les fichier importés en fonction du format.
-from pathlib import Path
 import csv
-
+from pathlib import Path
 
 import pandas as pd
 

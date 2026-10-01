@@ -1,11 +1,16 @@
 # Sert a gerer le processus d'importation de données.
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-import uuid
 
+from fastapi import UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.data_import import ImportOrientationEnum, ImportRoleEnum, ImportSectionEnum
+from app.schemas.data_import import (
+    ImportOrientationEnum,
+    ImportSectionEnum,
+)
 from app.services.data_import.data_import_column_profile_service import (
     columns_have_valid_profiles,
     enrich_columns_with_profiles,
@@ -18,13 +23,15 @@ from app.services.data_import.data_import_detection_service import (
 )
 from app.services.data_import.data_import_issue_group_service import build_issue_groups
 from app.services.data_import.data_import_issue_service import detect_issues_vectorized
-from app.services.data_import.data_import_normalizer_service import normalize_dataframe_values
+from app.services.data_import.data_import_normalizer_service import (
+    normalize_dataframe_values,
+)
 from app.services.data_import.data_import_preview_service import build_preview_payload
 from app.services.data_import.data_import_reader_service import read_import_file
 from app.services.data_import.data_import_resource_service import add_upload_to_import
 from app.services.data_import.data_import_storage_service import (
+    UPLOAD_DIR,
     delete_import_dir,
-    extract_sheet_convert_to_csv,
     get_import_dir,
     invalidate_import_workspace,
     read_analysis,
@@ -32,16 +39,16 @@ from app.services.data_import.data_import_storage_service import (
     read_issues,
     read_json,
     read_metadata,
-    UPLOAD_DIR,
     write_analysis,
     write_frame,
     write_issues,
     write_json,
     write_metadata,
 )
-from app.services.data_import.data_import_workspace_service import build_import_workspace, get_workspace_dir
-from fastapi import UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.services.data_import.data_import_workspace_service import (
+    build_import_workspace,
+    get_workspace_dir,
+)
 
 
 async def save_import_upload(file: UploadFile, years: list[int]) -> dict[str, Any]:
@@ -84,7 +91,9 @@ async def list_import_jobs() -> list[dict[str, Any]]:
         frame_path = workspace_dir / "frame.pkl"
         issues_path = workspace_dir / "issues.json"
 
-        analyzed = analysis_path.exists() and frame_path.exists() and issues_path.exists()
+        analyzed = (
+            analysis_path.exists() and frame_path.exists() and issues_path.exists()
+        )
 
         analysis = read_json(analysis_path) if analyzed else None
 
@@ -230,7 +239,11 @@ def mark_resource_as_analyzed(
     metadata = read_metadata(import_dir)
 
     resource = next(
-        (item for item in metadata.get("resources") or [] if item.get("resource_id") == resource_id),
+        (
+            item
+            for item in metadata.get("resources") or []
+            if item.get("resource_id") == resource_id
+        ),
         None,
     )
 
@@ -469,7 +482,9 @@ def build_workspace_upload_payload(
         "files_count": len(sources),
         "resources_count": len(resources),
         "resources": resources,
-        "added_resources": (added_resources if added_resources is not None else resources),
+        "added_resources": (
+            added_resources if added_resources is not None else resources
+        ),
     }
 
 
@@ -485,7 +500,7 @@ def clean_display_name(display_name: str | None) -> str | None:
 def normalize_import_years(
     years: list[int] | None,
 ) -> list[int]:
-    normalized_years = sorted(set(int(year) for year in years or []))
+    normalized_years = sorted({int(year) for year in years or []})
 
     if not normalized_years:
         raise ValueError("At least one year is required")
@@ -520,7 +535,7 @@ async def list_import_resources(
                 rows = int(df.shape[0])
                 columns = int(df.shape[1])
                 readable = True
-            except Exception:
+            except (ValueError, AttributeError):
                 readable = False
 
         resources.append(
@@ -548,7 +563,11 @@ async def set_active_import_resource(
     metadata = read_metadata(import_dir)
 
     resource = next(
-        (item for item in metadata.get("resources") or [] if item.get("resource_id") == resource_id),
+        (
+            item
+            for item in metadata.get("resources") or []
+            if item.get("resource_id") == resource_id
+        ),
         None,
     )
 

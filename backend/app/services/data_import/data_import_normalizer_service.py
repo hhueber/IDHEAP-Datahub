@@ -1,8 +1,6 @@
 import re
 
-
 import pandas as pd
-
 
 TEXT_EMPTY_VALUES = {"", "nan", "none", "null", "nat"}
 
@@ -22,6 +20,8 @@ def normalize_dataframe_values(df: pd.DataFrame) -> pd.DataFrame:
 
     string_columns = normalized.select_dtypes(include=["object", "string"]).columns
 
-    normalized[string_columns] = normalized[string_columns].apply(lambda series: series.astype("string").str.strip())
+    normalized[string_columns] = normalized[string_columns].apply(
+        lambda series: series.astype("string").str.strip()
+    )
 
     return normalized

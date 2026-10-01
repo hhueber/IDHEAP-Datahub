@@ -1,8 +1,9 @@
+from fastapi import Depends, HTTPException, status
+
 from app.api.dependencies import get_current_user
 from app.config.roles import PermissionLevel, PermissionScope
 from app.models.user import User as UserModel
 from app.services.permission_service import role_has_permission
-from fastapi import Depends, HTTPException, status
 
 
 def require_permission(

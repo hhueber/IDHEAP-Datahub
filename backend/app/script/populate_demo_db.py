@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pandas as pd
+from sqlalchemy import select
+from tqdm import tqdm
 
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
@@ -9,14 +12,12 @@ from app.models.commune import Commune
 from app.models.district import District
 from app.models.option import Option
 from app.models.question_global import QuestionGlobal
-from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_global_option_association import (
+    QuestionGlobalOptionAssociation,
+)
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import select
-from tqdm import tqdm
-import pandas as pd
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,8 +27,9 @@ async def populate_demo_db() -> None:
         # Add canton
         async with session.begin():
             index = 1
-            total_item = len(CANTONS)
-            for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
+            for code, lang in tqdm(
+                CANTONS.items(), total=len(CANTONS), desc="Processing cantons"
+            ):
                 db_canton = Canton(
                     code=code,
                     name=lang["en"],
@@ -36,7 +38,7 @@ async def populate_demo_db() -> None:
                     name_en=lang["en"],
                     name_fr=lang["fr"],
                     name_it=lang["it"],
-                    name_ro=lang["ro"],
+                    name_rm=lang["ro"],
                 )
                 # print(f">>> CREATING {index}/{total_item} {db_canton.name}")
                 index += 1
@@ -46,18 +48,30 @@ async def populate_demo_db() -> None:
         # District and commune
         row_number = 0
         async with session.begin():
-            communes = pd.read_excel(Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
-            communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
-            communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
+            communes = pd.read_excel(
+                Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0
+            )
+            communes["Canton"] = communes["Canton"].apply(
+                lambda x: "CH-" + x if isinstance(x, str) else None
+            )
+            communes["Numéro du district"] = communes["Numéro du district"].apply(
+                lambda x: "B" + str(x).zfill(4)
+            )
 
-            for index, rows in tqdm(communes.iterrows(), total=len(communes), desc="Processing districts"):
-                result = await session.execute(select(Canton).filter_by(code=rows["Canton"]))
+            for index, rows in tqdm(
+                communes.iterrows(), total=len(communes), desc="Processing districts"
+            ):
+                result = await session.execute(
+                    select(Canton).filter_by(code=rows["Canton"])
+                )
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
-                    RuntimeError("Canton not found")
+                    raise RuntimeError("Canton not found")
 
-                result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
+                result = await session.execute(
+                    select(District).filter_by(name=rows["Nom du district"])
+                )
                 db_district = result.scalar_one_or_none()
                 if db_district is not None:
                     pass  # print(">>> District already exists")
@@ -68,7 +82,7 @@ async def populate_demo_db() -> None:
                         name_en=rows["Nom du district"],
                         name_fr=rows["Nom du district"],
                         name_it=rows["Nom du district"],
-                        name_ro=rows["Nom du district"],
+                        name_rm=rows["Nom du district"],
                         name_de=rows["Nom du district"],
                         canton=db_canton,
                     )
@@ -82,7 +96,7 @@ async def populate_demo_db() -> None:
                     name_en=rows["Nom de la commune"],
                     name_fr=rows["Nom de la commune"],
                     name_it=rows["Nom de la commune"],
-                    name_ro=rows["Nom de la commune"],
+                    name_rm=rows["Nom de la commune"],
                     name_de=rows["Nom de la commune"],
                     district=db_district,
                 )
@@ -92,14 +106,13 @@ async def populate_demo_db() -> None:
                 # print(f">>> INSERTING COMMUNE {rows['Nom de la commune']} {row_number}/{len(communes)} ")
 
         async with session.begin():
-
             db_question_globale_kant = QuestionGlobal(
                 label="kant",
                 text_de="Kantonszugehörigkeit Gemeinden",
                 text_fr="Appartenance cantonale Communes",
                 text_en="Cantonal affiliation Municipalities",
                 text_it="Appartenenza cantonale Comuni",
-                text_ro="Appartegnientscha al chantun da las vischnancas",
+                text_rm="Appartegnientscha al chantun da las vischnancas",
             )
 
             db_question_globale_spr = QuestionGlobal(
@@ -108,7 +121,7 @@ async def populate_demo_db() -> None:
                 text_fr="Régions linguistiques de la Suisse",
                 text_en="Swiss language regions",
                 text_it="Aree linguistiche della Svizzera",
-                text_ro="territoris linguistics da la Svizra",
+                text_rm="territoris linguistics da la Svizra",
             )
 
             db_question_globale_17_23 = QuestionGlobal(
@@ -117,7 +130,7 @@ async def populate_demo_db() -> None:
                 text_fr="Le/la président(e) de commune participe-t-il/elle activement à la gestion, c’est-à-dire qu’il/elle effectue-t-il/elle aussi des tâches administratives similaires à celles des employés de la gestion?",
                 text_en="Does the mayor actively participate in the administration, i.e. does he/she also perform administrative tasks similar to those of administrative staff?",
                 text_it="Il/la presidente del comune collabora attivamente alla gestione, ad esempio svolgendo compiti amministrativi analoghi a quelli dei collaboratori amministrativi?",
-                text_ro="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
+                text_rm="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
             )
 
             session.add(db_question_globale_kant)
@@ -141,7 +154,7 @@ async def populate_demo_db() -> None:
                         text_fr="Appartenance cantonale Communes",
                         text_en="Cantonal affiliation Municipalities",
                         text_it="Appartenenza cantonale Comuni",
-                        text_ro="Appartegnientscha al chantun da las vischnancas",
+                        text_rm="Appartegnientscha al chantun da las vischnancas",
                     )
                     session.add(db_question_kant)
 
@@ -154,7 +167,7 @@ async def populate_demo_db() -> None:
                         text_fr="Régions linguistiques de la Suisse",
                         text_en="Swiss language regions",
                         text_it="Aree linguistiche della Svizzera",
-                        text_ro="territoris linguistics da la Svizra",
+                        text_rm="territoris linguistics da la Svizra",
                     )
                     session.add(db_question_spr)
                     db_question_globale_17 = QuestionPerSurvey(
@@ -166,7 +179,7 @@ async def populate_demo_db() -> None:
                         text_fr="Le/la président(e) de commune participe-t-il/elle activement à la gestion, c’est-à-dire qu’il/elle effectue-t-il/elle aussi des tâches administratives similaires à celles des employés de la gestion?",
                         text_en="Does the mayor actively participate in the administration, i.e. does he/she also perform administrative tasks similar to those of administrative staff?",
                         text_it="Il/la presidente del comune collabora attivamente alla gestione, ad esempio svolgendo compiti amministrativi analoghi a quelli dei collaboratori amministrativi?",
-                        text_ro="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
+                        text_rm="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
                     )
                     session.add(db_question_globale_17)
 
@@ -178,7 +191,7 @@ async def populate_demo_db() -> None:
                         text_fr="Comment le taux d’imposition de votre commune a-t-il évolué en 2017 par rapport à 2010?",
                         text_en="How has the tax rate in your municipality changed in 2017 compared to 2010?",
                         text_it="Come è cambiato il tasso d’imposta della sua comunità nel 2017 rispetto al 2010?",
-                        text_ro="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
+                        text_rm="Wie hat sich der Steuerfuss 2017 Ihrer Gemeinde im Vergleich zum Jahr 2010 verändert?",
                     )
 
                     session.add(db_question_unique_17_1)
@@ -190,13 +203,12 @@ async def populate_demo_db() -> None:
                         text_de="Wo werden die Exekutivmitglieder gewählt?",
                         text_fr="Où les membres exécutifs sont-ils élus?",
                         text_it="Dove vengono eletti i membri esecutivi?",
-                        text_ro="Nua vegnan elegids ils commembers da l’executiva?",
+                        text_rm="Nua vegnan elegids ils commembers da l’executiva?",
                         text_en="Where are the executive members elected?",
                     )
 
                     session.add(db_question_unique_17_2)
                 elif year == 2023:
-
                     db_question_kant = QuestionPerSurvey(
                         code="kant23",
                         label="kant23",
@@ -206,7 +218,7 @@ async def populate_demo_db() -> None:
                         text_fr="Appartenance cantonale Communes",
                         text_en="Cantonal affiliation Municipalities",
                         text_it="Appartenenza cantonale Comuni",
-                        text_ro="Appartegnientscha al chantun da las vischnancas",
+                        text_rm="Appartegnientscha al chantun da las vischnancas",
                     )
                     session.add(db_question_kant)
 
@@ -219,7 +231,7 @@ async def populate_demo_db() -> None:
                         text_fr="Régions linguistiques de la Suisse",
                         text_en="Swiss language regions",
                         text_it="Aree linguistiche della Svizzera",
-                        text_ro="territoris linguistics da la Svizra",
+                        text_rm="territoris linguistics da la Svizra",
                     )
                     session.add(db_question_spr)
                     db_question_globale_23 = QuestionPerSurvey(
@@ -231,7 +243,7 @@ async def populate_demo_db() -> None:
                         text_fr="Le/la président(e) de commune participe-t-il/elle activement à la gestion, c’est-à-dire qu’il/elle effectue-t-il/elle aussi des tâches administratives similaires à celles des employés de la gestion?",
                         text_en="Does the mayor actively participate in the administration, i.e. does he/she also perform administrative tasks similar to those of administrative staff?",
                         text_it="Il/la presidente del comune collabora attivamente alla gestione, ad esempio svolgendo compiti amministrativi analoghi a quelli dei collaboratori amministrativi?",
-                        text_ro="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
+                        text_rm="Collavurescha il president communal activamain en l’administraziun, q.v.d. fa el er activitads administrativas, sumegliant a las collavuraturas ed als collavuraturs administrativs?",
                     )
 
                     db_question_unique_23_1 = QuestionPerSurvey(
@@ -242,7 +254,7 @@ async def populate_demo_db() -> None:
                         text_fr="Quel est le niveau le plus élevé d’éducation que vous avez atteint?",
                         text_en="What is your highest completed education?",
                         text_it="Qual è il suo più alto livello di istruzione conseguito?",
-                        text_ro="Tgenina è Vossa pli auta scolaziun terminada?",
+                        text_rm="Tgenina è Vossa pli auta scolaziun terminada?",
                     )
 
                     db_question_unique_23_2 = QuestionPerSurvey(
@@ -253,7 +265,7 @@ async def populate_demo_db() -> None:
                         text_fr="Comment se présente la collaboration avec le canton du point de vue de votre commune?",
                         text_en="How does the cooperation with the canton look like from the perspective of your community?",
                         text_it="Come si presenta la collaborazione con il Cantone dal punto di vista del comune?",
-                        text_ro="Co sa preschenta or da vista da Vossa vischnanca la collavuraziun cun il chantun?",
+                        text_rm="Co sa preschenta or da vista da Vossa vischnanca la collavuraziun cun il chantun?",
                     )
                     session.add(db_question_globale_23)
                     session.add(db_question_unique_23_1)
@@ -261,8 +273,12 @@ async def populate_demo_db() -> None:
                     await session.flush()
 
                 # Option for kant question
-                for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
-                    db_option = Option(value=str(lang["ofs_id"]), label=code.split("-")[1])
+                for code, lang in tqdm(
+                    CANTONS.items(), total=len(CANTONS), desc="Processing cantons"
+                ):
+                    db_option = Option(
+                        value=str(lang["ofs_id"]), label=code.split("-")[1]
+                    )
                     session.add(db_option)
                     await session.flush()
 
@@ -271,14 +287,18 @@ async def populate_demo_db() -> None:
                     )
                     session.add(db_question_global_association)
 
-                    db_question_association = QuestionOptionAssociation(question=db_question_kant, option=db_option)
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_kant, option=db_option
+                    )
                     session.add(db_question_association)
                     await session.flush()
 
                 # Option for lang question
                 language = ["Deutsch", "Französisch", "Italienisch", "Rätoromanisch"]
                 for index, item in enumerate(language):
-                    db_option = Option(value=str(index + 1), label=item)  # Value option always start at 1
+                    db_option = Option(
+                        value=str(index + 1), label=item
+                    )  # Value option always start at 1
                     session.add(db_option)
                     await session.flush()
 
@@ -287,19 +307,334 @@ async def populate_demo_db() -> None:
                     )
                     session.add(db_question_global_association)
 
-                    db_question_association = QuestionOptionAssociation(question=db_question_spr, option=db_option)
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_spr, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                # Option for Question globale 23 17
+                answers = {
+                    1: {"fr": "oui", "de": "ja", "it": "si", "en": "yes", "rm": "gea"},
+                    2: {"fr": "non", "de": "nein", "it": "no", "en": "no", "rm": "na"},
+                    -99: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    db_option = Option(
+                        value=(
+                            str(value) if year == 2017 else str(value) + ".0"
+                        ),  # We need to do this because 2017 want 1, 2 etc and 2023 want 1.0, 2.0 we need to fix this asap
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_global_association = QuestionGlobalOptionAssociation(
+                        option=db_option, question=db_question_globale_17_23
+                    )
+                    session.add(db_question_global_association)
+                    await session.flush()
+
+                    db_question_to_link = (
+                        db_question_globale_23
+                        if year == 2023
+                        else db_question_globale_17
+                    )
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_to_link, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                # Option for GSB23_Q58
+                answers = {
+                    1.0: {
+                        "fr": "École obligatoire",
+                        "de": "Obligatorische Schule",
+                        "it": "Scuola dell'obbligo",
+                        "en": "Compulsory schooling",
+                        "rm": "Scola obligatorica",
+                    },
+                    2.0: {
+                        "fr": "Formation professionnelle",
+                        "de": "Berufsausbildung",
+                        "it": "Formazione professionale",
+                        "en": "Vocational training",
+                        "rm": "Furmaziun professiunala",
+                    },
+                    3.0: {
+                        "fr": "École préparant à la maturité",
+                        "de": "Maturitätsschule",
+                        "it": "Scuola che prepara all'esame di maturità",
+                        "en": "School leading to the Matura",
+                        "rm": "Scola da maturitad",
+                    },
+                    4.0: {
+                        "fr": "Formation professionnelle supérieure",
+                        "de": "Höhere Berufsausbildung",
+                        "it": "Formazione professionale superiore",
+                        "en": "Higher vocational training",
+                        "rm": "Furmaziun professiunala superiura",
+                    },
+                    5.0: {
+                        "fr": "École supérieure",
+                        "de": "Höhere Fachschule",
+                        "it": "Istituto superiore di formazione professionale",
+                        "en": "College of Higher Education and Training",
+                        "rm": "Scola spezialisada superiura",
+                    },
+                    6.0: {
+                        "fr": "Haute école spécialisée",
+                        "de": "Fachhochschule",
+                        "it": "Scuola universitaria professionale",
+                        "en": "University of Applied Sciences",
+                        "rm": "Scola auta spezialisada",
+                    },
+                    7.0: {
+                        "fr": "Université, EPF",
+                        "de": "Universität, ETH",
+                        "it": "Università, ETH",
+                        "en": "University, ETH",
+                        "rm": "Universitad, SPF",
+                    },
+                    8.0: {
+                        "fr": "Autre",
+                        "de": "Andere",
+                        "it": "Altri",
+                        "en": "Other",
+                        "rm": "L’autra",
+                    },
+                    -99.0: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2023:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_23_1, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                # Option for GSB23_Q27
+                answers = {
+                    1.0: {
+                        "fr": "Bien",
+                        "de": "Gut",
+                        "it": "Bene",
+                        "en": "Good",
+                        "rm": "Rauba",
+                    },
+                    2.0: {
+                        "fr": "Plutôt bon",
+                        "de": "Eher gut",
+                        "it": "Piuttosto bene",
+                        "en": "Pretty good",
+                        "rm": "Plitost bain",
+                    },
+                    3.0: {
+                        "fr": "Médiocre",
+                        "de": "Mittelmässig",
+                        "it": "Mediocre",
+                        "en": "Mediocre",
+                        "rm": "mediocher",
+                    },
+                    4.0: {
+                        "fr": "Plutôt mauvais",
+                        "de": "Eher schlecht",
+                        "it": "Piuttosto male",
+                        "en": "Rather poor",
+                        "rm": "Plitost nausch",
+                    },
+                    5.0: {
+                        "fr": "Mauvais",
+                        "de": "Schlecht",
+                        "it": "Male",
+                        "en": "Bad",
+                        "rm": "Difficilmain",
+                    },
+                    -99.0: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2023:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_23_2, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                answers = {
+                    1: {
+                        "fr": "En hausse",
+                        "de": "Gestiegen",
+                        "it": "Aumentato",
+                        "en": "Increased",
+                        "rm": "Augment",
+                    },
+                    2: {
+                        "fr": "Resté inchangé",
+                        "de": "Gleich geblieben",
+                        "it": "Rimasto invariato",
+                        "en": "Remained the same",
+                        "rm": "Restà egual",
+                    },
+                    3: {
+                        "fr": "Baissé",
+                        "de": "Gesunken",
+                        "it": "Affondato",
+                        "en": "Sunk",
+                        "rm": "Sbassà",
+                    },
+                    -99: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2017:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["en"],
+                        text_rm=item["rm"],
+                        text_it=item["it"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_17_1, option=db_option
+                    )
+                    session.add(db_question_association)
+                    await session.flush()
+
+                answers = {
+                    1: {
+                        "fr": "Dans les urnes",
+                        "de": "An der Urne",
+                        "it": "Aumentato",
+                        "en": "Increased",
+                        "rm": "Augment",
+                    },
+                    2: {
+                        "fr": "Lors de l'assemblée communale",
+                        "de": "An der Gemeindeversammlung",
+                        "it": "Rimasto invariato",
+                        "en": "Remained the same",
+                        "rm": "Restà egual",
+                    },
+                    3: {
+                        "fr": "Élection au Parlement",
+                        "de": "Wahl im Parlament",
+                        "it": "Affondato",
+                        "en": "Sunk",
+                        "rm": "Sbassà",
+                    },
+                    -99: {
+                        "fr": "Aucune réponse",
+                        "de": "Keine Antwort",
+                        "it": "Nessuna risposta",
+                        "en": "No answer",
+                        "rm": "Nina Respund",
+                    },
+                }
+                for value, item in answers.items():
+                    if year != 2017:
+                        break
+
+                    db_option = Option(
+                        value=str(value),
+                        label=item["fr"],
+                        text_de=item["de"],
+                        text_fr=item["fr"],
+                        text_en=item["fr"],
+                        text_rm=item["fr"],
+                        text_it=item["fr"],
+                    )
+                    session.add(db_option)
+                    await session.flush()
+
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_unique_17_2, option=db_option
+                    )
                     session.add(db_question_association)
                     await session.flush()
 
         # Adding answer
         async with session.begin():
-            crc = pd.read_csv(Path(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
+            crc = pd.read_csv(
+                Path(BASE_DIR, "data", "mon_fichier_indexed.csv"),
+                index_col=0,
+                header=0,
+                sep=";",
+            )
 
-            for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
+            for index, row in tqdm(
+                crc.iterrows(), total=len(crc), desc="Processing communes"
+            ):
                 if pd.isna(row["gemid"]):
                     continue
 
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
+                result = await session.execute(
+                    select(Commune).filter_by(code=str(int(row["gemid"])))
+                )
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
@@ -310,7 +645,7 @@ async def populate_demo_db() -> None:
                         name_en=row["gemidname"],
                         name_fr=row["gemidname"],
                         name_it=row["gemidname"],
-                        name_ro=row["gemidname"],
+                        name_rm=row["gemidname"],
                         name_de=row["gemidname"],
                         district=db_district,
                     )
@@ -318,57 +653,90 @@ async def populate_demo_db() -> None:
                     await session.flush()
                 for col in crc:
                     if "kant2017" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant2017"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="kant2017")
+                        )
                         db_question = result.scalar_one_or_none()
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
                     elif "spr17" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr17"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="spr17")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
                     elif "GSB17_Q58" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q58"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB17_Q58")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
                     elif col == "GSB17_Q3":
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q3"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB17_Q3")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
                     elif "GSB17_Q42" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q42"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB17_Q42")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2017, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=2017,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
-            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
-            for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing Commune for 2023"):
+            GSB_2023 = pd.read_csv(
+                Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";"
+            )
+            for index, row in tqdm(
+                GSB_2023.iterrows(),
+                total=len(GSB_2023),
+                desc="Processing Commune for 2023",
+            ):
                 if pd.isna(row["BFS_2023"]):
                     continue
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+                result = await session.execute(
+                    select(Commune).filter_by(code=str(int(row["BFS_2023"])))
+                )
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
@@ -377,7 +745,7 @@ async def populate_demo_db() -> None:
                         name=row["Gemeinde_2023"],
                         name_fr=row["Gemeinde_2023"],
                         name_it=row["Gemeinde_2023"],
-                        name_ro=row["Gemeinde_2023"],
+                        name_rm=row["Gemeinde_2023"],
                         name_en=row["Gemeinde_2023"],
                         name_de=row["Gemeinde_2023"],
                     )
@@ -385,50 +753,75 @@ async def populate_demo_db() -> None:
                     await session.flush()
                 for col in GSB_2023:
                     if "kant" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant23"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="kant23")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
                     elif "spr" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr23"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="spr23")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
                     elif "GSB23_Q52" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q52"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB23_Q52")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
 
                     elif "GSB23_Q58" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q58"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB23_Q58")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
                     elif "GSB23_Q27" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q27"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB23_Q27")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
-                            year=2023, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=2023,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()

@@ -1,24 +1,23 @@
-from typing import Optional, Sequence
+from collections.abc import Sequence
 
-
-from app.models.question_global import QuestionGlobal
-from app.models.question_per_survey import QuestionPerSurvey
-from sqlalchemy import case, func, select
+from sqlalchemy import case, func, literal, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql.elements import ColumnElement
 
+from app.models.question_global import QuestionGlobal
+from app.models.question_per_survey import QuestionPerSurvey
 
 # Utilitaire : map langue -> nom de colonne
 LANG_COL = {
     "fr": "text_fr",
     "de": "text_de",
     "it": "text_it",
-    "rm": "text_ro",
+    "rm": "text_rm",
     "en": "text_en",
 }
 
 
-def normalize_lang(lang_header: Optional[str]) -> str:
+def normalize_lang(lang_header: str | None) -> str:
     if not lang_header:
         return "en"
     code = lang_header.split(",")[0].strip().lower()
@@ -44,7 +43,9 @@ def _clean_lang_col(lang_col: ColumnElement) -> ColumnElement:
 
 
 # Globals
-async def list_global_questions(db: AsyncSession, lang: str) -> Sequence[tuple[int, str, str]]:
+async def list_global_questions(
+    db: AsyncSession, lang: str
+) -> Sequence[tuple[int, str, str]]:
     """Récupère les questions globales.
 
     :return: [(uid, label, text), ...] dans la langue demandée (ou '' si pas dispo pour le text).
@@ -66,7 +67,9 @@ async def list_global_questions(db: AsyncSession, lang: str) -> Sequence[tuple[i
 
 
 # Per `Survey`
-async def list_questions_by_survey(db: AsyncSession, survey_uid: int, lang: str) -> Sequence[tuple[int, str, str]]:
+async def list_questions_by_survey(
+    db: AsyncSession, survey_uid: int, lang: str
+) -> Sequence[tuple[int, str, str]]:
     """Récupère les questions d'un sondage spécifique.
 
     :return: [(uid, label, text), ...] dans la langue demandée (ou '' si pas dispo pour le text).

@@ -1,13 +1,10 @@
 # Sert a stocker les données importées temporairement sur le backend.
-from pathlib import Path
-from typing import Any, List
 import json
 import shutil
+from pathlib import Path
+from typing import Any
 
-
-from app.services.data_import.data_import_reader_service import read_import_file
 import pandas as pd
-
 
 UPLOAD_DIR = Path("tmp/data_imports")
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
@@ -29,8 +26,8 @@ def write_json(path: Path, data: Any) -> None:
     )
 
 
-def extract_sheet_convert_to_csv(path: Path) -> List[Path]:
-    filename_list: List[Path] = []
+def extract_sheet_convert_to_csv(path: Path) -> list[Path]:
+    filename_list: list[Path] = []
     all_sheet = pd.read_excel(str(path), sheet_name=None)
     parent_dir = path.parent
     for sheetname, df in all_sheet.items():

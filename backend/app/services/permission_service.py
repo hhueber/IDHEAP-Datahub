@@ -1,5 +1,9 @@
-from app.config.roles import PermissionLevel, PermissionRole, PermissionScope, ROLE_TO_PERMISSION
-
+from app.config.roles import (
+    ROLE_TO_PERMISSION,
+    PermissionLevel,
+    PermissionRole,
+    PermissionScope,
+)
 
 PermissionKey = tuple[PermissionScope, PermissionLevel]
 

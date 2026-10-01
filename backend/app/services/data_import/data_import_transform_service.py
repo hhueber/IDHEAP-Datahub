@@ -1,7 +1,8 @@
 # Sert a appliquer les transformations sur les colonnes des données importées.
+import pandas as pd
+
 from app.schemas.data_import import ColumnTransformActionEnum
 from app.services.data_import.data_import_normalizer_service import TEXT_EMPTY_VALUES
-import pandas as pd
 
 
 def apply_column_transform(

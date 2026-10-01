@@ -1,17 +1,16 @@
+import shutil
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
-import shutil
-import uuid
 
+from fastapi import UploadFile
 
 from app.services.data_import.data_import_storage_service import (
     create_resource_dir,
     create_source_dir,
     extract_sheet_convert_to_csv,
 )
-from fastapi import UploadFile
-
 
 SUPPORTED_SUFFIXES = {".csv", ".xlsx", ".xls"}
 
@@ -130,7 +129,11 @@ def create_excel_resources(
     # Fonction existante conservée sans modification.
     extract_sheet_convert_to_csv(original_path)
 
-    generated_paths = sorted(path for path in source_dir.glob("raw_*.csv") if path.resolve() not in files_before)
+    generated_paths = sorted(
+        path
+        for path in source_dir.glob("raw_*.csv")
+        if path.resolve() not in files_before
+    )
 
     if not generated_paths:
         raise ValueError(f"No readable sheet found in {filename}")

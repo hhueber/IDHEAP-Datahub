@@ -1,8 +1,15 @@
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.permissions import require_permission
 from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
-from app.repositories.pageAll_repo import get_page_for_uid, get_pageAll_paginated, suggest_pageAll
-from app.schemas.pageAll import (
+from app.repositories.page_all_repo import (
+    get_page_for_uid,
+    get_pageAll_paginated,
+    suggest_pageAll,
+)
+from app.schemas.page_all import (
     AllResponse,
     EntityEnum,
     FindPageResponse,
@@ -11,10 +18,6 @@ from app.schemas.pageAll import (
     PageAllLangEnum,
     SuggestResponse,
 )
-from app.schemas.user import UserPublic
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -29,7 +32,9 @@ async def get_all(
     lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     q: str | None = Query(None, min_length=1, max_length=100),
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Endpoint générique : retourne uid / code / name d'une entité donnée,
@@ -68,7 +73,9 @@ async def suggest(
     limit: int = Query(10, ge=1, le=50),
     lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Suggestion générique (auto-complétion) par préfixe,
@@ -87,7 +94,9 @@ async def find_page(
     order_dir: OrderDirEnum = OrderDirEnum.asc,
     lang: PageAllLangEnum = PageAllLangEnum.fr,
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Renvoie la page sur laquelle se trouve un uid donné,
