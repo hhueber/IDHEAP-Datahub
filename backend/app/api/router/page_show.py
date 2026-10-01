@@ -1,19 +1,26 @@
-from app.api.dependencies import get_current_user
-from app.db import get_db
-from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from backend.app.repositories.page_show_children_repo import enrich_children_display_names, get_children_paginated
-from backend.app.repositories.page_show_repo import get_by_uid
-from backend.app.schemas.page_all import EntityEnum, PageAllLangEnum
-from backend.app.schemas.page_show import ShowChildrenResponse, ShowInsightsResponse, ShowResponse
-from backend.app.services.page_show_insight_service import build_insights
-from backend.app.services.page_show_meta import get_meta_for_entity
-from backend.app.services.page_show_relation_display_service import enrich_show_relation_display_names
-from backend.app.services.page_show_service import serialize_columns
-
+from app.api.dependencies import get_current_user
+from app.db import get_db
+from app.repositories.page_show_children_repo import (
+    enrich_children_display_names,
+    get_children_paginated,
+)
+from app.repositories.page_show_repo import get_by_uid
+from app.schemas.page_all import EntityEnum, PageAllLangEnum
+from app.schemas.page_show import (
+    ShowChildrenResponse,
+    ShowInsightsResponse,
+    ShowResponse,
+)
+from app.schemas.user import UserPublic
+from app.services.page_show_insight_service import build_insights
+from app.services.page_show_meta import get_meta_for_entity
+from app.services.page_show_relation_display_service import (
+    enrich_show_relation_display_names,
+)
+from app.services.page_show_service import serialize_columns
 
 router = APIRouter()
 

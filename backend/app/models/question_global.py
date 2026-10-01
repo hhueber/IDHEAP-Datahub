@@ -1,14 +1,14 @@
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-
-from question_category import QuestionCategory
-from question_global_option_association import QuestionGlobalOptionAssociation
-from question_per_survey import QuestionPerSurvey
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .question_category import QuestionCategory
+    from .question_global_option_association import QuestionGlobalOptionAssociation
+    from .question_per_survey import QuestionPerSurvey
 
 
 class QuestionGlobal(Base):
@@ -17,7 +17,9 @@ class QuestionGlobal(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     label: Mapped[str] = mapped_column(String)
 
-    question_category_uid: Mapped[int | None] = mapped_column(ForeignKey("question_category.uid"), nullable=True)
+    question_category_uid: Mapped[int | None] = mapped_column(
+        ForeignKey("question_category.uid"), nullable=True
+    )
     question_category: Mapped[Optional["QuestionCategory"]] = relationship(
         "QuestionCategory", back_populates="questions_global"
     )

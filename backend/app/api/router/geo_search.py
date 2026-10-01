@@ -1,21 +1,23 @@
 from typing import Literal
 
-
-from app.api.dependencies import get_current_user
-from app.db import get_db
-from app.repositories.geo_search_repo import build_geo_names, get_geo_point, resolve_geo_name, suggest_geo_locations
-from app.schemas.user import UserPublic
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from backend.app.schemas.place_of_interest import (
+from app.api.dependencies import get_current_user
+from app.db import get_db
+from app.repositories.geo_search_repo import (
+    build_geo_names,
+    get_geo_point,
+    resolve_geo_name,
+    suggest_geo_locations,
+)
+from app.schemas.place_of_interest import (
     GeoPointResponse,
     GeoSuggestionResponse,
     PlaceOfInterestSuggestOut,
     PlaceOfInterestSuggestResponse,
 )
-
+from app.schemas.user import UserPublic
 
 router = APIRouter()
 

@@ -1,25 +1,26 @@
 from typing import Any
 
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
 from app.models.option import Option
 from app.models.question_category import QuestionCategory
-from app.models.question_category_option_association import QuestionCategoryOptionAssociation
+from app.models.question_category_option_association import (
+    QuestionCategoryOptionAssociation,
+)
 from app.models.question_global import QuestionGlobal
-from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_global_option_association import (
+    QuestionGlobalOptionAssociation,
+)
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
-
-from backend.app.repositories.page_show_repo import ENTITY_MODEL_MAP
-from backend.app.schemas.page_all import EntityEnum, PageAllLangEnum
-from backend.app.schemas.page_show import ShowMetaChild
-
+from app.repositories.page_show_repo import ENTITY_MODEL_MAP
+from app.schemas.page_all import EntityEnum, PageAllLangEnum
+from app.schemas.page_show import ShowMetaChild
 
 ASSOCIATION_MODEL_MAP = {
     "question_option_association": QuestionOptionAssociation,
@@ -222,8 +223,12 @@ async def get_children_paginated(
         if association_model is None:
             return [], 0
 
-        source_col = getattr(association_model, child_meta.association_source_field, None)
-        target_col = getattr(association_model, child_meta.association_target_field, None)
+        source_col = getattr(
+            association_model, child_meta.association_source_field, None
+        )
+        target_col = getattr(
+            association_model, child_meta.association_target_field, None
+        )
         target_uid_col = getattr(model, child_meta.target_uid_field, None)
 
         if source_col is None or target_col is None or target_uid_col is None:

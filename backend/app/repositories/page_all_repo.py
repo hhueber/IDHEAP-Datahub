@@ -1,6 +1,9 @@
-from typing import Any
 import unicodedata
+from typing import Any
 
+from sqlalchemy import Integer, Numeric, String, and_, case, cast, func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import Select
 
 from app.models.answer import Answer
 from app.models.base import Base
@@ -12,13 +15,13 @@ from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import and_, case, cast, func, Integer, Numeric, or_, select, String
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import Select
-
-
-from backend.app.schemas.page_all import AllItem, EntityEnum, OrderByEnum, OrderDirEnum, PageAllLangEnum
-
+from app.schemas.page_all import (
+    AllItem,
+    EntityEnum,
+    OrderByEnum,
+    OrderDirEnum,
+    PageAllLangEnum,
+)
 
 ModelType = type[Base]
 
@@ -56,7 +59,9 @@ def _coalesce_not_empty(*columns: Any | None) -> Any | None:
     return func.coalesce(*[_not_empty(col) for col in valid_columns])
 
 
-def _localized_text_or_label(model: ModelType, lang: PageAllLangEnum | str) -> Any | None:
+def _localized_text_or_label(
+    model: ModelType, lang: PageAllLangEnum | str
+) -> Any | None:
     """
     Pour les questions et options.
 
@@ -247,7 +252,9 @@ ENTITY_CONFIG: dict[EntityEnum, EntityConfig] = {
 }
 
 
-def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> Any | None:
+def _name_expr_for_entity(
+    entity: EntityEnum, lang: PageAllLangEnum | str
+) -> Any | None:
     if entity in {
         EntityEnum.commune,
         EntityEnum.district,
@@ -272,7 +279,9 @@ def _name_expr_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> An
     return None
 
 
-def _build_columns_for_entity(entity: EntityEnum, lang: PageAllLangEnum | str) -> list[Any]:
+def _build_columns_for_entity(
+    entity: EntityEnum, lang: PageAllLangEnum | str
+) -> list[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
 
@@ -598,7 +607,11 @@ async def get_pageAll_paginated(
     if search_conditions:
         stmt = stmt.where(or_(*search_conditions))
 
-    stmt = stmt.order_by(*order_exprs, model.uid.asc()).offset((page - 1) * per_page).limit(per_page)
+    stmt = (
+        stmt.order_by(*order_exprs, model.uid.asc())
+        .offset((page - 1) * per_page)
+        .limit(per_page)
+    )
 
     result = await db.execute(stmt)
     rows = result.all()

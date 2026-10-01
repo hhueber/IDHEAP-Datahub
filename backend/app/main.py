@@ -1,15 +1,25 @@
-from app.api.router import auth, config, delete, edit, export, geo, home, questions, user
-from app.core.middleware import setup_middlewares
-from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
-from app.db import get_db
 from fastapi import Depends, FastAPI
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from backend.app.api.router import geo_search, page_all, page_show
-
+from app.api.router import (
+    auth,
+    config,
+    delete,
+    edit,
+    export,
+    geo,
+    geo_search,
+    home,
+    page_all,
+    page_show,
+    questions,
+    user,
+)
+from app.core.middleware import setup_middlewares
+from app.core.paths import STATIC_FS_ROOT, STATIC_URL_ROOT
+from app.db import get_db
 
 app = FastAPI(title="IDHEAP Data Hub API")
 

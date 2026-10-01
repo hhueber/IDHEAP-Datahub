@@ -1,10 +1,8 @@
 from sqlalchemy import and_, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
-from backend.app.repositories.page_all_repo import ENTITY_CONFIG
-from backend.app.schemas.page_all import EntityEnum
-
+from app.repositories.page_all_repo import ENTITY_CONFIG
+from app.schemas.page_all import EntityEnum
 
 FORBIDDEN_UPDATE_FIELDS = {"uid", "id"}  # protège PK/identifiants a updater
 

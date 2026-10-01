@@ -1,10 +1,13 @@
-from commune import Commune
-from question_per_survey import QuestionPerSurvey
+from typing import TYPE_CHECKING
+
 from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .commune import Commune
+    from .question_per_survey import QuestionPerSurvey
 
 
 class Answer(Base):
@@ -13,10 +16,14 @@ class Answer(Base):
     uid: Mapped[int] = mapped_column(primary_key=True)
     year: Mapped[int] = mapped_column(Integer)
 
-    question_uid: Mapped[int] = mapped_column(ForeignKey("question_per_survey.uid", ondelete="CASCADE"))
+    question_uid: Mapped[int] = mapped_column(
+        ForeignKey("question_per_survey.uid", ondelete="CASCADE")
+    )
     question: Mapped["QuestionPerSurvey"] = relationship(back_populates="answers")
 
-    commune_uid: Mapped[int] = mapped_column(ForeignKey("commune.uid", ondelete="CASCADE"))
+    commune_uid: Mapped[int] = mapped_column(
+        ForeignKey("commune.uid", ondelete="CASCADE")
+    )
     commune: Mapped["Commune"] = relationship(back_populates="answers")
 
     value: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -1,18 +1,20 @@
 from typing import Any
 
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.answer import Answer
 from app.models.commune import Commune
 from app.models.district import District
-from app.models.question_category_option_association import QuestionCategoryOptionAssociation
+from app.models.question_category_option_association import (
+    QuestionCategoryOptionAssociation,
+)
 from app.models.question_global import QuestionGlobal
-from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_global_option_association import (
+    QuestionGlobalOptionAssociation,
+)
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
-from sqlalchemy.ext.asyncio import AsyncSession
-
-
-from backend.app.repositories.page_show_insights_repo import (
+from app.repositories.page_show_insights_repo import (
     count_by_column,
     count_by_columns,
     count_distinct_by_column,
@@ -25,14 +27,16 @@ from backend.app.repositories.page_show_insights_repo import (
     get_district_focus_feature,
     get_survey_year_by_uid,
 )
-from backend.app.schemas.page_all import EntityEnum
+from app.schemas.page_all import EntityEnum
 
 
 def _entity_value(entity: EntityEnum | str) -> str:
     return entity.value if hasattr(entity, "value") else str(entity)
 
 
-async def build_map(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> dict[str, Any] | None:
+async def build_map(
+    entity: EntityEnum | str, obj: Any, db: AsyncSession
+) -> dict[str, Any] | None:
     e = _entity_value(entity)
 
     if e == "commune":
@@ -97,7 +101,9 @@ def stat_item(key: str, value: Any) -> dict[str, Any]:
     }
 
 
-async def build_stats(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> dict[str, Any]:
+async def build_stats(
+    entity: EntityEnum | str, obj: Any, db: AsyncSession
+) -> dict[str, Any]:
     e = _entity_value(entity)
 
     if e == "commune":
@@ -353,7 +359,9 @@ def _is_geo_entity(entity: str) -> bool:
     return entity in {"commune", "district", "canton"}
 
 
-async def build_child_layers(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> list[dict]:
+async def build_child_layers(
+    entity: EntityEnum | str, obj: Any, db: AsyncSession
+) -> list[dict]:
     e = _entity_value(entity)
 
     layers: list[dict] = []
@@ -385,7 +393,9 @@ async def build_child_layers(entity: EntityEnum | str, obj: Any, db: AsyncSessio
     return layers
 
 
-async def build_insights(entity: EntityEnum | str, obj: Any, db: AsyncSession) -> dict[str, Any] | None:
+async def build_insights(
+    entity: EntityEnum | str, obj: Any, db: AsyncSession
+) -> dict[str, Any] | None:
     map_data = await build_map(entity, obj, db)
     stats = await build_stats(entity, obj, db)
 

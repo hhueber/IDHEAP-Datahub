@@ -1,4 +1,10 @@
+import orjson
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from starlette.responses import Response
+
 from app.db import get_db
+from app.repositories.place_of_interest_repo import list_placeOfInterest_for_lang
 from app.schemas.choropleth import (
     ChoroplethGeometriesResponse,
     ChoroplethGranularity,
@@ -6,18 +12,14 @@ from app.schemas.choropleth import (
     ChoroplethValuesResponse,
 )
 from app.schemas.geo import GeoBundle
-from app.services.choropleth_service import build_choropleth, build_choropleth_geometries, build_choropleth_values
+from app.schemas.place_of_interest import PlaceOfInterestClientOut
+from app.services.choropleth_service import (
+    build_choropleth,
+    build_choropleth_geometries,
+    build_choropleth_values,
+)
 from app.services.comparison_service import build_area_comparison
 from app.services.geo_service import ALL_LAYERS, get_geo_by_year_selective
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-from starlette.responses import Response
-import orjson
-
-
-from backend.app.repositories.place_of_interest_repo import list_placeOfInterest_for_lang
-from backend.app.schemas.place_of_interest import PlaceOfInterestClientOut
-
 
 router = APIRouter()
 
@@ -34,7 +36,9 @@ def _parse_layers(layers_csv: str | None) -> set[str]:
 
 @router.get("/by_year", response_model=GeoBundle)
 async def geo_by_year(
-    year: int | None = Query(None, description="Année demandée; défaut = année courante"),
+    year: int | None = Query(
+        None, description="Année demandée; défaut = année courante"
+    ),
     layers: str | None = Query(
         None,
         description="Les couches demandées: country,lakes,cantons,districts,communes",
@@ -46,7 +50,9 @@ async def geo_by_year(
     db: AsyncSession = Depends(get_db),
 ):
     wanted = _parse_layers(layers)
-    bundle = await get_geo_by_year_selective(db, year, layers=wanted, clear_others=clear_others)
+    bundle = await get_geo_by_year_selective(
+        db, year, layers=wanted, clear_others=clear_others
+    )
     return Response(
         content=orjson.dumps(bundle.model_dump(mode="json")),
         media_type="application/json",

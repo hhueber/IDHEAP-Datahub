@@ -1,12 +1,10 @@
 import uuid
 
-
-from app.config.roles import ROLE_VALUES
-from sqlalchemy import Column, DateTime
+from sqlalchemy import Column, DateTime, String, Text
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import String, Text
 from sqlalchemy.sql import func
 
+from app.config.roles import ROLE_VALUES
 
 from .base import Base
 

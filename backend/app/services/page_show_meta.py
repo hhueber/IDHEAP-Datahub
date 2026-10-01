@@ -1,4 +1,4 @@
-from backend.app.schemas.page_show import (
+from app.schemas.page_show import (
     ShowChildColumn,
     ShowMeta,
     ShowMetaActions,
@@ -6,7 +6,6 @@ from backend.app.schemas.page_show import (
     ShowMetaChildActions,
     ShowMetaField,
 )
-
 
 ENTITY_META = {
     "commune": ShowMeta(
@@ -130,7 +129,9 @@ ENTITY_META = {
             ShowMetaField(key="label", label="Label"),
             ShowMetaField(key="private", label="Private", kind="bool"),
             ShowMetaField(key="survey_uid", label="Survey uid", kind="number"),
-            ShowMetaField(key="question_category_uid", label="Category uid", kind="number"),
+            ShowMetaField(
+                key="question_category_uid", label="Category uid", kind="number"
+            ),
             ShowMetaField(key="question_global_uid", label="Global uid", kind="number"),
         ],
         languages={
@@ -152,7 +153,9 @@ ENTITY_META = {
                 columns=[
                     ShowChildColumn(key="uid", label="UID", kind="number"),
                     ShowChildColumn(key="year", label="Year", kind="year"),
-                    ShowChildColumn(key="commune_uid", label="Commune uid", kind="number"),
+                    ShowChildColumn(
+                        key="commune_uid", label="Commune uid", kind="number"
+                    ),
                     ShowChildColumn(key="value", label="Value"),
                 ],
                 actions=ShowMetaChildActions(show=True, edit=True, delete=True),
@@ -181,7 +184,9 @@ ENTITY_META = {
         hide_keys=["uid"],
         fields=[
             ShowMetaField(key="label", label="Label"),
-            ShowMetaField(key="question_category_uid", label="Category uid", kind="number"),
+            ShowMetaField(
+                key="question_category_uid", label="Category uid", kind="number"
+            ),
         ],
         languages={
             "de": "text_de",
@@ -204,7 +209,9 @@ ENTITY_META = {
                     ShowChildColumn(key="code", label="Code"),
                     ShowChildColumn(key="label", label="Label"),
                     ShowChildColumn(key="private", label="Private", kind="bool"),
-                    ShowChildColumn(key="survey_uid", label="Survey uid", kind="number"),
+                    ShowChildColumn(
+                        key="survey_uid", label="Survey uid", kind="number"
+                    ),
                 ],
                 actions=ShowMetaChildActions(show=True, edit=True, delete=True),
             ),
@@ -283,7 +290,9 @@ ENTITY_META = {
                     ShowChildColumn(key="code", label="Code"),
                     ShowChildColumn(key="label", label="Label"),
                     ShowChildColumn(key="private", label="Private", kind="bool"),
-                    ShowChildColumn(key="survey_uid", label="Survey uid", kind="number"),
+                    ShowChildColumn(
+                        key="survey_uid", label="Survey uid", kind="number"
+                    ),
                 ],
                 actions=ShowMetaChildActions(show=True, edit=True, delete=True),
             ),
