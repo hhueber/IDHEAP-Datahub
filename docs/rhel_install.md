@@ -1,37 +1,43 @@
 # RedHat installation
 
-_TODO_: Peer-review + test
-
-## Setup Debian WSL
-
-### Create a passwordless user for that project
-
-```bash
-sudo useradd -m datahub
-sudo passwd -d datahub
-```
-
-### Configure SSH for specific user
-
-```bash
-sudo su datahub
-ssh-keygen -t ed25519 -C "noreply@unil.ch"
-eval "$(ssh-agent -s)"
-ssh-add ~/.ssh/id_ed25519
-exit
-```
+## Setup RHEL
 
 ### Install database
 
 #### Setup PostgreSQL
 
 ```bash
-sudo apt install postgresql postgresql-contrib -y
+sudo dnf install postgresql-server postgresql-contrib pgrouting
 
-sudo systemctl enable postgresql
+sudo systemctl enable postgresq
+sudo postgresql-setup --initdb --unit postgresql
 sudo systemctl start postgresql
-sudo systemctl status postgresql
-# [...] online
+```
+
+#### Changing ident to scram-sha-256
+
+```bash
+sudo nano /var/lib/pgsql/data/pg_hba.conf
+```
+
+Replace `ident` per `scram-sha-256` in line host 127.0.0.1/32 and ::1/128
+
+```bash
+sudo systemctl restart postgresql
+```
+
+#### Building osm2pgrouting dependency
+
+```bash
+sudo dnf install git cmake gcc-c++ boost-devel expat-devel libpqxx-devel libpq-devel
+
+# Build osm2pgrouting
+git clone https://github.com/pgRouting/osm2pgrouting.git
+cd osm2pgrouting
+cmake -H. -Bbuild
+cd build
+make
+sudo make install
 ```
 
 #### Create user
@@ -48,16 +54,6 @@ ALTER USER postgres PASSWORD 'postgres';
 
 # Exit
 \q
-```
-
-#### Install PostGIS and pgRouting
-
-cf. https://trac.osgeo.org/postgis/wiki/UsersWikiPostGIS3UbuntuPGSQLApt
-
-First, check which version of PostgreSQL you are using, and replace `<VERSION>` with it-. For instance, for version 13.22, replace `<VERSION>` with `13`.
-
-```bash
-sudo apt install postgresql-<VERSION>-postgis-3 postgis postgresql-<VERSION>-pgrouting osm2pgrouting -y
 ```
 
 #### Create and configure database
