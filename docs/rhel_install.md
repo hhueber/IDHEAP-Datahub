@@ -40,6 +40,14 @@ make
 sudo make install
 ```
 
+You can delete the repertory after the installation
+
+```
+cd ..
+
+rm -rf osm2pgrouting
+```
+
 #### Create user
 
 ```bash
