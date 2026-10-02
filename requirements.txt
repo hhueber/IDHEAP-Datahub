@@ -20,6 +20,8 @@ orjson==3.10.18
 # Database / ORM
 SQLAlchemy==2.0.34
 asyncpg==0.30.0
+greenlet==3.5.6
+
 
 # Configuration & security
 python-dotenv==1.0.1
