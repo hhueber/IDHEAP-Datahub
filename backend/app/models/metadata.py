@@ -1,32 +1,48 @@
 from typing import TYPE_CHECKING
 
-from sqlalchemy import String
+from sqlalchemy import Enum, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+from .granularity import GranularityEnum
 
 if TYPE_CHECKING:
+    from .author_metadata_association import AuthorMetadataAssociation
     from .project import Project
-    from .project_author_association import ProjectAuthorAssociation
+    from .survey import Survey
 
 
-class ProjectMetadata(Base):
-    __tablename__ = "project_metadata"
+class Metadata(Base):
+    __tablename__ = "metadatas"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
 
+    name: Mapped[str] = mapped_column(String, nullable=False)
     description: Mapped[str] = mapped_column(String)
     licence: Mapped[str] = mapped_column(String)
     links_: Mapped[str] = mapped_column(String)
 
-    project: Mapped["Project"] = relationship(
-        "Project", back_populates="project_metadata"
+    granularity: Mapped[GranularityEnum] = mapped_column(Enum(GranularityEnum))
+
+    author_association: Mapped[list["AuthorMetadataAssociation"]] = relationship(
+        "AuthorMetadataAssociation",
+        back_populates="metadatas",
+        cascade="all, delete-orphan",
     )
 
-    author_association: Mapped[list["ProjectAuthorAssociation"]] = relationship(
-        "ProjectAuthorAssociation",
-        back_populates="project_metadata",
-        cascade="all, delete-orphan",
+    project_uid: Mapped[int] = mapped_column(
+        ForeignKey("project.uid", ondelete="CASCADE")
+    )
+
+    survey_uid: Mapped[int] = mapped_column(
+        ForeignKey("survey.uid", ondelete="CASCADE")
+    )
+
+    project: Mapped["Project"] = relationship("Project", back_populates="metadatas")
+
+    survey: Mapped["Survey"] = relationship(
+        "Survey",
+        back_populates="metadatas",
     )
 
     @property
