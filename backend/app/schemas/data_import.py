@@ -307,6 +307,8 @@ class DataImportWorkspaceUploadData(BaseModel):
     import_id: str
     display_name: str | None = None
 
+    project_uid: int
+
     size: int
     files_count: int
     resources_count: int

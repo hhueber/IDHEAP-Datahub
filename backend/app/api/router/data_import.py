@@ -83,7 +83,7 @@ async def fwetch_all_project(
     projects = await get_projects(db, _current_user)
     project_payload = []
     for project in projects:
-        project_payload.append({"uid": project.uid, "name": project.name})
+        project_payload.append({"uid": project.uid, "name": project.metadatas.name})
 
     return {
         "success": True,

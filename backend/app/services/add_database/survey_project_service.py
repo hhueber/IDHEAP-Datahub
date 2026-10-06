@@ -7,10 +7,11 @@ from app.models.user import User
 from app.schemas.data_import import DataImportNewProject
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 
 async def get_projects(db: AsyncSession, owner: User) -> list[Project]:
-    result = await db.execute(select(Project))
+    result = await db.execute(select(Project).options(selectinload(Project.metadatas)))
     return list(result.scalars().all())
 
 
