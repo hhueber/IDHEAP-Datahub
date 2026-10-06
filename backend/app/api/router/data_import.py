@@ -101,11 +101,10 @@ async def create_new_project(
     ),
 ):
     project = await create_project(db, _current_user, payload)
-
     return {
         "success": True,
         "detail": "Project created Successfully  hehehheh",
-        "data": {"uid": project.uid, "name": project.name},
+        "data": {"uid": project.uid, "name": project.metadatas.name},
     }
 
 

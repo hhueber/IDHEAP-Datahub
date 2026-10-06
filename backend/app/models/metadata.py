@@ -31,11 +31,11 @@ class Metadata(Base):
     )
 
     project_uid: Mapped[int] = mapped_column(
-        ForeignKey("project.uid", ondelete="CASCADE")
+        ForeignKey("project.uid", ondelete="CASCADE"), nullable=True
     )
 
     survey_uid: Mapped[int] = mapped_column(
-        ForeignKey("survey.uid", ondelete="CASCADE")
+        ForeignKey("survey.uid", ondelete="CASCADE"), nullable=True
     )
 
     project: Mapped["Project"] = relationship("Project", back_populates="metadatas")
