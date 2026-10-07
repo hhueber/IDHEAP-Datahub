@@ -27,6 +27,7 @@ from app.schemas.data_import import (
     DataImportYearsResponse,
     DataProjectResponse,
     ImportSectionEnum,
+    DataImportProjectMetadataResponse
 )
 from app.services.add_database.import_survey_service import import_new_survey_pipeline
 from app.services.add_database.survey_project_service import (
@@ -52,6 +53,7 @@ from app.services.data_import.data_import_service import (
     update_import_display_name,
     update_import_years,
 )
+from app.services.data_import.data_import_metadata_service import get_project_metadata
 
 router = APIRouter()
 
@@ -92,6 +94,23 @@ async def fwetch_all_project(
     }
 
 
+@router.get("/{import_id}/project_metadata", response_model=DataImportProjectMetadataResponse)
+async def get_import_project_metadata(
+    import_id: str,
+    db: AsyncSession = Depends(get_db),
+    _current_user: User = Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
+    ),
+):
+    metadata = await get_project_metadata(db, import_id)
+
+    success = True if metadata is not None else False
+
+    return {
+        "success": success,
+        "detail": "Project metadata fetched successfully",
+        "data": metadata
+    }
+
 @router.post("/project", response_model=DataImportNewProjectResponse)
 async def create_new_project(
     payload: DataImportNewProject,
@@ -103,7 +122,7 @@ async def create_new_project(
     project = await create_project(db, _current_user, payload)
     return {
         "success": True,
-        "detail": "Project created Successfully  hehehheh",
+        "detail": "Project created successfully",
         "data": {"uid": project.uid, "name": project.metadatas.name},
     }
 
@@ -343,6 +362,7 @@ async def upload_data_files(
     files: list[UploadFile] = File(...),
     display_name: str | None = Form(None),
     years: list[int] = Form(...),
+    project_id: int = Form(...),
     _current_user=Depends(
         require_permission(
             PermissionScope.DATASET,
@@ -353,6 +373,7 @@ async def upload_data_files(
     data = await create_import_workspace(
         files=files,
         display_name=display_name,
+        project_id=project_id,
         years=years,
     )
 
@@ -394,14 +415,3 @@ async def commit_change(
 
     await import_new_survey_pipeline(db, import_id)
     return {"success": True, "detail": "Helloooo", "data": "Helloooo"}
-
-
-@router.post("/project", response_model=DataImportNewProjectResponse)
-async def new_project(
-    payload=DataImportNewProject,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(
-        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
-    ),
-):
-    return {"success": True}

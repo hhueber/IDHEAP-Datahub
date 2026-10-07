@@ -295,7 +295,6 @@ export type DataImportResourceSummary = {
 export type DataImportWorkspaceUploadData = {
     import_id: string;
     display_name: string | null;
-    project_uid: number;
     size: number;
     files_count: number;
     resources_count: number;
@@ -359,4 +358,24 @@ export type Project = {
     uid: number;
     name: string;
     description?: string;
+};
+
+export type Authir = {
+    first_name: string;
+    last_name: string;
+    email: string;
+};
+
+export type DataImportProjectMetadataData = {
+    name: string;
+    description: string;
+    licence: string;
+    links: Link[];
+    authors: Author[];
+};
+
+export type DataImportProjectMetadataResponse = {
+    success: boolean;
+    detail: string;
+    data: DataImportProjectMetadataData;
 };

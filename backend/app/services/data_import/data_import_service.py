@@ -374,6 +374,7 @@ async def create_import_workspace(
     *,
     files: list[UploadFile],
     display_name: str | None = None,
+    project_id: int,
     years: list[int],
 ) -> dict[str, Any]:
     if not files:
@@ -400,6 +401,7 @@ async def create_import_workspace(
         "import_id": import_id,
         "display_name": clean_display_name,
         "years": normalized_years,
+        "project_id": project_id,
         "created_at": now,
         "updated_at": now,
         "analyzed": False,

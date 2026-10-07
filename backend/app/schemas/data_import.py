@@ -306,9 +306,7 @@ class DataImportResourceSummary(BaseModel):
 class DataImportWorkspaceUploadData(BaseModel):
     import_id: str
     display_name: str | None = None
-
-    project_uid: int
-
+    
     size: int
     files_count: int
     resources_count: int
@@ -419,3 +417,15 @@ class DataProjectResponse(BaseModel):
     success: bool
     detail: str
     data: list[DataProjectPayload]
+
+class DataImportProjectMetadataData(BaseModel):
+    name: str
+    description: str
+    licence: str
+    links: list[Link]
+    authors: list[Author]
+
+class DataImportProjectMetadataResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportProjectMetadataData
