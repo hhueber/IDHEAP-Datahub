@@ -379,3 +379,11 @@ export type DataImportProjectMetadataResponse = {
     detail: string;
     data: DataImportProjectMetadataData;
 };
+
+export type MetadataDataset = {
+    name: string;
+    description: string;
+    licence: string;
+    links: Link[];
+    authors: Author[];
+};

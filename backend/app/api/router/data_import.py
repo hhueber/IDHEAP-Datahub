@@ -111,6 +111,14 @@ async def get_import_project_metadata(
         "data": metadata
     }
 
+@router.patch("/{import_id}/dataset_metadata")
+async def update_dataset_metadata(
+    import_id: str,
+    db: AsyncSession,
+    _current_user: User = Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE))
+):
+    pass
+
 @router.post("/project", response_model=DataImportNewProjectResponse)
 async def create_new_project(
     payload: DataImportNewProject,

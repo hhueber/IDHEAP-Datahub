@@ -20,6 +20,7 @@ import type {
     NewProjectResponse,
     AllProjectResponse,
     DataImportProjectMetadataResponse,
+    MetadataDataset,
     RoleType,
 } from "@/features/dataImport/dataImportTypes";
 
@@ -32,6 +33,14 @@ export async function getAllProject() {
         },
     );
     return fetched.data;
+}
+
+export async function saveDatasetMetadata(payload: MetadataDataset) {
+    const result = await apiFetch<>("",{
+        method: "PATCH",
+        auth: true,
+        body: payload
+    })
 }
 
 export async function getProjectMetadata(importId: string) {

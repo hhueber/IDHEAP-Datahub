@@ -25,7 +25,6 @@ def write_json(path: Path, data: Any) -> None:
         encoding="utf-8",
     )
 
-
 def extract_sheet_convert_to_csv(path: Path) -> list[Path]:
     filename_list: list[Path] = []
     all_sheet = pd.read_excel(str(path), sheet_name=None)
@@ -48,6 +47,7 @@ def read_metadata(import_dir: Path) -> dict[str, Any]:
 
 def write_metadata(import_dir: Path, metadata: dict[str, Any]) -> None:
     write_json(import_dir / "metadata.json", metadata)
+
 
 
 def get_workspace_dir(import_dir: Path) -> Path:
@@ -119,6 +119,12 @@ def write_analysis(
 ) -> None:
     write_json(get_workspace_dir(import_dir) / "analysis.json", analysis)
 
+def read_dataset_metadata(import_dir: Path) -> dict[str, Any]:
+    path = get_workspace_dir(import_dir) / "dataset_metadata.json"
+    if not path.exists():
+        raise ValueError("DatasetMetadata have not been generated yet")
+
+    return read_json(path)
 
 def read_issues(
     import_dir: Path,

@@ -1,11 +1,15 @@
 from app.schemas.data_import import DataImportProjectMetadataData
-from app.services.data_import.data_import_storage_service import get_import_dir, read_metadata
+from app.services.data_import.data_import_storage_service import get_import_dir, read_metadata, get_workspace_dir
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
 from app.models.metadata import Metadata
 from app.models.author_metadata_association import AuthorMetadataAssociation
 from app.models.author import Author
 from sqlalchemy.ext.asyncio import AsyncSession
+
+async def update_dataset_metadata(db: AsyncSession, import_id: str) :
+    import_dir = get_import_dir(import_id)
+    workspace_dir = get_workspace_dir(import_dir)
 
 async def get_project_metadata(db: AsyncSession, import_id : str) -> DataImportProjectMetadataData:
     import_dir = get_import_dir(import_id)
@@ -32,5 +36,12 @@ async def get_project_metadata(db: AsyncSession, import_id : str) -> DataImportP
         description=metadata.description,
         licence=metadata.licence,
         links=metadata.links,
-        authors=[association.author for association in metadata.author_association]
+        authors=[
+            {
+                "first_name": association.author.first_name,
+                "last_name": association.author.last_name,
+                "email": association.author.email,
+            }
+            for association in metadata.author_association
+        ]
     )
