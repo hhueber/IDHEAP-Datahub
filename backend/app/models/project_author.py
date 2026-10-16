@@ -1,12 +1,12 @@
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from project_author_association import ProjectAuthorAssociation
-
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .project_author_association import ProjectAuthorAssociation
 
 
 class ProjectAuthor(Base):

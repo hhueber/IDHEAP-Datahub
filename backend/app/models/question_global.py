@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING, Optional
 
-if TYPE_CHECKING:
-    from question_category import QuestionCategory
-    from question_global_option_association import QuestionGlobalOptionAssociation
-    from question_per_survey import QuestionPerSurvey
-
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .question_category import QuestionCategory
+    from .question_global_option_association import QuestionGlobalOptionAssociation
+    from .question_per_survey import QuestionPerSurvey
 
 
 class QuestionGlobal(Base):

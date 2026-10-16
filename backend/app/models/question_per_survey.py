@@ -1,17 +1,16 @@
 from typing import TYPE_CHECKING, Optional
 
-if TYPE_CHECKING:
-    from answer import Answer
-    from question_category import QuestionCategory
-    from question_global import QuestionGlobal
-    from question_option_association import QuestionOptionAssociation
-    from survey import Survey
-
-
 from sqlalchemy import Boolean, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .answer import Answer
+    from .question_category import QuestionCategory
+    from .question_global import QuestionGlobal
+    from .question_option_association import QuestionOptionAssociation
+    from .survey import Survey
 
 
 class QuestionPerSurvey(Base):

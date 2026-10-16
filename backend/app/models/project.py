@@ -1,13 +1,13 @@
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from project_metadata import ProjectMetadata
-    from survey import Survey
-
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import Base
+from .base import Base
+
+if TYPE_CHECKING:
+    from .project_metadata import ProjectMetadata
+    from .survey import Survey
 
 
 class Project(Base):

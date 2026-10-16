@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from question_category_option_association import QuestionCategoryOptionAssociation
-    from question_global_option_association import QuestionGlobalOptionAssociation
-    from question_option_association import QuestionOptionAssociation
-
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+
+if TYPE_CHECKING:
+    from .question_category_option_association import QuestionCategoryOptionAssociation
+    from .question_global_option_association import QuestionGlobalOptionAssociation
+    from .question_option_association import QuestionOptionAssociation
 
 
 class Option(Base):

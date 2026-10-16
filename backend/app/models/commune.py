@@ -1,14 +1,16 @@
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from .answer import Answer
-    from .canton import Canton
-    from .commune_map import CommuneMap
 from sqlalchemy import ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 from .district import District
+
+if TYPE_CHECKING:
+    from .answer import Answer
+    from .canton import Canton
+    from .commune_map import CommuneMap
+    from .district import District
 
 
 class Commune(Base):

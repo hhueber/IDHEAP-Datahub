@@ -1,14 +1,14 @@
 from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from project import Project
-    from survey_metadata import SurveyMetadata
-
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from . import QuestionPerSurvey
 from .base import Base
+
+if TYPE_CHECKING:
+    from .project import Project
+    from .question_per_survey import QuestionPerSurvey
+    from .survey_metadata import SurveyMetadata
 
 
 class Survey(Base):
