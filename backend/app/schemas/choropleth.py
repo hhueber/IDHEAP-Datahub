@@ -1,4 +1,4 @@
-from typing import Any, Literal, Optional
+from typing import Any, Literal
 
 
 from app.schemas.geo import FeatureCollection
@@ -13,11 +13,11 @@ class LegendItem(BaseModel):
     color: str
 
     # categorical
-    value: Optional[Any] = None
+    value: Any | None = None
 
     # gradient
-    min: Optional[float] = None
-    max: Optional[float] = None
+    min: float | None = None
+    max: float | None = None
 
 
 class GradientMeta(BaseModel):
@@ -33,15 +33,15 @@ class MapLegend(BaseModel):
     type: Literal["categorical", "gradient"]
     title: str
     items: list[LegendItem]
-    gradient: Optional[GradientMeta] = None
+    gradient: GradientMeta | None = None
 
 
 class ChoroplethResponse(BaseModel):
     question_uid: int
     year_requested: int
-    year_geo_communes: Optional[int] = None
-    year_geo_districts: Optional[int] = None
-    year_geo_cantons: Optional[int] = None
+    year_geo_communes: int | None = None
+    year_geo_districts: int | None = None
+    year_geo_cantons: int | None = None
     granularity: ChoroplethGranularity
     legend: MapLegend
     feature_collection: FeatureCollection = Field(..., description="GeoJSON FeatureCollection des communes")
@@ -49,17 +49,17 @@ class ChoroplethResponse(BaseModel):
 
 class ChoroplethGeometriesResponse(BaseModel):
     year_requested: int
-    year_geo_districts: Optional[int] = None
-    year_geo_cantons: Optional[int] = None
+    year_geo_districts: int | None = None
+    year_geo_cantons: int | None = None
     granularity: ChoroplethGranularity
     feature_collection: FeatureCollection
 
 
 class ChoroplethValueEntry(BaseModel):
-    value: Optional[Any] = None
+    value: Any | None = None
     value_kind: str  # "value" | "no_data" | "no_response"
     fill_color: str = "#cccccc"
-    fill_pattern: Optional[Any] = None
+    fill_pattern: Any | None = None
     special_dominant: bool = False
     top_real_count: int = 0
     cnt_null: int = 0

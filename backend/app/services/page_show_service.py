@@ -1,13 +1,13 @@
-from typing import Any, Dict
+from typing import Any
 
 
 from sqlalchemy.inspection import inspect
 
 
-def serialize_columns(obj: Any, exclude: set[str] | None = None) -> Dict[str, Any]:
+def serialize_columns(obj: Any, exclude: set[str] | None = None) -> dict[str, Any]:
     exclude = exclude or set()
     mapper = inspect(obj.__class__)
-    out: Dict[str, Any] = {}
+    out: dict[str, Any] = {}
 
     for col in mapper.columns:
         key = col.key

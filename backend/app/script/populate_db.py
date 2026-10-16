@@ -27,11 +27,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 async def populate_db() -> None:
     async with SessionLocal() as session:
-
         # Add canton
         async with session.begin():
             index = 1
-            total_item = len(CANTONS)
             for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
                 db_canton = Canton(
                     code=code,
@@ -60,7 +58,7 @@ async def populate_db() -> None:
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
-                    RuntimeError("Canton not found")
+                    raise RuntimeError("Canton not found")
 
                 result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
                 db_district = result.scalar_one_or_none()
@@ -98,8 +96,11 @@ async def populate_db() -> None:
 
         # Survey and question per survey
         async with session.begin():
-            for year in tqdm([1988, 1994, 1998, 2005, 2009, 2017, 2023], total=7, desc="Processing survey per year"):
-
+            for year in tqdm(
+                [1988, 1994, 1998, 2005, 2009, 2017, 2023],
+                total=7,
+                desc="Processing survey per year",
+            ):
                 db_survey = Survey(
                     name=f"GSB{str(year)[2:]}",
                     year=year,
@@ -114,7 +115,11 @@ async def populate_db() -> None:
                     index_col=1,
                     header=0,
                 )
-                for index, row in tqdm(gsb.iterrows(), total=len(gsb), desc=f"Processing questions for {year}"):
+                for index, row in tqdm(
+                    gsb.iterrows(),
+                    total=len(gsb),
+                    desc=f"Processing questions for {year}",
+                ):
                     db_question = QuestionPerSurvey(
                         code=str(index),
                         label=row["label"],
@@ -131,9 +136,17 @@ async def populate_db() -> None:
 
         # Global question and categories
         async with session.begin():
-            gbd = pd.read_csv(Path(BASE_DIR, "data", "QuestionsGlobales.csv"), index_col=None, header=0)
+            gbd = pd.read_csv(
+                Path(BASE_DIR, "data", "QuestionsGlobales.csv"),
+                index_col=None,
+                header=0,
+            )
 
-            for index, row in tqdm(gbd.iterrows(), total=len(gbd), desc="Processing global questions and categories"):
+            for index, row in tqdm(
+                gbd.iterrows(),
+                total=len(gbd),
+                desc="Processing global questions and categories",
+            ):
                 if not pd.isnull(row["category_label"]):
                     db_question_category = QuestionCategory(
                         label=row["category_label"],
@@ -163,7 +176,12 @@ async def populate_db() -> None:
 
         # Answer
         async with session.begin():
-            crc = pd.read_csv(Path(BASE_DIR, "data", "mon_fichier_indexed.csv"), index_col=0, header=0, sep=";")
+            crc = pd.read_csv(
+                Path(BASE_DIR, "data", "mon_fichier_indexed.csv"),
+                index_col=0,
+                header=0,
+                sep=";",
+            )
 
             for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
                 if pd.isna(row["gemid"]):
@@ -198,7 +216,10 @@ async def populate_db() -> None:
                         if db_question is None:
                             raise RuntimeError("Question not found")
                         db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(crc[col][index])
+                            year=year,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(crc[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()
@@ -208,7 +229,11 @@ async def populate_db() -> None:
         # Answer for 2023 data (separate file)
         async with session.begin():
             GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
-            for index, row in tqdm(GSB_2023.iterrows(), total=len(GSB_2023), desc="Processing answers for 2023"):
+            for index, row in tqdm(
+                GSB_2023.iterrows(),
+                total=len(GSB_2023),
+                desc="Processing answers for 2023",
+            ):
                 if pd.isna(row["BFS_2023"]):
                     continue
                 result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
@@ -239,7 +264,10 @@ async def populate_db() -> None:
                         if db_question is None:
                             raise RuntimeError("Question not found")
                         db_answer = Answer(
-                            year=year, question=db_question, commune=db_commune, value=str(GSB_2023[col][index])
+                            year=year,
+                            question=db_question,
+                            commune=db_commune,
+                            value=str(GSB_2023[col][index]),
                         )
                         session.add(db_answer)
                         await session.flush()

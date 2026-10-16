@@ -1,6 +1,5 @@
 # engine + session async
 from app.core.config import settings
-from app.models import Base
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession, create_async_engine
 
@@ -30,6 +29,7 @@ async def get_db():
 async def ping_db():
     async with engine.connect() as conn:
         await conn.execute(text("SELECT 1"))
+
 
 async def ensure_extensions():
     async with engine.begin() as conn:

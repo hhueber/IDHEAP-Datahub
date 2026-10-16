@@ -1,7 +1,7 @@
 from app.db import get_db
 from app.schemas.questions import HomeBootstrap
 from app.services.home_service import get_home_bootstrap
-from fastapi import APIRouter, Depends, Header, Request
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 

@@ -4,7 +4,7 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 from pydantic import BaseModel, Field
@@ -18,29 +18,29 @@ class Geometry(BaseModel):
 class Feature(BaseModel):
     type: str = "Feature"
     geometry: Geometry
-    properties: Dict[str, Any] = Field(default_factory=dict)
+    properties: dict[str, Any] = Field(default_factory=dict)
 
 
 class FeatureCollection(BaseModel):
     type: str = "FeatureCollection"
-    features: List[Feature]
+    features: list[Feature]
 
 
 class YearMeta(BaseModel):
     # année demandée par le client (par défaut: année courante)
     requested: int
     # années réellement utilisées (max <= requested) par couche versionnée
-    country: Optional[int] = None
-    lakes: Optional[int] = None
-    cantons: Optional[int] = None
-    districts: Optional[int] = None
-    communes: Optional[int] = None
+    country: int | None = None
+    lakes: int | None = None
+    cantons: int | None = None
+    districts: int | None = None
+    communes: int | None = None
 
 
 class GeoBundle(BaseModel):
     year: YearMeta
-    country: Optional[FeatureCollection] = None
-    lakes: Optional[FeatureCollection] = None
-    cantons: Optional[FeatureCollection] = None
-    districts: Optional[FeatureCollection] = None
-    communes: Optional[FeatureCollection] = None
+    country: FeatureCollection | None = None
+    lakes: FeatureCollection | None = None
+    cantons: FeatureCollection | None = None
+    districts: FeatureCollection | None = None
+    communes: FeatureCollection | None = None

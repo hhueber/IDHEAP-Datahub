@@ -5,7 +5,7 @@ import tempfile as tf
 
 
 from app.db import SessionLocal
-from app.models import Canton, CantonMap, Commune, CommuneMap, Country, District, DistrictMap, Lake, LakeMap
+from app.models import Canton, CantonMap, Commune, CommuneMap, District, DistrictMap, Lake, LakeMap
 from geoalchemy2.shape import from_shape
 from pyproj import Transformer
 from shapely.geometry import shape
@@ -31,31 +31,25 @@ async def populate_async_geo(is_demo: bool) -> None:
                 year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
                 url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
             else:
-                zip_file = tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".")
                 url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
-                response = requests.get(url)
-                zip_file.write(response.content)
-                zip_file.close()
-                with ZipFile(zip_file.name) as zip:
-                    url = zip.namelist()[0]
-                    zip.extractall()
-                os.remove(zip_file.name)
+                response = requests.get(url)  # noqa: ASYNC210
+                with tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".") as zip_file:
+                    zip_file.write(response.content)
+                    zip_path = zip_file.name
+                with ZipFile(zip_path) as zf:
+                    url = zf.namelist()[0]
+                    zf.extractall()
+                os.remove(zip_path)
 
             layers = fiona.listlayers(url)
 
             async with session.begin():
-
                 for layer in layers:
-
                     with fiona.open(url, layer=layer) as src:
                         # Insertion of country boarderies
                         if "Country" in layer and not has_country_populated:
                             feat = src.get(1)
                             multi = shapely.geometry.shape(feat["geometry"])
-                            db_country = Country(
-                                geometry=from_shape(multi, srid=2056),
-                            )
-                            print(f">>>[{year}] INSERTING country shape")
                             has_country_populated = True
 
                         # Insertion of commune data
@@ -162,14 +156,14 @@ async def populate_async_geo(is_demo: bool) -> None:
 
                         if "Lac" in layer:
                             for feature in src:
-
                                 result = await session.execute(
                                     select(Lake).filter_by(code=str(feature["properties"]["SEENR"]))
                                 )
                                 db_lake = result.scalar_one_or_none()
                                 if db_lake is None:
                                     db_lake = Lake(
-                                        code=str(feature["properties"]["SEENR"]), name=feature["properties"]["SEENAME"]
+                                        code=str(feature["properties"]["SEENR"]),
+                                        name=feature["properties"]["SEENAME"],
                                     )
                                     session.add(db_lake)
                                     await session.flush()

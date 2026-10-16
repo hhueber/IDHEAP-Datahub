@@ -6,10 +6,10 @@
  * but hidden; this component owns its own WebGL context via deck.gl's Deck class.
  */
 
-import { useEffect, useRef, useMemo } from 'react';
-import { Deck, MapView } from '@deck.gl/core';
-import { GeoJsonLayer } from '@deck.gl/layers';
-import type { ChoroplethResponse } from '@/features/geo/geoApi';
+import { useEffect, useRef, useMemo } from "react";
+import { Deck, MapView } from "@deck.gl/core";
+import { GeoJsonLayer } from "@deck.gl/layers";
+import type { ChoroplethResponse } from "@/features/geo/geoApi";
 import {
   PITCH_3D,
   BEARING_3D,
@@ -24,11 +24,11 @@ import {
 } from "@/features/geo/choropleth/choroplethColorAdjustment";
 
 export type ViewState3D = {
-  longitude: number;
-  latitude: number;
-  zoom: number;
-  pitch: number;
-  bearing: number;
+    longitude: number;
+    latitude: number;
+    zoom: number;
+    pitch: number;
+    bearing: number;
 };
 
 export type ChoroplethDeckLayerProps = {
@@ -59,18 +59,21 @@ export type ChoroplethDeckLayerProps = {
 };
 
 /** Convert a #rrggbb hex string to a deck.gl [R, G, B, A] tuple. */
-function hexToCssRgba(hex: string, alpha = 230): [number, number, number, number] {
-  if (!hex || hex.length < 7) return [204, 204, 204, alpha];
-  try {
-    return [
-      parseInt(hex.slice(1, 3), 16),
-      parseInt(hex.slice(3, 5), 16),
-      parseInt(hex.slice(5, 7), 16),
-      alpha,
-    ];
-  } catch {
-    return [204, 204, 204, alpha];
-  }
+function hexToCssRgba(
+    hex: string,
+    alpha = 230,
+): [number, number, number, number] {
+    if (!hex || hex.length < 7) return [204, 204, 204, alpha];
+    try {
+        return [
+            parseInt(hex.slice(1, 3), 16),
+            parseInt(hex.slice(3, 5), 16),
+            parseInt(hex.slice(5, 7), 16),
+            alpha,
+        ];
+    } catch {
+        return [204, 204, 204, alpha];
+    }
 }
 
 export default function ChoroplethDeckLayer({
@@ -84,19 +87,23 @@ export default function ChoroplethDeckLayer({
   maxPositiveValue,
   colorIntensity,
 }: ChoroplethDeckLayerProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const deckRef = useRef<Deck<any> | null>(null);
-  const tooltipRef = useRef<HTMLDivElement>(null);
-  const onSelectAreaRef = useRef(onSelectArea);
-  const granularityRef = useRef(choropleth.granularity);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const deckRef = useRef<Deck<any> | null>(null);
+    const tooltipRef = useRef<HTMLDivElement>(null);
+    const onSelectAreaRef = useRef(onSelectArea);
+    const granularityRef = useRef(choropleth.granularity);
 
-  useEffect(() => { onSelectAreaRef.current = onSelectArea; }, [onSelectArea]);
-  useEffect(() => { granularityRef.current = choropleth.granularity; }, [choropleth.granularity]);
+    useEffect(() => {
+        onSelectAreaRef.current = onSelectArea;
+    }, [onSelectArea]);
+    useEffect(() => {
+        granularityRef.current = choropleth.granularity;
+    }, [choropleth.granularity]);
 
-  // Label lookup maps raw feature value -> legend label string.
-  // Mirrors 2D getLegendDisplayValue: null/empty -> "No data", categorical
-  // numeric values (e.g. 1 -> "Deutsch") resolved via legend items.
-  const labelLookupRef = useRef<Map<string, string>>(new Map());
+    // Label lookup maps raw feature value -> legend label string.
+    // Mirrors 2D getLegendDisplayValue: null/empty -> "No data", categorical
+    // numeric values (e.g. 1 -> "Deutsch") resolved via legend items.
+    const labelLookupRef = useRef<Map<string, string>>(new Map());
 
   const labelLookup = useMemo(() => {
     const map = new Map<string, string>();
@@ -267,91 +274,96 @@ export default function ChoroplethDeckLayer({
           return;
         }
 
-        el.hidden = false;
-        // Use CSS transform for position (GPU-composited, no layout reflow)
-        el.style.transform = `translate(${info.x + 14}px, ${info.y - 10}px)`;
+                el.hidden = false;
+                // Use CSS transform for position (GPU-composited, no layout reflow)
+                el.style.transform = `translate(${info.x + 14}px, ${
+                    info.y - 10
+                }px)`;
 
-        const p = info.object.properties ?? {};
-        const nameEl = el.querySelector<HTMLElement>('.tt-name');
-        const valueEl = el.querySelector<HTMLElement>('.tt-value');
-        if (nameEl) nameEl.textContent = p.name ?? p.code ?? '';
-        if (valueEl) {
-          const raw = p.value;
-          let displayValue: string;
-          if (raw == null || raw === '') {
-            displayValue = 'No data';
-          } else {
-            const lookup = labelLookupRef.current;
-            const key = String(raw);
-            displayValue = lookup.has(key) ? lookup.get(key)! : key;
-          }
-          valueEl.textContent = displayValue;
-          valueEl.hidden = false;
-        }
-      },
+                const p = info.object.properties ?? {};
+                const nameEl = el.querySelector<HTMLElement>(".tt-name");
+                const valueEl = el.querySelector<HTMLElement>(".tt-value");
+                if (nameEl) nameEl.textContent = p.name ?? p.code ?? "";
+                if (valueEl) {
+                    const raw = p.value;
+                    let displayValue: string;
+                    if (raw == null || raw === "") {
+                        displayValue = "No data";
+                    } else {
+                        const lookup = labelLookupRef.current;
+                        const key = String(raw);
+                        displayValue = lookup.has(key) ? lookup.get(key)! : key;
+                    }
+                    valueEl.textContent = displayValue;
+                    valueEl.hidden = false;
+                }
+            },
 
-      // click delegates to the parent's onSelectArea
-      onClick: (info: any) => {
-        if (!info.object) return;
-        const p = info.object.properties ?? {};
-        const uid = p.unit_uid;
-        const level = granularityRef.current;
-        if (!uid || level === 'federal') return;
-        onSelectAreaRef.current({ uid, name: p.name, level });
-      },
-    });
+            // click delegates to the parent's onSelectArea
+            onClick: (info: any) => {
+                if (!info.object) return;
+                const p = info.object.properties ?? {};
+                const uid = p.unit_uid;
+                const level = granularityRef.current;
+                if (!uid || level === "federal") return;
+                onSelectAreaRef.current({ uid, name: p.name, level });
+            },
+        });
 
-    deckRef.current = deck;
+        deckRef.current = deck;
 
-    return () => {
-      deck.finalize();
-      deckRef.current = null;
-    };
-    // Intentionally empty deps: Deck is created once on mount.
-    // layer is captured from first render; onViewStateChange / onHover / onClick
-    // read from stable refs so they never go stale.
-  }, []);
+        return () => {
+            deck.finalize();
+            deckRef.current = null;
+        };
+        // Intentionally empty deps: Deck is created once on mount.
+        // layer is captured from first render; onViewStateChange / onHover / onClick
+        // read from stable refs so they never go stale.
+    }, []);
 
-  // Render
-  return (
-    <div
-      className="absolute inset-0"
-      style={{ background: BACKGROUND_3D }}
-      onContextMenu={(e) => e.preventDefault()}
-    >
-      {/* deck.gl injects its canvas here */}
-      <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
+    // Render
+    return (
+        <div
+            className="absolute inset-0"
+            style={{ background: BACKGROUND_3D }}
+            onContextMenu={(e) => e.preventDefault()}
+        >
+            {/* deck.gl injects its canvas here */}
+            <div ref={containerRef} style={{ width: "100%", height: "100%" }} />
 
-      {/*
-       * Tooltip always in the DOM but hidden by default.
-       * Updated imperatively via tooltipRef to avoid React re-renders
-       * on every mouse-move event.
-       */}
-      <div
-        ref={tooltipRef}
-        hidden
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          transform: 'translate(0,0)',
-          background: 'rgba(255,255,255,0.92)',
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-          borderRadius: 6,
-          padding: '5px 9px',
-          pointerEvents: 'none',
-          fontSize: 13,
-          lineHeight: 1.4,
-          maxWidth: 220,
-          zIndex: 1000,
-          willChange: 'transform',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-        }}
-      >
-        <div className="tt-name" style={{ fontWeight: 600 }} />
-        <div className="tt-value" style={{ fontSize: 12, opacity: 0.8 }} />
-      </div>
-    </div>
-  );
+            {/*
+             * Tooltip always in the DOM but hidden by default.
+             * Updated imperatively via tooltipRef to avoid React re-renders
+             * on every mouse-move event.
+             */}
+            <div
+                ref={tooltipRef}
+                hidden
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    transform: "translate(0,0)",
+                    background: "rgba(255,255,255,0.92)",
+                    backdropFilter: "blur(4px)",
+                    WebkitBackdropFilter: "blur(4px)",
+                    borderRadius: 6,
+                    padding: "5px 9px",
+                    pointerEvents: "none",
+                    fontSize: 13,
+                    lineHeight: 1.4,
+                    maxWidth: 220,
+                    zIndex: 1000,
+                    willChange: "transform",
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.25)",
+                }}
+            >
+                <div className="tt-name" style={{ fontWeight: 600 }} />
+                <div
+                    className="tt-value"
+                    style={{ fontSize: 12, opacity: 0.8 }}
+                />
+            </div>
+        </div>
+    );
 }

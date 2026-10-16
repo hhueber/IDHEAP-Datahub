@@ -11,7 +11,7 @@ from .district_map import DistrictMap
 from .lake import Lake
 from .lake_map import LakeMap
 from .option import Option
-from .placeOfInterest import PlaceOfInterest
+from .place_of_interest import PlaceOfInterest
 from .project import Project
 from .project_author import ProjectAuthor
 from .project_author_association import ProjectAuthorAssociation
@@ -29,32 +29,32 @@ from .survey_metadata import SurveyMetadata
 
 
 __all__ = [
+    "Answer",
     "Base",
     "Canton",
-    "District",
-    "Commune",
-    "QuestionCategory",
-    "Option",
-    "QuestionGlobal",
-    "Survey",
-    "QuestionPerSurvey",
-    "Answer",
-    "Lake",
-    "Country",
     "CantonMap",
+    "Commune",
     "CommuneMap",
-    "DistrictMap",
-    "LakeMap",
-    "PlaceOfInterest",
     "Config",
-    "QuestionGlobalOptionAssociation",
-    "QuestionOptionAssociation",
-    "QuestionCategoryOptionAssociation",
-    "SurveyMetadata",
-    "SurveyAuthor",
-    "SurveyAuthorAssociation",
+    "Country",
+    "District",
+    "DistrictMap",
+    "Lake",
+    "LakeMap",
+    "Option",
+    "PlaceOfInterest",
     "Project",
-    "ProjectMetadata",
     "ProjectAuthor",
     "ProjectAuthorAssociation",
+    "ProjectMetadata",
+    "QuestionCategory",
+    "QuestionCategoryOptionAssociation",
+    "QuestionGlobal",
+    "QuestionGlobalOptionAssociation",
+    "QuestionOptionAssociation",
+    "QuestionPerSurvey",
+    "Survey",
+    "SurveyAuthor",
+    "SurveyAuthorAssociation",
+    "SurveyMetadata",
 ]
