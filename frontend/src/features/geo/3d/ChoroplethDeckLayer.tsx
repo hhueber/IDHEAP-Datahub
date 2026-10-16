@@ -11,16 +11,16 @@ import { Deck, MapView } from "@deck.gl/core";
 import { GeoJsonLayer } from "@deck.gl/layers";
 import type { ChoroplethResponse } from "@/features/geo/geoApi";
 import {
-  PITCH_3D,
-  BEARING_3D,
-  MAX_ELEVATION,
-  MAX_PITCH_3D,
-  BACKGROUND_3D,
-} from './choropleth3dConstants';
+    PITCH_3D,
+    BEARING_3D,
+    MAX_ELEVATION,
+    MAX_PITCH_3D,
+    BACKGROUND_3D,
+} from "./choropleth3dConstants";
 import {
-  adjustChoroplethColor,
-  adjustChoroplethOpacity,
-  shouldAdjustChoroplethFeature,
+    adjustChoroplethColor,
+    adjustChoroplethOpacity,
+    shouldAdjustChoroplethFeature,
 } from "@/features/geo/choropleth/choroplethColorAdjustment";
 
 export type ViewState3D = {
@@ -32,30 +32,30 @@ export type ViewState3D = {
 };
 
 export type ChoroplethDeckLayerProps = {
-  choropleth: ChoroplethResponse;
-  /** Leaflet map centre (lng) captured at the moment 3D was activated */
-  initialLng: number;
-  /** Leaflet map centre (lat) captured at the moment 3D was activated */
-  initialLat: number;
-  /** Leaflet zoom captured at the moment 3D was activated */
-  initialZoom: number;
-  /**
-   * Mutable ref owned by GeoJsonMap.  Updated on every deck.gl viewState change
-   * (no React state, no re-render).  Read by the parent when the user manually
-   * clicks the 2D toggle button.
-   */
-  viewStateRef: React.MutableRefObject<ViewState3D>;
-  selectedArea: { uid: number; level: string } | null;
-  onSelectArea: (area: { uid: number; name?: string; level: string }) => void;
-  /**
-   * Maximum positive numeric value found in the current choropleth features.
-   * Pre-computed by GeoJsonMap (single pass) so this component never iterates
-   * the feature array again. Used as the elevation denominator:
-   *   elevation = (value / maxPositiveValue) * MAX_ELEVATION
-   * Zero means no exploitable numeric value exists (3D unavailable).
-   */
-  maxPositiveValue: number;
-  colorIntensity: number;
+    choropleth: ChoroplethResponse;
+    /** Leaflet map centre (lng) captured at the moment 3D was activated */
+    initialLng: number;
+    /** Leaflet map centre (lat) captured at the moment 3D was activated */
+    initialLat: number;
+    /** Leaflet zoom captured at the moment 3D was activated */
+    initialZoom: number;
+    /**
+     * Mutable ref owned by GeoJsonMap.  Updated on every deck.gl viewState change
+     * (no React state, no re-render).  Read by the parent when the user manually
+     * clicks the 2D toggle button.
+     */
+    viewStateRef: React.MutableRefObject<ViewState3D>;
+    selectedArea: { uid: number; level: string } | null;
+    onSelectArea: (area: { uid: number; name?: string; level: string }) => void;
+    /**
+     * Maximum positive numeric value found in the current choropleth features.
+     * Pre-computed by GeoJsonMap (single pass) so this component never iterates
+     * the feature array again. Used as the elevation denominator:
+     *   elevation = (value / maxPositiveValue) * MAX_ELEVATION
+     * Zero means no exploitable numeric value exists (3D unavailable).
+     */
+    maxPositiveValue: number;
+    colorIntensity: number;
 };
 
 /** Convert a #rrggbb hex string to a deck.gl [R, G, B, A] tuple. */
@@ -77,15 +77,15 @@ function hexToCssRgba(
 }
 
 export default function ChoroplethDeckLayer({
-  choropleth,
-  initialLng,
-  initialLat,
-  initialZoom,
-  viewStateRef,
-  selectedArea,
-  onSelectArea,
-  maxPositiveValue,
-  colorIntensity,
+    choropleth,
+    initialLng,
+    initialLat,
+    initialZoom,
+    viewStateRef,
+    selectedArea,
+    onSelectArea,
+    maxPositiveValue,
+    colorIntensity,
 }: ChoroplethDeckLayerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const deckRef = useRef<Deck<any> | null>(null);
@@ -105,174 +105,192 @@ export default function ChoroplethDeckLayer({
     // numeric values (e.g. 1 -> "Deutsch") resolved via legend items.
     const labelLookupRef = useRef<Map<string, string>>(new Map());
 
-  const labelLookup = useMemo(() => {
-    const map = new Map<string, string>();
-    const items = (choropleth.legend as any)?.items;
-    if (!Array.isArray(items)) return map;
-    for (const it of items) {
-      const key = String(it?.value ?? it?.label ?? '');
-      if (key) map.set(key, String(it?.label ?? key));
-    }
-    return map;
-  }, [choropleth.legend]);
-
-  useEffect(() => { labelLookupRef.current = labelLookup; }, [labelLookup]);
-
-  // GeoJsonLayer rebuilt only when choropleth data, maxPositiveValue,
-  // or selectedArea changes.  deck.gl diffs layers by id: same id +
-  // updateTriggers means GPU attribute buffers are patched without
-  // re-triangulating the geometry from scratch.
-  const layer = useMemo(() => {
-    const selectedUid = selectedArea?.uid ?? null;
-    const selectedLevel = selectedArea?.level ?? null;
-    const granularity = choropleth.granularity;
-
-    return new GeoJsonLayer({
-      id: 'choropleth-3d',
-      data: choropleth.feature_collection as any,
-
-      // ---- geometry ----
-      extruded: true,
-      filled: true,
-      stroked: false,
-      wireframe: false,
-
-      // ---- elevation ----
-      // Normalisation: elevation = (value / maxPositiveValue) * MAX_ELEVATION
-      // so that 0 is always the true base and every positive value is visible.
-      // Rules:
-      //   value <= 0  -> 0
-      //   null / no_data / no_response → 0
-      //   non-numeric string -> 0
-      //   value > 0 -> proportional height (clamped to MAX_ELEVATION)
-      getElevation: (f: any) => {
-        const p = f?.properties ?? {};
-        if (p.value_kind !== 'value' || p.value == null) return 0;
-        const v = parseFloat(String(p.value));
-        if (isNaN(v) || v <= 0 || maxPositiveValue <= 0) return 0;
-        return Math.min(v / maxPositiveValue, 1) * MAX_ELEVATION;
-      },
-
-      // colour (reuses fill_color precomputed by the backend unchanged)
-      getFillColor: (f: any) => {
-        const properties = f?.properties ?? {};
-        const uid = properties.unit_uid;
-        const isSelected =
-          uid != null &&
-          uid === selectedUid &&
-          granularity === selectedLevel;
-        /**
-         * La couleur de sélection reste volontairement
-         * indépendante du réglage du choropleth.
-         */
-        if (isSelected) {
-          return [255, 215, 0, 255] as [number, number, number, number];
+    const labelLookup = useMemo(() => {
+        const map = new Map<string, string>();
+        const items = (choropleth.legend as any)?.items;
+        if (!Array.isArray(items)) return map;
+        for (const it of items) {
+            const key = String(it?.value ?? it?.label ?? "");
+            if (key) map.set(key, String(it?.label ?? key));
         }
-        const originalColor = properties.fill_color ?? "#cccccc";
-        const adjustedColor = shouldAdjustChoroplethFeature(properties)
-            ? adjustChoroplethColor(
-                originalColor,
-                colorIntensity
-              )
-            : originalColor;
-        /**
-         * La 3D utilise actuellement alpha = 230.
-         * On conserve donc exactement cette valeur à 100,
-         * puis on l'ajuste avec la même logique que Leaflet.
-         */
-        const baseOpacity = 230 / 255;
-        const adjustedOpacity =
-          shouldAdjustChoroplethFeature(properties)
-            ? adjustChoroplethOpacity(
-                baseOpacity,
-                colorIntensity
-              )
-            : baseOpacity;
-        const alpha = Math.round(adjustedOpacity * 255);
-        return hexToCssRgba(adjustedColor, alpha);
-      },
+        return map;
+    }, [choropleth.legend]);
 
-      // interaction
-      pickable: true,
-      autoHighlight: true,
-      highlightColor: [255, 255, 255, 50] as [number, number, number, number],
+    useEffect(() => {
+        labelLookupRef.current = labelLookup;
+    }, [labelLookup]);
 
-      // lighting
-      material: {
-        ambient: 0.4,
-        diffuse: 0.6,
-        shininess: 20,
-      },
+    // GeoJsonLayer rebuilt only when choropleth data, maxPositiveValue,
+    // or selectedArea changes.  deck.gl diffs layers by id: same id +
+    // updateTriggers means GPU attribute buffers are patched without
+    // re-triangulating the geometry from scratch.
+    const layer = useMemo(() => {
+        const selectedUid = selectedArea?.uid ?? null;
+        const selectedLevel = selectedArea?.level ?? null;
+        const granularity = choropleth.granularity;
 
-      updateTriggers: {
-        getElevation: [choropleth.question_uid, choropleth.year_requested, maxPositiveValue],
-        getFillColor: [choropleth.question_uid, choropleth.year_requested, selectedUid, selectedLevel, colorIntensity],
-      },
-    });
-  }, [choropleth, maxPositiveValue, selectedArea, colorIntensity]);
+        return new GeoJsonLayer({
+            id: "choropleth-3d",
+            data: choropleth.feature_collection as any,
 
-  // Push layer updates to the Deck instance whenever the memoized layer changes
-  useEffect(() => {
-    deckRef.current?.setProps({ layers: [layer] });
-  }, [layer]);
+            // ---- geometry ----
+            extruded: true,
+            filled: true,
+            stroked: false,
+            wireframe: false,
 
-  // Deck initialisation runs once on mount, cleaned up on unmount.
-  // `layer` is captured via closure from the first render; subsequent
-  // changes are handled by the effect above.
-  useEffect(() => {
-    if (!containerRef.current || deckRef.current) return;
+            // ---- elevation ----
+            // Normalisation: elevation = (value / maxPositiveValue) * MAX_ELEVATION
+            // so that 0 is always the true base and every positive value is visible.
+            // Rules:
+            //   value <= 0  -> 0
+            //   null / no_data / no_response → 0
+            //   non-numeric string -> 0
+            //   value > 0 -> proportional height (clamped to MAX_ELEVATION)
+            getElevation: (f: any) => {
+                const p = f?.properties ?? {};
+                if (p.value_kind !== "value" || p.value == null) return 0;
+                const v = parseFloat(String(p.value));
+                if (isNaN(v) || v <= 0 || maxPositiveValue <= 0) return 0;
+                return Math.min(v / maxPositiveValue, 1) * MAX_ELEVATION;
+            },
 
-    const initialViewState: ViewState3D = {
-      longitude: initialLng,
-      latitude: initialLat,
-      zoom: initialZoom,
-      pitch: PITCH_3D,
-      bearing: BEARING_3D,
-    };
-    viewStateRef.current = initialViewState;
+            // colour (reuses fill_color precomputed by the backend unchanged)
+            getFillColor: (f: any) => {
+                const properties = f?.properties ?? {};
+                const uid = properties.unit_uid;
+                const isSelected =
+                    uid != null &&
+                    uid === selectedUid &&
+                    granularity === selectedLevel;
+                /**
+                 * La couleur de sélection reste volontairement
+                 * indépendante du réglage du choropleth.
+                 */
+                if (isSelected) {
+                    return [255, 215, 0, 255] as [
+                        number,
+                        number,
+                        number,
+                        number,
+                    ];
+                }
+                const originalColor = properties.fill_color ?? "#cccccc";
+                const adjustedColor = shouldAdjustChoroplethFeature(properties)
+                    ? adjustChoroplethColor(originalColor, colorIntensity)
+                    : originalColor;
+                /**
+                 * La 3D utilise actuellement alpha = 230.
+                 * On conserve donc exactement cette valeur à 100,
+                 * puis on l'ajuste avec la même logique que Leaflet.
+                 */
+                const baseOpacity = 230 / 255;
+                const adjustedOpacity = shouldAdjustChoroplethFeature(
+                    properties,
+                )
+                    ? adjustChoroplethOpacity(baseOpacity, colorIntensity)
+                    : baseOpacity;
+                const alpha = Math.round(adjustedOpacity * 255);
+                return hexToCssRgba(adjustedColor, alpha);
+            },
 
-    const deck = new Deck({
-      parent: containerRef.current,
+            // interaction
+            pickable: true,
+            autoHighlight: true,
+            highlightColor: [255, 255, 255, 50] as [
+                number,
+                number,
+                number,
+                number,
+            ],
 
-      views: new MapView({
-        id: 'main',
-        controller: {
-          scrollZoom: true,
-          dragPan: true,
-          dragRotate: true,   // right-drag to change pitch; see note on bearing below
-          doubleClickZoom: true,
-          touchRotate: false, // avoid accidental rotation on touch
-          keyboard: false,
-          // minPitch / maxPitch are MapController-specific options
-          minPitch: 0,
-          maxPitch: MAX_PITCH_3D,
-        } as any,
-      }),
+            // lighting
+            material: {
+                ambient: 0.4,
+                diffuse: 0.6,
+                shininess: 20,
+            },
 
-      initialViewState,
+            updateTriggers: {
+                getElevation: [
+                    choropleth.question_uid,
+                    choropleth.year_requested,
+                    maxPositiveValue,
+                ],
+                getFillColor: [
+                    choropleth.question_uid,
+                    choropleth.year_requested,
+                    selectedUid,
+                    selectedLevel,
+                    colorIntensity,
+                ],
+            },
+        });
+    }, [choropleth, maxPositiveValue, selectedArea, colorIntensity]);
 
-      // Initial layer captured from first render's closure.
-      // The separate layer-update effect covers all subsequent changes.
-      layers: [layer],
+    // Push layer updates to the Deck instance whenever the memoized layer changes
+    useEffect(() => {
+        deckRef.current?.setProps({ layers: [layer] });
+    }, [layer]);
 
-      getCursor: ({ isHovering }: any) => (isHovering ? 'pointer' : 'grab'),
+    // Deck initialisation runs once on mount, cleaned up on unmount.
+    // `layer` is captured via closure from the first render; subsequent
+    // changes are handled by the effect above.
+    useEffect(() => {
+        if (!containerRef.current || deckRef.current) return;
 
-      // viewState change
-      // Updates the shared ref (no React setState)
-      // when pitch falls below the threshold.
-      onViewStateChange: ({ viewState }: any) => {
-        viewStateRef.current = viewState as ViewState3D;
-      },
+        const initialViewState: ViewState3D = {
+            longitude: initialLng,
+            latitude: initialLat,
+            zoom: initialZoom,
+            pitch: PITCH_3D,
+            bearing: BEARING_3D,
+        };
+        viewStateRef.current = initialViewState;
 
-      // hover imperative DOM update, zero React re-renders
-      onHover: (info: any) => {
-        const el = tooltipRef.current;
-        if (!el) return;
+        const deck = new Deck({
+            parent: containerRef.current,
 
-        if (!info.object) {
-          el.hidden = true;
-          return;
-        }
+            views: new MapView({
+                id: "main",
+                controller: {
+                    scrollZoom: true,
+                    dragPan: true,
+                    dragRotate: true, // right-drag to change pitch; see note on bearing below
+                    doubleClickZoom: true,
+                    touchRotate: false, // avoid accidental rotation on touch
+                    keyboard: false,
+                    // minPitch / maxPitch are MapController-specific options
+                    minPitch: 0,
+                    maxPitch: MAX_PITCH_3D,
+                } as any,
+            }),
+
+            initialViewState,
+
+            // Initial layer captured from first render's closure.
+            // The separate layer-update effect covers all subsequent changes.
+            layers: [layer],
+
+            getCursor: ({ isHovering }: any) =>
+                isHovering ? "pointer" : "grab",
+
+            // viewState change
+            // Updates the shared ref (no React setState)
+            // when pitch falls below the threshold.
+            onViewStateChange: ({ viewState }: any) => {
+                viewStateRef.current = viewState as ViewState3D;
+            },
+
+            // hover imperative DOM update, zero React re-renders
+            onHover: (info: any) => {
+                const el = tooltipRef.current;
+                if (!el) return;
+
+                if (!info.object) {
+                    el.hidden = true;
+                    return;
+                }
 
                 el.hidden = false;
                 // Use CSS transform for position (GPU-composited, no layout reflow)

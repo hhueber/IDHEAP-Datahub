@@ -74,7 +74,7 @@ function TreeItem({
     const { primary, textColor, adaptiveTextColorPrimary, hoverPrimary06 } =
         useTheme();
 
-    const label = item.labelKey ? t(item.labelKey) : item.label ?? "";
+    const label = item.labelKey ? t(item.labelKey) : (item.label ?? "");
     const hasChildren = !!item.children?.some((c) => canSee(userRole, c));
     const padding = 12 + depth * 12;
     const activeHere = item.to ? isPathActive(item.to, currentPath) : false;

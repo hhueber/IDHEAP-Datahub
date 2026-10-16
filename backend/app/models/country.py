@@ -1,7 +1,6 @@
 from geoalchemy2.types import Geometry
 from sqlalchemy.orm import Mapped, mapped_column
 
-
 from .base import Base
 
 

@@ -1,9 +1,8 @@
 from typing import Any, Literal
 
-
-from app.schemas.geo import FeatureCollection
 from pydantic import BaseModel, Field
 
+from app.schemas.geo import FeatureCollection
 
 ChoroplethGranularity = Literal["commune", "district", "canton", "federal"]
 
@@ -44,7 +43,9 @@ class ChoroplethResponse(BaseModel):
     year_geo_cantons: int | None = None
     granularity: ChoroplethGranularity
     legend: MapLegend
-    feature_collection: FeatureCollection = Field(..., description="GeoJSON FeatureCollection des communes")
+    feature_collection: FeatureCollection = Field(
+        ..., description="GeoJSON FeatureCollection des communes"
+    )
 
 
 class ChoroplethGeometriesResponse(BaseModel):

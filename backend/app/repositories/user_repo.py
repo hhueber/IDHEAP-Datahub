@@ -1,10 +1,10 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import select, update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User
-from sqlalchemy import select, update
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def get_user_by_email(db: AsyncSession, email: str) -> User | None:
@@ -65,7 +65,9 @@ async def mark_token_created(db: AsyncSession, user_id: str) -> datetime:
     A UTC datetime is used.
     """
     issued_at = datetime.now(timezone.utc)
-    await db.execute(update(User).where(User.id == user_id).values(last_token_created_at=issued_at))
+    await db.execute(
+        update(User).where(User.id == user_id).values(last_token_created_at=issued_at)
+    )
     await db.commit()
     return issued_at
 
@@ -99,7 +101,9 @@ async def delete_user_by_instance(db: AsyncSession, user: User) -> None:
     await db.commit()
 
 
-async def update_user_password_hash(db: AsyncSession, user: User, new_hash: str) -> None:
+async def update_user_password_hash(
+    db: AsyncSession, user: User, new_hash: str
+) -> None:
     """Updates the password hash and commits it to the database."""
     user.password_hash = new_hash
     await db.commit()

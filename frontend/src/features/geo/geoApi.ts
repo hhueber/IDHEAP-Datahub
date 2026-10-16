@@ -183,10 +183,7 @@ export type MapLegend = {
 };
 
 export type ChoroplethGranularity =
-    | "commune"
-    | "district"
-    | "canton"
-    | "federal";
+    "commune" | "district" | "canton" | "federal";
 
 export type ChoroplethResponse = {
     question_uid: number;

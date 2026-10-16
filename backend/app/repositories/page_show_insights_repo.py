@@ -1,6 +1,9 @@
-from typing import Any
 import json
+from typing import Any
 
+from geoalchemy2 import functions as geofunc
+from sqlalchemy import Select, and_, case, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.canton import Canton
 from app.models.canton_map import CantonMap
@@ -9,16 +12,14 @@ from app.models.commune_map import CommuneMap
 from app.models.district import District
 from app.models.district_map import DistrictMap
 from app.models.survey import Survey
-from geoalchemy2 import functions as geofunc
-from sqlalchemy import and_, case, func, Select, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 JoinConfig = tuple[Any, Any]
 
 
 def _geojson_col(geom_col: Any) -> Any:
-    return geofunc.ST_AsGeoJSON(geofunc.ST_Transform(geom_col, 4326), maxdecimaldigits=5)
+    return geofunc.ST_AsGeoJSON(
+        geofunc.ST_Transform(geom_col, 4326), maxdecimaldigits=5
+    )
 
 
 async def _count_from_stmt(db: AsyncSession, stmt: Select[Any]) -> int:
@@ -33,7 +34,9 @@ async def _latest_year(db: AsyncSession, model: Any) -> int | None:
     return int(year) if year is not None else None
 
 
-async def _nearest_year(db: AsyncSession, model: Any, target_year: int, window: int = 2) -> int | None:
+async def _nearest_year(
+    db: AsyncSession, model: Any, target_year: int, window: int = 2
+) -> int | None:
     y = model.year
     stmt = (
         select(y)
@@ -100,7 +103,9 @@ async def get_all_canton_features(db: AsyncSession) -> list[dict]:
     return features
 
 
-async def get_commune_focus_feature(db: AsyncSession, commune_uid: int, target_year: int | None = None) -> dict | None:
+async def get_commune_focus_feature(
+    db: AsyncSession, commune_uid: int, target_year: int | None = None
+) -> dict | None:
     map_year = (
         await _nearest_year(db, CommuneMap, target_year)
         if target_year is not None
@@ -142,7 +147,9 @@ async def get_commune_focus_feature(db: AsyncSession, commune_uid: int, target_y
     }
 
 
-async def get_district_focus_feature(db: AsyncSession, district_uid: int) -> dict | None:
+async def get_district_focus_feature(
+    db: AsyncSession, district_uid: int
+) -> dict | None:
     map_year = await _latest_year(db, DistrictMap)
     if map_year is None:
         return None
@@ -246,7 +253,11 @@ async def count_distinct_by_column(
     filter_column: Any,
     filter_value: Any,
 ) -> int:
-    stmt = select(func.count(func.distinct(distinct_column))).select_from(model).where(filter_column == filter_value)
+    stmt = (
+        select(func.count(func.distinct(distinct_column)))
+        .select_from(model)
+        .where(filter_column == filter_value)
+    )
     return await _count_from_stmt(db, stmt)
 
 

@@ -1,21 +1,18 @@
-from typing import Optional
-
+from fastapi import Cookie, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import verify_token
 from app.db import get_db
 from app.models.user import User as UserModel
 from app.repositories.user_repo import get_user_by_id
-from fastapi import Cookie, Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
-    access_token: Optional[str] = Cookie(default=None, alias="access_token"),
+    credentials: HTTPAuthorizationCredentials | None = Depends(security),
+    access_token: str | None = Cookie(default=None, alias="access_token"),
     db: AsyncSession = Depends(get_db),
 ) -> UserModel:
     """Verify the JWT (signature/exp) and retrieve (sub, iat).

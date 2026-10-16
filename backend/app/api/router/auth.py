@@ -1,6 +1,9 @@
-from datetime import timedelta
 import asyncio
+from datetime import timedelta
 
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+from sqlalchemy import update
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.dependencies import get_current_user
 from app.core.config import settings
@@ -11,18 +14,18 @@ from app.repositories.user_repo import authenticate_user, mark_token_created
 from app.schemas.auth import Token, UserLogin
 from app.schemas.user import User
 from app.services.auth_service import clear_auth_cookie, set_auth_cookie
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import update
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
 
 @router.post("/login", response_model=Token)
-async def login(user_credentials: UserLogin, response: Response, db: AsyncSession = Depends(get_db)):
+async def login(
+    user_credentials: UserLogin, response: Response, db: AsyncSession = Depends(get_db)
+):
     """Authenticate user by email and return access token."""
-    user = await authenticate_user(db, user_credentials.email, user_credentials.password)
+    user = await authenticate_user(
+        db, user_credentials.email, user_credentials.password
+    )
     if not user:
         # délai de 2 secondes volontaire pour ralentir le brute-force
         await asyncio.sleep(2.0)
@@ -65,7 +68,11 @@ async def logout(
     - deletes the “access_token” cookie
     """
     # Invalider le token courant en changeant last_token_created_at
-    await db.execute(update(UserModel).where(UserModel.id == current_user.id).values(last_token_created_at=None))
+    await db.execute(
+        update(UserModel)
+        .where(UserModel.id == current_user.id)
+        .values(last_token_created_at=None)
+    )
     await db.commit()
 
     clear_auth_cookie(response)

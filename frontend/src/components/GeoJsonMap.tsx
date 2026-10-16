@@ -46,9 +46,9 @@ import MapColorControl from "@/components/map/MapColorControl";
 import MapColorAdjustmentPanel from "@/components/map/MapColorAdjustmentPanel";
 import useChoroplethColorAdjustment from "@/features/geo/choropleth/useChoroplethColorAdjustment";
 import {
-  adjustChoroplethColor,
-  adjustChoroplethOpacity,
-  shouldAdjustChoroplethFeature,
+    adjustChoroplethColor,
+    adjustChoroplethOpacity,
+    shouldAdjustChoroplethFeature,
 } from "@/features/geo/choropleth/choroplethColorAdjustment";
 
 const ChoroplethDeckLayer = lazy(
@@ -154,37 +154,38 @@ export default function GeoJsonMap({
         adaptiveTextColorPrimary,
     } = useTheme();
 
-  const patternCacheRef = useRef<Map<string, any>>(new Map());
-  const {
-    colorIntensity,
-    setColorIntensity,
-    resetColorIntensity,
-  } = useChoroplethColorAdjustment();
-  const [isColorPanelOpen, setIsColorPanelOpen] = useState(false);
+    const patternCacheRef = useRef<Map<string, any>>(new Map());
+    const { colorIntensity, setColorIntensity, resetColorIntensity } =
+        useChoroplethColorAdjustment();
+    const [isColorPanelOpen, setIsColorPanelOpen] = useState(false);
 
-  // 3D mode
-  const [is3DMode, setIs3DMode] = useState(false);
-  const deckViewStateRef = useRef<ViewState3D>({
-    longitude: 8.2, latitude: 46.8, zoom: 7, pitch: 40, bearing: 0,
-  });
-  const initialDeckViewStateRef = useRef({ lng: 8.2, lat: 46.8, zoom: 7 });
+    // 3D mode
+    const [is3DMode, setIs3DMode] = useState(false);
+    const deckViewStateRef = useRef<ViewState3D>({
+        longitude: 8.2,
+        latitude: 46.8,
+        zoom: 7,
+        pitch: 40,
+        bearing: 0,
+    });
+    const initialDeckViewStateRef = useRef({ lng: 8.2, lat: 46.8, zoom: 7 });
 
-  // 3D is available for any question with at least one positive numeric value,
-  // regardless of legend type (gradient or categorical).
-  // One pass computes both the availability flag and the normalisation maximum
-  // (passed to ChoroplethDeckLayer so it does not need to iterate again).
-  const { is3DAvailable, maxPositiveValue } = useMemo(() => {
-    const features = choropleth?.feature_collection?.features;
-    if (!features) return { is3DAvailable: false, maxPositiveValue: 0 };
-    let max = 0;
-    for (const f of features) {
-      const p = (f as any)?.properties ?? {};
-      if (p.value_kind !== "value" || p.value == null) continue;
-      const v = parseFloat(String(p.value));
-      if (!isNaN(v) && v > 0 && v > max) max = v;
-    }
-    return { is3DAvailable: max > 0, maxPositiveValue: max };
-  }, [choropleth]);
+    // 3D is available for any question with at least one positive numeric value,
+    // regardless of legend type (gradient or categorical).
+    // One pass computes both the availability flag and the normalisation maximum
+    // (passed to ChoroplethDeckLayer so it does not need to iterate again).
+    const { is3DAvailable, maxPositiveValue } = useMemo(() => {
+        const features = choropleth?.feature_collection?.features;
+        if (!features) return { is3DAvailable: false, maxPositiveValue: 0 };
+        let max = 0;
+        for (const f of features) {
+            const p = (f as any)?.properties ?? {};
+            if (p.value_kind !== "value" || p.value == null) continue;
+            const v = parseFloat(String(p.value));
+            if (!isNaN(v) && v > 0 && v > max) max = v;
+        }
+        return { is3DAvailable: max > 0, maxPositiveValue: max };
+    }, [choropleth]);
 
     // If the active question has no positive numeric values at all while in 3D, revert.
     // (Switching between gradient and numeric-categorical keeps is3DAvailable true,
@@ -528,11 +529,10 @@ export default function GeoJsonMap({
     );
 
     const baseChoroplethFillOpacity = basemap !== "none" ? 0.45 : 0.75;
-    const choroplethFillOpacity =
-      adjustChoroplethOpacity(
-       baseChoroplethFillOpacity,
-       colorIntensity
-      );
+    const choroplethFillOpacity = adjustChoroplethOpacity(
+        baseChoroplethFillOpacity,
+        colorIntensity,
+    );
     const choroplethFillOpacityRef = useRef(choroplethFillOpacity);
     choroplethFillOpacityRef.current = choroplethFillOpacity;
     const activeTileConfig =
@@ -582,81 +582,81 @@ export default function GeoJsonMap({
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#039;");
 
-  return (
-    <div ref={hostRef} data-map-root
-      className={`${className} overflow-hidden`}
-      style={
-        {
-          // on expose la couleur de fond à Leaflet via une variable CSS
-          "--map-bg": background,
-        } as React.CSSProperties
-      }
-    >
-      {/* 3D overlay (deck.gl standalone canvas) */}
-      {is3DMode && choropleth?.feature_collection && (
-        <Suspense fallback={null}>
-          <ChoroplethDeckLayer
-            choropleth={choropleth}
-            initialLng={initialDeckViewStateRef.current.lng}
-            initialLat={initialDeckViewStateRef.current.lat}
-            initialZoom={initialDeckViewStateRef.current.zoom}
-            viewStateRef={deckViewStateRef}
-            selectedArea={selectedArea ?? null}
-            onSelectArea={onSelectArea ?? (() => {})}
-            maxPositiveValue={maxPositiveValue}
-            colorIntensity={colorIntensity}
-          />
-        </Suspense>
-      )}
-
-      {/* Contrôles du choropleth */}
-      {choropleth && (
-        <>
-          {/* 2D / 3D */}
-          <Map3DControl
-            is3DMode={is3DMode}
-            is3DAvailable={is3DAvailable}
-            onToggle={
-              is3DMode
-                ? handleManualReturn2D
-                : handleActivate3D
+    return (
+        <div
+            ref={hostRef}
+            data-map-root
+            className={`${className} overflow-hidden`}
+            style={
+                {
+                    // on expose la couleur de fond à Leaflet via une variable CSS
+                    "--map-bg": background,
+                } as React.CSSProperties
             }
-          />
+        >
+            {/* 3D overlay (deck.gl standalone canvas) */}
+            {is3DMode && choropleth?.feature_collection && (
+                <Suspense fallback={null}>
+                    <ChoroplethDeckLayer
+                        choropleth={choropleth}
+                        initialLng={initialDeckViewStateRef.current.lng}
+                        initialLat={initialDeckViewStateRef.current.lat}
+                        initialZoom={initialDeckViewStateRef.current.zoom}
+                        viewStateRef={deckViewStateRef}
+                        selectedArea={selectedArea ?? null}
+                        onSelectArea={onSelectArea ?? (() => {})}
+                        maxPositiveValue={maxPositiveValue}
+                        colorIntensity={colorIntensity}
+                    />
+                </Suspense>
+            )}
 
-          {/* Intensité des couleurs */}
-          <MapColorControl
-            isOpen={isColorPanelOpen}
-            onToggle={() =>
-              setIsColorPanelOpen((current) => !current)
-            }
-          />
+            {/* Contrôles du choropleth */}
+            {choropleth && (
+                <>
+                    {/* 2D / 3D */}
+                    <Map3DControl
+                        is3DMode={is3DMode}
+                        is3DAvailable={is3DAvailable}
+                        onToggle={
+                            is3DMode ? handleManualReturn2D : handleActivate3D
+                        }
+                    />
 
-          {/* Popup déplaçable */}
-          <MapColorAdjustmentPanel
-            open={isColorPanelOpen}
-            value={colorIntensity}
-            onChange={setColorIntensity}
-            onReset={resetColorIntensity}
-            boundaryRef={hostRef}
-          />
-        </>
-      )}
+                    {/* Intensité des couleurs */}
+                    <MapColorControl
+                        isOpen={isColorPanelOpen}
+                        onToggle={() =>
+                            setIsColorPanelOpen((current) => !current)
+                        }
+                    />
 
-      {/*
-       * Leaflet container — kept mounted in 3D mode to preserve its internal
-       * state (zoom, panes, event listeners).  Pointer events are disabled so
-       * the invisible map does not intercept clicks meant for the deck.gl canvas.
-       */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          visibility: is3DMode ? "hidden" : "visible",
-          pointerEvents: is3DMode ? "none" : "auto",
-        }}
-      >
-      {/* Ajustements UI Leaflet */}
-      <style>{`
+                    {/* Popup déplaçable */}
+                    <MapColorAdjustmentPanel
+                        open={isColorPanelOpen}
+                        value={colorIntensity}
+                        onChange={setColorIntensity}
+                        onReset={resetColorIntensity}
+                        boundaryRef={hostRef}
+                    />
+                </>
+            )}
+
+            {/*
+             * Leaflet container — kept mounted in 3D mode to preserve its internal
+             * state (zoom, panes, event listeners).  Pointer events are disabled so
+             * the invisible map does not intercept clicks meant for the deck.gl canvas.
+             */}
+            <div
+                style={{
+                    position: "absolute",
+                    inset: 0,
+                    visibility: is3DMode ? "hidden" : "visible",
+                    pointerEvents: is3DMode ? "none" : "auto",
+                }}
+            >
+                {/* Ajustements UI Leaflet */}
+                <style>{`
         [data-map-root] .leaflet-top { top: var(--leaflet-top-offset, 96px); }
         [data-map-root] .leaflet-left { left: 12px; }
         [data-map-root] .leaflet-container { background: var(--map-bg); }
@@ -843,15 +843,21 @@ export default function GeoJsonMap({
 
                                         const patternColors =
                                             shouldAdjustChoroplethFeature(props)
-                                            ? pat.colors.map(
-                                                (color: string) =>
-                                                    adjustChoroplethColor(
-                                                    color,
-                                                    colorIntensity
-                                                    )
-                                                )
-                                            : pat.colors;
-                                        const p = getMultiStripePattern(map, patternColors, choroplethFillOpacity, angle, stripe);
+                                                ? pat.colors.map(
+                                                      (color: string) =>
+                                                          adjustChoroplethColor(
+                                                              color,
+                                                              colorIntensity,
+                                                          ),
+                                                  )
+                                                : pat.colors;
+                                        const p = getMultiStripePattern(
+                                            map,
+                                            patternColors,
+                                            choroplethFillOpacity,
+                                            angle,
+                                            stripe,
+                                        );
 
                                         return {
                                             ...base,
@@ -917,11 +923,15 @@ export default function GeoJsonMap({
                                     layer.on("mouseover", () => {
                                         if (isSelected()) return;
 
-                                        const currentOpacity = choroplethFillOpacityRef.current;
+                                        const currentOpacity =
+                                            choroplethFillOpacityRef.current;
                                         // effet visuel
                                         layer.setStyle({
                                             weight: 4,
-                                            fillOpacity: Math.min(1, currentOpacity + 0.15),
+                                            fillOpacity: Math.min(
+                                                1,
+                                                currentOpacity + 0.15,
+                                            ),
                                             opacity: 1,
                                         });
 
@@ -941,7 +951,8 @@ export default function GeoJsonMap({
 
                                         layer.setStyle({
                                             weight: 1,
-                                            fillOpacity: choroplethFillOpacityRef.current,
+                                            fillOpacity:
+                                                choroplethFillOpacityRef.current,
                                             opacity: 1,
                                         });
 

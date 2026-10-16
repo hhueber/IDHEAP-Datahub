@@ -120,7 +120,7 @@
          "stronger": "Plus marqué",
          "reset": "Réinitialiser",
          "ariaLabel": "Intensité des couleurs du choropleth"
-    }
+      }
    },
    "common": {
       "loading": "Chargement…",

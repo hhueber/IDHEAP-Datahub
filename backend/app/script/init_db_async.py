@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.core.config import settings
 from app.core.logging_config import configure_logging
@@ -11,8 +12,6 @@ from app.script.populate_config import populate_config_if_empty
 from app.script.populate_db import populate_db
 from app.script.populate_demo_db import populate_demo_db
 from app.script.populate_geo_db import populate_async_geo
-from sqlalchemy.exc import SQLAlchemyError
-
 
 logger = logging.getLogger(__name__)
 
