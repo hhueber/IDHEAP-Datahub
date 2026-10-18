@@ -27,7 +27,6 @@ from .survey_author import SurveyAuthor
 from .survey_author_association import SurveyAuthorAssociation
 from .survey_metadata import SurveyMetadata
 
-
 __all__ = [
     "Answer",
     "Base",

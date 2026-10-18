@@ -40,23 +40,13 @@ export type AllResponse = {
 };
 
 export type SortBy =
-    | "name"
-    | "code"
-    | "year"
-    | "value"
-    | "question"
-    | "commune";
+    "name" | "code" | "year" | "value" | "question" | "commune";
 
 export type SortDir = "asc" | "desc";
 
 // Colonnes possibles sur la réponse
 export type ColumnKey =
-    | "code"
-    | "name"
-    | "year"
-    | "value"
-    | "question"
-    | "commune";
+    "code" | "name" | "year" | "value" | "question" | "commune";
 
 export type EditableKind = "text" | "number" | "bool" | "year";
 

@@ -1,5 +1,9 @@
 from datetime import datetime, timezone
 
+import orjson
+from geoalchemy2 import functions as geofunc
+from sqlalchemy import and_, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.geo_config import THEME_MAP_PREVIEW_CANTON_OFS_ID
 from app.models.canton import Canton
@@ -12,10 +16,6 @@ from app.models.district_map import DistrictMap
 from app.models.lake import Lake
 from app.models.lake_map import LakeMap
 from app.schemas.geo import Feature, FeatureCollection, GeoBundle, Geometry, YearMeta
-from geoalchemy2 import functions as geofunc
-from sqlalchemy import and_, func, select
-from sqlalchemy.ext.asyncio import AsyncSession
-import orjson
 
 
 async def _fc_for_layer(
@@ -40,7 +40,9 @@ async def _fc_for_layer(
 
     stmt = (
         select(
-            geofunc.ST_AsGeoJSON(MapModel.geometry, maxdecimaldigits=5).label("geojson"),
+            geofunc.ST_AsGeoJSON(MapModel.geometry, maxdecimaldigits=5).label(
+                "geojson"
+            ),
             *labeled_cols,
         )
         .join(getattr(MapModel, rel_attr))
@@ -55,12 +57,16 @@ async def _max_year_leq(session: AsyncSession, model, y: int) -> int | None:
     return res.scalar_one_or_none()
 
 
-async def _features_from_stmt(session: AsyncSession, stmt, prop_keys: tuple[str, ...]) -> FeatureCollection:
+async def _features_from_stmt(
+    session: AsyncSession, stmt, prop_keys: tuple[str, ...]
+) -> FeatureCollection:
     rows = (await session.execute(stmt)).all()
     feats = []
     for row in rows:
         m = row._mapping
-        gj = orjson.loads(m["geojson"])  # ST_AsGeoJSON -> str, orjson ~2x faster than stdlib
+        gj = orjson.loads(
+            m["geojson"]
+        )  # ST_AsGeoJSON -> str, orjson ~2x faster than stdlib
         props = {k: m[k] for k in prop_keys if k in m}
         feats.append(Feature(geometry=Geometry(**gj), properties=props))
     return FeatureCollection(features=feats)
@@ -89,11 +95,17 @@ async def get_geo_by_year_selective(
     _year_subqs = []
     if "cantons" in layers:
         _year_subqs.append(
-            select(func.max(CantonMap.year)).where(CantonMap.year <= y_req).scalar_subquery().label("y_cantons")
+            select(func.max(CantonMap.year))
+            .where(CantonMap.year <= y_req)
+            .scalar_subquery()
+            .label("y_cantons")
         )
     if "districts" in layers:
         _year_subqs.append(
-            select(func.max(DistrictMap.year)).where(DistrictMap.year <= y_req).scalar_subquery().label("y_districts")
+            select(func.max(DistrictMap.year))
+            .where(DistrictMap.year <= y_req)
+            .scalar_subquery()
+            .label("y_districts")
         )
     if "lakes" in layers:
         # Priorité passé : MAX(year <= requested). Fallback futur si aucune version antérieure :
@@ -101,13 +113,20 @@ async def get_geo_by_year_selective(
         # version disponible (ex. requested=1980, seule version disponible=2008 -> retourne 2008).
         _year_subqs.append(
             func.coalesce(
-                select(func.max(LakeMap.year)).where(LakeMap.year <= y_req).scalar_subquery(),
-                select(func.min(LakeMap.year)).where(LakeMap.year > y_req).scalar_subquery(),
+                select(func.max(LakeMap.year))
+                .where(LakeMap.year <= y_req)
+                .scalar_subquery(),
+                select(func.min(LakeMap.year))
+                .where(LakeMap.year > y_req)
+                .scalar_subquery(),
             ).label("y_lakes")
         )
     if "communes" in layers:
         _year_subqs.append(
-            select(func.max(CommuneMap.year)).where(CommuneMap.year <= y_req).scalar_subquery().label("y_communes")
+            select(func.max(CommuneMap.year))
+            .where(CommuneMap.year <= y_req)
+            .scalar_subquery()
+            .label("y_communes")
         )
     if _year_subqs:
         _year_row = (await session.execute(select(*_year_subqs))).one()
@@ -127,7 +146,9 @@ async def get_geo_by_year_selective(
         country_fc = await _features_from_stmt(
             session,
             select(
-                geofunc.ST_AsGeoJSON(Country.geometry, maxdecimaldigits=5).label("geojson"),
+                geofunc.ST_AsGeoJSON(Country.geometry, maxdecimaldigits=5).label(
+                    "geojson"
+                ),
                 Country.uid.label("uid"),
             ),
             ("uid",),
@@ -236,7 +257,9 @@ async def get_geo_by_canton_preview(
     """
     y_req = int(requested_year or datetime.now(tz=timezone.utc).year)
 
-    canton_uid = (await session.execute(select(Canton.uid).where(Canton.ofs_id == canton_ofs_id))).scalar_one_or_none()
+    canton_uid = (
+        await session.execute(select(Canton.uid).where(Canton.ofs_id == canton_ofs_id))
+    ).scalar_one_or_none()
 
     if canton_uid is None:
         # On retourne volontairement un GeoBundle vide plutôt que de lever une erreur.
@@ -274,7 +297,9 @@ async def get_geo_by_canton_preview(
         canton_fc = await _features_from_stmt(
             session,
             select(
-                geofunc.ST_AsGeoJSON(CantonMap.geometry, maxdecimaldigits=5).label("geojson"),
+                geofunc.ST_AsGeoJSON(CantonMap.geometry, maxdecimaldigits=5).label(
+                    "geojson"
+                ),
                 Canton.uid.label("uid"),
                 Canton.code.label("code"),
                 Canton.name.label("name"),
@@ -292,7 +317,9 @@ async def get_geo_by_canton_preview(
         districts_fc = await _features_from_stmt(
             session,
             select(
-                geofunc.ST_AsGeoJSON(DistrictMap.geometry, maxdecimaldigits=5).label("geojson"),
+                geofunc.ST_AsGeoJSON(DistrictMap.geometry, maxdecimaldigits=5).label(
+                    "geojson"
+                ),
                 District.uid.label("uid"),
                 District.name.label("name"),
                 District.code.label("code"),
@@ -311,7 +338,9 @@ async def get_geo_by_canton_preview(
         communes_fc = await _features_from_stmt(
             session,
             select(
-                geofunc.ST_AsGeoJSON(CommuneMap.geometry, maxdecimaldigits=5).label("geojson"),
+                geofunc.ST_AsGeoJSON(CommuneMap.geometry, maxdecimaldigits=5).label(
+                    "geojson"
+                ),
                 Commune.uid.label("uid"),
                 Commune.name.label("name"),
                 Commune.code.label("code"),
@@ -332,7 +361,9 @@ async def get_geo_by_canton_preview(
         lakes_fc = await _features_from_stmt(
             session,
             select(
-                geofunc.ST_AsGeoJSON(LakeMap.geometry, maxdecimaldigits=5).label("geojson"),
+                geofunc.ST_AsGeoJSON(LakeMap.geometry, maxdecimaldigits=5).label(
+                    "geojson"
+                ),
                 Lake.uid.label("uid"),
                 Lake.name.label("name"),
                 Lake.code.label("code"),

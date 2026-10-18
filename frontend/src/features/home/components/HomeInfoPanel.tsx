@@ -151,8 +151,9 @@ export default function HomeInfoPanel({
         addToCollection(kind, item);
     };
 
-    const surveyYear = data?.surveys?.find((s) => s.uid === selectedSurveyUid)
-        ?.year;
+    const surveyYear = data?.surveys?.find(
+        (s) => s.uid === selectedSurveyUid,
+    )?.year;
     const showGlobalTimeline = showGlobals != null;
 
     return (

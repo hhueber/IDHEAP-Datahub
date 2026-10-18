@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pandas as pd
+from sqlalchemy import select
+from tqdm import tqdm
 
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
@@ -11,10 +14,6 @@ from app.models.district import District
 from app.models.question_category import QuestionCategory
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import select
-from tqdm import tqdm
-import pandas as pd
-
 
 """"
 Script for populate the database.
@@ -30,7 +29,9 @@ async def populate_db() -> None:
         # Add canton
         async with session.begin():
             index = 1
-            for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
+            for code, lang in tqdm(
+                CANTONS.items(), total=len(CANTONS), desc="Processing cantons"
+            ):
                 db_canton = Canton(
                     code=code,
                     name=lang["en"],
@@ -49,18 +50,30 @@ async def populate_db() -> None:
         # District and commune
         row_number = 0
         async with session.begin():
-            communes = pd.read_excel(Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
-            communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
-            communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
+            communes = pd.read_excel(
+                Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0
+            )
+            communes["Canton"] = communes["Canton"].apply(
+                lambda x: "CH-" + x if isinstance(x, str) else None
+            )
+            communes["Numéro du district"] = communes["Numéro du district"].apply(
+                lambda x: "B" + str(x).zfill(4)
+            )
 
-            for index, rows in tqdm(communes.iterrows(), total=len(communes), desc="Processing districts"):
-                result = await session.execute(select(Canton).filter_by(code=rows["Canton"]))
+            for index, rows in tqdm(
+                communes.iterrows(), total=len(communes), desc="Processing districts"
+            ):
+                result = await session.execute(
+                    select(Canton).filter_by(code=rows["Canton"])
+                )
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
                     raise RuntimeError("Canton not found")
 
-                result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
+                result = await session.execute(
+                    select(District).filter_by(name=rows["Nom du district"])
+                )
                 db_district = result.scalar_one_or_none()
                 if db_district is not None:
                     pass  # print(">>> District already exists")
@@ -183,10 +196,14 @@ async def populate_db() -> None:
                 sep=";",
             )
 
-            for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
+            for index, row in tqdm(
+                crc.iterrows(), total=len(crc), desc="Processing communes"
+            ):
                 if pd.isna(row["gemid"]):
                     continue
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
+                result = await session.execute(
+                    select(Commune).filter_by(code=str(int(row["gemid"])))
+                )
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
@@ -210,7 +227,9 @@ async def populate_db() -> None:
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
 
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code=col)
+                        )
                         db_question = result.scalar_one_or_none()
 
                         if db_question is None:
@@ -228,7 +247,9 @@ async def populate_db() -> None:
 
         # Answer for 2023 data (separate file)
         async with session.begin():
-            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
+            GSB_2023 = pd.read_csv(
+                Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";"
+            )
             for index, row in tqdm(
                 GSB_2023.iterrows(),
                 total=len(GSB_2023),
@@ -236,7 +257,9 @@ async def populate_db() -> None:
             ):
                 if pd.isna(row["BFS_2023"]):
                     continue
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+                result = await session.execute(
+                    select(Commune).filter_by(code=str(int(row["BFS_2023"])))
+                )
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
@@ -258,7 +281,9 @@ async def populate_db() -> None:
                         year = int(survey.replace("GSB", ""))
                         year = 2000 + year if year < 50 else 1900 + year
 
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code=col))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code=col)
+                        )
                         db_question = result.scalar_one_or_none()
 
                         if db_question is None:
