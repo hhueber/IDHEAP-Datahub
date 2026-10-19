@@ -63,7 +63,7 @@ export default function DataImportPage() {
     >(null);
 
     const [activeStep, setActiveStep] =
-        React.useState<DataImportWorkflowStep>("explore");
+        React.useState<DataImportWorkflowStep>("metadata");
 
     const [selectedSection, setSelectedSection] =
         React.useState<ImportSection>("responses");
@@ -192,7 +192,7 @@ export default function DataImportPage() {
             setPage(1);
             setIssuesOnly(false);
             setPreviewFilters(DEFAULT_PREVIEW_FILTERS);
-            setActiveStep("explore");
+            setActiveStep("metadata");
             setShowDropzone(false);
             setShowJobs(false);
 

@@ -369,7 +369,7 @@ export function DataImportMetadataStep({
                         disabled={!datasetMetadata.name.trim()}
                         className="w-full rounded-xl py-2.5 text-xs font-semibold border p-1 transition hover:opacity-90 disabled:opacity-50"
                     >
-                        {t("dataImport.upload.project.submitButton")}
+                        {t("dataImport.metadata.submitButton")}
                     </button>
                 </form>
             </div>

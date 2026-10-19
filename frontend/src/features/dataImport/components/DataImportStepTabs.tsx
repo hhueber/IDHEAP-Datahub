@@ -15,8 +15,8 @@ const STEPS: {
 }[] = [
     {
         key: "metadata",
-        labelKey: "Bonjour",
-        descriptionKey: "Au revoir",
+        labelKey: "dataImport.workflow.metadata.title",
+        descriptionKey: "dataImport.workflow.metadata.description",
     },
     {
         key: "explore",
