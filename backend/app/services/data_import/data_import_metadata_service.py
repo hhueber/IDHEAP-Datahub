@@ -1,17 +1,34 @@
-from app.schemas.data_import import DataImportProjectMetadataData
-from app.services.data_import.data_import_storage_service import get_import_dir, read_metadata, get_workspace_dir
-from sqlalchemy.orm import selectinload
 from sqlalchemy import select
-from app.models.metadata import Metadata
-from app.models.author_metadata_association import AuthorMetadataAssociation
-from app.models.author import Author
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-async def update_dataset_metadata(db: AsyncSession, import_id: str) :
+from app.models.author_metadata_association import AuthorMetadataAssociation
+from app.models.metadata import Metadata
+from app.schemas.data_import import DataImportProjectMetadataData
+from app.services.data_import.data_import_storage_service import (
+    get_import_dir,
+    read_dataset_metadata,
+    read_metadata,
+    write_dataset_metadata,
+)
+
+
+async def get_dataset_metadata(import_id: str) -> DataImportProjectMetadataData:
     import_dir = get_import_dir(import_id)
-    workspace_dir = get_workspace_dir(import_dir)
+    dataset_metadata = read_dataset_metadata(import_dir)
+    return dataset_metadata
 
-async def get_project_metadata(db: AsyncSession, import_id : str) -> DataImportProjectMetadataData:
+
+async def update_dataset_metadata(
+    import_id: str, data: DataImportProjectMetadataData
+) -> None:
+    import_dir = get_import_dir(import_id)
+    write_dataset_metadata(import_dir, data.model_dump(mode="json"))
+
+
+async def get_project_metadata(
+    db: AsyncSession, import_id: str
+) -> DataImportProjectMetadataData:
     import_dir = get_import_dir(import_id)
     import_metadata = read_metadata(import_dir)
     project_uid = import_metadata["project_id"]
@@ -43,5 +60,5 @@ async def get_project_metadata(db: AsyncSession, import_id : str) -> DataImportP
                 "email": association.author.email,
             }
             for association in metadata.author_association
-        ]
+        ],
     )

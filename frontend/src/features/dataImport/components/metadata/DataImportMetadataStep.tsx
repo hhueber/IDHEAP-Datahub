@@ -7,7 +7,10 @@ import {
     DataImportProjectMetadataData,
     MetadataDataset,
 } from "@/features/dataImport/dataImportTypes";
-import { getProjectMetadata } from "@/features/dataImport/dataImportApi";
+import {
+    getDatasetMetada,
+    saveDatasetMetadata,
+} from "@/features/dataImport/dataImportApi";
 
 type DataImportMetadataStepProps = {
     importId: string;
@@ -76,11 +79,14 @@ export function DataImportMetadataStep({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        datasetMetadata.links = links;
+        datasetMetadata.authors = authors;
+        saveDatasetMetadata(importId, datasetMetadata);
     };
 
     useEffect(() => {
         async function load() {
-            const json = await getProjectMetadata(importId);
+            const json = await getDatasetMetada(importId);
             setProjName(json.name);
             setLinks(json.links);
             setAuthors(json.authors);

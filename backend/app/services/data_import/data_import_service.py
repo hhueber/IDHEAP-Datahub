@@ -5,8 +5,12 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import UploadFile
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
+from app.models.author_metadata_association import AuthorMetadataAssociation
+from app.models.metadata import Metadata
 from app.schemas.data_import import (
     ImportOrientationEnum,
     ImportSectionEnum,
@@ -40,6 +44,7 @@ from app.services.data_import.data_import_storage_service import (
     read_json,
     read_metadata,
     write_analysis,
+    write_dataset_metadata,
     write_frame,
     write_issues,
     write_json,
@@ -376,11 +381,23 @@ async def create_import_workspace(
     display_name: str | None = None,
     project_id: int,
     years: list[int],
+    db: AsyncSession,
 ) -> dict[str, Any]:
     if not files:
         raise ValueError("At least one file is required")
 
     normalized_years = normalize_import_years(years)
+
+    result = await db.execute(
+        select(Metadata)
+        .where(Metadata.project_uid == project_id)
+        .options(
+            selectinload(Metadata.author_association).selectinload(
+                AuthorMetadataAssociation.author
+            )
+        )
+    )
+    dataset_metadata = result.scalars().one_or_none()
 
     import_id = str(uuid.uuid4())
     import_dir = UPLOAD_DIR / import_id
@@ -396,7 +413,7 @@ async def create_import_workspace(
 
     if clean_display_name == "":
         clean_display_name = None
-
+    print("lol")
     metadata: dict[str, Any] = {
         "import_id": import_id,
         "display_name": clean_display_name,
@@ -408,7 +425,7 @@ async def create_import_workspace(
         "sources": [],
         "resources": [],
     }
-
+    write_dataset_metadata(import_dir, dataset_metadata.to_dict())
     write_metadata(import_dir, metadata)
 
     try:

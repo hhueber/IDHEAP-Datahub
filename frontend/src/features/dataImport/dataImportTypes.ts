@@ -360,12 +360,6 @@ export type Project = {
     description?: string;
 };
 
-export type Authir = {
-    first_name: string;
-    last_name: string;
-    email: string;
-};
-
 export type DataImportProjectMetadataData = {
     name: string;
     description: string;
@@ -386,4 +380,15 @@ export type MetadataDataset = {
     licence: string;
     links: Link[];
     authors: Author[];
+};
+
+export type DataImportDatasetMetadataPatchResponse = {
+    success: boolean;
+    detail: string;
+};
+
+export type DataImportDatasetMetadataGetResponse = {
+    success: boolean;
+    detail: string;
+    data: MetadataDataset;
 };

@@ -7,6 +7,7 @@ from .base import Base
 from .granularity import GranularityEnum
 
 if TYPE_CHECKING:
+    from .author import Author
     from .author_metadata_association import AuthorMetadataAssociation
     from .project import Project
     from .survey import Survey
@@ -74,3 +75,24 @@ class Metadata(Base):
             self.links_ = ""
         else:
             self.links_ = ",".join([f"{item['name']}|{item['url']}" for item in value])
+
+    @property
+    def authors(self) -> list["Author"]:
+        return [assoc.author for assoc in self.author_association]
+
+    def to_dict(self) -> dict[str, any]:
+        return {
+            "name": self.name,
+            "description": self.description,
+            "licence": self.licence,
+            "links": self.links,
+            "granularity": self.granularity.value if self.granularity else None,
+            "authors": [
+                {
+                    "first_name": author.first_name,
+                    "last_name": author.last_name,
+                    "email": author.email,
+                }
+                for author in self.authors
+            ],
+        }

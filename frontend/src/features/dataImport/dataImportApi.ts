@@ -21,7 +21,9 @@ import type {
     AllProjectResponse,
     DataImportProjectMetadataResponse,
     MetadataDataset,
+    DataImportDatasetMetadataPatchResponse,
     RoleType,
+    DataImportDatasetMetadataGetResponse,
 } from "@/features/dataImport/dataImportTypes";
 
 export async function getAllProject() {
@@ -35,12 +37,32 @@ export async function getAllProject() {
     return fetched.data;
 }
 
-export async function saveDatasetMetadata(payload: MetadataDataset) {
-    const result = await apiFetch<>("",{
-        method: "PATCH",
-        auth: true,
-        body: payload
-    })
+export async function saveDatasetMetadata(
+    importId: string,
+    payload: MetadataDataset,
+) {
+    const result = await apiFetch<DataImportDatasetMetadataPatchResponse>(
+        `/data-import/${importId}/dataset_metadata`,
+        {
+            method: "PATCH",
+            auth: true,
+            body: payload,
+        },
+    );
+
+    return result;
+}
+
+export async function getDatasetMetada(importId: string) {
+    const result = await apiFetch<DataImportDatasetMetadataGetResponse>(
+        `/data-import/${importId}/dataset_metadata`,
+        {
+            method: "GET",
+            auth: true,
+        },
+    );
+    console.log(result);
+    return result.data;
 }
 
 export async function getProjectMetadata(importId: string) {
