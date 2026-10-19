@@ -2,7 +2,7 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import PageAll from "@/components/PageAll";
 import type { ColumnConfig, ActionsConfig } from "@/features/pageAll/all_types";
-// test
+
 export default function AnswerAllPage() {
     const { t } = useTranslation();
 
