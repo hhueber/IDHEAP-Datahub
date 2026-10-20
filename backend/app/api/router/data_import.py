@@ -31,6 +31,7 @@ from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
+# TODO: future permission system
 # from app.config.roles import PermissionLevel, PermissionScope
 # from app.api.permissions import require_permission // future permission
 router = APIRouter()
@@ -40,6 +41,7 @@ router = APIRouter()
 async def upload_data_file(
     file: UploadFile = File(...),
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)), // future permisiion
 ):
     data = await save_import_upload(file)
@@ -56,6 +58,7 @@ async def analyze_data_file(
     import_id: str,
     db: AsyncSession = Depends(get_db),
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     data = await analyze_import_file(db, import_id=import_id)
@@ -75,6 +78,7 @@ async def preview_data_file(
     per_page: int = Query(50, ge=10, le=200),
     issues_only: bool = Query(False),
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     data = await preview_import_section(
@@ -97,6 +101,7 @@ async def update_import_cell(
     import_id: str,
     payload: DataImportCellPatch,
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     analysis = await patch_import_cell(import_id=import_id, payload=payload)
@@ -113,6 +118,7 @@ async def update_import_column(
     import_id: str,
     payload: DataImportColumnPatch,
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     analysis = await patch_import_column(import_id=import_id, payload=payload)
@@ -129,6 +135,7 @@ async def update_import_column_transform(
     import_id: str,
     payload: DataImportColumnTransformPatch,
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     analysis = await patch_import_column_transform(import_id=import_id, payload=payload)
@@ -143,6 +150,7 @@ async def update_import_column_transform(
 @router.get("", response_model=DataImportListResponse)
 async def list_data_imports(
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     data = await list_import_jobs()
@@ -158,6 +166,7 @@ async def list_data_imports(
 async def get_data_import_summary(
     import_id: str,
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     data = await get_import_summary(import_id)
@@ -173,6 +182,7 @@ async def get_data_import_summary(
 async def delete_data_import(
     import_id: str,
     _user: UserPublic = Depends(get_current_user),
+    # TODO: future permission system
     # _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)),
 ):
     await delete_import_job(import_id)

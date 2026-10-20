@@ -309,7 +309,7 @@
         "forbidden": "Action interdite.",
         "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
         "generic": "Une erreur est survenue.",
-        "notAllowedRole": "Vous n’avez pas le droit d’attribuer ce rôle.",
+        "notAllowedRole": "Vous n'avez pas le droit d’attribuer ce rôle.",
         "noAssignableRoles": "Vous ne pouvez attribuer aucun rôle."
       }
     },
@@ -418,19 +418,19 @@
         }
       },
       "users": {
-        "title": "Utilisateurs privés",
+        "title": "Utilisateur·trice·s privé·e·s",
         "firstName": "Prénom",
         "lastName": "Nom",
         "email": "Email",
         "role": "Rôle",
         "createdAt": "Créé le",
-        "updated": "Utilisateur modifié",
-        "deleted": "Utilisateur supprimé",
-        "confirmDeleteTitle": "Supprimer l'utilisateur",
+        "updated": "Utilisateur·trice modifié·e",
+        "deleted": "Utilisateur·trice supprimé·e",
+        "confirmDeleteTitle": "Supprimer l'utilisateur·trice",
         "confirmDeleteMessage": "Voulez-vous vraiment supprimer {{name}} ?",
         "errors": {
-          "updateFailed": "Impossible de modifier l'utilisateur",
-          "deleteFailed": "Impossible de supprimer l'utilisateur",
+          "updateFailed": "Impossible de modifier l'utilisateur·trice",
+          "deleteFailed": "Impossible de supprimer l'utilisateur·trice",
           "notAllowedRole": "Vous n'avez pas le droit d'attribuer ce rôle"
         }
       },
@@ -654,9 +654,9 @@
       "dropReject": "Ce fichier n’est pas accepté"
     },
     "loading": {
-      "upload": "Tèlechargement du fichier...",
+      "upload": "Télechargement du fichier...",
       "analyze": "Analyse du fichier...",
-      "preview": "Previsualisation des données..."
+      "preview": "Prévisualisation des données..."
     },
     "summary": {
       "rows": "Lignes",
@@ -680,11 +680,11 @@
     },
     "types": {
       "integer": "Entier",
-      "float": "Float",
-      "boolean": "Boolean",
+      "float": "Valeur flottante",
+      "boolean": "Booléen",
       "date": "Date",
       "datetime": "Date et heure",
-      "text": "Text",
+      "text": "Texte",
       "empty": "Vide",
       "mixed": "Mixte"
     },
@@ -702,7 +702,7 @@
       "commaToDot": "Remplacer , par .",
       "dotToComma": "Remplacer . par ,",
       "emptyToNull": "Vides vers null",
-      "normalizeDatetime": "Normaliser date + heure",
+      "normalizeDatetime": "Normaliser date et heure",
       "datetimeToDate": "Garder uniquement la date"
     },
     "sectionDescriptions": {
@@ -711,12 +711,12 @@
       "responses": "Valeurs par commune et par question.",
       "choices": "Colonnes avec peu de valeurs distinctes, probablement des choix fermés.",
       "municipalities": "Colonnes utilisées pour reconnaître les communes.",
-      "metadata": "Colonnes techniques comme dates, durée, langue ou progression.",
+      "metadata": "Colonnes techniques comme date, durée, langue ou progression.",
       "unclassified": "Colonnes que le système n’a pas encore réussi à classer.",
-      "ignored": "Colonnes exclues de l’import."
+      "ignored": "Colonnes exclues de l'import."
     },
     "jobs": {
-      "title": "Travaux d’import en cours",
+      "title": "Travaux d'import en cours",
       "resume": "Reprendre",
       "delete": "Supprimer",
       "notAnalyzed": "Pas encore analysé",
@@ -724,8 +724,8 @@
       "hide": "Masquer les travaux",
       "available": "travaux disponibles",
       "current": "Ouvert",
-      "deleteTitle": "Supprimer l’import",
-      "confirmDelete": "Voulez-vous vraiment supprimer l’import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés."
+      "deleteTitle": "Supprimer l'import",
+      "confirmDelete": "Voulez-vous vraiment supprimer l'import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés."
     },
     "analysis": {
       "title": "Analyse du fichier"

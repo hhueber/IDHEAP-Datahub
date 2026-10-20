@@ -111,6 +111,25 @@ def transpose_with_first_row_as_header(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def score_header_list(values: list[str]) -> int:
+    """
+    Calcule un score indiquant si une liste de valeurs ressemble
+    à des en-têtes de colonnes d'une enquête.
+
+    Chaque valeur est analysée à partir de son nom normalisé :
+    - +3 points si elle correspond au format d'une question.
+    - +2 points si elle contient un identifiant de commune.
+    - +1 point si elle contient un nom de métadonnée.
+
+    Le score est utilisé pour comparer les en-têtes actuels
+    avec les valeurs de la première colonne afin de détecter
+    si le fichier est transposé.
+
+    Args:
+        values: Liste des textes à analyser.
+
+    Returns:
+        Somme des points obtenus pour les valeurs reconnues.
+    """
     score = 0
 
     for value in values:

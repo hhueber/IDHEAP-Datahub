@@ -29,6 +29,19 @@ async def patch_import_cell(
     import_id: str,
     payload: DataImportCellPatch,
 ) -> dict[str, Any]:
+    """
+    Modifie une cellule du fichier importé et sauvegarde les données.
+
+    Après modification, les erreurs de la colonne concernée sont
+    recalculées sans relancer la détection automatique de son type.
+
+    Args:
+        import_id: Identifiant de l'importation.
+        payload: Position de la cellule et nouvelle valeur.
+
+    Returns:
+        Analyse actualisée après la modification.
+    """
     import_dir = get_import_dir(import_id)
     df = read_frame(import_dir)
 
@@ -49,6 +62,27 @@ async def patch_import_column(
     import_id: str,
     payload: DataImportColumnPatch,
 ) -> dict[str, Any]:
+    """
+    Applique les modifications manuelles aux propriétés d'une colonne.
+
+    Permet de :
+    - Marquer une colonne comme ignorée.
+    - Modifier sa section (communes, réponses, métadonnées, etc.).
+    - Définir manuellement son type de données.
+
+    Lorsqu'une section ou un type est défini manuellement, les
+    informations correspondantes sont mises à jour dans l'analyse.
+
+    Les erreurs de la colonne sont ensuite recalculées sans effectuer
+    de nouvelle détection automatique du type.
+
+    Args:
+        import_id: Identifiant de l'importation.
+        payload: Index de la colonne et propriétés à modifier.
+
+    Returns:
+        Analyse actualisée après les modifications.
+    """
     import_dir = get_import_dir(import_id)
     df = read_frame(import_dir)
 
@@ -87,6 +121,22 @@ async def patch_import_column_transform(
     import_id: str,
     payload: DataImportColumnTransformPatch,
 ) -> dict[str, Any]:
+    """
+    Applique une transformation aux valeurs d'une colonne importée.
+
+    La transformation est réalisée par apply_column_transform selon
+    l'action demandée et ses éventuels paramètres.
+
+    Après sauvegarde, le type de la colonne est automatiquement
+    redétecté et les erreurs associées sont recalculées.
+
+    Args:
+        import_id: Identifiant de l'importation.
+        payload: Colonne, transformation et paramètres à appliquer.
+
+    Returns:
+        Analyse actualisée après la transformation.
+    """
     import_dir = get_import_dir(import_id)
     df = read_frame(import_dir)
 
@@ -116,6 +166,31 @@ def recalculate_after_column_change(
     column_index: int,
     redetect_type: bool,
 ) -> dict[str, Any]:
+    """
+    Met à jour les analyses et les erreurs après modification d'une colonne.
+
+    Le recalcul est limité à la colonne modifiée afin d'éviter
+    de réanalyser l'ensemble des données importées.
+
+    Si redetect_type est activé, le type de la colonne est redétecté
+    à partir de ses valeurs actuelles.
+
+    La fonction effectue ensuite les opérations suivantes :
+    - Recalcule les erreurs de la colonne concernée.
+    - Met à jour son nombre d'erreurs.
+    - Recalcule le nombre total d'erreurs du fichier.
+    - Actualise les statistiques des différentes sections.
+    - Sauvegarde les analyses et les erreurs actualisées.
+
+    Args:
+        import_dir: Répertoire contenant les données de l'importation.
+        df: Données importées après modification.
+        column_index: Index de la colonne modifiée.
+        redetect_type: Indique si le type doit être détecté à nouveau.
+
+    Returns:
+        Analyse actualisée de l'importation.
+    """
     analysis = read_analysis(import_dir)
     issues_by_column = read_issues(import_dir)
 
@@ -156,4 +231,7 @@ def get_column_summary(
     columns_summary: list[dict[str, Any]],
     column_index: int,
 ) -> dict[str, Any]:
+    """
+    Recherche les informations d'analyse correspondant à une colonne.
+    """
     return next(column for column in columns_summary if int(column["index"]) == column_index)
