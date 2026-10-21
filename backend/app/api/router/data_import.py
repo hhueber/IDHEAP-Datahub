@@ -1,3 +1,6 @@
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.dependencies import get_current_user
 from app.db import get_db
 from app.schemas.data_import import (
@@ -7,7 +10,6 @@ from app.schemas.data_import import (
     DataImportColumnTransformPatch,
     DataImportDeleteResponse,
     DataImportListResponse,
-    DataImportPatchResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
     DataImportUploadResponse,
@@ -27,9 +29,6 @@ from app.services.data_import.data_import_service import (
     preview_import_section,
     save_import_upload,
 )
-from fastapi import APIRouter, Depends, File, Query, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 # TODO: future permission system
 # from app.config.roles import PermissionLevel, PermissionScope
@@ -130,7 +129,9 @@ async def update_import_column(
     }
 
 
-@router.patch("/{import_id}/column-transform", response_model=DataImportPatchWithAnalysisResponse)
+@router.patch(
+    "/{import_id}/column-transform", response_model=DataImportPatchWithAnalysisResponse
+)
 async def update_import_column_transform(
     import_id: str,
     payload: DataImportColumnTransformPatch,

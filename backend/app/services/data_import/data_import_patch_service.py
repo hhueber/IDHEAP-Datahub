@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 
 from app.schemas.data_import import (
     DataImportCellPatch,
@@ -9,8 +10,13 @@ from app.schemas.data_import import (
     DataImportColumnTransformPatch,
     ImportSectionEnum,
 )
-from app.services.data_import.data_import_detection_service import build_sections_summary, detect_column_type
-from app.services.data_import.data_import_issue_service import detect_single_column_issues_vectorized
+from app.services.data_import.data_import_detection_service import (
+    build_sections_summary,
+    detect_column_type,
+)
+from app.services.data_import.data_import_issue_service import (
+    detect_single_column_issues_vectorized,
+)
 from app.services.data_import.data_import_storage_service import (
     get_import_dir,
     read_analysis,
@@ -20,8 +26,9 @@ from app.services.data_import.data_import_storage_service import (
     write_frame,
     write_issues,
 )
-from app.services.data_import.data_import_transform_service import apply_column_transform
-import pandas as pd
+from app.services.data_import.data_import_transform_service import (
+    apply_column_transform,
+)
 
 
 async def patch_import_cell(
@@ -234,4 +241,6 @@ def get_column_summary(
     """
     Recherche les informations d'analyse correspondant à une colonne.
     """
-    return next(column for column in columns_summary if int(column["index"]) == column_index)
+    return next(
+        column for column in columns_summary if int(column["index"]) == column_index
+    )
