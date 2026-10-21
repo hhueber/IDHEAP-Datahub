@@ -914,13 +914,13 @@
          "ignored": "Colonnes exclues de l'import."
       },
       "jobs": {
-         "title": "Travaux d'import en cours",
+         "title": "Importations en cours",
          "resume": "Reprendre",
          "delete": "Supprimer",
          "notAnalyzed": "Pas encore analysé",
-         "show": "Afficher les travaux",
-         "hide": "Masquer les travaux",
-         "available": "travaux disponibles",
+         "show": "Afficher les importations",
+         "hide": "Masquer les importations",
+         "available": "importations disponibles",
          "current": "Ouvert",
          "deleteTitle": "Supprimer l'import",
          "confirmDelete": "Voulez-vous vraiment supprimer l'import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés."
