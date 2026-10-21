@@ -1,9 +1,7 @@
-from typing import List, Literal
-
+from typing import Literal
 
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 SameSite = Literal["lax", "strict", "none"]
 
@@ -59,7 +57,8 @@ class Settings(BaseSettings):
     ROOT_LAST_NAME: str | None = "Root"
 
     model_config = SettingsConfigDict(
-        env_file=".env", case_sensitive=False  # env_fill utile que en dev, case_sensitive passer a True en prod
+        env_file=".env",
+        case_sensitive=False,  # env_fill utile que en dev, case_sensitive passer a True en prod
     )
 
     @property
@@ -67,7 +66,7 @@ class Settings(BaseSettings):
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
     @property
-    def CORS_ORIGINS_LIST(self) -> List[str]:
+    def CORS_ORIGINS_LIST(self) -> list[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
 

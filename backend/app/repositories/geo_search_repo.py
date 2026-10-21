@@ -1,14 +1,13 @@
-from typing import Literal, Optional
 import unicodedata
+from typing import Literal
 
+from sqlalchemy import func, or_, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
 from app.repositories.commune_map_repo import get_commune_point
-from sqlalchemy import func, or_, select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 GeoType = Literal["commune", "district", "canton"]
 
@@ -54,7 +53,7 @@ def build_geo_names(item: dict) -> dict:
     }
 
 
-def normalize_search_text(value: Optional[str]) -> str:
+def normalize_search_text(value: str | None) -> str:
     if not value:
         return ""
 
@@ -199,7 +198,7 @@ async def get_geo_point(
     db: AsyncSession,
     geo_type: GeoType,
     uid: int,
-) -> Optional[tuple[float, float]]:
+) -> tuple[float, float] | None:
     if geo_type == "commune":
         return await get_commune_point(db, uid)
 
@@ -207,7 +206,9 @@ async def get_geo_point(
         stmt = select(Commune.uid).where(Commune.district_uid == uid)
     elif geo_type == "canton":
         stmt = (
-            select(Commune.uid).join(District, Commune.district_uid == District.uid).where(District.canton_uid == uid)
+            select(Commune.uid)
+            .join(District, Commune.district_uid == District.uid)
+            .where(District.canton_uid == uid)
         )
     else:
         return None

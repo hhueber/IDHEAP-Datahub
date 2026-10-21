@@ -1,14 +1,25 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.dependencies import get_current_user
 from app.core.security import get_password_hash, verify_password
 from app.db import get_db
 from app.models.user import User as UserModel
-from app.repositories.user_repo import create_user_record, delete_user_by_instance, update_user_password_hash
-from app.schemas.user import PasswordChangeIn, Role, User, UserCreate, UserDeleteIn, UserPublic
+from app.repositories.user_repo import (
+    create_user_record,
+    delete_user_by_instance,
+    update_user_password_hash,
+)
+from app.schemas.user import (
+    PasswordChangeIn,
+    Role,
+    User,
+    UserCreate,
+    UserDeleteIn,
+    UserPublic,
+)
 from app.services.user_service import normalize_name
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -48,9 +59,13 @@ async def create_user(
     """
     ensure_admin(current_user)
 
-    exists = await db.scalar(select(UserModel.id).where(UserModel.email == payload.email))
+    exists = await db.scalar(
+        select(UserModel.id).where(UserModel.email == payload.email)
+    )
     if exists:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Email already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Email already exists"
+        )
 
     pwd_hash = get_password_hash(payload.password)
     await create_user_record(
@@ -93,7 +108,9 @@ async def delete_user(
     result = await db.execute(select(UserModel).where(UserModel.email == payload.email))
     target = result.scalar_one_or_none()
     if not target:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # permet de normaliser la string pour comparer les informations
     if (
@@ -109,7 +126,8 @@ async def delete_user(
     # empêcher l'admin de se supprimer lui-même
     if target.id == current_user.id:
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Impossible de supprimer votre propre compte"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Impossible de supprimer votre propre compte",
         )
 
     await delete_user_by_instance(db, target)
@@ -138,16 +156,22 @@ async def change_password(
     # On charge l'utilisateur courant
     user = await db.get(UserModel, current_user.id)
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="User not found"
+        )
 
     # Vérifie l'ancien mot de passe
     if not verify_password(payload.old_password, user.password_hash):
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Ancien mot de passe incorrect")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Ancien mot de passe incorrect",
+        )
 
     # empêcher la réutilisation du même mot de passe
     if verify_password(payload.new_password, user.password_hash):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="Le nouveau mot de passe doit être différent"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Le nouveau mot de passe doit être différent",
         )
 
     new_hash = get_password_hash(payload.new_password)

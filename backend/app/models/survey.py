@@ -1,12 +1,14 @@
-from typing import List
-
+from typing import TYPE_CHECKING
 
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
-from . import QuestionPerSurvey
 from .base import Base
+
+if TYPE_CHECKING:
+    from .project import Project
+    from .question_per_survey import QuestionPerSurvey
+    from .survey_metadata import SurveyMetadata
 
 
 class Survey(Base):
@@ -16,11 +18,13 @@ class Survey(Base):
     name: Mapped[str] = mapped_column(String, unique=True)
     year: Mapped[int] = mapped_column(Integer)
 
-    questions: Mapped[List["QuestionPerSurvey"]] = relationship(
+    questions: Mapped[list["QuestionPerSurvey"]] = relationship(
         "QuestionPerSurvey", back_populates="survey", cascade="all, delete-orphan"
     )
 
-    survey_metadata: Mapped["SurveyMetadata"] = relationship("SurveyMetadata", back_populates="survey")
+    survey_metadata: Mapped["SurveyMetadata"] = relationship(
+        "SurveyMetadata", back_populates="survey"
+    )
 
     project_uid: Mapped[int] = mapped_column(
         ForeignKey("project.uid", ondelete="CASCADE"), nullable=True

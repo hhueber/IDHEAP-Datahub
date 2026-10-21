@@ -1,21 +1,19 @@
-from typing import List, Optional, Union
-
-
-from app.schemas.pageAll import EntityEnum
 from pydantic import BaseModel
+
+from app.schemas.page_all import EntityEnum
 
 
 class DeleteFilter(BaseModel):
     field: str
-    value: Union[int, str]
+    value: int | str
 
 
 class DeleteRequest(BaseModel):
     entity: EntityEnum
-    filters: List[DeleteFilter]
+    filters: list[DeleteFilter]
     # si None ou [] -> DELETE de lignes
     # si liste non vide -> CLEAR des colonnes (UPDATE ... SET col = NULL)
-    clear_fields: Optional[List[str]] = None
+    clear_fields: list[str] | None = None
 
 
 class DeleteResponse(BaseModel):

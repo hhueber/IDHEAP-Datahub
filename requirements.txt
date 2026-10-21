@@ -3,6 +3,7 @@ black==25.1.0
 isort==6.0.1
 pre-commit==4.3.0
 pylint==3.3.8
+ruff==0.16.7
 
 # Data processing / Excel / XML
 lxml==6.0.0
@@ -20,6 +21,8 @@ orjson==3.10.18
 # Database / ORM
 SQLAlchemy==2.0.34
 asyncpg==0.30.0
+greenlet==3.5.6
+
 
 # Configuration & security
 python-dotenv==1.0.1

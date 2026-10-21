@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
+from sqlalchemy.exc import SQLAlchemyError
 
-from app import models
 from app.core.config import settings
 from app.core.logging_config import configure_logging
 from app.db import AsyncSessionLocal, engine, ensure_extensions
@@ -13,14 +13,13 @@ from app.script.populate_db import populate_db
 from app.script.populate_demo_db import populate_demo_db
 from app.script.populate_geo_db import populate_async_geo
 
-
 logger = logging.getLogger(__name__)
 
 
 async def create_schema(is_demo: bool, delete_force: bool, empty_survey: bool) -> None:
     try:
         await ensure_extensions()
-    except Exception as e:
+    except SQLAlchemyError as e:
         logger.warning("Could not ensure extensions (unaccent/postgis): %s", e)
     if delete_force:
         async with engine.begin() as conn:
@@ -37,7 +36,7 @@ async def create_schema(is_demo: bool, delete_force: bool, empty_survey: bool) -
         async with AsyncSessionLocal() as db:
             admin_exists = await any_admin_exists(db)
             if not admin_exists:
-                admin = await create_user(
+                await create_user(
                     db,
                     settings.ROOT_EMAIL,
                     settings.ROOT_PASSWORD,

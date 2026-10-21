@@ -1,10 +1,8 @@
 # Sécurité pour éviter l'injection
-from typing import Annotated
 import re
-
+from typing import Annotated
 
 from pydantic import AfterValidator
-
 
 _NAME_RE = re.compile(r"^[A-Za-zÀ-ÖØ-öø-ÿ0-9 .,'\-]+$")
 

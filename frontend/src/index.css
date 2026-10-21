@@ -18,8 +18,12 @@ body {
 .leaflet-container {
   touch-action: pan-x pan-y;
 }
-.leaflet-container { z-index: 0; }
-.leaflet-control { z-index: 100 !important; }
+.leaflet-container {
+  z-index: 0;
+}
+.leaflet-control {
+  z-index: 100 !important;
+}
 
 /*
   Bouton d'ouverture/fermeture du drawer mobile uniquement (< 1024 px).

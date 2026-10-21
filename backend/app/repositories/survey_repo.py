@@ -1,9 +1,9 @@
-from typing import Sequence
+from collections.abc import Sequence
 
-
-from app.models.survey import Survey
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.survey import Survey
 
 
 async def list_surveys_uid_year(db: AsyncSession) -> Sequence[tuple[int, int]]:
