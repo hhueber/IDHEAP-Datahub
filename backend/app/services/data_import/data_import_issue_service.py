@@ -1,11 +1,11 @@
 # Sert a detecter les problemes dans les données importées, actuellement on ce concentre sur les type principalement.
 from typing import Any
 
+import pandas as pd
 
 from app.schemas.data_import import DetectedTypeEnum
 from app.services.data_import.data_import_detection_service import build_valid_type_mask
 from app.services.data_import.data_import_normalizer_service import TEXT_EMPTY_VALUES
-import pandas as pd
 
 
 def detect_issues_vectorized(
