@@ -119,8 +119,8 @@ export function ConfigEditorModal({
                                     />
                                 </span>
                             ) : (
-                                submitLabel ??
-                                t("admin.config.configEditor.submit")
+                                (submitLabel ??
+                                t("admin.config.configEditor.submit"))
                             )}
                         </button>
                     </div>

@@ -29,7 +29,7 @@
       "noQuestionsForSelection": "Pas de questions pour cette sélection.",
       "bootstrapError": "Impossible de charger les données initiales.",
       "availableYears": "Années disponibles pour cette question",
-      "noAvailableYears": "Acune année disponible",
+      "noAvailableYears": "Aucune année disponible",
       "selectYear": "Selectionner une année",
       "choroplethGlobalYear": "Années disponibles pour cette question",
       "granularity": "Granularité",
@@ -90,6 +90,16 @@
          "network": "Problème de réseau. Vérifiez votre connexion.",
          "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
          "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
+      },
+      "choroplethColor": {
+         "title": "Intensité des couleurs",
+         "light": "Léger",
+         "original": "Original",
+         "strong": "Marqué",
+         "lighter": "Plus léger",
+         "stronger": "Plus marqué",
+         "reset": "Réinitialiser",
+         "ariaLabel": "Intensité des couleurs du choropleth"
       }
    },
    "common": {
@@ -885,6 +895,10 @@
          "status": {
             "analyzed": "Analysé"
          },
+         "metadata": {
+            "title": "Métadonnées",
+            "description": "Changer les métadonnées du jeu de donnée actuel."
+         },
          "explore": {
             "title": "Explorer",
             "description": "Consulter le dataset uploadé, les sections détectées, les colonnes, les lignes et les problèmes actuels."
@@ -901,6 +915,15 @@
             "placeholderTitle": "La validation du dataset sera ajoutée ensuite",
             "placeholderDescription": "Cette étape contiendra le schema final, la checklist de validation, le score de qualité et l’action d’import définitif. Pour l’instant, cette PR prépare uniquement la structure du workflow."
          }
+      },
+      "metadata": {
+         "title": "Métadonnées du jeu de donnée",
+         "inheritedFrom": "Métadonnées heritée de ",
+         "nameLabel": "Nom du jeu de donnée",
+         "descriptionLabel": "Description du jeu de donnée",
+         "licenceLabel": "Licence du jeu de donnée",
+         "resetAll": "Réinitialiser tous les champs",
+         "submitButton": "Mettre a jour les métadonnées"
       },
       "displayName": {
          "edit": "Renommer"

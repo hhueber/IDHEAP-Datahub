@@ -38,8 +38,7 @@ function InstallScreenshoter({
         // masquer le bouton si demandé
         if (!showButton) {
             const container = (ctrl as any)?._container as
-                | HTMLElement
-                | undefined;
+                HTMLElement | undefined;
             if (container) container.style.display = "none";
         }
 

@@ -16,7 +16,7 @@ export function pickThemeValue(
     const dark = cfg[darkKey];
 
     // on fallback sur light.
-    return (mode === "dark" ? dark ?? light : light) ?? light;
+    return (mode === "dark" ? (dark ?? light) : light) ?? light;
 }
 
 export function getThemeTokens(cfg: ThemeConfig, mode: ThemeMode) {

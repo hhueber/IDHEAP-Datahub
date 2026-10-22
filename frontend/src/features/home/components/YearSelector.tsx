@@ -26,7 +26,7 @@ export default function YearSelector({
 
     const selected =
         valueUid != null
-            ? surveys.find((s) => s.uid === valueUid) ?? null
+            ? (surveys.find((s) => s.uid === valueUid) ?? null)
             : null;
 
     const list = [...surveys].sort((a, b) => {
