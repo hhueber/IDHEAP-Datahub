@@ -61,7 +61,7 @@ export default function PrivateTopbar() {
         const a = firstParts[0]?.[0] ?? "U";
         const b =
             lastParts.length > 0
-                ? lastParts[lastParts.length - 1]?.[0] ?? ""
+                ? (lastParts[lastParts.length - 1]?.[0] ?? "")
                 : "";
         return (a + b).toUpperCase();
     }, [user]);
