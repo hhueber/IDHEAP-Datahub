@@ -1,14 +1,21 @@
 # Sert a detecter les caracteristiques des données importées
+import re
 from dataclasses import dataclass
 from typing import Any
-import re
 
-
-from app.schemas.data_import import DetectedSurvey, DetectedTypeEnum, ImportOrientationEnum, ImportSectionEnum
-from app.services.data_import.data_import_normalizer_service import clean_series, normalize_name, TEXT_EMPTY_VALUES
 import numpy as np
 import pandas as pd
 
+from app.schemas.data_import import (
+    DetectedSurvey,
+    DetectedTypeEnum,
+    ImportOrientationEnum,
+    ImportSectionEnum,
+)
+from app.services.data_import.data_import_normalizer_service import (
+    clean_series,
+    normalize_name,
+)
 
 # TODO: modification de la logique de detection par la suite actuellement trop rigide sur les data existantes.
 
@@ -89,7 +96,9 @@ def detect_orientation(df: pd.DataFrame) -> ImportOrientationEnum:
     if df.shape[1] == 0:
         return ImportOrientationEnum.unknown
 
-    first_col_values = df.iloc[: min(200, len(df)), 0].astype("string").dropna().tolist()
+    first_col_values = (
+        df.iloc[: min(200, len(df)), 0].astype("string").dropna().tolist()
+    )
 
     first_col_score = score_header_list(first_col_values)
 
@@ -111,6 +120,25 @@ def transpose_with_first_row_as_header(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def score_header_list(values: list[str]) -> int:
+    """
+    Calcule un score indiquant si une liste de valeurs ressemble
+    à des en-têtes de colonnes d'une enquête.
+
+    Chaque valeur est analysée à partir de son nom normalisé :
+    - +3 points si elle correspond au format d'une question.
+    - +2 points si elle contient un identifiant de commune.
+    - +1 point si elle contient un nom de métadonnée.
+
+    Le score est utilisé pour comparer les en-têtes actuels
+    avec les valeurs de la première colonne afin de détecter
+    si le fichier est transposé.
+
+    Args:
+        values: Liste des textes à analyser.
+
+    Returns:
+        Somme des points obtenus pour les valeurs reconnues.
+    """
     score = 0
 
     for value in values:
@@ -150,7 +178,12 @@ def detect_survey(columns: list[str]) -> DetectedSurvey:
         years.astype(int),
     )
 
-    grouped = matches.groupby(["prefix", "year"]).size().reset_index(name="count").sort_values("count", ascending=False)
+    grouped = (
+        matches.groupby(["prefix", "year"])
+        .size()
+        .reset_index(name="count")
+        .sort_values("count", ascending=False)
+    )
 
     if grouped.empty:
         return DetectedSurvey()
@@ -380,14 +413,17 @@ def build_sections_summary(
 
         if not section_columns.empty:
             column_indexes = section_columns["index"].astype(str).tolist()
-            issue_count = sum(len(issues_by_column.get(column_index, [])) for column_index in column_indexes)
+            issue_count = sum(
+                len(issues_by_column.get(column_index, []))
+                for column_index in column_indexes
+            )
 
         result.append(
             {
                 "key": section.value,
                 "label_key": f"dataImport.sections.{section.value}",
                 "rows": int(df.shape[0]),
-                "columns": int(len(section_columns)),
+                "columns": len(section_columns),
                 "issues": int(issue_count),
             }
         )

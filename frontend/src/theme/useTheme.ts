@@ -5,30 +5,30 @@ import { getThemeTokens } from "@/theme/themeTokens";
 import { hexToRgba, getAdaptiveTextColor } from "@/utils/color";
 
 export function useTheme() {
-  const { mode } = useThemeMode();
-  const cfg = loadThemeConfig();
+    const { mode } = useThemeMode();
+    const cfg = loadThemeConfig();
 
-  return useMemo(() => {
-    const tokens = getThemeTokens(cfg, mode);
+    return useMemo(() => {
+        const tokens = getThemeTokens(cfg, mode);
 
-    return {
-      mode,
-      cfg,
-      ...tokens,
+        return {
+            mode,
+            cfg,
+            ...tokens,
 
-      // dérivés (optionnel mais pratique)
-      hoverText05: hexToRgba(tokens.textColor, 0.5),
-      hoverText07: hexToRgba(tokens.textColor, 0.7),
-      hoverText30: hexToRgba(tokens.textColor, 0.30),
-      adaptiveTextColorPrimary: getAdaptiveTextColor(tokens.primary),
-      hoverPrimary04: hexToRgba(tokens.primary, 0.04),
-      hoverPrimary06: hexToRgba(tokens.primary, 0.06),
-      hoverPrimary10: hexToRgba(tokens.primary, 0.10),
-      hoverPrimary15: hexToRgba(tokens.primary, 0.15),
-      hoverPrimary30: hexToRgba(tokens.primary, 0.30),
-      hoverPrimary90: hexToRgba(tokens.primary, 0.90),
-      hoverBg08: hexToRgba(tokens.primary, 0.08),
-      cardBg: hexToRgba(tokens.background, mode === "dark" ? 0.65 : 0.78),
-    };
-  }, [mode, cfg]);
+            // dérivés (optionnel mais pratique)
+            hoverText05: hexToRgba(tokens.textColor, 0.5),
+            hoverText07: hexToRgba(tokens.textColor, 0.7),
+            hoverText30: hexToRgba(tokens.textColor, 0.3),
+            adaptiveTextColorPrimary: getAdaptiveTextColor(tokens.primary),
+            hoverPrimary04: hexToRgba(tokens.primary, 0.04),
+            hoverPrimary06: hexToRgba(tokens.primary, 0.06),
+            hoverPrimary10: hexToRgba(tokens.primary, 0.1),
+            hoverPrimary15: hexToRgba(tokens.primary, 0.15),
+            hoverPrimary30: hexToRgba(tokens.primary, 0.3),
+            hoverPrimary90: hexToRgba(tokens.primary, 0.9),
+            hoverBg08: hexToRgba(tokens.primary, 0.08),
+            cardBg: hexToRgba(tokens.background, mode === "dark" ? 0.65 : 0.78),
+        };
+    }, [mode, cfg]);
 }

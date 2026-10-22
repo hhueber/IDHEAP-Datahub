@@ -2,7 +2,13 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { apiFetch } from "@/shared/apiFetch";
 import { useTheme } from "@/theme/useTheme";
-import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsResponse } from "@/features/pageShow/show_type";
+import type {
+    Entity,
+    ShowResponse,
+    ShowMetaField,
+    ShowInsights,
+    ShowInsightsResponse,
+} from "@/features/pageShow/show_type";
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
@@ -14,822 +20,1120 @@ import { useNavigate } from "react-router-dom";
 import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 
 type Props = {
-  id: number;
-  entity: Entity;
-  onEdit?: (entity: Entity, id: number) => void;
-  onDelete?: (entity: Entity, id: number) => void;
+    id: number;
+    entity: Entity;
+    onEdit?: (entity: Entity, id: number) => void;
+    onDelete?: (entity: Entity, id: number) => void;
 };
 
 const LANGS: { key: "de" | "fr" | "en" | "it" | "rm"; label: string }[] = [
-  { key: "de", label: "Deutsch" },
-  { key: "fr", label: "Français" },
-  { key: "en", label: "English" },
-  { key: "it", label: "Italiano" },
-  { key: "rm", label: "Rumantsch" },
+    { key: "de", label: "Deutsch" },
+    { key: "fr", label: "Français" },
+    { key: "en", label: "English" },
+    { key: "it", label: "Italiano" },
+    { key: "rm", label: "Rumantsch" },
 ];
 
 function renderEmpty(v: any): string {
-  if (v === null || v === undefined) return "—";
-  if (typeof v === "string") return v.trim().length > 0 ? v : "—";
-  return String(v);
+    if (v === null || v === undefined) return "—";
+    if (typeof v === "string") return v.trim().length > 0 ? v : "—";
+    return String(v);
 }
 
 function formatValue(kind: ShowMetaField["kind"], value: any) {
-  if (value === null || value === undefined) return "—";
-  if (kind === "bool") return value ? "Yes" : "No";
-  return String(value);
+    if (value === null || value === undefined) return "—";
+    if (kind === "bool") return value ? "Yes" : "No";
+    return String(value);
 }
 
 function normalizeToString(v: any): string {
-  if (v === null || v === undefined) return "";
-  return String(v);
+    if (v === null || v === undefined) return "";
+    return String(v);
 }
 
 type RelationDisplayItem = {
-  uidKey: string;
-  displayKey: string;
-  labelKey: string;
-  value: string;
+    uidKey: string;
+    displayKey: string;
+    labelKey: string;
+    value: string;
 };
 
 const RELATION_DISPLAY_CONFIG: {
-  uidKey: string;
-  displayKeys: string[];
-  labelKey: string;
+    uidKey: string;
+    displayKeys: string[];
+    labelKey: string;
 }[] = [
-  {
-    uidKey: "commune_uid",
-    displayKeys: ["commune_name", "commune"],
-    labelKey: "dashboardSidebar.pageShow.relations.commune",
-  },
-  {
-    uidKey: "district_uid",
-    displayKeys: ["district_name", "district"],
-    labelKey: "dashboardSidebar.pageShow.relations.district",
-  },
-  {
-    uidKey: "canton_uid",
-    displayKeys: ["canton_name", "canton"],
-    labelKey: "dashboardSidebar.pageShow.relations.canton",
-  },
-  {
-    uidKey: "survey_uid",
-    displayKeys: ["survey_name", "survey"],
-    labelKey: "dashboardSidebar.pageShow.relations.survey",
-  },
-  {
-    uidKey: "question_uid",
-    displayKeys: ["question_name", "question"],
-    labelKey: "dashboardSidebar.pageShow.relations.question",
-  },
-  {
-    uidKey: "question_global_uid",
-    displayKeys: ["question_global_name", "question_global"],
-    labelKey: "dashboardSidebar.pageShow.relations.questionGlobal",
-  },
-  {
-    uidKey: "question_category_uid",
-    displayKeys: ["question_category_name", "question_category"],
-    labelKey: "dashboardSidebar.pageShow.relations.questionCategory",
-  },
-  {
-    uidKey: "option_uid",
-    displayKeys: ["option_name", "option"],
-    labelKey: "dashboardSidebar.pageShow.relations.option",
-  },
+    {
+        uidKey: "commune_uid",
+        displayKeys: ["commune_name", "commune"],
+        labelKey: "dashboardSidebar.pageShow.relations.commune",
+    },
+    {
+        uidKey: "district_uid",
+        displayKeys: ["district_name", "district"],
+        labelKey: "dashboardSidebar.pageShow.relations.district",
+    },
+    {
+        uidKey: "canton_uid",
+        displayKeys: ["canton_name", "canton"],
+        labelKey: "dashboardSidebar.pageShow.relations.canton",
+    },
+    {
+        uidKey: "survey_uid",
+        displayKeys: ["survey_name", "survey"],
+        labelKey: "dashboardSidebar.pageShow.relations.survey",
+    },
+    {
+        uidKey: "question_uid",
+        displayKeys: ["question_name", "question"],
+        labelKey: "dashboardSidebar.pageShow.relations.question",
+    },
+    {
+        uidKey: "question_global_uid",
+        displayKeys: ["question_global_name", "question_global"],
+        labelKey: "dashboardSidebar.pageShow.relations.questionGlobal",
+    },
+    {
+        uidKey: "question_category_uid",
+        displayKeys: ["question_category_name", "question_category"],
+        labelKey: "dashboardSidebar.pageShow.relations.questionCategory",
+    },
+    {
+        uidKey: "option_uid",
+        displayKeys: ["option_name", "option"],
+        labelKey: "dashboardSidebar.pageShow.relations.option",
+    },
 ];
 
 function getFirstNonEmptyValue(
-  data: Record<string, any>,
-  keys: string[]
+    data: Record<string, any>,
+    keys: string[],
 ): { key: string; value: string } | null {
-  for (const key of keys) {
-    const value = data[key];
+    for (const key of keys) {
+        const value = data[key];
 
-    if (value !== null && value !== undefined && String(value).trim() !== "") {
-      return {
-        key,
-        value: String(value),
-      };
+        if (
+            value !== null &&
+            value !== undefined &&
+            String(value).trim() !== ""
+        ) {
+            return {
+                key,
+                value: String(value),
+            };
+        }
     }
-  }
 
-  return null;
+    return null;
 }
 
 function getRelationDisplayItems(
-  data: Record<string, any> | null
+    data: Record<string, any> | null,
 ): RelationDisplayItem[] {
-  if (!data) return [];
+    if (!data) return [];
 
-  return RELATION_DISPLAY_CONFIG.flatMap((config) => {
-    const uid = data[config.uidKey];
+    return RELATION_DISPLAY_CONFIG.flatMap((config) => {
+        const uid = data[config.uidKey];
 
-    if (uid === null || uid === undefined) {
-      return [];
-    }
+        if (uid === null || uid === undefined) {
+            return [];
+        }
 
-    const display = getFirstNonEmptyValue(data, config.displayKeys);
+        const display = getFirstNonEmptyValue(data, config.displayKeys);
 
-    if (!display) {
-      return [];
-    }
+        if (!display) {
+            return [];
+        }
 
-    return [
-      {
-        uidKey: config.uidKey,
-        displayKey: display.key,
-        labelKey: config.labelKey,
-        value: display.value,
-      },
-    ];
-  });
+        return [
+            {
+                uidKey: config.uidKey,
+                displayKey: display.key,
+                labelKey: config.labelKey,
+                value: display.value,
+            },
+        ];
+    });
 }
 
 export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
-  const navigate = useNavigate();
-  const { t, i18n  } = useTranslation();
-  const { textColor, background, borderColor, hoverPrimary04, hoverText07 } = useTheme();
+    const navigate = useNavigate();
+    const { t, i18n } = useTranslation();
+    const { textColor, background, borderColor, hoverPrimary04, hoverText07 } =
+        useTheme();
 
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
-  const [meta, setMeta] = React.useState<ShowResponse["meta"]>(null);
-  const [data, setData] = React.useState<ShowResponse["data"]>(null);
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState<string | null>(null);
+    const [meta, setMeta] = React.useState<ShowResponse["meta"]>(null);
+    const [data, setData] = React.useState<ShowResponse["data"]>(null);
 
-  const [insights, setInsights] = React.useState<ShowInsights | null>(null);
-  const [insightsLoading, setInsightsLoading] = React.useState(false);
-  const [insightsError, setInsightsError] = React.useState<string | null>(null);
-
-  const canEdit = meta?.actions?.can_edit ?? false;
-  const canDelete = meta?.actions?.can_delete ?? false;
-
-  // DELETE (clear fields)
-  const [deleteMode, setDeleteMode] = React.useState(false);
-  const [selectedFieldsToClear, setSelectedFieldsToClear] = React.useState<string[]>([]);
-  const [confirmOpen, setConfirmOpen] = React.useState(false);
-
-  // INLINE EDIT
-  const [editMode, setEditMode] = React.useState(false);
-  const [draft, setDraft] = React.useState<Record<string, string>>({});
-  const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
-  const { castUpdates } = useTypedUpdates(meta);
-
-  const lang = React.useMemo(
-    () => getPageAllLang(i18n.language),
-    [i18n.language]
-  );
-
-  const load = React.useCallback(async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      const json = await apiFetch<ShowResponse>(`/show/${entity}/${id}`, {
-        method: "GET",
-        auth: true,
-        query: {
-          lang,
-        },
-      });
-
-      setMeta(json.meta ?? null);
-
-      if (!json.success) {
-        setData(null);
-        setError(json.detail || t("common.error"));
-        return;
-      }
-
-      setData(json.data ?? null);
-    } catch (e: any) {
-      setMeta(null);
-      setData(null);
-      setError(e?.message ?? t("common.error"));
-    } finally {
-      setLoading(false);
-    }
-  }, [entity, id, t]);
-
-  const loadInsights = React.useCallback(async () => {
-    setInsightsLoading(true);
-    setInsightsError(null);
-
-    try {
-      const json = await apiFetch<ShowInsightsResponse>(`/show/${entity}/${id}/insights`, {
-        method: "GET",
-        auth: true,
-      });
-
-      if (!json.success) {
-        setInsights(null);
-        setInsightsError(json.detail || t("common.error"));
-        return;
-      }
-
-      setInsights(json.data ?? null);
-    } catch (e: any) {
-      setInsights(null);
-      setInsightsError(e?.message ?? t("common.error"));
-    } finally {
-      setInsightsLoading(false);
-    }
-  }, [entity, id, lang, t]);
-
-  React.useEffect(() => {
-    void load();
-    void loadInsights();
-  }, [load, loadInsights]);
-
-  const handleChildShow = React.useCallback((childEntity: Entity, childUid: number) => {
-    navigate(`/admin/places/show/${childEntity}/${childUid}`);
-  }, [navigate]);
-
-  // Hook edit -> /edit
-  const {
-    loading: editLoading,
-    error: editError,
-    confirmWith: confirmEditWith,
-    cancel: cancelEdit,
-  } = useEdit<{ entity: Entity; id: number; updates: Record<string, any> }>((tgt) => ({
-    entity: tgt.entity,
-    filters: [{ field: "uid", value: tgt.id }],
-    updates: tgt.updates,
-  }));
-
-  // Hook delete -> /delete (DELETE)
-  const {
-    loading: clearLoading,
-    error: clearError,
-    openConfirm: openClearConfirm,
-    confirm: confirmClear,
-    cancel: cancelClear,
-  } = useDelete<{ entity: Entity; id: number; clear_fields: string[] }>((tgt) => ({
-    entity: tgt.entity,
-    filters: [{ field: "uid", value: tgt.id }],
-    clear_fields: tgt.clear_fields,
-  }));
-
-  const title =
-    meta?.title_key && data?.[meta.title_key]
-      ? String(data[meta.title_key])
-      : `${entity} #${id}`;
-
-  const fields = meta?.fields ?? [];
-
-  const relationDisplayItems = React.useMemo(
-    () => getRelationDisplayItems(data),
-    [data]
-  );
-
-  const toggleClearField = (key: string) => {
-    setSelectedFieldsToClear((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    const [insights, setInsights] = React.useState<ShowInsights | null>(null);
+    const [insightsLoading, setInsightsLoading] = React.useState(false);
+    const [insightsError, setInsightsError] = React.useState<string | null>(
+        null,
     );
-  };
 
-  // --- EDIT helpers
-  const isProtectedField = (key: string) => key === "uid" || key === "id";
+    const canEdit = meta?.actions?.can_edit ?? false;
+    const canDelete = meta?.actions?.can_delete ?? false;
 
-  const enterEditMode = () => {
-    if (!data) return;
+    // DELETE (clear fields)
+    const [deleteMode, setDeleteMode] = React.useState(false);
+    const [selectedFieldsToClear, setSelectedFieldsToClear] = React.useState<
+        string[]
+    >([]);
+    const [confirmOpen, setConfirmOpen] = React.useState(false);
 
-    // initialise draft avec les valeurs actuelles (only for fields we show + languages)
-    const next: Record<string, string> = {};
+    // INLINE EDIT
+    const [editMode, setEditMode] = React.useState(false);
+    const [draft, setDraft] = React.useState<Record<string, string>>({});
+    const [confirmEditOpen, setConfirmEditOpen] = React.useState(false);
+    const { castUpdates } = useTypedUpdates(meta);
 
-    for (const f of fields) {
-      if (data[f.key] === undefined) continue;
-      if (isProtectedField(f.key)) continue;
-      next[f.key] = normalizeToString(data[f.key]);
-    }
+    const lang = React.useMemo(
+        () => getPageAllLang(i18n.language),
+        [i18n.language],
+    );
 
-    // langues (meta.languages -> keys)
-    if (meta?.languages) {
-      for (const l of LANGS) {
-        const k = meta.languages?.[l.key];
-        if (!k) continue;
-        if (data[k] === undefined) continue;
-        if (isProtectedField(k)) continue;
-        next[k] = normalizeToString(data[k]);
-      }
-    }
+    const load = React.useCallback(async () => {
+        setLoading(true);
+        setError(null);
 
-    setDraft(next);
-    setEditMode(true);
+        try {
+            const json = await apiFetch<ShowResponse>(`/show/${entity}/${id}`, {
+                method: "GET",
+                auth: true,
+                query: {
+                    lang,
+                },
+            });
 
-    // Si delete mode actif, on le coupe (évite conflits UI)
-    setDeleteMode(false);
-    setSelectedFieldsToClear([]);
-    cancelClear();
-    setConfirmOpen(false);
-  };
+            setMeta(json.meta ?? null);
 
-  const exitEditMode = () => {
-    setEditMode(false);
-    setDraft({});
-    setConfirmEditOpen(false);
-    cancelEdit();
-  };
+            if (!json.success) {
+                setData(null);
+                setError(json.detail || t("common.error"));
+                return;
+            }
 
-  const updateDraft = (key: string, value: string) => {
-    setDraft((prev) => ({ ...prev, [key]: value }));
-  };
+            setData(json.data ?? null);
+        } catch (e: any) {
+            setMeta(null);
+            setData(null);
+            setError(e?.message ?? t("common.error"));
+        } finally {
+            setLoading(false);
+        }
+    }, [entity, id, t]);
 
-  const getChangedUpdates = (): Record<string, any> => {
-    if (!data) return {};
-    return castUpdates(draft, data, isProtectedField);
-  };
+    const loadInsights = React.useCallback(async () => {
+        setInsightsLoading(true);
+        setInsightsError(null);
 
-  const hasAnyValidChange = () => {
-    const updates = getChangedUpdates();
-    return Object.keys(updates).length > 0;
-  };
+        try {
+            const json = await apiFetch<ShowInsightsResponse>(
+                `/show/${entity}/${id}/insights`,
+                {
+                    method: "GET",
+                    auth: true,
+                },
+            );
 
-  // Styles UI pour l’édition inline : donnent des indices visuels clairs (fond léger, bordure, icône)
-  // indiquant qu’un champ est modifiable, tout en conservant une mise en page stable
-  const editableBoxClass =
-    "inline-flex items-center gap-2 rounded-md border px-2 py-1 min-h-[30px] w-full";
-  const editableBoxIdle =
-    "border-black/10 bg-black/3";
-  const editableBoxFocus =
-    "focus-within:border-black/30 focus-within:bg-black/5";
-  const editableInputClass =
-    "w-full bg-transparent outline-none text-sm leading-tight";
-  const pencilIconClass =
-    "text-xs opacity-70 select-none";
+            if (!json.success) {
+                setInsights(null);
+                setInsightsError(json.detail || t("common.error"));
+                return;
+            }
 
-  return (
-    <div className="w-full h-full" style={{ backgroundColor: background, color: textColor }}>
-      <div className="flex flex-col lg:flex-row gap-6 h-full">
-        {/* LEFT */}
-        <div className="flex-1 flex flex-col gap-6 min-w-0">
-          {/* MAIN CARD */}
-          <div
-            className="rounded-2xl border shadow-sm"
-            style={{ borderColor, backgroundColor: background }}
-          >
-            <div
-              className="px-6 py-5 border-b flex items-start justify-between gap-4"
-              style={{ borderColor }}
-            >
-              <div className="min-w-0">
-                <h2 className="text-3xl font-semibold truncate">{title}</h2>
-              </div>
+            setInsights(json.data ?? null);
+        } catch (e: any) {
+            setInsights(null);
+            setInsightsError(e?.message ?? t("common.error"));
+        } finally {
+            setInsightsLoading(false);
+        }
+    }, [entity, id, lang, t]);
 
-              <div className="flex items-center gap-2 shrink-0">
-                {/* Confirm clear (delete mode) */}
-                {deleteMode && (
-                  <button
-                    type="button"
-                    disabled={selectedFieldsToClear.length === 0}
-                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                    style={{
-                      backgroundColor: background,
-                      borderColor,
-                      color: textColor,
-                    }}
-                    onClick={() => {
-                      openClearConfirm({ entity, id, clear_fields: selectedFieldsToClear });
-                      setConfirmOpen(true);
-                    }}
-                  >
-                    {t("dashboardSidebar.pageShow.confirm")}
-                  </button>
-                )}
+    React.useEffect(() => {
+        void load();
+        void loadInsights();
+    }, [load, loadInsights]);
 
-                {/* Confirm edit (edit mode) */}
-                {editMode && (
-                  <button
-                    type="button"
-                    disabled={!hasAnyValidChange()}
-                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                    style={{ backgroundColor: background, borderColor, color: textColor }}
-                    onClick={() => setConfirmEditOpen(true)}
-                  >
-                    {t("dashboardSidebar.pageShow.confirm")}
-                  </button>
-                )}
+    const handleChildShow = React.useCallback(
+        (childEntity: Entity, childUid: number) => {
+            navigate(`/admin/places/show/${childEntity}/${childUid}`);
+        },
+        [navigate],
+    );
 
-                {/* EDIT button -> toggles inline edit mode */}
-                {canEdit && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (editMode) {
-                        exitEditMode();
-                      } else {
-                        enterEditMode();
-                      }
-                    }}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{ backgroundColor: background, borderColor, color: textColor }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverPrimary04; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = background; }}
-                  >
-                    {editMode ? t("common.cancel") : t("dashboardSidebar.pageShow.edit")}
-                  </button>
-                )}
+    // Hook edit -> /edit
+    const {
+        loading: editLoading,
+        error: editError,
+        confirmWith: confirmEditWith,
+        cancel: cancelEdit,
+    } = useEdit<{ entity: Entity; id: number; updates: Record<string, any> }>(
+        (tgt) => ({
+            entity: tgt.entity,
+            filters: [{ field: "uid", value: tgt.id }],
+            updates: tgt.updates,
+        }),
+    );
 
-                {/* DELETE button */}
-                {canDelete && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (deleteMode) {
-                        // Cancel delete mode
-                        setDeleteMode(false);
-                        setSelectedFieldsToClear([]);
-                        cancelClear();
-                        setConfirmOpen(false);
-                      } else {
-                        setDeleteMode(true);
-                        exitEditMode();
-                      }
-                    }}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{
-                      backgroundColor: background,
-                      borderColor: deleteMode
-                        ? borderColor
-                        : "rgba(239,68,68,0.35)", // couleur rouge
-                      color: deleteMode
-                        ? textColor
-                        : "rgb(220,38,38)", // couleur rouge
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!deleteMode) {
-                        e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)"; // rouge clair
-                      } else {
-                        e.currentTarget.style.backgroundColor = hoverPrimary04;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = background;
-                    }}
-                  >
-                    {deleteMode ? t("common.cancel") : t("dashboardSidebar.pageShow.delete")}
-                  </button>
-                )}
-              </div>
-            </div>
+    // Hook delete -> /delete (DELETE)
+    const {
+        loading: clearLoading,
+        error: clearError,
+        openConfirm: openClearConfirm,
+        confirm: confirmClear,
+        cancel: cancelClear,
+    } = useDelete<{ entity: Entity; id: number; clear_fields: string[] }>(
+        (tgt) => ({
+            entity: tgt.entity,
+            filters: [{ field: "uid", value: tgt.id }],
+            clear_fields: tgt.clear_fields,
+        }),
+    );
 
-            <div className="px-6 py-5">
-              {loading && (
-                <div className="text-sm" style={{ color: hoverText07 }}>
-                  {t("dashboardSidebar.pageShow.loading")}
-                </div>
-              )}
+    const title =
+        meta?.title_key && data?.[meta.title_key]
+            ? String(data[meta.title_key])
+            : `${entity} #${id}`;
 
-              {error && (
-                <div className="text-sm" style={{ color: "rgb(220,38,38)" }}>
-                  {t("dashboardSidebar.pageShow.error")} {error}
-                </div>
-              )}
+    const fields = meta?.fields ?? [];
 
-              {!loading && !error && !data && (
-                <div className="text-sm" style={{ color: hoverText07 }}>
-                  {t("dashboardSidebar.pageShow.noData")}
-                </div>
-              )}
+    const relationDisplayItems = React.useMemo(
+        () => getRelationDisplayItems(data),
+        [data],
+    );
 
-              {data && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* MAIN */}
-                  <div
-                    className="rounded-xl border p-4"
-                    style={{ borderColor, backgroundColor: hoverPrimary04 }}
-                  >
-                    <div className="text-sm font-medium mb-3">
-                      {t("dashboardSidebar.pageShow.mainInfo")}
-                    </div>
+    const toggleClearField = (key: string) => {
+        setSelectedFieldsToClear((prev) =>
+            prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
+        );
+    };
 
-                    <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
-                      {fields
-                        .filter((f) => data[f.key] !== undefined)
-                        .map((f) => {
-                          const protectedField = isProtectedField(f.key);
-                          const showClearCheckbox = deleteMode && !protectedField;
-                          const showEditInput = editMode && !protectedField;
+    // --- EDIT helpers
+    const isProtectedField = (key: string) => key === "uid" || key === "id";
 
-                          return (
-                            <React.Fragment key={f.key}>
-                              {/* label */}
-                              <div className="font-medium flex items-center gap-2" style={{ color: hoverText07 }}>
-                                <span className="inline-flex w-4 justify-center shrink-0">
-                                  <input
-                                    type="checkbox"
-                                    className={[
-                                      "h-4 w-4 transition-opacity",
-                                      showClearCheckbox ? "opacity-100" : "opacity-0 pointer-events-none",
-                                    ].join(" ")}
-                                    checked={selectedFieldsToClear.includes(f.key)}
-                                    onChange={() => toggleClearField(f.key)}
-                                    tabIndex={showClearCheckbox ? 0 : -1}
-                                    aria-hidden={!showClearCheckbox}
-                                  />
-                                </span>
-                                {f.label}
-                              </div>
+    const enterEditMode = () => {
+        if (!data) return;
 
-                              {/* value / input */}
-                              <div className="break-words">
-                                {!showEditInput && (
-                                  <span>{formatValue(f.kind, data[f.key])}</span>
-                                )}
+        // initialise draft avec les valeurs actuelles (only for fields we show + languages)
+        const next: Record<string, string> = {};
 
-                                {showEditInput && (
-                                  <div
-                                    className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
-                                    style={{
-                                      borderColor,
-                                      backgroundColor: background,
-                                    }}
-                                  >
-                                    {/* BOOL */}
-                                    {f.kind === "bool" ? (
-                                      <input
-                                        type="checkbox"
-                                        checked={draft[f.key] === "true"}
-                                        onChange={(e) =>
-                                          updateDraft(f.key, e.target.checked ? "true" : "false")
-                                        }
-                                      />
-                                    ) : 
-                                    /* NUMBER */
-                                    f.kind === "number" || f.kind === "year" ? (
-                                      <input
-                                        type="number"
-                                        value={draft[f.key] ?? ""}
-                                        onChange={(e) => updateDraft(f.key, e.target.value)}
-                                        className={editableInputClass}
-                                        style={{ color: textColor }}
-                                      />
-                                    ) : (
-                                    /* TEXT DEFAULT */
-                                      <input
-                                        type="text"
-                                        value={draft[f.key] ?? ""}
-                                        onChange={(e) => updateDraft(f.key, e.target.value)}
-                                        className={editableInputClass}
-                                        style={{ color: textColor }}
-                                      />
-                                    )}
+        for (const f of fields) {
+            if (data[f.key] === undefined) continue;
+            if (isProtectedField(f.key)) continue;
+            next[f.key] = normalizeToString(data[f.key]);
+        }
 
-                                    <span className={pencilIconClass} style={{ color: hoverText07 }}>
-                                      {"\u270E"}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </React.Fragment>
-                          );
-                        })}
-                    </div>
+        // langues (meta.languages -> keys)
+        if (meta?.languages) {
+            for (const l of LANGS) {
+                const k = meta.languages?.[l.key];
+                if (!k) continue;
+                if (data[k] === undefined) continue;
+                if (isProtectedField(k)) continue;
+                next[k] = normalizeToString(data[k]);
+            }
+        }
 
-                    {/* RELATED READ-ONLY INFO */}
-                    {relationDisplayItems.length > 0 && (
-                      <>
-                        <div className="my-4 border-t" style={{ borderColor }} />
+        setDraft(next);
+        setEditMode(true);
 
-                        <div className="text-sm font-medium mb-3">
-                          {t("dashboardSidebar.pageShow.relatedInfo")}
-                        </div>
+        // Si delete mode actif, on le coupe (évite conflits UI)
+        setDeleteMode(false);
+        setSelectedFieldsToClear([]);
+        cancelClear();
+        setConfirmOpen(false);
+    };
 
-                        <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
-                          {relationDisplayItems.map((item) => (
-                            <React.Fragment key={item.uidKey}>
-                              <div className="font-medium min-w-0" style={{ color: hoverText07 }}>
-                                {t(item.labelKey)}
-                              </div>
+    const exitEditMode = () => {
+        setEditMode(false);
+        setDraft({});
+        setConfirmEditOpen(false);
+        cancelEdit();
+    };
 
-                              <div className="min-w-0">
-                                <span
-                                  title={item.value}
-                                  className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
-                                >
-                                  {renderEmpty(item.value)}
-                                </span>
-                              </div>
-                            </React.Fragment>
-                          ))}
-                        </div>
-                      </>
-                    )}    
-                  </div>
+    const updateDraft = (key: string, value: string) => {
+        setDraft((prev) => ({ ...prev, [key]: value }));
+    };
 
-                  {/* LANGUAGES */}
-                  {meta?.languages && (
+    const getChangedUpdates = (): Record<string, any> => {
+        if (!data) return {};
+        return castUpdates(draft, data, isProtectedField);
+    };
+
+    const hasAnyValidChange = () => {
+        const updates = getChangedUpdates();
+        return Object.keys(updates).length > 0;
+    };
+
+    // Styles UI pour l’édition inline : donnent des indices visuels clairs (fond léger, bordure, icône)
+    // indiquant qu’un champ est modifiable, tout en conservant une mise en page stable
+    const editableBoxClass =
+        "inline-flex items-center gap-2 rounded-md border px-2 py-1 min-h-[30px] w-full";
+    const editableBoxIdle = "border-black/10 bg-black/3";
+    const editableBoxFocus =
+        "focus-within:border-black/30 focus-within:bg-black/5";
+    const editableInputClass =
+        "w-full bg-transparent outline-none text-sm leading-tight";
+    const pencilIconClass = "text-xs opacity-70 select-none";
+
+    return (
+        <div
+            className="w-full h-full"
+            style={{ backgroundColor: background, color: textColor }}
+        >
+            <div className="flex flex-col lg:flex-row gap-6 h-full">
+                {/* LEFT */}
+                <div className="flex-1 flex flex-col gap-6 min-w-0">
+                    {/* MAIN CARD */}
                     <div
-                      className="rounded-xl border p-4"
-                      style={{ borderColor, backgroundColor: hoverPrimary04 }}
+                        className="rounded-2xl border shadow-sm"
+                        style={{ borderColor, backgroundColor: background }}
                     >
-                      <div className="text-sm font-medium mb-3">
-                        {t("dashboardSidebar.pageShow.languages")}
-                      </div>
+                        <div
+                            className="px-6 py-5 border-b flex items-start justify-between gap-4"
+                            style={{ borderColor }}
+                        >
+                            <div className="min-w-0">
+                                <h2 className="text-3xl font-semibold truncate">
+                                    {title}
+                                </h2>
+                            </div>
 
-                      <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
-                        {LANGS.map((l) => {
-                          const key = meta.languages?.[l.key];
-                          if (!key) return null;
-                          if (data[key] === undefined) return null;
-
-                          const protectedField = isProtectedField(key);
-                          const showClearCheckbox = deleteMode && !protectedField;
-                          const showEditInput = editMode && !protectedField;
-
-                          return (
-                            <React.Fragment key={l.key}>
-                              <div className="font-medium flex items-center gap-2" style={{ color: hoverText07 }}>
-                                <span className="inline-flex w-4 justify-center shrink-0">
-                                  <input
-                                    type="checkbox"
-                                    className={[
-                                      "h-4 w-4 transition-opacity",
-                                      showClearCheckbox ? "opacity-100" : "opacity-0 pointer-events-none",
-                                    ].join(" ")}
-                                    checked={selectedFieldsToClear.includes(key)}
-                                    onChange={() => toggleClearField(key)}
-                                    tabIndex={showClearCheckbox ? 0 : -1}
-                                    aria-hidden={!showClearCheckbox}
-                                  />
-                                </span>
-                                {t("dashboardSidebar.pageShow.text")} ({l.label})
-                              </div>
-
-                              <div>
-                                {!showEditInput && (
-                                  <div className="italic">{renderEmpty(data[key])}</div>
+                            <div className="flex items-center gap-2 shrink-0">
+                                {/* Confirm clear (delete mode) */}
+                                {deleteMode && (
+                                    <button
+                                        type="button"
+                                        disabled={
+                                            selectedFieldsToClear.length === 0
+                                        }
+                                        className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                                        style={{
+                                            backgroundColor: background,
+                                            borderColor,
+                                            color: textColor,
+                                        }}
+                                        onClick={() => {
+                                            openClearConfirm({
+                                                entity,
+                                                id,
+                                                clear_fields:
+                                                    selectedFieldsToClear,
+                                            });
+                                            setConfirmOpen(true);
+                                        }}
+                                    >
+                                        {t("dashboardSidebar.pageShow.confirm")}
+                                    </button>
                                 )}
 
-                                {showEditInput && (
-                                  <div
-                                    className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
-                                    style={{
-                                      borderColor,
-                                      backgroundColor: background,
-                                    }}
-                                  >
-                                    <input
-                                      value={draft[key] ?? normalizeToString(data[key])}
-                                      onChange={(e) => updateDraft(key, e.target.value)}
-                                      className={`${editableInputClass} italic`}
-                                      style={{ color: textColor }}
-                                    />
-                                    <span className={pencilIconClass} style={{ color: hoverText07 }}>
-                                      {"\u270E"}
-                                    </span>
-                                  </div>
+                                {/* Confirm edit (edit mode) */}
+                                {editMode && (
+                                    <button
+                                        type="button"
+                                        disabled={!hasAnyValidChange()}
+                                        className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                                        style={{
+                                            backgroundColor: background,
+                                            borderColor,
+                                            color: textColor,
+                                        }}
+                                        onClick={() => setConfirmEditOpen(true)}
+                                    >
+                                        {t("dashboardSidebar.pageShow.confirm")}
+                                    </button>
                                 )}
-                              </div>
-                            </React.Fragment>
-                          );
-                        })}
-                      </div>
+
+                                {/* EDIT button -> toggles inline edit mode */}
+                                {canEdit && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (editMode) {
+                                                exitEditMode();
+                                            } else {
+                                                enterEditMode();
+                                            }
+                                        }}
+                                        className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                                        style={{
+                                            backgroundColor: background,
+                                            borderColor,
+                                            color: textColor,
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            e.currentTarget.style.backgroundColor =
+                                                hoverPrimary04;
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor =
+                                                background;
+                                        }}
+                                    >
+                                        {editMode
+                                            ? t("common.cancel")
+                                            : t(
+                                                  "dashboardSidebar.pageShow.edit",
+                                              )}
+                                    </button>
+                                )}
+
+                                {/* DELETE button */}
+                                {canDelete && (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            if (deleteMode) {
+                                                // Cancel delete mode
+                                                setDeleteMode(false);
+                                                setSelectedFieldsToClear([]);
+                                                cancelClear();
+                                                setConfirmOpen(false);
+                                            } else {
+                                                setDeleteMode(true);
+                                                exitEditMode();
+                                            }
+                                        }}
+                                        className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                                        style={{
+                                            backgroundColor: background,
+                                            borderColor: deleteMode
+                                                ? borderColor
+                                                : "rgba(239,68,68,0.35)", // couleur rouge
+                                            color: deleteMode
+                                                ? textColor
+                                                : "rgb(220,38,38)", // couleur rouge
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if (!deleteMode) {
+                                                e.currentTarget.style.backgroundColor =
+                                                    "rgba(239,68,68,0.08)"; // rouge clair
+                                            } else {
+                                                e.currentTarget.style.backgroundColor =
+                                                    hoverPrimary04;
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            e.currentTarget.style.backgroundColor =
+                                                background;
+                                        }}
+                                    >
+                                        {deleteMode
+                                            ? t("common.cancel")
+                                            : t(
+                                                  "dashboardSidebar.pageShow.delete",
+                                              )}
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-5">
+                            {loading && (
+                                <div
+                                    className="text-sm"
+                                    style={{ color: hoverText07 }}
+                                >
+                                    {t("dashboardSidebar.pageShow.loading")}
+                                </div>
+                            )}
+
+                            {error && (
+                                <div
+                                    className="text-sm"
+                                    style={{ color: "rgb(220,38,38)" }}
+                                >
+                                    {t("dashboardSidebar.pageShow.error")}{" "}
+                                    {error}
+                                </div>
+                            )}
+
+                            {!loading && !error && !data && (
+                                <div
+                                    className="text-sm"
+                                    style={{ color: hoverText07 }}
+                                >
+                                    {t("dashboardSidebar.pageShow.noData")}
+                                </div>
+                            )}
+
+                            {data && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {/* MAIN */}
+                                    <div
+                                        className="rounded-xl border p-4"
+                                        style={{
+                                            borderColor,
+                                            backgroundColor: hoverPrimary04,
+                                        }}
+                                    >
+                                        <div className="text-sm font-medium mb-3">
+                                            {t(
+                                                "dashboardSidebar.pageShow.mainInfo",
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
+                                            {fields
+                                                .filter(
+                                                    (f) =>
+                                                        data[f.key] !==
+                                                        undefined,
+                                                )
+                                                .map((f) => {
+                                                    const protectedField =
+                                                        isProtectedField(f.key);
+                                                    const showClearCheckbox =
+                                                        deleteMode &&
+                                                        !protectedField;
+                                                    const showEditInput =
+                                                        editMode &&
+                                                        !protectedField;
+
+                                                    return (
+                                                        <React.Fragment
+                                                            key={f.key}
+                                                        >
+                                                            {/* label */}
+                                                            <div
+                                                                className="font-medium flex items-center gap-2"
+                                                                style={{
+                                                                    color: hoverText07,
+                                                                }}
+                                                            >
+                                                                <span className="inline-flex w-4 justify-center shrink-0">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className={[
+                                                                            "h-4 w-4 transition-opacity",
+                                                                            showClearCheckbox
+                                                                                ? "opacity-100"
+                                                                                : "opacity-0 pointer-events-none",
+                                                                        ].join(
+                                                                            " ",
+                                                                        )}
+                                                                        checked={selectedFieldsToClear.includes(
+                                                                            f.key,
+                                                                        )}
+                                                                        onChange={() =>
+                                                                            toggleClearField(
+                                                                                f.key,
+                                                                            )
+                                                                        }
+                                                                        tabIndex={
+                                                                            showClearCheckbox
+                                                                                ? 0
+                                                                                : -1
+                                                                        }
+                                                                        aria-hidden={
+                                                                            !showClearCheckbox
+                                                                        }
+                                                                    />
+                                                                </span>
+                                                                {f.label}
+                                                            </div>
+
+                                                            {/* value / input */}
+                                                            <div className="break-words">
+                                                                {!showEditInput && (
+                                                                    <span>
+                                                                        {formatValue(
+                                                                            f.kind,
+                                                                            data[
+                                                                                f
+                                                                                    .key
+                                                                            ],
+                                                                        )}
+                                                                    </span>
+                                                                )}
+
+                                                                {showEditInput && (
+                                                                    <div
+                                                                        className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
+                                                                        style={{
+                                                                            borderColor,
+                                                                            backgroundColor:
+                                                                                background,
+                                                                        }}
+                                                                    >
+                                                                        {/* BOOL */}
+                                                                        {f.kind ===
+                                                                        "bool" ? (
+                                                                            <input
+                                                                                type="checkbox"
+                                                                                checked={
+                                                                                    draft[
+                                                                                        f
+                                                                                            .key
+                                                                                    ] ===
+                                                                                    "true"
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) =>
+                                                                                    updateDraft(
+                                                                                        f.key,
+                                                                                        e
+                                                                                            .target
+                                                                                            .checked
+                                                                                            ? "true"
+                                                                                            : "false",
+                                                                                    )
+                                                                                }
+                                                                            />
+                                                                        ) : /* NUMBER */
+                                                                        f.kind ===
+                                                                              "number" ||
+                                                                          f.kind ===
+                                                                              "year" ? (
+                                                                            <input
+                                                                                type="number"
+                                                                                value={
+                                                                                    draft[
+                                                                                        f
+                                                                                            .key
+                                                                                    ] ??
+                                                                                    ""
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) =>
+                                                                                    updateDraft(
+                                                                                        f.key,
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                    )
+                                                                                }
+                                                                                className={
+                                                                                    editableInputClass
+                                                                                }
+                                                                                style={{
+                                                                                    color: textColor,
+                                                                                }}
+                                                                            />
+                                                                        ) : (
+                                                                            /* TEXT DEFAULT */
+                                                                            <input
+                                                                                type="text"
+                                                                                value={
+                                                                                    draft[
+                                                                                        f
+                                                                                            .key
+                                                                                    ] ??
+                                                                                    ""
+                                                                                }
+                                                                                onChange={(
+                                                                                    e,
+                                                                                ) =>
+                                                                                    updateDraft(
+                                                                                        f.key,
+                                                                                        e
+                                                                                            .target
+                                                                                            .value,
+                                                                                    )
+                                                                                }
+                                                                                className={
+                                                                                    editableInputClass
+                                                                                }
+                                                                                style={{
+                                                                                    color: textColor,
+                                                                                }}
+                                                                            />
+                                                                        )}
+
+                                                                        <span
+                                                                            className={
+                                                                                pencilIconClass
+                                                                            }
+                                                                            style={{
+                                                                                color: hoverText07,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                "\u270E"
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                        </div>
+
+                                        {/* RELATED READ-ONLY INFO */}
+                                        {relationDisplayItems.length > 0 && (
+                                            <>
+                                                <div
+                                                    className="my-4 border-t"
+                                                    style={{ borderColor }}
+                                                />
+
+                                                <div className="text-sm font-medium mb-3">
+                                                    {t(
+                                                        "dashboardSidebar.pageShow.relatedInfo",
+                                                    )}
+                                                </div>
+
+                                                <div className="grid grid-cols-[140px_minmax(0,1fr)] gap-x-4 gap-y-2 text-sm">
+                                                    {relationDisplayItems.map(
+                                                        (item) => (
+                                                            <React.Fragment
+                                                                key={
+                                                                    item.uidKey
+                                                                }
+                                                            >
+                                                                <div
+                                                                    className="font-medium min-w-0"
+                                                                    style={{
+                                                                        color: hoverText07,
+                                                                    }}
+                                                                >
+                                                                    {t(
+                                                                        item.labelKey,
+                                                                    )}
+                                                                </div>
+
+                                                                <div className="min-w-0">
+                                                                    <span
+                                                                        title={
+                                                                            item.value
+                                                                        }
+                                                                        className="block max-w-full overflow-hidden text-ellipsis whitespace-nowrap"
+                                                                    >
+                                                                        {renderEmpty(
+                                                                            item.value,
+                                                                        )}
+                                                                    </span>
+                                                                </div>
+                                                            </React.Fragment>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
+
+                                    {/* LANGUAGES */}
+                                    {meta?.languages && (
+                                        <div
+                                            className="rounded-xl border p-4"
+                                            style={{
+                                                borderColor,
+                                                backgroundColor: hoverPrimary04,
+                                            }}
+                                        >
+                                            <div className="text-sm font-medium mb-3">
+                                                {t(
+                                                    "dashboardSidebar.pageShow.languages",
+                                                )}
+                                            </div>
+
+                                            <div className="grid grid-cols-[140px_1fr] gap-x-4 gap-y-2 text-sm">
+                                                {LANGS.map((l) => {
+                                                    const key =
+                                                        meta.languages?.[l.key];
+                                                    if (!key) return null;
+                                                    if (data[key] === undefined)
+                                                        return null;
+
+                                                    const protectedField =
+                                                        isProtectedField(key);
+                                                    const showClearCheckbox =
+                                                        deleteMode &&
+                                                        !protectedField;
+                                                    const showEditInput =
+                                                        editMode &&
+                                                        !protectedField;
+
+                                                    return (
+                                                        <React.Fragment
+                                                            key={l.key}
+                                                        >
+                                                            <div
+                                                                className="font-medium flex items-center gap-2"
+                                                                style={{
+                                                                    color: hoverText07,
+                                                                }}
+                                                            >
+                                                                <span className="inline-flex w-4 justify-center shrink-0">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        className={[
+                                                                            "h-4 w-4 transition-opacity",
+                                                                            showClearCheckbox
+                                                                                ? "opacity-100"
+                                                                                : "opacity-0 pointer-events-none",
+                                                                        ].join(
+                                                                            " ",
+                                                                        )}
+                                                                        checked={selectedFieldsToClear.includes(
+                                                                            key,
+                                                                        )}
+                                                                        onChange={() =>
+                                                                            toggleClearField(
+                                                                                key,
+                                                                            )
+                                                                        }
+                                                                        tabIndex={
+                                                                            showClearCheckbox
+                                                                                ? 0
+                                                                                : -1
+                                                                        }
+                                                                        aria-hidden={
+                                                                            !showClearCheckbox
+                                                                        }
+                                                                    />
+                                                                </span>
+                                                                {t(
+                                                                    "dashboardSidebar.pageShow.text",
+                                                                )}{" "}
+                                                                ({l.label})
+                                                            </div>
+
+                                                            <div>
+                                                                {!showEditInput && (
+                                                                    <div className="italic">
+                                                                        {renderEmpty(
+                                                                            data[
+                                                                                key
+                                                                            ],
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {showEditInput && (
+                                                                    <div
+                                                                        className={`${editableBoxClass} ${editableBoxIdle} ${editableBoxFocus}`}
+                                                                        style={{
+                                                                            borderColor,
+                                                                            backgroundColor:
+                                                                                background,
+                                                                        }}
+                                                                    >
+                                                                        <input
+                                                                            value={
+                                                                                draft[
+                                                                                    key
+                                                                                ] ??
+                                                                                normalizeToString(
+                                                                                    data[
+                                                                                        key
+                                                                                    ],
+                                                                                )
+                                                                            }
+                                                                            onChange={(
+                                                                                e,
+                                                                            ) =>
+                                                                                updateDraft(
+                                                                                    key,
+                                                                                    e
+                                                                                        .target
+                                                                                        .value,
+                                                                                )
+                                                                            }
+                                                                            className={`${editableInputClass} italic`}
+                                                                            style={{
+                                                                                color: textColor,
+                                                                            }}
+                                                                        />
+                                                                        <span
+                                                                            className={
+                                                                                pencilIconClass
+                                                                            }
+                                                                            style={{
+                                                                                color: hoverText07,
+                                                                            }}
+                                                                        >
+                                                                            {
+                                                                                "\u270E"
+                                                                            }
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </React.Fragment>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
 
-          {/* CHILDREN */}
-          <div
-            className="rounded-2xl border shadow-sm"
-            style={{ borderColor, backgroundColor: background }}
-          >
-            <div className="px-6 py-4 border-b" style={{ borderColor }}>
-              <h3 className="text-xl font-semibold">
-                {t("dashboardSidebar.pageShow.children")}
-              </h3>
-              <div className="text-sm" style={{ color: hoverText07 }}>
-                {t("dashboardSidebar.pageShow.childrenHint")}
-              </div>
+                    {/* CHILDREN */}
+                    <div
+                        className="rounded-2xl border shadow-sm"
+                        style={{ borderColor, backgroundColor: background }}
+                    >
+                        <div
+                            className="px-6 py-4 border-b"
+                            style={{ borderColor }}
+                        >
+                            <h3 className="text-xl font-semibold">
+                                {t("dashboardSidebar.pageShow.children")}
+                            </h3>
+                            <div
+                                className="text-sm"
+                                style={{ color: hoverText07 }}
+                            >
+                                {t("dashboardSidebar.pageShow.childrenHint")}
+                            </div>
+                        </div>
+                        {meta?.children?.length ? (
+                            <div className="px-6 py-5 flex flex-col gap-6">
+                                {meta.children.map((child) => (
+                                    <ChildrenTable
+                                        key={child.key}
+                                        parentEntity={entity}
+                                        parentId={id}
+                                        child={child}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div
+                                className="px-6 py-5 text-sm"
+                                style={{ color: hoverText07 }}
+                            >
+                                {t("dashboardSidebar.pageShow.noChildren")}
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* RIGHT */}
+                <aside className="w-full lg:w-[360px] shrink-0">
+                    <div
+                        className="relative rounded-2xl border shadow-sm h-full"
+                        style={{ borderColor, backgroundColor: background }}
+                    >
+                        <div
+                            className="px-6 py-4 border-b"
+                            style={{ borderColor }}
+                        >
+                            <h3 className="text-xl font-semibold">
+                                {t("dashboardSidebar.pageShow.insights")}
+                            </h3>
+                            <div
+                                className="text-sm"
+                                style={{ color: hoverText07 }}
+                            >
+                                {t("dashboardSidebar.pageShow.insightsHint")}
+                            </div>
+                        </div>
+
+                        <div className="px-6 py-5 relative min-h-[180px]">
+                            {insightsLoading && <InsightsLoadingOverlay />}
+
+                            {insightsError ? (
+                                <div
+                                    className="text-sm"
+                                    style={{ color: "rgb(220,38,38)" }}
+                                >
+                                    {insightsError}
+                                </div>
+                            ) : (
+                                <InsightsPanel
+                                    insights={insights}
+                                    onChildShow={handleChildShow}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </aside>
             </div>
-            {meta?.children?.length ? (
-              <div className="px-6 py-5 flex flex-col gap-6">
-                {meta.children.map((child) => (
-                  <ChildrenTable
-                    key={child.key}
-                    parentEntity={entity}
-                    parentId={id}
-                    child={child}
-                  />
-                ))}
-              </div>
-            ) : (
-              <div className="px-6 py-5 text-sm" style={{ color: hoverText07 }}>
-                {t("dashboardSidebar.pageShow.noChildren")}
-              </div>
+
+            {/* Errors */}
+            {clearError && (
+                <div
+                    className="text-sm mb-2"
+                    style={{ color: "rgb(220,38,38)" }}
+                >
+                    {t("dashboardSidebar.pageShow.deleteError")} {clearError}
+                </div>
             )}
-          </div>
-        </div>
 
-        {/* RIGHT */}
-        <aside className="w-full lg:w-[360px] shrink-0">
-          <div
-            className="relative rounded-2xl border shadow-sm h-full"
-            style={{ borderColor, backgroundColor: background }}
-          >
-            <div className="px-6 py-4 border-b" style={{ borderColor }}>
-              <h3 className="text-xl font-semibold">
-                {t("dashboardSidebar.pageShow.insights")}
-              </h3>
-              <div className="text-sm" style={{ color: hoverText07 }}>
-                {t("dashboardSidebar.pageShow.insightsHint")}
-              </div>
-            </div>
-
-            <div className="px-6 py-5 relative min-h-[180px]">
-              {insightsLoading && <InsightsLoadingOverlay />}
-
-              {insightsError ? (
-                <div className="text-sm" style={{ color: "rgb(220,38,38)" }}>
-                  {insightsError}
+            {editError && (
+                <div
+                    className="text-sm mb-2"
+                    style={{ color: "rgb(220,38,38)" }}
+                >
+                    {t("dashboardSidebar.pageShow.editError")} {editError}
                 </div>
-              ) : (
-                <InsightsPanel 
-                  insights={insights}
-                  onChildShow={handleChildShow}/>
-              )}
-            </div>
-          </div>
-        </aside>
-      </div>
+            )}
 
-      {/* Errors */}
-      {clearError && (
-        <div className="text-sm mb-2" style={{ color: "rgb(220,38,38)" }}>
-          {t("dashboardSidebar.pageShow.deleteError")} {clearError}
+            {/* Confirm Delete modal */}
+            <ConfirmModal
+                open={confirmOpen}
+                title={t("dashboardSidebar.pageShow.confirmDeleteTitle")}
+                message={
+                    selectedFieldsToClear.length === 0
+                        ? t("dashboardSidebar.pageShow.noSelection")
+                        : t("dashboardSidebar.pageShow.confirmClearMessage", {
+                              fields: selectedFieldsToClear.join("\n- "),
+                          })
+                }
+                confirmLabel={
+                    clearLoading
+                        ? t("dashboardSidebar.pageShow.deleting")
+                        : t("dashboardSidebar.pageShow.delete")
+                }
+                cancelLabel={t("common.cancel")}
+                onCancel={() => setConfirmOpen(false)}
+                onConfirm={async () => {
+                    const ok = await confirmClear();
+                    if (!ok) return;
+
+                    setConfirmOpen(false);
+                    setDeleteMode(false);
+                    setSelectedFieldsToClear([]);
+                    void load();
+                }}
+            />
+
+            {/* Confirm EDIT modal */}
+            <ConfirmModal
+                open={confirmEditOpen}
+                title={t("dashboardSidebar.pageShow.confirmEditTitle")}
+                message={
+                    Object.keys(getChangedUpdates()).length === 0
+                        ? t("dashboardSidebar.pageShow.noSelection")
+                        : t("dashboardSidebar.pageShow.confirmEditMessage", {
+                              fields: Object.keys(getChangedUpdates()).join(
+                                  "\n- ",
+                              ),
+                          })
+                }
+                confirmLabel={
+                    editLoading
+                        ? t("dashboardSidebar.pageShow.saving")
+                        : t("dashboardSidebar.pageShow.save")
+                }
+                cancelLabel={t("common.cancel")}
+                onCancel={() => setConfirmEditOpen(false)}
+                onConfirm={async () => {
+                    const updates = getChangedUpdates();
+                    if (Object.keys(updates).length === 0) return;
+
+                    const ok = await confirmEditWith({
+                        entity,
+                        filters: [{ field: "uid", value: id }],
+                        updates,
+                    });
+                    if (!ok) return;
+                    setConfirmEditOpen(false);
+                    exitEditMode();
+                    void load();
+                }}
+            />
         </div>
-      )}
-
-      {editError && (
-        <div className="text-sm mb-2" style={{ color: "rgb(220,38,38)" }}>
-          {t("dashboardSidebar.pageShow.editError")} {editError}
-        </div>
-      )}
-
-      {/* Confirm Delete modal */}
-      <ConfirmModal
-        open={confirmOpen}
-        title={t("dashboardSidebar.pageShow.confirmDeleteTitle")}
-        message={
-          selectedFieldsToClear.length === 0
-            ? t("dashboardSidebar.pageShow.noSelection")
-            : t("dashboardSidebar.pageShow.confirmClearMessage", {
-                fields: selectedFieldsToClear.join("\n- "),
-              })
-        }
-        confirmLabel={
-          clearLoading
-            ? t("dashboardSidebar.pageShow.deleting")
-            : t("dashboardSidebar.pageShow.delete")
-        }
-        cancelLabel={t("common.cancel")}
-        onCancel={() => setConfirmOpen(false)}
-        onConfirm={async () => {
-          const ok = await confirmClear();
-          if (!ok) return;
-
-          setConfirmOpen(false);
-          setDeleteMode(false);
-          setSelectedFieldsToClear([]);
-          void load();
-        }}
-      />
-
-      {/* Confirm EDIT modal */}
-      <ConfirmModal
-        open={confirmEditOpen}
-        title={t("dashboardSidebar.pageShow.confirmEditTitle")}
-        message={
-          Object.keys(getChangedUpdates()).length === 0
-            ? t("dashboardSidebar.pageShow.noSelection")
-            : t("dashboardSidebar.pageShow.confirmEditMessage", {
-                fields: Object.keys(getChangedUpdates()).join("\n- "),
-              })
-        }
-        confirmLabel={
-          editLoading 
-            ? t("dashboardSidebar.pageShow.saving")
-            : t("dashboardSidebar.pageShow.save")
-        }
-        cancelLabel={t("common.cancel")}
-        onCancel={() => setConfirmEditOpen(false)}
-        onConfirm={async () => {
-          const updates = getChangedUpdates();
-          if (Object.keys(updates).length === 0) return;
-
-          const ok = await confirmEditWith({
-            entity,
-            filters: [{ field: "uid", value: id }],
-            updates,
-          });
-          if (!ok) return;
-          setConfirmEditOpen(false);
-          exitEditMode();
-          void load();
-        }}
-      />
-    </div>
-  );
+    );
 }
