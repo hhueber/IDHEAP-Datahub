@@ -29,7 +29,7 @@
       "noQuestionsForSelection": "Pas de questions pour cette sélection.",
       "bootstrapError": "Impossible de charger les données initiales.",
       "availableYears": "Années disponibles pour cette question",
-      "noAvailableYears": "Acune année disponible",
+      "noAvailableYears": "Aucune année disponible",
       "selectYear": "Selectionner une année",
       "choroplethGlobalYear": "Années disponibles pour cette question",
       "granularity": "Granularité",
@@ -90,6 +90,16 @@
          "network": "Problème de réseau. Vérifiez votre connexion.",
          "failedToLoadPlaceOfInterest": "Impossible de charger les lieux d'intérêt",
          "failedToFetchSuggestions": "Impossible de récupérer les suggestions"
+      },
+      "choroplethColor": {
+         "title": "Intensité des couleurs",
+         "light": "Léger",
+         "original": "Original",
+         "strong": "Marqué",
+         "lighter": "Plus léger",
+         "stronger": "Plus marqué",
+         "reset": "Réinitialiser",
+         "ariaLabel": "Intensité des couleurs du choropleth"
       }
    },
    "common": {

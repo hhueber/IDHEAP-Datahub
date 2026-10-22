@@ -4,6 +4,11 @@ from sqlalchemy import ForeignKey, Integer, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
+from .question_per_survey import QuestionPerSurvey
+
+if TYPE_CHECKING:
+    from .commune import Commune
+    from .question_per_survey import QuestionPerSurvey
 
 if TYPE_CHECKING:
     from .commune import Commune

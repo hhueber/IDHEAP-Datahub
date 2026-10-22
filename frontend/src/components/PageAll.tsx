@@ -462,7 +462,7 @@ export default function PageAll({
                                                 ];
                                                 const content = col.render
                                                     ? col.render(row)
-                                                    : value ?? "\u2014"; // symbole unicode pour cela "—"
+                                                    : (value ?? "\u2014"); // symbole unicode pour cela "—"
                                                 const alignClass =
                                                     col.align === "center"
                                                         ? "text-center"

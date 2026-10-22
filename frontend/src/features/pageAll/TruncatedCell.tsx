@@ -14,7 +14,7 @@ export function TruncatedCell({
     const text =
         typeof value === "string" || typeof value === "number"
             ? String(value)
-            : title ?? "";
+            : (title ?? "");
 
     return (
         <span
