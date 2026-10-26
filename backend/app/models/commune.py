@@ -12,12 +12,6 @@ if TYPE_CHECKING:
     from .commune_map import CommuneMap
     from .district import District
 
-if TYPE_CHECKING:
-    from .answer import Answer
-    from .canton import Canton
-    from .commune_map import CommuneMap
-    from .district import District
-
 
 class Commune(Base):
     __tablename__ = "commune"

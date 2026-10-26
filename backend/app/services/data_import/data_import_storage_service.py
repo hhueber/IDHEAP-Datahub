@@ -120,6 +120,19 @@ def write_analysis(
     write_json(get_workspace_dir(import_dir) / "analysis.json", analysis)
 
 
+def read_dataset_metadata(import_dir: Path) -> dict[str, Any]:
+    path = get_workspace_dir(import_dir) / "dataset_metadata.json"
+    if not path.exists():
+        raise ValueError("DatasetMetadata have not been generated yet")
+
+    return read_json(path)
+
+
+def write_dataset_metadata(import_dir: Path, data: dict[str, Any]) -> None:
+    path = get_workspace_dir(import_dir) / "dataset_metadata.json"
+    write_json(path, data)
+
+
 def read_issues(
     import_dir: Path,
 ) -> dict[str, list[dict[str, Any]]]:

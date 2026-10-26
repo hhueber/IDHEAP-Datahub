@@ -417,3 +417,28 @@ class DataProjectResponse(BaseModel):
     success: bool
     detail: str
     data: list[DataProjectPayload]
+
+
+class DataImportProjectMetadataData(BaseModel):
+    name: str
+    description: str
+    licence: str
+    links: list[Link]
+    authors: list[Author]
+
+
+class DataImportProjectMetadataResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportProjectMetadataData
+
+
+class DataImportDatasetMetadataPatchResponse(BaseModel):
+    success: bool
+    detail: str
+
+
+class DataImportDatasetMetadataGetResponse(BaseModel):
+    success: bool
+    detail: str
+    data: DataImportProjectMetadataData
