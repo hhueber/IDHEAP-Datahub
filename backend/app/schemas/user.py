@@ -6,10 +6,10 @@ Conventions:
 
 from typing import Literal
 
+from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 from app.config.roles import Role
 from app.schemas.validators import NameFirstStr, NameLastStr, PasswordStr
-from pydantic import BaseModel, ConfigDict, EmailStr, model_validator
 
 
 class UserCreate(BaseModel):

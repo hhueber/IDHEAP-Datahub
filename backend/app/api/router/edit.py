@@ -1,12 +1,12 @@
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.dependencies import get_current_user
 from app.db import get_db
 from app.repositories.edit_repo import update_rows
 from app.schemas.edit import EditRequest, EditResponse
 from app.schemas.user import UserPublic
-from app.security.edit_guard import assert_edit_allowed, EditAction
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
+from app.security.edit_guard import EditAction, assert_edit_allowed
 
 router = APIRouter()
 

@@ -4,6 +4,12 @@
 # (statistique, réponse à un sondage, score numérique, etc.).
 from typing import Any
 
+import orjson
+from geoalchemy2 import functions as geofunc
+from sqlalchemy import Integer, Numeric, and_, case, cast, func, select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql.elements import ColumnElement
+from sqlalchemy.sql.selectable import FromClause
 
 from app.models.answer import Answer
 from app.models.canton import Canton
@@ -16,15 +22,14 @@ from app.models.option import Option
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from app.schemas.choropleth import ChoroplethGranularity, ChoroplethValueEntry, GradientMeta, LegendItem, MapLegend
+from app.schemas.choropleth import (
+    ChoroplethGranularity,
+    ChoroplethValueEntry,
+    GradientMeta,
+    LegendItem,
+    MapLegend,
+)
 from app.schemas.geo import Feature, FeatureCollection, Geometry
-from geoalchemy2 import functions as geofunc
-from sqlalchemy import and_, case, cast, func, Integer, Numeric, select
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql.elements import ColumnElement
-from sqlalchemy.sql.selectable import FromClause
-import orjson
-
 
 NO_DATA_COLOR = "#cccccc"  # gris
 _DUMMY_GEOM = Geometry(type="Point", coordinates=[0.0, 0.0])
@@ -108,7 +113,9 @@ def _default_colors(n: int) -> list[str]:
     return [base[i % len(base)] for i in range(n)]
 
 
-def _unique_keep_order(items: list[tuple[str, Any]], limit: int) -> list[tuple[str, Any]]:
+def _unique_keep_order(
+    items: list[tuple[str, Any]], limit: int
+) -> list[tuple[str, Any]]:
     seen: set[tuple[str, str]] = set()
     out: list[tuple[str, Any]] = []
     for k, v in items:
@@ -122,7 +129,9 @@ def _unique_keep_order(items: list[tuple[str, Any]], limit: int) -> list[tuple[s
     return out
 
 
-async def _global_distinct_non_empty_count(db: AsyncSession, q_uid: int, year: int) -> int:
+async def _global_distinct_non_empty_count(
+    db: AsyncSession, q_uid: int, year: int
+) -> int:
     vtrim = func.btrim(Answer.value)
     stmt = select(func.count(func.distinct(vtrim))).where(
         Answer.question_uid == q_uid,
@@ -277,18 +286,31 @@ def _interp_color(c1: str, c2: str, t: float) -> str:
     return _rgb_to_hex(r, g, b)
 
 
-async def _compute_global_value(db: AsyncSession, q_uid: int, year: int, *, use_mode: bool) -> tuple[str, str | None]:
+async def _compute_global_value(
+    db: AsyncSession, q_uid: int, year: int, *, use_mode: bool
+) -> tuple[str, str | None]:
     vtrim = func.btrim(Answer.value)
     is_num = _numeric_regex_col()
 
-    avg_numeric = func.avg(cast(Answer.value, Numeric)).filter(and_(Answer.value.isnot(None), vtrim != "", is_num))
+    avg_numeric = func.avg(cast(Answer.value, Numeric)).filter(
+        and_(Answer.value.isnot(None), vtrim != "", is_num)
+    )
 
     stmt = select(
-        func.count().filter(and_(Answer.value.isnot(None), vtrim == "")).label("cnt_empty"),
-        func.count().filter(and_(Answer.value.isnot(None), vtrim != "")).label("cnt_non_empty"),
-        func.count().filter(and_(Answer.value.isnot(None), vtrim != "", is_num)).label("cnt_num"),
+        func.count()
+        .filter(and_(Answer.value.isnot(None), vtrim == ""))
+        .label("cnt_empty"),
+        func.count()
+        .filter(and_(Answer.value.isnot(None), vtrim != ""))
+        .label("cnt_non_empty"),
+        func.count()
+        .filter(and_(Answer.value.isnot(None), vtrim != "", is_num))
+        .label("cnt_num"),
         cast(func.round(avg_numeric, 0), Integer).label("avg_num_int"),
-        func.mode().within_group(Answer.value).filter(and_(Answer.value.isnot(None), vtrim != "")).label("mode_text"),
+        func.mode()
+        .within_group(Answer.value)
+        .filter(and_(Answer.value.isnot(None), vtrim != ""))
+        .label("mode_text"),
     ).where(Answer.question_uid == q_uid, Answer.year == year)
 
     r = (await db.execute(stmt)).mappings().first() or {}
@@ -302,12 +324,16 @@ async def _compute_global_value(db: AsyncSession, q_uid: int, year: int, *, use_
         return ("no_data", None)
 
     if use_mode:
-        return _normalize_value(str(r.get("mode_text")) if r.get("mode_text") is not None else None)
+        return _normalize_value(
+            str(r.get("mode_text")) if r.get("mode_text") is not None else None
+        )
 
     if r.get("avg_num_int") is not None and cnt_num >= 1:
         return ("value", str(int(r["avg_num_int"])))
 
-    return _normalize_value(str(r.get("mode_text")) if r.get("mode_text") is not None else None)
+    return _normalize_value(
+        str(r.get("mode_text")) if r.get("mode_text") is not None else None
+    )
 
 
 def _build_legend_and_colors(
@@ -342,7 +368,9 @@ def _build_legend_and_colors(
 
     def _append_special(items: list[LegendItem]) -> None:
         if has_no_response:
-            items.append(LegendItem(label="No response", color=NO_RESPONSE_COLOR, value=""))
+            items.append(
+                LegendItem(label="No response", color=NO_RESPONSE_COLOR, value="")
+            )
         if has_no_data:
             items.append(LegendItem(label="No data", color=NO_DATA_COLOR, value=None))
 
@@ -438,7 +466,9 @@ def _build_legend_and_colors(
     return legend
 
 
-async def _nearest_year_sql_window(db: AsyncSession, model, target_year: int, year_window: int = 1) -> int | None:
+async def _nearest_year_sql_window(
+    db: AsyncSession, model, target_year: int, year_window: int = 1
+) -> int | None:
     """
     Renvoie l’année dispo la plus proche dans une fenêtre de +- year_window
     """
@@ -519,8 +549,12 @@ def _best_commune_map_for_requested_cte_window(
             .over(
                 partition_by=CommuneMap.commune_uid,
                 order_by=[
-                    func.abs(CommuneMap.year - target_year).asc(),  # le plus proche dans la fenêtre
-                    case((CommuneMap.year <= target_year, 0), else_=1).asc(),  # tie => passé
+                    func.abs(
+                        CommuneMap.year - target_year
+                    ).asc(),  # le plus proche dans la fenêtre
+                    case(
+                        (CommuneMap.year <= target_year, 0), else_=1
+                    ).asc(),  # tie => passé
                     CommuneMap.year.desc(),
                 ],
             )
@@ -534,9 +568,11 @@ def _best_commune_map_for_requested_cte_window(
         .where(and_(CommuneMap.year >= y_min, CommuneMap.year <= y_max))
     ).cte("cm_ranked_window")
 
-    cm_best = (select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year).where(cm_ranked.c.rn == 1)).cte(
-        "cm_best_window"
-    )
+    cm_best = (
+        select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year).where(
+            cm_ranked.c.rn == 1
+        )
+    ).cte("cm_best_window")
 
     return cm_best
 
@@ -548,7 +584,9 @@ def _special_dominates(cnt_null: int, cnt_empty: int, top_real_count: int) -> bo
     return (cnt_null + cnt_empty) > top_real_count
 
 
-async def _global_special_stats(db: "AsyncSession", q_uid: int, year: int) -> dict[str, int | bool]:
+async def _global_special_stats(
+    db: "AsyncSession", q_uid: int, year: int
+) -> dict[str, int | bool]:
     """
     Stats 'special' (federal/global):
       - cnt_null
@@ -617,7 +655,9 @@ def _agg_cte_generic(
     vtrim = func.btrim(Answer.value)
     is_num = _numeric_regex_col()
 
-    avg_numeric = func.avg(cast(Answer.value, Numeric)).filter(and_(Answer.value.isnot(None), vtrim != "", is_num))
+    avg_numeric = func.avg(cast(Answer.value, Numeric)).filter(
+        and_(Answer.value.isnot(None), vtrim != "", is_num)
+    )
 
     # counts par (gid, valeur réelle non vide)
     counts = (
@@ -663,11 +703,20 @@ def _agg_cte_generic(
             gid_col.label("gid"),
             func.count().label("total_rows"),
             func.count().filter(Answer.value.is_(None)).label("cnt_null"),
-            func.count().filter(and_(Answer.value.isnot(None), vtrim == "")).label("cnt_empty"),
-            func.count().filter(and_(Answer.value.isnot(None), vtrim != "")).label("cnt_non_empty"),
-            func.count().filter(and_(Answer.value.isnot(None), vtrim != "", is_num)).label("cnt_num"),
+            func.count()
+            .filter(and_(Answer.value.isnot(None), vtrim == ""))
+            .label("cnt_empty"),
+            func.count()
+            .filter(and_(Answer.value.isnot(None), vtrim != ""))
+            .label("cnt_non_empty"),
+            func.count()
+            .filter(and_(Answer.value.isnot(None), vtrim != "", is_num))
+            .label("cnt_num"),
             cast(func.round(avg_numeric, 0), Integer).label("avg_num_int"),
-            func.mode().within_group(vtrim).filter(and_(Answer.value.isnot(None), vtrim != "")).label("mode_text"),
+            func.mode()
+            .within_group(vtrim)
+            .filter(and_(Answer.value.isnot(None), vtrim != ""))
+            .label("mode_text"),
             func.coalesce(top.c.top_real_count, 0).label("top_real_count"),
             ties.c.tie_values.label("tie_values"),
         )
@@ -709,9 +758,9 @@ def _district_agg_cte(q_uid: int, year: int) -> Any:
 
 
 def _canton_agg_cte(q_uid: int, year: int) -> Any:
-    base = Answer.__table__.join(Commune.__table__, Commune.uid == Answer.commune_uid).join(
-        District.__table__, District.uid == Commune.district_uid
-    )
+    base = Answer.__table__.join(
+        Commune.__table__, Commune.uid == Answer.commune_uid
+    ).join(District.__table__, District.uid == Commune.district_uid)
     return _agg_cte_generic(
         q_uid=q_uid,
         year=year,
@@ -813,7 +862,9 @@ def _rows_to_features(
         }
 
         if include_geo_year_used:
-            props["geo_year_used"] = int(r["geo_year_used"]) if r.get("geo_year_used") is not None else None
+            props["geo_year_used"] = (
+                int(r["geo_year_used"]) if r.get("geo_year_used") is not None else None
+            )
 
         if level != "commune":
             tie_values = r.get("tie_values") or []
@@ -838,7 +889,9 @@ def _rows_to_features(
             candidates = _unique_keep_order(candidates_raw, limit=MAX_CATEGORIES)
 
             if len(candidates) >= 2:
-                props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
+                props["fill_pattern_candidates"] = [
+                    {"kind": k, "value": v} for (k, v) in candidates
+                ]
                 props["fill_pattern_opts"] = {
                     "type": "stripes",
                     "angle": 45,
@@ -883,12 +936,18 @@ async def build_choropleth(
 ) -> tuple["FeatureCollection", "MapLegend", dict[str, Any]]:
 
     years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
-    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
+    smt = (
+        select(Option)
+        .join(QuestionOptionAssociation)
+        .where(QuestionOptionAssociation.question_uid == question_uid)
+    )
     result = await db.scalars(smt)
     options = result.all()
     # scope global: question_uid = question_global_uid
     if scope == "global":
-        resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
+        resolved = await _resolve_question_per_survey_uid_for_global(
+            db, question_uid, year
+        )
         if resolved is None:
             _add_warning(
                 years_meta,
@@ -969,7 +1028,12 @@ async def build_choropleth(
             return _empty_return(years_meta)
 
         district_agg = _district_agg_cte(q_uid=q_uid, year=year)
-        district_requested = int((await db.execute(select(func.count()).select_from(district_agg))).scalar_one() or 0)
+        district_requested = int(
+            (
+                await db.execute(select(func.count()).select_from(district_agg))
+            ).scalar_one()
+            or 0
+        )
         if district_requested == 0:
             _add_warning(
                 years_meta,
@@ -1027,7 +1091,12 @@ async def build_choropleth(
             return _empty_return(years_meta)
 
         canton_agg = _canton_agg_cte(q_uid=q_uid, year=year)
-        canton_requested = int((await db.execute(select(func.count()).select_from(canton_agg))).scalar_one() or 0)
+        canton_requested = int(
+            (
+                await db.execute(select(func.count()).select_from(canton_agg))
+            ).scalar_one()
+            or 0
+        )
         if canton_requested == 0:
             _add_warning(
                 years_meta,
@@ -1088,7 +1157,9 @@ async def build_choropleth(
         total_rows = int(
             (
                 await db.execute(
-                    select(func.count()).select_from(Answer).where(Answer.question_uid == q_uid, Answer.year == year)
+                    select(func.count())
+                    .select_from(Answer)
+                    .where(Answer.question_uid == q_uid, Answer.year == year)
                 )
             ).scalar_one()
             or 0
@@ -1105,7 +1176,9 @@ async def build_choropleth(
             )
             return _empty_return(years_meta)
 
-        global_kind, global_val = await _compute_global_value(db, q_uid, year, use_mode=use_mode)
+        global_kind, global_val = await _compute_global_value(
+            db, q_uid, year, use_mode=use_mode
+        )
         special = await _global_special_stats(db, q_uid, year)
 
         stmt = (
@@ -1199,9 +1272,11 @@ def _all_commune_geo_cte(*, target_year: int, year_window: int = 1):
         .where(and_(CommuneMap.year >= y_min, CommuneMap.year <= y_max))
     ).cte("cm_ranked_all_window")
 
-    return (select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year).where(cm_ranked.c.rn == 1)).cte(
-        "cm_best_all_window"
-    )
+    return (
+        select(cm_ranked.c.unit_uid, cm_ranked.c.geometry, cm_ranked.c.map_year).where(
+            cm_ranked.c.rn == 1
+        )
+    ).cte("cm_best_all_window")
 
 
 def _rows_to_value_features(
@@ -1263,7 +1338,9 @@ def _rows_to_value_features(
             candidates = _unique_keep_order(candidates_raw, limit=MAX_CATEGORIES)
 
             if len(candidates) >= 2:
-                props["fill_pattern_candidates"] = [{"kind": k, "value": v} for (k, v) in candidates]
+                props["fill_pattern_candidates"] = [
+                    {"kind": k, "value": v} for (k, v) in candidates
+                ]
                 props["fill_pattern_opts"] = {
                     "type": "stripes",
                     "angle": 45,
@@ -1332,7 +1409,9 @@ async def build_choropleth_geometries(
                         "unit_uid": int(r["uid"]),
                         "name": r["name"],
                         "code": r["code"],
-                        "geo_year_used": int(r["geo_year_used"]) if r.get("geo_year_used") is not None else None,
+                        "geo_year_used": int(r["geo_year_used"])
+                        if r.get("geo_year_used") is not None
+                        else None,
                     },
                 )
             )
@@ -1353,7 +1432,9 @@ async def build_choropleth_geometries(
             .select_from(District)
             .join(
                 DistrictMap,
-                and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo),
+                and_(
+                    DistrictMap.district_id == District.uid, DistrictMap.year == y_geo
+                ),
             )
         )
         rows = (await db.execute(stmt)).mappings().all()
@@ -1425,7 +1506,9 @@ async def build_choropleth_values(
     years_meta: dict[str, Any] = {"communes": None, "districts": None, "cantons": None}
 
     if scope == "global":
-        resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
+        resolved = await _resolve_question_per_survey_uid_for_global(
+            db, question_uid, year
+        )
         if resolved is None:
             empty_legend = MapLegend(
                 type="categorical",
@@ -1437,7 +1520,11 @@ async def build_choropleth_values(
     else:
         q_uid = question_uid
 
-    smt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == q_uid)
+    smt = (
+        select(Option)
+        .join(QuestionOptionAssociation)
+        .where(QuestionOptionAssociation.question_uid == q_uid)
+    )
     result = await db.scalars(smt)
     options = result.all()
 
@@ -1458,7 +1545,9 @@ async def build_choropleth_values(
             .join(Commune, Commune.uid == commune_agg.c.gid)
         )
         rows = (await db.execute(stmt)).mappings().all()
-        feats = _rows_to_value_features(level="commune", rows=[dict(r) for r in rows], use_mode=use_mode)
+        feats = _rows_to_value_features(
+            level="commune", rows=[dict(r) for r in rows], use_mode=use_mode
+        )
         if not feats:
             empty_legend = MapLegend(
                 type="categorical",
@@ -1486,11 +1575,15 @@ async def build_choropleth_values(
             .join(District, District.uid == district_agg.c.gid)
             .join(
                 DistrictMap,
-                and_(DistrictMap.district_id == District.uid, DistrictMap.year == y_geo),
+                and_(
+                    DistrictMap.district_id == District.uid, DistrictMap.year == y_geo
+                ),
             )
         )
         rows = (await db.execute(stmt)).mappings().all()
-        feats = _rows_to_value_features(level="district", rows=[dict(r) for r in rows], use_mode=use_mode)
+        feats = _rows_to_value_features(
+            level="district", rows=[dict(r) for r in rows], use_mode=use_mode
+        )
         if not feats:
             empty_legend = MapLegend(
                 type="categorical",
@@ -1522,7 +1615,9 @@ async def build_choropleth_values(
             )
         )
         rows = (await db.execute(stmt)).mappings().all()
-        feats = _rows_to_value_features(level="canton", rows=[dict(r) for r in rows], use_mode=use_mode)
+        feats = _rows_to_value_features(
+            level="canton", rows=[dict(r) for r in rows], use_mode=use_mode
+        )
         if not feats:
             empty_legend = MapLegend(
                 type="categorical",
@@ -1540,7 +1635,9 @@ async def build_choropleth_values(
         total_rows = int(
             (
                 await db.execute(
-                    select(func.count()).select_from(Answer).where(Answer.question_uid == q_uid, Answer.year == year)
+                    select(func.count())
+                    .select_from(Answer)
+                    .where(Answer.question_uid == q_uid, Answer.year == year)
                 )
             ).scalar_one()
             or 0
@@ -1553,10 +1650,16 @@ async def build_choropleth_values(
             )
             return empty_legend, {}, years_meta
 
-        global_kind, global_val = await _compute_global_value(db, q_uid, year, use_mode=use_mode)
+        global_kind, global_val = await _compute_global_value(
+            db, q_uid, year, use_mode=use_mode
+        )
         special = await _global_special_stats(db, q_uid, year)
 
-        canton_rows = (await db.execute(select(Canton.uid, Canton.name, Canton.code))).mappings().all()
+        canton_rows = (
+            (await db.execute(select(Canton.uid, Canton.name, Canton.code)))
+            .mappings()
+            .all()
+        )
         feats = [
             Feature(
                 geometry=_DUMMY_GEOM,

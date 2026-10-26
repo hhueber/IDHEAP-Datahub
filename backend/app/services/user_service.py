@@ -1,8 +1,8 @@
 import re
 
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories import user_repo
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def ensure_root_exists(

@@ -4,8 +4,9 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from app.schemas.theme_config import ThemeConfig
 from pydantic import BaseModel
+
+from app.schemas.theme_config import ThemeConfig
 
 
 class QuestionItem(BaseModel):

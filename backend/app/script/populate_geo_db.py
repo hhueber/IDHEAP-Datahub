@@ -1,20 +1,28 @@
-from zipfile import ZipFile
 import asyncio
 import os
 import tempfile as tf
+from zipfile import ZipFile
 
-
-from app.db import SessionLocal
-from app.models import Canton, CantonMap, Commune, CommuneMap, District, DistrictMap, Lake, LakeMap
+import fiona
+import requests
+import shapely.wkb
 from geoalchemy2.shape import from_shape
 from pyproj import Transformer
 from shapely.geometry import shape
 from shapely.ops import transform
 from sqlalchemy import select
-import fiona
-import requests
-import shapely.wkb
 
+from app.db import SessionLocal
+from app.models import (
+    Canton,
+    CantonMap,
+    Commune,
+    CommuneMap,
+    District,
+    DistrictMap,
+    Lake,
+    LakeMap,
+)
 
 transformer = Transformer.from_crs("EPSG:2056", "EPSG:4326", always_xy=True)
 
@@ -28,12 +36,16 @@ async def populate_async_geo(is_demo: bool) -> None:
     async with SessionLocal() as session:
         for year in years:
             if year < 2016:
-                year = year if year != 1988 else 1989  # Because we dont have data for 1988 but we have for 1989
+                year = (
+                    year if year != 1988 else 1989
+                )  # Because we dont have data for 1988 but we have for 1989
                 url = f"https://data.geo.admin.ch/ch.bfs.historisierte-administrative_grenzen_g1/historisierte-administrative_grenzen_g1_{year}-01-01/historisierte-administrative_grenzen_g1_{year}-01-01_2056.gpkg"
             else:
                 url = f"https://data.geo.admin.ch/ch.swisstopo.swissboundaries3d/swissboundaries3d_{year}-01/swissboundaries3d_{year}-01_2056_5728.gpkg.zip"
                 response = requests.get(url)  # noqa: ASYNC210
-                with tf.NamedTemporaryFile(suffix=".zip", delete=False, dir=".") as zip_file:
+                with tf.NamedTemporaryFile(
+                    suffix=".zip", delete=False, dir="."
+                ) as zip_file:
                     zip_file.write(response.content)
                     zip_path = zip_file.name
                 with ZipFile(zip_path) as zf:
@@ -66,12 +78,15 @@ async def populate_async_geo(is_demo: bool) -> None:
                                 else:
                                     # Si le type de l'objet est un lac (mais seulement la partie cantonale d'un lac, on passe
                                     if (
-                                        feature["properties"]["objektart"] != "Gemeindegebiet"
+                                        feature["properties"]["objektart"]
+                                        != "Gemeindegebiet"
                                         or feature["properties"]["icc"] != "CH"
                                     ):
                                         continue
                                     bfs_number = feature["properties"]["bfs_nummer"]
-                                result = await session.execute(select(Commune).filter_by(code=str(bfs_number)))
+                                result = await session.execute(
+                                    select(Commune).filter_by(code=str(bfs_number))
+                                )
                                 db_commune = result.scalar_one_or_none()
                                 multi = shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
@@ -82,7 +97,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                                     geo_data_type=feature["geometry"]["type"],
                                     geometry=from_shape(multi, srid=4326),
                                 )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}")
+                                print(
+                                    f">>>[{year}] INSERTING GEOMETRY DATA FOR {db_commune.name}"
+                                )
                                 session.add(db_commune_map)
                                 await session.flush()
 
@@ -93,7 +110,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                                     bfs_number = feature["properties"]["KTNR"]
                                 else:
                                     bfs_number = feature["properties"]["kantonsnummer"]
-                                result = await session.execute(select(Canton).filter_by(ofs_id=bfs_number))
+                                result = await session.execute(
+                                    select(Canton).filter_by(ofs_id=bfs_number)
+                                )
                                 db_canton = result.scalar_one_or_none()
                                 multi = shapely.geometry.shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
@@ -104,7 +123,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                                     geometry=from_shape(multi, srid=4326),
                                     canton=db_canton,
                                 )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}")
+                                print(
+                                    f">>>[{year}] INSERTING GEOMETRY DATA FOR CANTON {db_canton.name}"
+                                )
                                 session.add(db_canton_map)
                                 await session.flush()
 
@@ -116,18 +137,26 @@ async def populate_async_geo(is_demo: bool) -> None:
                                     bfs_number = feature["properties"]["BEZNR"]
                                     name = feature["properties"]["BEZNAME"]
                                 else:
-                                    canton_number = feature["properties"]["kantonsnummer"]
+                                    canton_number = feature["properties"][
+                                        "kantonsnummer"
+                                    ]
                                     name = feature["properties"]["name"]
                                     bfs_number = feature["properties"]["bezirksnummer"]
 
-                                result = await session.execute(select(District).filter_by(code="B" + str(bfs_number)))
+                                result = await session.execute(
+                                    select(District).filter_by(
+                                        code="B" + str(bfs_number)
+                                    )
+                                )
                                 db_district = result.scalar_one_or_none()
                                 multi = shapely.geometry.shape(feature["geometry"])
                                 multi = transform(lambda x, y, z=None: (x, y), multi)
                                 multi = transform(transformer.transform, multi)
                                 # If district not in db
                                 if db_district is None:
-                                    result = await session.execute(select(Canton).filter_by(ofs_id=canton_number))
+                                    result = await session.execute(
+                                        select(Canton).filter_by(ofs_id=canton_number)
+                                    )
                                     db_canton = result.scalar_one_or_none()
                                     db_district = District(
                                         code="B" + str(bfs_number),
@@ -149,7 +178,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                                     geo_data_type=feature["geometry"]["type"],
                                     district=db_district,
                                 )
-                                print(f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}")
+                                print(
+                                    f">>>[{year}] INSERTING GEOMETRY DATA FOR DISTRICT {db_district.name}"
+                                )
                                 session.add(db_district_map)
 
                                 await session.flush()
@@ -157,7 +188,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                         if "Lac" in layer:
                             for feature in src:
                                 result = await session.execute(
-                                    select(Lake).filter_by(code=str(feature["properties"]["SEENR"]))
+                                    select(Lake).filter_by(
+                                        code=str(feature["properties"]["SEENR"])
+                                    )
                                 )
                                 db_lake = result.scalar_one_or_none()
                                 if db_lake is None:
@@ -180,7 +213,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                                 )
                                 session.add(db_lake_map)
                                 await session.flush()
-                                print(f">>>[{year}] INSERTING LAKE GEODATA {db_lake.name}")
+                                print(
+                                    f">>>[{year}] INSERTING LAKE GEODATA {db_lake.name}"
+                                )
 
                                 # We don't have data for years greater than 2016 so we used data from 2009
                                 if year == 2009:
@@ -193,7 +228,9 @@ async def populate_async_geo(is_demo: bool) -> None:
                                         )
                                         session.add(db_lake_map)
                                         await session.flush()
-                                        print(f">>>[{fake_year}] INSERTING FAKE LAKE GEODATA {db_lake.name}")
+                                        print(
+                                            f">>>[{fake_year}] INSERTING FAKE LAKE GEODATA {db_lake.name}"
+                                        )
 
 
 if __name__ == "__main__":

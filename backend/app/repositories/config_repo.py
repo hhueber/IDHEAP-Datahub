@@ -1,11 +1,11 @@
 from pathlib import Path
 
+from sqlalchemy import delete, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.paths import LOGO_PUBLIC_PREFIX, LOGO_UPLOAD_DIR
 from app.models.config import Config
 from app.schemas.theme_config import ThemeConfig
-from sqlalchemy import delete, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 
 async def list_config(db: AsyncSession) -> dict[str, str]:

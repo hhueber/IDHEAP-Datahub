@@ -1,8 +1,6 @@
 from typing import Literal
 
-
 from pydantic import BaseModel, Field, field_validator
-
 
 GeoSuggestionType = Literal["commune", "district", "canton"]
 
