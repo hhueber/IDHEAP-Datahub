@@ -1,12 +1,11 @@
-from pathlib import Path
 import json
 import logging
+from pathlib import Path
 
-
-from app.db import AsyncSessionLocal
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.db import AsyncSessionLocal
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +58,9 @@ async def populate_config_if_empty() -> None:
             value = sanitize_value(raw_value)
 
             if key is None or value is None:
-                logger.warning("Skipping invalid config entry: key=%r value=%r", raw_key, raw_value)
+                logger.warning(
+                    "Skipping invalid config entry: key=%r value=%r", raw_key, raw_value
+                )
                 continue
 
             # mini-check des valeurs et clés spécifiques

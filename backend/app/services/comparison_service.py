@@ -1,5 +1,6 @@
 from collections import Counter, defaultdict
 
+from sqlalchemy import func, select
 
 from app.models.answer import Answer
 from app.models.canton import Canton
@@ -8,8 +9,6 @@ from app.models.district import District
 from app.models.option import Option
 from app.models.question_option_association import QuestionOptionAssociation
 from app.services.choropleth_service import _resolve_question_per_survey_uid_for_global
-from sqlalchemy import func, select
-
 
 SUPPORTED_OPTION_LANGS = {"fr", "de", "it", "rm", "en"}
 
@@ -37,7 +36,11 @@ async def _get_question_options(
     question_uid: int,
     lang: str,
 ) -> list[dict]:
-    stmt = select(Option).join(QuestionOptionAssociation).where(QuestionOptionAssociation.question_uid == question_uid)
+    stmt = (
+        select(Option)
+        .join(QuestionOptionAssociation)
+        .where(QuestionOptionAssociation.question_uid == question_uid)
+    )
 
     options = (await db.scalars(stmt)).all()
 
@@ -106,7 +109,10 @@ def _build_distribution(values: list[str]) -> list[dict]:
         except (TypeError, ValueError):
             return (1, x)
 
-    return [{"value": k, "count": v} for k, v in sorted(counts.items(), key=lambda kv: sort_key(kv[0]))]
+    return [
+        {"value": k, "count": v}
+        for k, v in sorted(counts.items(), key=lambda kv: sort_key(kv[0]))
+    ]
 
 
 async def _fetch_one(db, stmt):
@@ -197,7 +203,9 @@ async def _get_context(db, area_uid: int, level: str) -> dict:
     return {}
 
 
-async def _get_raw_commune_answers(db, question_uid: int, year: int) -> list[tuple[int, str]]:
+async def _get_raw_commune_answers(
+    db, question_uid: int, year: int
+) -> list[tuple[int, str]]:
     stmt = select(
         Answer.commune_uid.label("commune_uid"),
         Answer.value.label("value"),
@@ -269,7 +277,9 @@ async def _build_global_distributions(db, question_uid: int, year: int) -> dict:
     }
 
 
-async def _get_selected_value(db, question_uid: int, year: int, area_uid: int, level: str) -> str | None:
+async def _get_selected_value(
+    db, question_uid: int, year: int, area_uid: int, level: str
+) -> str | None:
     raw = await _get_raw_commune_answers(db, question_uid, year)
     if not raw:
         return None
@@ -319,7 +329,9 @@ async def build_area_comparison(
     lang="en",
 ):
     if scope == "global":
-        resolved = await _resolve_question_per_survey_uid_for_global(db, question_uid, year)
+        resolved = await _resolve_question_per_survey_uid_for_global(
+            db, question_uid, year
+        )
         if resolved is None:
             return {"success": True, "data": None}
         question_uid = resolved
@@ -345,9 +357,15 @@ async def build_area_comparison(
 
     options = await _get_question_options(db, question_uid, lang)
     if options:
-        distributions["commune"] = _complete_distribution(distributions["commune"], options)
-        distributions["district"] = _complete_distribution(distributions["district"], options)
-        distributions["canton"] = _complete_distribution(distributions["canton"], options)
+        distributions["commune"] = _complete_distribution(
+            distributions["commune"], options
+        )
+        distributions["district"] = _complete_distribution(
+            distributions["district"], options
+        )
+        distributions["canton"] = _complete_distribution(
+            distributions["canton"], options
+        )
 
     return {
         "success": True,

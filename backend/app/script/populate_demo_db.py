@@ -1,5 +1,8 @@
 from pathlib import Path
 
+import pandas as pd
+from sqlalchemy import select
+from tqdm import tqdm
 
 from app.data.cantons import CANTONS
 from app.db import SessionLocal
@@ -9,14 +12,12 @@ from app.models.commune import Commune
 from app.models.district import District
 from app.models.option import Option
 from app.models.question_global import QuestionGlobal
-from app.models.question_global_option_association import QuestionGlobalOptionAssociation
+from app.models.question_global_option_association import (
+    QuestionGlobalOptionAssociation,
+)
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
-from sqlalchemy import select
-from tqdm import tqdm
-import pandas as pd
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -26,7 +27,9 @@ async def populate_demo_db() -> None:
         # Add canton
         async with session.begin():
             index = 1
-            for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
+            for code, lang in tqdm(
+                CANTONS.items(), total=len(CANTONS), desc="Processing cantons"
+            ):
                 db_canton = Canton(
                     code=code,
                     name=lang["en"],
@@ -45,18 +48,30 @@ async def populate_demo_db() -> None:
         # District and commune
         row_number = 0
         async with session.begin():
-            communes = pd.read_excel(Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0)
-            communes["Canton"] = communes["Canton"].apply(lambda x: "CH-" + x if isinstance(x, str) else None)
-            communes["Numéro du district"] = communes["Numéro du district"].apply(lambda x: "B" + str(x).zfill(4))
+            communes = pd.read_excel(
+                Path(BASE_DIR, "data", "EtatCommunes.xlsx"), index_col=4, header=0
+            )
+            communes["Canton"] = communes["Canton"].apply(
+                lambda x: "CH-" + x if isinstance(x, str) else None
+            )
+            communes["Numéro du district"] = communes["Numéro du district"].apply(
+                lambda x: "B" + str(x).zfill(4)
+            )
 
-            for index, rows in tqdm(communes.iterrows(), total=len(communes), desc="Processing districts"):
-                result = await session.execute(select(Canton).filter_by(code=rows["Canton"]))
+            for index, rows in tqdm(
+                communes.iterrows(), total=len(communes), desc="Processing districts"
+            ):
+                result = await session.execute(
+                    select(Canton).filter_by(code=rows["Canton"])
+                )
                 db_canton = result.scalar_one_or_none()
 
                 if db_canton is None:
                     raise RuntimeError("Canton not found")
 
-                result = await session.execute(select(District).filter_by(name=rows["Nom du district"]))
+                result = await session.execute(
+                    select(District).filter_by(name=rows["Nom du district"])
+                )
                 db_district = result.scalar_one_or_none()
                 if db_district is not None:
                     pass  # print(">>> District already exists")
@@ -258,8 +273,12 @@ async def populate_demo_db() -> None:
                     await session.flush()
 
                 # Option for kant question
-                for code, lang in tqdm(CANTONS.items(), total=len(CANTONS), desc="Processing cantons"):
-                    db_option = Option(value=str(lang["ofs_id"]), label=code.split("-")[1])
+                for code, lang in tqdm(
+                    CANTONS.items(), total=len(CANTONS), desc="Processing cantons"
+                ):
+                    db_option = Option(
+                        value=str(lang["ofs_id"]), label=code.split("-")[1]
+                    )
                     session.add(db_option)
                     await session.flush()
 
@@ -268,14 +287,18 @@ async def populate_demo_db() -> None:
                     )
                     session.add(db_question_global_association)
 
-                    db_question_association = QuestionOptionAssociation(question=db_question_kant, option=db_option)
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_kant, option=db_option
+                    )
                     session.add(db_question_association)
                     await session.flush()
 
                 # Option for lang question
                 language = ["Deutsch", "Französisch", "Italienisch", "Rätoromanisch"]
                 for index, item in enumerate(language):
-                    db_option = Option(value=str(index + 1), label=item)  # Value option always start at 1
+                    db_option = Option(
+                        value=str(index + 1), label=item
+                    )  # Value option always start at 1
                     session.add(db_option)
                     await session.flush()
 
@@ -284,7 +307,9 @@ async def populate_demo_db() -> None:
                     )
                     session.add(db_question_global_association)
 
-                    db_question_association = QuestionOptionAssociation(question=db_question_spr, option=db_option)
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_spr, option=db_option
+                    )
                     session.add(db_question_association)
                     await session.flush()
 
@@ -321,9 +346,15 @@ async def populate_demo_db() -> None:
                     session.add(db_question_global_association)
                     await session.flush()
 
-                    db_question_to_link = db_question_globale_23 if year == 2023 else db_question_globale_17
+                    db_question_to_link = (
+                        db_question_globale_23
+                        if year == 2023
+                        else db_question_globale_17
+                    )
 
-                    db_question_association = QuestionOptionAssociation(question=db_question_to_link, option=db_option)
+                    db_question_association = QuestionOptionAssociation(
+                        question=db_question_to_link, option=db_option
+                    )
                     session.add(db_question_association)
                     await session.flush()
 
@@ -595,11 +626,15 @@ async def populate_demo_db() -> None:
                 sep=";",
             )
 
-            for index, row in tqdm(crc.iterrows(), total=len(crc), desc="Processing communes"):
+            for index, row in tqdm(
+                crc.iterrows(), total=len(crc), desc="Processing communes"
+            ):
                 if pd.isna(row["gemid"]):
                     continue
 
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["gemid"]))))
+                result = await session.execute(
+                    select(Commune).filter_by(code=str(int(row["gemid"])))
+                )
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
@@ -618,7 +653,9 @@ async def populate_demo_db() -> None:
                     await session.flush()
                 for col in crc:
                     if "kant2017" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant2017"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="kant2017")
+                        )
                         db_question = result.scalar_one_or_none()
                         db_answer = Answer(
                             year=2017,
@@ -630,7 +667,9 @@ async def populate_demo_db() -> None:
                         await session.flush()
 
                     elif "spr17" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr17"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="spr17")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -643,7 +682,9 @@ async def populate_demo_db() -> None:
                         await session.flush()
 
                     elif "GSB17_Q58" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q58"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB17_Q58")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -655,7 +696,9 @@ async def populate_demo_db() -> None:
                         session.add(db_answer)
                         await session.flush()
                     elif col == "GSB17_Q3":
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q3"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB17_Q3")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -667,7 +710,9 @@ async def populate_demo_db() -> None:
                         session.add(db_answer)
                         await session.flush()
                     elif "GSB17_Q42" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB17_Q42"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB17_Q42")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -679,7 +724,9 @@ async def populate_demo_db() -> None:
                         session.add(db_answer)
                         await session.flush()
 
-            GSB_2023 = pd.read_csv(Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";")
+            GSB_2023 = pd.read_csv(
+                Path(BASE_DIR, "data", "GSB 2023_V1.csv"), header=0, sep=";"
+            )
             for index, row in tqdm(
                 GSB_2023.iterrows(),
                 total=len(GSB_2023),
@@ -687,7 +734,9 @@ async def populate_demo_db() -> None:
             ):
                 if pd.isna(row["BFS_2023"]):
                     continue
-                result = await session.execute(select(Commune).filter_by(code=str(int(row["BFS_2023"]))))
+                result = await session.execute(
+                    select(Commune).filter_by(code=str(int(row["BFS_2023"])))
+                )
                 db_commune = result.scalar_one_or_none()
 
                 if db_commune is None:
@@ -704,7 +753,9 @@ async def populate_demo_db() -> None:
                     await session.flush()
                 for col in GSB_2023:
                     if "kant" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="kant23"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="kant23")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -717,7 +768,9 @@ async def populate_demo_db() -> None:
                         await session.flush()
 
                     elif "spr" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="spr23"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="spr23")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -730,7 +783,9 @@ async def populate_demo_db() -> None:
                         await session.flush()
 
                     elif "GSB23_Q52" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q52"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB23_Q52")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -743,7 +798,9 @@ async def populate_demo_db() -> None:
                         await session.flush()
 
                     elif "GSB23_Q58" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q58"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB23_Q58")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(
@@ -755,7 +812,9 @@ async def populate_demo_db() -> None:
                         session.add(db_answer)
                         await session.flush()
                     elif "GSB23_Q27" in col:
-                        result = await session.execute(select(QuestionPerSurvey).filter_by(code="GSB23_Q27"))
+                        result = await session.execute(
+                            select(QuestionPerSurvey).filter_by(code="GSB23_Q27")
+                        )
                         db_question = result.scalar_one_or_none()
 
                         db_answer = Answer(

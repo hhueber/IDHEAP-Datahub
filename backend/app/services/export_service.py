@@ -1,10 +1,10 @@
 import csv
 import io
 
-
-from app.schemas.export import ExportQuestion
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.schemas.export import ExportQuestion
 
 
 # traduction propre
@@ -72,7 +72,9 @@ async def export_csv_service(
             global_to_qps.setdefault(r["global_uid"], []).append(r["qps_uid"])
 
     # récupérer réponses pout toutes les questions demandées (per_survey + global)
-    all_qps_ids = list(per_survey_map.keys()) + [qps for lst in global_to_qps.values() for qps in lst]
+    all_qps_ids = list(per_survey_map.keys()) + [
+        qps for lst in global_to_qps.values() for qps in lst
+    ]
 
     if not all_qps_ids:
         return b""

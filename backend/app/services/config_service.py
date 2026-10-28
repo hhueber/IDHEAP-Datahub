@@ -1,12 +1,12 @@
-from uuid import uuid4
 import base64
 import binascii
+from uuid import uuid4
 
-
-from app.core.paths import LOGO_PUBLIC_PREFIX, LOGO_UPLOAD_DIR
 from fastapi import HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.paths import LOGO_PUBLIC_PREFIX, LOGO_UPLOAD_DIR
 
 
 async def load_effective_config(session: AsyncSession) -> dict[str, str]:
