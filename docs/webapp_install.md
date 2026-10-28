@@ -63,12 +63,53 @@ For each terminal, in the root folder:
 
 1. Make sure the `.venv/` is activated.
    - `source ./venv/bin/activate`
-2. Export the relevant variables in `.env`.
-   - `export $(grep -v 'BACKEND_' .env | xargs -d '\n')`
 
 Then, separately, still in the root folder:
 
-- Backend: `PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env`
-- Frontend: `npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT`
+### Backend
+
+In the terminal for backend
+
+1. Export the environnement variable to the terminal
+
+   For fish :
+
+   ```bash
+   for line in (grep '^BACKEND_' .env)
+      set -l kv (string split -m1 = $line)
+      set -gx $kv[1] (string trim -c '"\'' $kv[2])
+   end
+   ```
+
+   For bash :
+
+   `export $(grep '^BACKEND_' .env | xargs -d '\n')`
+
+2. Launch the backend :
+
+   `PYTHONPATH=backend .venv/bin/python -m uvicorn app.main:app --host $BACKEND_HOST --port $BACKEND_PORT --reload --env-file .env`
+
+### Frontend
+
+In the terminal for frontend
+
+1. Export the environnement variable to the terminal
+
+   For fish :
+
+   ```bash
+   for line in (grep '^FRONTEND_' .env)
+    set -l kv (string split -m1 = $line)
+    set -gx $kv[1] (string trim -c '"\'' $kv[2])
+   end
+   ```
+
+   For bash :
+
+   `export $(grep '^FRONTEND_' .env | xargs -d '\n')`
+
+2. Launch the frontend :
+
+   `npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT`
 
 Use Ctrl+C to kill if needed.
