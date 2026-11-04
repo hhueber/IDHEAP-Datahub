@@ -6,9 +6,10 @@ import path from "node:path";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, __dirname, "");
-
+    const envDir = path.resolve(__dirname, "..");
+    const env = loadEnv(mode, envDir, "");
     return {
+        envDir,
         server: {
             allowedHosts: String(env.VITE_ALLOWED_HOSTS).split(","),
         },
