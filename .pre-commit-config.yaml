@@ -15,9 +15,9 @@ repos:
     hooks:
       - id: prettier
         name: Prettier Frontend
-        entry: npm --prefix frontend exec -- prettier --write
+        entry: bash -c 'cd frontend && npx prettier --write "${@#frontend/}"' --
         language: system
-        files: ^frontend/src/.*\.(ts|tsx|js|jsx|json|css|md)$
+        files: ^frontend/src/.*\.(ts|tsx|js|jsx|json|css)$
 
   # Frontend Check (ESLint)
   - repo: local

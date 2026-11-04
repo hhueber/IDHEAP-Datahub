@@ -10,10 +10,6 @@ if TYPE_CHECKING:
     from .commune import Commune
     from .question_per_survey import QuestionPerSurvey
 
-if TYPE_CHECKING:
-    from .commune import Commune
-    from .question_per_survey import QuestionPerSurvey
-
 
 class Answer(Base):
     __tablename__ = "answer"

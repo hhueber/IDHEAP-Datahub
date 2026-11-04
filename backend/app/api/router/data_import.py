@@ -12,6 +12,8 @@ from app.schemas.data_import import (
     DataImportColumnsConfirmPatch,
     DataImportColumnTransformPatch,
     DataImportCommitResponse,
+    DataImportDatasetMetadataGetResponse,
+    DataImportDatasetMetadataPatchResponse,
     DataImportDeleteResponse,
     DataImportIssuesResponse,
     DataImportListResponse,
@@ -21,6 +23,8 @@ from app.schemas.data_import import (
     DataImportNewProjectResponse,
     DataImportPatchWithAnalysisResponse,
     DataImportPreviewResponse,
+    DataImportProjectMetadataData,
+    DataImportProjectMetadataResponse,
     DataImportUploadResponse,
     DataImportWorkspaceUploadResponse,
     DataImportYearsPatch,
@@ -32,6 +36,11 @@ from app.services.add_database.import_survey_service import import_new_survey_pi
 from app.services.add_database.survey_project_service import (
     create_project,
     get_projects,
+)
+from app.services.data_import.data_import_metadata_service import (
+    get_dataset_metadata,
+    get_project_metadata,
+    update_dataset_metadata,
 )
 from app.services.data_import.data_import_patch_service import (
     confirm_import_columns,
@@ -83,12 +92,67 @@ async def fwetch_all_project(
     projects = await get_projects(db, _current_user)
     project_payload = []
     for project in projects:
-        project_payload.append({"uid": project.uid, "name": project.name})
+        project_payload.append({"uid": project.uid, "name": project.metadatas.name})
 
     return {
         "success": True,
         "detail": "Sucessfully fetched all project",
         "data": project_payload,
+    }
+
+
+@router.get(
+    "/{import_id}/project_metadata", response_model=DataImportProjectMetadataResponse
+)
+async def get_import_project_metadata(
+    import_id: str,
+    db: AsyncSession = Depends(get_db),
+    _current_user: User = Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
+    ),
+):
+    metadata = await get_project_metadata(db, import_id)
+
+    success = metadata is not None
+
+    return {
+        "success": success,
+        "detail": "Project metadata fetched successfully",
+        "data": metadata,
+    }
+
+
+@router.patch(
+    "/{import_id}/dataset_metadata",
+    response_model=DataImportDatasetMetadataPatchResponse,
+)
+async def patch_dataset_metadata(
+    import_id: str,
+    payload: DataImportProjectMetadataData,
+    _current_user: User = Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
+):
+    await update_dataset_metadata(import_id, payload)
+
+    return {"success": True, "detail": "Dataset Metadata patched successfully"}
+
+
+@router.get(
+    "/{import_id}/dataset_metadata", response_model=DataImportDatasetMetadataGetResponse
+)
+async def get_dataset_metadata_route(
+    import_id: str,
+    _current_user: User = Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.MANAGE)
+    ),
+):
+    dataset_metadata = await get_dataset_metadata(import_id)
+
+    return {
+        "success": True,
+        "detail": "Dataset Metadata fetched successfully",
+        "data": dataset_metadata,
     }
 
 
@@ -101,11 +165,10 @@ async def create_new_project(
     ),
 ):
     project = await create_project(db, _current_user, payload)
-
     return {
         "success": True,
-        "detail": "Project created Successfully  hehehheh",
-        "data": {"uid": project.uid, "name": project.name},
+        "detail": "Project created successfully",
+        "data": {"uid": project.uid, "name": project.metadatas.name},
     }
 
 
@@ -344,6 +407,8 @@ async def upload_data_files(
     files: list[UploadFile] = File(...),
     display_name: str | None = Form(None),
     years: list[int] = Form(...),
+    project_id: int = Form(...),
+    db: AsyncSession = Depends(get_db),
     _current_user=Depends(
         require_permission(
             PermissionScope.DATASET,
@@ -354,7 +419,9 @@ async def upload_data_files(
     data = await create_import_workspace(
         files=files,
         display_name=display_name,
+        project_id=project_id,
         years=years,
+        db=db,
     )
 
     return {
@@ -395,14 +462,3 @@ async def commit_change(
 
     await import_new_survey_pipeline(db, import_id)
     return {"success": True, "detail": "Helloooo", "data": "Helloooo"}
-
-
-@router.post("/project", response_model=DataImportNewProjectResponse)
-async def new_project(
-    payload=DataImportNewProject,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(
-        require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
-    ),
-):
-    return {"success": True}

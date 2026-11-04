@@ -2,6 +2,10 @@ import logging
 
 import pandas as pd
 from app.models.answer import Answer
+from app.models.author import Author
+from app.models.author_metadata_association import AuthorMetadataAssociation
+from app.models.granularity import GranularityEnum
+from app.models.metadata import Metadata
 from app.models.question_per_survey import QuestionPerSurvey
 from app.models.survey import Survey
 from app.schemas.data_import import ImportRoleEnum
@@ -12,6 +16,7 @@ from app.services.add_database.commune_service import (
 from app.services.data_import.data_import_storage_service import (
     get_import_dir,
     read_analysis,
+    read_dataset_metadata,
     read_frame,
     read_metadata,
 )
@@ -31,10 +36,12 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
 
     analysis = read_analysis(import_dir)
     metadata = read_metadata(import_dir)
+    dataset_metadata = read_dataset_metadata(import_dir)
 
     df = read_frame(import_dir)
 
     survey_name = metadata.get("display_name")
+    project_id = metadata.get("project_id")
     years = metadata.get("years")
 
     if not survey_name or not years:
@@ -42,12 +49,39 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
 
     await add_update_geo_data(db, years)
     for year in years:
-        result = await db.execute(select(Survey).filter_by(year=year, name=survey_name))
+        result = await db.execute(
+            select(Survey)
+            .join(Survey.metadatas)
+            .where(
+                Survey.year == year,
+                Metadata.name == survey_name,
+            )
+        )
         db_survey = result.scalar_one_or_none()
         if not db_survey:
-            db_survey = Survey(name=survey_name + str(year), year=year)
-            db.add(db_survey)
-            await db.flush()
+            db_survey = Survey(year=year, project_uid=project_id)
+
+            db_metadata = Metadata(
+                name=dataset_metadata["name"],
+                description=dataset_metadata["description"],
+                licence=dataset_metadata["licence"],
+                granularity=GranularityEnum(dataset_metadata["granularity"]),
+                survey=db_survey,
+            )
+            db_metadata.links = dataset_metadata.get("links", [])
+
+            for author_data in dataset_metadata.get("authors", []):
+                result = await db.execute(
+                    select(Author).where(author_data["email"] == Author.email)
+                )
+                author = result.scalars().one_or_none()
+                db_metadata.author_association.append(
+                    AuthorMetadataAssociation(author=author)
+                )
+
+        db.add(db_metadata)
+        db.add(db_survey)
+        await db.flush()
 
         bfs_column_name = None
         question_columns = []

@@ -1,1 +1,5 @@
-export type DataImportWorkflowStep = "explore" | "improve" | "validate";
+export type DataImportWorkflowStep =
+    | "metadata"
+    | "explore"
+    | "improve"
+    | "validate";
