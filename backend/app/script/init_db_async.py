@@ -3,11 +3,12 @@ import logging
 
 from sqlalchemy.exc import SQLAlchemyError
 
+from app.config.roles import PermissionRole
 from app.core.config import settings
 from app.core.logging_config import configure_logging
 from app.db import AsyncSessionLocal, engine, ensure_extensions
 from app.models import Base
-from app.repositories.user_repo import any_admin_exists, create_user
+from app.repositories.user_repo import any_super_admin_exists, create_user
 from app.script.populate_config import populate_config_if_empty
 from app.script.populate_db import populate_db
 from app.script.populate_demo_db import populate_demo_db
@@ -34,7 +35,7 @@ async def create_schema(is_demo: bool, delete_force: bool, empty_survey: bool) -
 
     if settings.ROOT_EMAIL and settings.ROOT_PASSWORD:
         async with AsyncSessionLocal() as db:
-            admin_exists = await any_admin_exists(db)
+            admin_exists = await any_super_admin_exists(db)
             if not admin_exists:
                 await create_user(
                     db,
@@ -42,7 +43,7 @@ async def create_schema(is_demo: bool, delete_force: bool, empty_survey: bool) -
                     settings.ROOT_PASSWORD,
                     settings.ROOT_FIRST_NAME,
                     settings.ROOT_LAST_NAME,
-                    role="ADMIN",
+                    role=PermissionRole.SUPER_ADMIN,
                 )
                 logger.info("Root admin created:")
             else:

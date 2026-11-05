@@ -24,33 +24,19 @@
       "sectionQuestions": "Questions",
       "selectionQuestions": "Sélection de questions",
       "chooseYear": "Choisir une année",
-      "globalOption": "Toutes les années",
+      "globalOption": "Global",
       "noGlobalQuestions": "Pas de questions globales disponibles.",
       "noQuestionsForSelection": "Pas de questions pour cette sélection.",
       "bootstrapError": "Impossible de charger les données initiales.",
       "availableYears": "Années disponibles pour cette question",
       "noAvailableYears": "Aucune année disponible",
       "selectYear": "Selectionner une année",
+      "choroplethGlobalYear": "Années disponibles pour cette question",
       "granularity": "Granularité",
+      "timelineAvailable": "Sélectionnable",
+      "timelineUnavailable": "Indisponible",
       "selectQuestionFirst": "Choisissez une question",
       "selectDate": "Choisissez une date",
-      "tour": {
-         "geomap": "Ici, vous trouverez la carte de la Suisse, et l'affichage des résultats par commune.",
-         "btn-navbar": "Cliquez ici pour afficher le menu de navigation.",
-         "zoom": "Ces boutons servent à zoomer et dézoomer sur la carte de la Suisse.",
-         "screenshot": "Vous pouvez prendre une capture écran en cliquant sur ce bouton.",
-         "centerswiss": "Si vous voulez recentrer la carte, vous pouvez appuyer sur ce bouton.",
-         "place-menu": "Pour ouvrir le menu des points d'intérêt, cliquez sur ce bouton.",
-         "placeonoff": "Pour afficher ou masquer lesdits points d'intérêt, vous pouvez cliquer sur ce bouton.",
-         "floatingButton": "Cliquez ici pour afficher ou masquer le panneau de contrôle.",
-         "popup-right": "Dans le panneau de contrôle, vous pouvez configurer les variables à afficher sur la carte.",
-         "basemap": "Cliquez sur ce bouton pour pouvoir changer le fond de base de la carte.",
-         "year-selector": "Maintenant, passons à la partie intéressante. Tout d'abord, sélectionnez si vous voulez voir des questions d'une année spécifique, ou leur évolution au fil des années.",
-         "granularity-selector": "Si nécessaire, vous pouvez changer la granularité des valeurs, pour par exemple voir des moyennes par canton.",
-         "question-selector": "Vous pouvez ensuite sélectionner parmi les questions disponibles, pour que les réponses apparaissent sur la carte.",
-         "saved-question-selector": "Pour faciliter l'utilisation, vous pouvez ajouter des questions spécifiques à vos favoris locaux.",
-         "export-selector": "Enfin, vous pouvez exporter une capture d'écran de la question actuellement présentée."
-      },
       "question_collections": {
          "saved": {
             "title": "Accès rapide",
@@ -74,14 +60,8 @@
          "show": "Afficher les villes",
          "hide": "Masquer les villes"
       },
-      "basemap": {
-         "title": "Fond de carte",
-         "none": "Aucun",
-         "light": "Carte routière",
-         "swiss": "Carte topographique"
-      },
       "menu": {
-         "global": "Lieux d'intérêt",
+         "global": "Menu global",
          "instancePlaceOfInterest": "Lieux d'intérêt définies",
          "noInstancePlaceOfInterest": "Aucun lieu d'intérêt défini.",
          "localPlaceOfInterest": "Lieux d'intérêt supplémentaires",
@@ -130,9 +110,13 @@
       "confirm": "Confirmer",
       "cancel": "Annuler",
       "clear": "Retirer",
+      "refresh": "Rafraîchir",
       "next": "Suivant",
-      "prev": "Précédent",
-      "done": "Finir le tutoriel"
+      "previous": "Precédent",
+      "save": "Enregistrer",
+      "saving": "Enregistrement...",
+      "search": "Rechercher",
+      "remove": "Retirer"
    },
    "notFound": {
       "message": "Page introuvable."
@@ -255,35 +239,6 @@
       }
    },
    "admin": {
-      "deleteMember": {
-         "title": "Supprimer un membre",
-
-         "firstNameLabel": "Prénom",
-         "firstNamePlaceholder": "Entrez le prénom",
-         "lastNameLabel": "Nom",
-         "lastNamePlaceholder": "Entrez le nom",
-         "emailLabel": "Email",
-         "emailPlaceholder": "Entrez l'email",
-         "roleLabel": "Rôle",
-
-         "roles": {
-            "member": "Membre",
-            "admin": "Admin"
-         },
-
-         "submit": "Supprimer",
-         "submitting": "Suppression",
-
-         "success": "Utilisateur·trice supprimé·e.",
-         "fail": "Échec de suppression.",
-
-         "errors": {
-            "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
-            "notFound": "Utilisateur·trice introuvable.",
-            "forbidden": "Action interdite.",
-            "generic": "Une erreur est survenue."
-         }
-      },
       "addMember": {
          "title": "Ajouter un membre",
 
@@ -299,18 +254,81 @@
             "member": "Membre",
             "admin": "Admin"
          },
+         "loading": "Chargement des statistiques",
+         "noData": "pas de données disponibles",
+         "selectedValue": "Valeur sélectionnée",
+         "sameAnswer": "de même réponse",
+         "countText": "{{count}} sur {{total}} {{unit}} partagent cette valeur",
+         "selected": "Selectionné",
+         "others": "Autres",
+         "value": "Valeur:",
+         "count": "Nombre:",
+         "share": "Part:"
+      },
+      "export": {
+         "title": "Export",
+         "pngLabel": "PNG",
+         "pdfLabel": "PDF",
+         "pngTooltip": "Exporter en PNG",
+         "pdfTooltip": "Exporter en PDF",
 
-         "passwordLabel": "Mot de passe",
-         "passwordPlaceholder": "Entrez le mot de passe",
+         "note": "La capture reprend exactement la vue actuelle (zoom/déplacement) sans le menu.",
+
+         "ariaExportPng": "Export PNG en cours",
+         "ariaExportPdf": "Export PDF en cours",
+
+         "filenamePrefix": "carte",
+
+         "errors": {
+            "mapUnavailable": "Carte indisponible.",
+            "pngFailed": "Export PNG impossible.",
+            "pdfFailed": "Export PDF impossible."
+         },
+         "data": {
+            "title": "Exporter les données",
+            "description": "Sélectionnez les questions enregistrées et exportez leurs données au format CSV.",
+            "selectAll": "Tout sélectionner",
+            "clear": "Effacer",
+            "selected": "Sélectionné",
+            "noSavedQuestions": "Aucune question enregistrée n'est disponible",
+            "global": "Global",
+            "survey": "Enquête",
+            "loading": "Exporter",
+            "download": "Télécharger le fichier CSV"
+         }
+      },
+      "dashboard": {
+         "title": "Tableau de bord",
+         "welcome": "Bienvenue {{name}}",
+         "welcomeWithRole": "Bienvenue {{name}} ({{role}})",
+         "anonymous": "Utilisateur·trice",
+         "logout": "Se déconnecter"
+      },
+      "changePassword": {
+         "title": "Changer mon mot de passe",
+
+         "oldPasswordLabel": "Ancien mot de passe",
+         "oldPasswordPlaceholder": "Entrez votre ancien mot de passe",
+
+         "newPasswordLabel": "Nouveau mot de passe",
+         "newPasswordPlaceholder": "Entrez votre nouveau mot de passe",
+
          "confirmLabel": "Confirmation",
-         "confirmPlaceholder": "Confirmez le mot de passe",
+         "confirmPlaceholder": "Confirmez votre nouveau mot de passe",
+
          "passwordHelp": "Minimum 10 caractères, avec au moins : 1 lettre majuscule, 1 lettre minuscule, 1 chiffre et 1 symbole (ex. !@#$%&*).",
 
-         "submit": "Créer le membre",
-         "submitting": "Création",
+         "submit": "Modifier",
+         "submitting": "Modification",
 
-         "success": "Membre créé·e.",
-         "fail": "Échec de création.",
+         "success": "Mot de passe modifié.",
+         "successWithDetail": "Mot de passe modifié.",
+
+         "fail": "Échec de la modification du mot de passe.",
+         "failWithDetail": "Échec de la modification du mot de passe.",
+
+         "showPassword": "Afficher le mot de passe",
+         "hidePassword": "Masquer le mot de passe",
 
          "errors": {
             "confirmMismatch": "La confirmation ne correspond pas.",
@@ -318,13 +336,15 @@
             "emailExists": "Un membre avec ce courriel existe déjà.",
             "forbidden": "Action interdite.",
             "serverValidation": "Des erreurs de validation ont été renvoyées par le serveur.",
-            "generic": "Une erreur est survenue."
+            "generic": "Une erreur est survenue.",
+            "notAllowedRole": "Vous n’avez pas le droit d’attribuer ce rôle.",
+            "noAssignableRoles": "Vous ne pouvez attribuer aucun rôle."
          }
       },
       "config": {
          "placeOfInterestEditor": {
             "titleCreate": "Ajouter une ville",
-            "titleEdit": "Éditer une ville",
+            "titleEdit": "Modifier une ville",
 
             "importFromCommunes": "Importer depuis les communes",
             "searchPlaceholder": "Tapez au moins 3 lettres...",
@@ -332,13 +352,13 @@
             "empty": "Aucun résultat",
 
             "canonicalLabel": "Nom canonique",
-            "canonicalPlaceholder": "Lausanne, Genève, Zürich...",
+            "canonicalPlaceholder": "Lausanne, Genève, Zürich, ...",
 
             "labels": {
                "fr": "Français",
                "de": "Deutsch",
                "it": "Italiano",
-               "rm": "Rumantsch",
+               "ro": "Rumantsch",
                "en": "Anglais",
                "lat": "Latitude",
                "lon": "Longitude",
@@ -356,11 +376,11 @@
                "fr": "FR",
                "de": "DE",
                "it": "IT",
-               "rm": "RM",
+               "ro": "RO",
                "en": "EN",
                "position": "Position"
             },
-            "edit": "Éditer",
+            "edit": "Modifier",
             "delete": "Supprimer",
             "empty": "Aucune ville",
             "loading": "Chargement",
@@ -376,7 +396,7 @@
             "logoUrl": "URL du logo",
             "logoPreview": "Aperçu du logo",
             "logoUpload": "Importer un logo",
-            "logoInvalidType": "Format non supporté. Utilise PNG/JPG/WebP/SVG.",
+            "logoInvalidType": "Format non supporté. Utilisez PNG/JPG/WebP/SVG.",
             "logoTooLarge": "Fichier trop volumineux (maximum {{size}} MB).",
             "logoDropZone": "Zone de dépot du logo",
             "logoDropReject": "Fichier non supporté.",
@@ -420,7 +440,7 @@
             "noLogo": "Aucun logo",
             "previewPanel": {
                "text": "Lorem ipsum — simple text",
-               "buttonPrimary": "Boutton primaire",
+               "buttonPrimary": "Bouton primaire",
                "secondaryFrame": "Cadre secondaire",
                "selection": "Élément sélectionné"
             }
@@ -437,6 +457,23 @@
             "deleted": "Supprimé.",
             "deleteFailed": "Échec de la suppression.",
             "network": "Problème de réseau."
+         }
+      },
+      "users": {
+         "title": "Utilisateurs privés",
+         "firstName": "Prénom",
+         "lastName": "Nom",
+         "email": "Email",
+         "role": "Rôle",
+         "createdAt": "Créé le",
+         "updated": "Utilisateur modifié",
+         "deleted": "Utilisateur supprimé",
+         "confirmDeleteTitle": "Supprimer l'utilisateur",
+         "confirmDeleteMessage": "Voulez-vous vraiment supprimer {{name}} ?",
+         "errors": {
+            "updateFailed": "Impossible de modifier l'utilisateur",
+            "deleteFailed": "Impossible de supprimer l'utilisateur",
+            "notAllowedRole": "Vous n'avez pas le droit d'attribuer ce rôle"
          }
       }
    },
@@ -503,12 +540,126 @@
          "users": {
             "_": "Utilisateur·trice·s",
             "add": "Ajouter un·e membre",
-            "delete": "Supprimer un·e membre"
+            "delete": "Supprimer un·e membre",
+            "list": "Liste des membres"
          },
          "config": {
-            "_": "Configuration",
-            "placeOfInterest": "Lieux d'intérêt",
-            "theme": "Theme"
+            "placeOfInterestEditor": {
+               "titleCreate": "Ajouter une ville",
+               "titleEdit": "Éditer une ville",
+
+               "importFromCommunes": "Importer depuis les communes",
+               "searchPlaceholder": "Tapez au moins 3 lettres...",
+               "search": "Recherche",
+               "empty": "Aucun résultat",
+
+               "canonicalLabel": "Nom canonique",
+               "canonicalPlaceholder": "Lausanne, Genève, Zürich...",
+
+               "labels": {
+                  "fr": "Français",
+                  "de": "Deutsch",
+                  "it": "Italiano",
+                  "rm": "Rumantsch",
+                  "en": "Anglais",
+                  "lat": "Latitude",
+                  "lon": "Longitude",
+                  "preview": "Aperçu :"
+               },
+
+               "submitCreate": "Créer",
+               "submitEdit": "Enregistrer"
+            },
+            "placeOfInterestPage": {
+               "title": "Villes",
+               "addButton": "Ajouter",
+               "columns": {
+                  "name": "Nom",
+                  "fr": "FR",
+                  "de": "DE",
+                  "it": "IT",
+                  "rm": "RM",
+                  "en": "EN",
+                  "position": "Position"
+               },
+               "edit": "Éditer",
+               "delete": "Supprimer",
+               "empty": "Aucune ville",
+               "loading": "Chargement",
+               "titleConfirm": "Supprimer la ville",
+               "deleteConfirm": "Voulez-vous vraiment supprimer la ville « {{name}} » ?",
+               "confirmLabel": "Supprimer",
+               "cancelLabel": "Annuler"
+            },
+            "themeConfigPage": {
+               "title": "Configuration du thème et de l'instance",
+               "general": "Instance",
+               "instanceName": "Nom de l'instance",
+               "logoUrl": "URL du logo",
+               "logoPreview": "Aperçu du logo",
+               "logoUpload": "Importer un logo",
+               "logoInvalidType": "Format non supporté. Utilise PNG/JPG/WebP/SVG.",
+               "logoTooLarge": "Fichier trop volumineux (maximum {{size}} MB).",
+               "logoDropZone": "Zone de dépot du logo",
+               "logoDropReject": "Fichier non supporté.",
+               "logoDropActive": "Relâchez pour déposer",
+               "logoFormats": "PNG / JPG / WebP / SVG · {{size}} MB max",
+               "logoDropHint": "Glisser une image ici ou cliquer pour sélectionner un fichier",
+               "logoBrowse": "Importer...",
+               "currentMode": "Mode actuel : {{mode}}",
+               "defaultMode": "Mode par défaut",
+               "light": "Thème clair",
+               "dark": "Thème sombre",
+               "presets": "Préreglages de couleurs",
+               "presetsHelp": "Choisissez un préréglage de couleurs pour les themes clair et sombre a appliquer rapidement une palette cohérente.",
+               "lightSection": "Thème clair",
+               "darkSection": "Thème sombre",
+               "lightPreview": "Apercçu du thème clair",
+               "darkPreview": "Aperçu du thème sombre",
+               "mapLightPreview": "Aperçu de la carte thème claire",
+               "mapDarkPreview": "Aperçu de la carte thème sombre",
+               "mapSection": "Couleurs de la carte",
+               "primaryColourLabel": "Couleur primaire",
+               "secondaryColourLabel": "Couleur secondaire",
+               "backgroundColourLabel": "Couleur de fond",
+               "textColourLabel": "Couleur du texte",
+               "navbarOverlayLabel": "Opacité de la barre de navigation",
+               "logoBackgroundLabel": "Couleur de fond du logo",
+               "selectionColourLabel": "Couleur de sélection",
+               "communesColourLabel": "Couleur des communes",
+               "districtColourLabel": "Couleur des districts",
+               "cantonColourLabel": "Couleur des cantons",
+               "countryColourLabel": "Couleur du pays",
+               "lakesColourLabel": "Couleur des lacs",
+               "saving": "Enregistrement",
+               "save": "Enregistrer",
+               "saved": "Enregistré.",
+               "confirmTitle": "Confirmer les modifications",
+               "confirmMessage": "Étes-vous sûr·e de vouloir enregistrer les modifications du thème ? Cela affectera l'apparence de toute l'application.",
+               "logoUploadError": "Une erreur est survenue lors du chargement de l'image du logo.",
+               "loadError": "Impossible de charger la configuration du thème.",
+               "saveError": "Une erreur est survenue lors de l'enregistrement de la configuration.",
+               "noLogo": "Aucun logo",
+               "previewPanel": {
+                  "text": "Lorem ipsum — simple text",
+                  "buttonPrimary": "Boutton primaire",
+                  "secondaryFrame": "Cadre secondaire",
+                  "selection": "Élément sélectionné"
+               }
+            },
+            "configEditor": {
+               "cancel": "Annuler",
+               "submit": "Enregistrer",
+               "saving": "Enregistrement"
+            },
+            "errors": {
+               "loadFailed": "Échec du chargement.",
+               "saved": "Enregistré.",
+               "saveFailed": "Échec de l'enregistrement.",
+               "deleted": "Supprimé.",
+               "deleteFailed": "Échec de la suppression.",
+               "network": "Problème de réseau."
+            }
          }
       },
       "pageAll": {
@@ -630,12 +781,331 @@
    "pagination": {
       "page": "Page"
    },
+   "dataImport": {
+      "title": "Importation de données",
+      "description": "Importez un fichier CSV ou Excel, analysez-le, corrigez les problèmes détectés, puis validez-le avant de l'insérer dans la base de données.",
+      "edit": "Éditer",
+      "dropzone": {
+         "label": "Fichier de données",
+         "title": "Déposez un fichier CSV ou Excel ici",
+         "description": "Ou cliquez pour choisir un fichier depuis votre ordinateur.",
+         "browse": "Parcourir les fichiers",
+         "formats": "Formats acceptés : CSV, XLSX, XLS",
+         "dropActive": "Déposez le fichier ici",
+         "dropReject": "Un ou plusieurs fichiers ne sont pas acceptés",
+         "descriptionMultiple": "Déposez un ou plusieurs fichiers CSV ou Excel.",
+         "dropActiveMultiple": "Déposez le ou les fichiers"
+      },
+      "loading": {
+         "upload": "Tèlechargement du fichier...",
+         "analyze": "Analyse du fichier...",
+         "preview": "Previsualisation des données...",
+         "validate": "Envoi de la demande de validation..."
+      },
+      "summary": {
+         "rows": "Lignes",
+         "columns": "Colonnes",
+         "cells": "Cellules",
+         "issues": "Problèmes détectés",
+         "survey": "Données d'enquête",
+         "unknown": "Inconnue",
+         "col": "Cols",
+         "errors": "Erreurs"
+      },
+      "sections": {
+         "dataset": "Jeu de données",
+         "questions": "Questions",
+         "responses": "Réponses",
+         "choices": "Choix de réponse",
+         "municipalities": "Communes",
+         "metadata": "Métadonnées",
+         "unclassified": "Non classées",
+         "ignored": "Ignorées",
+         "unchosed": "Pas de role selectionner"
+      },
+      "types": {
+         "integer": "Entier",
+         "float": "Float",
+         "boolean": "Boolean",
+         "date": "Date",
+         "datetime": "Date et heure",
+         "text": "Text",
+         "empty": "Vide",
+         "mixed": "Mixte"
+      },
+      "actions": {
+         "showIssuesOnly": "Afficher uniquement les problèmes",
+         "showAllRows": "Afficher toutes les lignes",
+         "changeFile": "Changer de fichier",
+         "changeImport": "Changer d’import"
+      },
+      "issues": {
+         "sectionNeedsConfirmation": "Cette colonne a été classée automatiquement. Vérifie si la section proposée est correcte.",
+         "typeMismatch": "Certaines valeurs ne correspondent pas au type attendu. Prévu {{expected}}, reçu {{value}}"
+      },
+      "columnActions": {
+         "title": "Correction colonne",
+         "trim": "Supprimer les espaces",
+         "commaToDot": "Remplacer , par .",
+         "dotToComma": "Remplacer . par ,",
+         "emptyToNull": "Vides vers null",
+         "normalizeDatetime": "Normaliser date + heure",
+         "datetimeToDate": "Garder uniquement la date"
+      },
+      "sectionDescriptions": {
+         "dataset": "Informations générales du jeu de données.",
+         "questions": "Colonnes détectées comme questions ou libellés.",
+         "responses": "Valeurs par commune et par question.",
+         "choices": "Colonnes avec peu de valeurs distinctes, probablement des choix fermés.",
+         "municipalities": "Colonnes utilisées pour reconnaître les communes.",
+         "metadata": "Colonnes techniques comme dates, durée, langue ou progression.",
+         "unclassified": "Colonnes que le système n’a pas encore réussi à classer.",
+         "ignored": "Colonnes exclues de l’import."
+      },
+      "jobs": {
+         "title": "Dossiers d’import",
+         "resume": "Reprendre",
+         "delete": "Supprimer",
+         "notAnalyzed": "Dossier non analysé",
+         "show": "Afficher les travaux",
+         "hide": "Masquer les travaux",
+         "available": "dossiers disponibles",
+         "current": "Ouvert",
+         "deleteTitle": "Supprimer l’import",
+         "confirmDelete": "Voulez-vous vraiment supprimer l’import « {{filename}} » ?\n\nCette action supprimera les fichiers temporaires associés.",
+         "opened": "Ouvert",
+         "unnamed": "Dossier sans nom",
+         "file": "fichier",
+         "files": "fichiers",
+         "resource": "ressource",
+         "resources": "ressources",
+         "activeResourceSummary": "Ressource actuellement ouverte",
+         "createdAt": "Créé le {{date}}",
+         "generatedName": "Nom généré automatiquement",
+         "availableSingle": "dossier disponible",
+         "folderSummary": "Résumé global du dossier"
+      },
+      "analysis": {
+         "title": "Analyse du fichier"
+      },
+      "preview": {
+         "title": "Prévisualisation des données"
+      },
+      "workflow": {
+         "status": {
+            "analyzed": "Analysé"
+         },
+         "metadata": {
+            "title": "Métadonnées",
+            "description": "Changer les métadonnées du jeu de donnée actuel."
+         },
+         "explore": {
+            "title": "Explorer",
+            "description": "Consulter le dataset uploadé, les sections détectées, les colonnes, les lignes et les problèmes actuels."
+         },
+         "improve": {
+            "title": "Corriger",
+            "description": "Regrouper les problèmes, appliquer des corrections et comparer le dataset avant/après.",
+            "placeholderTitle": "L’amélioration du dataset sera ajoutée ensuite",
+            "placeholderDescription": "Cette étape contiendra les problèmes groupés, les suggestions automatiques et les previews avant/après. Pour l’instant, cette PR prépare uniquement la structure du workflow."
+         },
+         "validate": {
+            "title": "Valider",
+            "description": "Vérifier le schema final, le score de qualité et décider quand le dataset est prêt à être importé.",
+            "placeholderTitle": "La validation du dataset sera ajoutée ensuite",
+            "placeholderDescription": "Cette étape contiendra le schema final, la checklist de validation, le score de qualité et l’action d’import définitif. Pour l’instant, cette PR prépare uniquement la structure du workflow."
+         }
+      },
+      "metadata": {
+         "title": "Métadonnées du jeu de donnée",
+         "inheritedFrom": "Métadonnées heritée de ",
+         "nameLabel": "Nom du jeu de donnée",
+         "descriptionLabel": "Description du jeu de donnée",
+         "licenceLabel": "Licence du jeu de donnée",
+         "resetAll": "Réinitialiser tous les champs",
+         "submitButton": "Mettre a jour les métadonnées"
+      },
+      "displayName": {
+         "edit": "Renommer"
+      },
+      "previewToolbar": {
+         "searchPlaceholder": "Rechercher dans les valeurs...",
+         "type": "Type",
+         "column": "Colonne",
+         "sortBy": "Trier par",
+         "order": "Ordre",
+         "allTypes": "Tous les types",
+         "allColumns": "Toutes les colonnes",
+         "noSort": "Aucun tri",
+         "asc": "Ascendant",
+         "desc": "Descendant",
+         "reset": "Réinitialiser",
+         "noResults": "Aucune ligne ne correspond aux filtres actuels."
+      },
+      "columnProfile": {
+         "badge": "Profil de colonne",
+         "description": "Statistiques calculées sur cette colonne afin de comprendre sa complétude, ses valeurs vides, ses valeurs uniques et ses valeurs fréquentes.",
+         "open": "Afficher le profil de la colonne",
+         "sampleValues": "Exemples",
+         "mostCommonValues": "Valeurs fréquentes",
+         "noSampleValues": "Aucun exemple disponible",
+         "noMostCommonValues": "Aucune valeur fréquente",
+         "metrics": {
+            "completeness": "Complétude",
+            "empty": "Vides",
+            "unique": "Uniques",
+            "nonEmpty": "Non vides"
+         }
+      },
+      "improve": {
+         "badge": "Improve",
+         "title": "Problèmes détectés",
+         "description": "Les problèmes sont regroupés par colonne, type d’erreur et sévérité afin de faciliter l’analyse avant correction.",
+         "loading": "Chargement des problèmes détectés...",
+         "searchPlaceholder": "Rechercher une colonne ou un type d’erreur...",
+         "severity": "Sévérité",
+         "openInPreview": "Voir dans la preview",
+         "sampleValues": "Exemples de valeurs",
+         "noSampleValues": "Aucun exemple disponible",
+         "noFilteredResults": "Aucun groupe d’erreurs ne correspond aux filtres actuels.",
+         "emptyTitle": "Aucun problème détecté",
+         "emptyDescription": "Le dataset ne contient actuellement aucun problème détecté par les règles de validation de cette étape.",
+         "confirmColumn": "Confirmer",
+         "confirmColumnHint": "La section détectée doit être confirmée.",
+         "stats": {
+            "groups": "Groupes",
+            "errors": "Erreurs",
+            "warnings": "Warnings"
+         },
+         "filters": {
+            "all": "Toutes",
+            "errors": "Erreurs",
+            "warnings": "Warnings"
+         },
+         "severities": {
+            "error": "Erreur",
+            "warning": "Warning"
+         },
+         "metrics": {
+            "issues": "Issues",
+            "rows": "Lignes",
+            "expected": "Attendu"
+         },
+         "pagination": {
+            "summary": "{{shown}} affichés sur {{total}} · page {{page}} / {{pages}}"
+         },
+         "selection": {
+            "select": "Sélectionner",
+            "selected": "{{count}} warning(s) sélectionné(s)",
+            "clear": "Vider la sélection",
+            "confirm": "Confirmer la sélection ({{count}})"
+         }
+      },
+      "upload": {
+         "title": "Créer un import",
+         "description": "Ajoutez un ou plusieurs fichiers appartenant au même dataset ou à la même étude.",
+         "folderName": "Nom du dossier d’import",
+         "folderNamePlaceholder": "Par exemple : Étude communale 2026",
+         "folderNameHelp": "Ce nom permettra de retrouver facilement cet import plus tard.",
+         "selectedFiles": "Fichiers sélectionnés",
+         "files": "fichiers",
+         "clear": "Tout retirer",
+         "create": "Créer le dossier et importer",
+         "mandatory": "Obligatoire",
+         "chooseProject": "Veuillez choisir le projet auquel rattacher l'étude",
+         "project": {
+            "chooseProjectButton": "Choisir un projet",
+            "newProject": "Créer un nouveau projet",
+            "chooseProjectText": "Veuillez sélectionner un projet dans la liste",
+            "noProjectText": "Aucun projet trouvé",
+            "createNewProject": "Créer un nouveau projet",
+            "dropdownSelector": "Selectionner un projet dans la liste",
+            "nameLabel": "Nom du projet",
+            "namePlaceholder": "Nom du projet",
+            "descriptionLabel": "Description du projet",
+            "descriptionPlaceholder": "Description du projet",
+            "licenceLabel": "Licence",
+            "licencePlaceholder": "Licence",
+            "projectAuthor": "Auteur·trice du projet",
+            "addAuthor": "Ajouter un·e auteur·trice",
+            "authorFirstNamePlaceholder": "Prénom",
+            "authorLastNamePlaceholder": "Nom de famille",
+            "authorEmailPlaceHolder": "Email",
+            "linkText": "Lien",
+            "newLink": "Nouveau lien",
+            "noLink": "Pas de lien",
+            "linkPlaceHolder": "Nom du lien",
+            "submitButton": "Créer un nouveau projet"
+         }
+      },
+      "resources": {
+         "title": "Fichiers et feuilles",
+         "available": "ressources disponibles",
+         "active": "Ouvert",
+         "sheet": "Feuille",
+         "notAnalyzed": "Non analysé",
+         "addFiles": "Ajouter des fichiers",
+         "addFilesDescription": "Les nouveaux fichiers seront ajoutés au dossier courant sans supprimer les données déjà traitées.",
+         "addSelected": "Ajouter les fichiers",
+         "none": "Aucune ressource exploitable n’a été trouvée dans cet import."
+      },
+      "years": {
+         "label": "Années concernées",
+         "placeholder": "Par exemple : 2023",
+         "help": "Ajoutez une ou plusieurs années concernées par les fichiers importés.",
+         "add": "Ajouter",
+         "remove": "Retirer l’année {{year}}",
+         "required": "Ajoutez au moins une année.",
+         "requiredBadge": "Obligatoire",
+         "edit": "Modifier",
+         "editTitle": "Modifier les années de l’import"
+      },
+      "validate": {
+         "badge": "Validate",
+         "title": "Validation finale du dataset",
+         "description": "Vérifiez une dernière fois le résumé du dataset avant d’envoyer la demande d’import au backend.",
+         "status": {
+            "ready": "Prêt à être envoyé",
+            "withIssues": "Problèmes restants"
+         },
+         "summary": {
+            "title": "Résumé de l’import",
+            "description": "Ces informations correspondent à l’état actuel des fichiers et des données analysées."
+         },
+         "metrics": {
+            "files": "Fichiers",
+            "rows": "Lignes",
+            "columns": "Colonnes",
+            "cells": "Cellules",
+            "issues": "Issues"
+         },
+         "checks": {
+            "analysis": "Analyse terminée",
+            "analysisDescription": "Les fichiers ont été lus et analysés par le backend.",
+            "data": "Données disponibles",
+            "dataDescription": "Le dataset contient des lignes et des colonnes exploitables.",
+            "issues": "Contrôle des problèmes",
+            "issuesRemaining": "{{count}} problème(s) sont encore détecté(s) dans le dataset.",
+            "noIssues": "Aucun problème n’est actuellement détecté.",
+            "database": "Écriture en base de données",
+            "databaseDescription": "L’écriture définitive en base sera implémentée dans une prochaine PR."
+         },
+         "action": {
+            "title": "Envoyer l’import au backend",
+            "description": "Cette action appelle la route finale du backend. Pour le moment, la route accuse uniquement réception et n’écrit aucune donnée en base.",
+            "issuesWarning": "Le dataset contient encore {{count}} problème(s). La demande peut tout de même être envoyée afin de tester le workflow.",
+            "submit": "Valider et envoyer a la base de données",
+            "submitting": "Envoi en cours...",
+            "submitted": "Demande envoyée",
+            "helper": "Aucune donnée ne sera encore écrite dans la base avec cette version.",
+            "endpointReached": "La demande a bien atteint le backend. L’écriture définitive en base de données sera ajoutée séparément."
+         }
+      }
+   },
    "first-modal": {
-      "title": "Bienvenue sur le Datahub",
-      "contentp1": "Bienvenue sur le Datahub - actuellement en version bêta, encore en développement. Le code est disponible en open source sur ",
-      "contentp2": ". Si vous remarquez des erreurs de traduction ou des bugs, vous pouvez nous contacter à l'adresse e-mail : ",
+      "title": "Bienvenue",
+      "content": "Bienvenue !",
       "close": "Fermer",
-      "reminder": "Ne plus me rappeler",
-      "tour": "Découvrir l'interface"
+      "reminder": "Ne plus me rappeler"
    }
 }

@@ -8,6 +8,7 @@ import type {
     ShowMetaField,
     ShowInsights,
     ShowInsightsResponse,
+    ShowPermissionActions,
 } from "@/features/pageShow/show_type";
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
@@ -22,16 +23,17 @@ import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 type Props = {
     id: number;
     entity: Entity;
+    permissions: ShowPermissionActions;
     onEdit?: (entity: Entity, id: number) => void;
     onDelete?: (entity: Entity, id: number) => void;
 };
 
-const LANGS: { key: "de" | "fr" | "en" | "it" | "rm"; label: string }[] = [
+const LANGS: { key: "de" | "fr" | "en" | "it" | "ro"; label: string }[] = [
     { key: "de", label: "Deutsch" },
     { key: "fr", label: "Français" },
     { key: "en", label: "English" },
     { key: "it", label: "Italiano" },
-    { key: "rm", label: "Rumantsch" },
+    { key: "ro", label: "Rumantsch" },
 ];
 
 function renderEmpty(v: any): string {
@@ -156,7 +158,13 @@ function getRelationDisplayItems(
     });
 }
 
-export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
+export default function EntityShow({
+    id,
+    entity,
+    permissions,
+    onEdit,
+    onDelete,
+}: Props) {
     const navigate = useNavigate();
     const { t, i18n } = useTranslation();
     const { textColor, background, borderColor, hoverPrimary04, hoverText07 } =
@@ -173,8 +181,12 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
         null,
     );
 
-    const canEdit = meta?.actions?.can_edit ?? false;
-    const canDelete = meta?.actions?.can_delete ?? false;
+    const pageAllowsEdit = meta?.actions?.can_edit ?? false;
+    const pageAllowsDelete = meta?.actions?.can_delete ?? false;
+
+    const canShow = permissions.show;
+    const canEdit = pageAllowsEdit && permissions.edit;
+    const canDelete = pageAllowsDelete && permissions.delete;
 
     // DELETE (clear fields)
     const [deleteMode, setDeleteMode] = React.useState(false);
@@ -380,6 +392,23 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
         "w-full bg-transparent outline-none text-sm leading-tight";
     const pencilIconClass = "text-xs opacity-70 select-none";
 
+    // Ce composant sert a garder la place de bouton meme invisible pour eviter les sauts de layout
+    function ActionSlot({
+        visible,
+        children,
+    }: {
+        visible: boolean;
+        children: React.ReactNode;
+    }) {
+        return (
+            <div className="min-w-[110px] flex justify-center">
+                <div className={visible ? "" : "invisible pointer-events-none"}>
+                    {children}
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div
             className="w-full h-full"
@@ -404,131 +433,189 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
-                                {/* Confirm clear (delete mode) */}
-                                {deleteMode && (
-                                    <button
-                                        type="button"
-                                        disabled={
-                                            selectedFieldsToClear.length === 0
-                                        }
-                                        className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                                        style={{
-                                            backgroundColor: background,
-                                            borderColor,
-                                            color: textColor,
-                                        }}
-                                        onClick={() => {
-                                            openClearConfirm({
-                                                entity,
-                                                id,
-                                                clear_fields:
-                                                    selectedFieldsToClear,
-                                            });
-                                            setConfirmOpen(true);
-                                        }}
-                                    >
-                                        {t("dashboardSidebar.pageShow.confirm")}
-                                    </button>
-                                )}
-
-                                {/* Confirm edit (edit mode) */}
-                                {editMode && (
-                                    <button
-                                        type="button"
-                                        disabled={!hasAnyValidChange()}
-                                        className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                                        style={{
-                                            backgroundColor: background,
-                                            borderColor,
-                                            color: textColor,
-                                        }}
-                                        onClick={() => setConfirmEditOpen(true)}
-                                    >
-                                        {t("dashboardSidebar.pageShow.confirm")}
-                                    </button>
-                                )}
-
-                                {/* EDIT button -> toggles inline edit mode */}
-                                {canEdit && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (editMode) {
-                                                exitEditMode();
-                                            } else {
+                                {/* SLOT 1 : Edit normal / Confirm edit / Confirm delete */}
+                                <ActionSlot
+                                    visible={
+                                        canEdit ||
+                                        canDelete ||
+                                        editMode ||
+                                        deleteMode
+                                    }
+                                >
+                                    {!editMode && !deleteMode && canEdit && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (!canEdit) return;
                                                 enterEditMode();
-                                            }
-                                        }}
-                                        className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                                        style={{
-                                            backgroundColor: background,
-                                            borderColor,
-                                            color: textColor,
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.backgroundColor =
-                                                hoverPrimary04;
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor =
-                                                background;
-                                        }}
-                                    >
-                                        {editMode
-                                            ? t("common.cancel")
-                                            : t(
-                                                  "dashboardSidebar.pageShow.edit",
-                                              )}
-                                    </button>
-                                )}
+                                            }}
+                                            className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                                            style={{
+                                                backgroundColor: background,
+                                                borderColor,
+                                                color: textColor,
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    hoverPrimary04;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    background;
+                                            }}
+                                        >
+                                            {t(
+                                                "dashboardSidebar.pageShow.edit",
+                                            )}
+                                        </button>
+                                    )}
 
-                                {/* DELETE button */}
-                                {canDelete && (
-                                    <button
-                                        type="button"
-                                        onClick={() => {
-                                            if (deleteMode) {
-                                                // Cancel delete mode
+                                    {editMode && canEdit && (
+                                        <button
+                                            type="button"
+                                            disabled={!hasAnyValidChange()}
+                                            className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                                            style={{
+                                                backgroundColor: background,
+                                                borderColor,
+                                                color: textColor,
+                                            }}
+                                            onClick={() => {
+                                                if (!canEdit) return;
+                                                setConfirmEditOpen(true);
+                                            }}
+                                        >
+                                            {t(
+                                                "dashboardSidebar.pageShow.confirm",
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {deleteMode && canDelete && (
+                                        <button
+                                            type="button"
+                                            disabled={
+                                                selectedFieldsToClear.length ===
+                                                0
+                                            }
+                                            className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
+                                            style={{
+                                                backgroundColor: background,
+                                                borderColor,
+                                                color: textColor,
+                                            }}
+                                            onClick={() => {
+                                                if (!canDelete) return;
+                                                openClearConfirm({
+                                                    entity,
+                                                    id,
+                                                    clear_fields:
+                                                        selectedFieldsToClear,
+                                                });
+                                                setConfirmOpen(true);
+                                            }}
+                                        >
+                                            {t(
+                                                "dashboardSidebar.pageShow.confirm",
+                                            )}
+                                        </button>
+                                    )}
+                                </ActionSlot>
+
+                                {/* SLOT 2 : Delete normal / Cancel edit / Cancel delete */}
+                                <ActionSlot
+                                    visible={
+                                        canEdit ||
+                                        canDelete ||
+                                        editMode ||
+                                        deleteMode
+                                    }
+                                >
+                                    {!editMode && !deleteMode && canDelete && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (!canDelete) return;
+                                                setDeleteMode(true);
+                                                exitEditMode();
+                                            }}
+                                            className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                                            style={{
+                                                backgroundColor: background,
+                                                borderColor:
+                                                    "rgba(239,68,68,0.35)", // couleur rouge
+                                                color: "rgb(220,38,38)", // couleur rouge
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    "rgba(239,68,68,0.08)"; // rouge clair
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    background;
+                                            }}
+                                        >
+                                            {t(
+                                                "dashboardSidebar.pageShow.delete",
+                                            )}
+                                        </button>
+                                    )}
+
+                                    {editMode && canEdit && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (!canEdit) return;
+                                                exitEditMode();
+                                            }}
+                                            className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                                            style={{
+                                                backgroundColor: background,
+                                                borderColor,
+                                                color: textColor,
+                                            }}
+                                            onMouseEnter={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    hoverPrimary04;
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    background;
+                                            }}
+                                        >
+                                            {t("common.cancel")}
+                                        </button>
+                                    )}
+
+                                    {deleteMode && canDelete && (
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                if (!canDelete) return;
                                                 setDeleteMode(false);
                                                 setSelectedFieldsToClear([]);
                                                 cancelClear();
                                                 setConfirmOpen(false);
-                                            } else {
-                                                setDeleteMode(true);
-                                                exitEditMode();
-                                            }
-                                        }}
-                                        className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                                        style={{
-                                            backgroundColor: background,
-                                            borderColor: deleteMode
-                                                ? borderColor
-                                                : "rgba(239,68,68,0.35)", // couleur rouge
-                                            color: deleteMode
-                                                ? textColor
-                                                : "rgb(220,38,38)", // couleur rouge
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            if (!deleteMode) {
-                                                e.currentTarget.style.backgroundColor =
-                                                    "rgba(239,68,68,0.08)"; // rouge clair
-                                            } else {
+                                            }}
+                                            className="h-9 px-3 rounded-lg border text-sm transition-colors"
+                                            style={{
+                                                backgroundColor: background,
+                                                borderColor,
+                                                color: textColor,
+                                            }}
+                                            onMouseEnter={(e) => {
                                                 e.currentTarget.style.backgroundColor =
                                                     hoverPrimary04;
-                                            }
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.backgroundColor =
-                                                background;
-                                        }}
-                                    >
-                                        {deleteMode
-                                            ? t("common.cancel")
-                                            : t(
-                                                  "dashboardSidebar.pageShow.delete",
-                                              )}
-                                    </button>
-                                )}
+                                            }}
+                                            onMouseLeave={(e) => {
+                                                e.currentTarget.style.backgroundColor =
+                                                    background;
+                                            }}
+                                        >
+                                            {t("common.cancel")}
+                                        </button>
+                                    )}
+                                </ActionSlot>
                             </div>
                         </div>
 
@@ -589,9 +676,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                                         isProtectedField(f.key);
                                                     const showClearCheckbox =
                                                         deleteMode &&
+                                                        canDelete &&
                                                         !protectedField;
                                                     const showEditInput =
                                                         editMode &&
+                                                        canEdit &&
                                                         !protectedField;
 
                                                     return (
@@ -846,9 +935,11 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                                                         isProtectedField(key);
                                                     const showClearCheckbox =
                                                         deleteMode &&
+                                                        canDelete &&
                                                         !protectedField;
                                                     const showEditInput =
                                                         editMode &&
+                                                        canEdit &&
                                                         !protectedField;
 
                                                     return (
@@ -1089,6 +1180,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                 cancelLabel={t("common.cancel")}
                 onCancel={() => setConfirmOpen(false)}
                 onConfirm={async () => {
+                    if (!canDelete) return;
                     const ok = await confirmClear();
                     if (!ok) return;
 
@@ -1120,6 +1212,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                 cancelLabel={t("common.cancel")}
                 onCancel={() => setConfirmEditOpen(false)}
                 onConfirm={async () => {
+                    if (!canEdit) return;
                     const updates = getChangedUpdates();
                     if (Object.keys(updates).length === 0) return;
 
