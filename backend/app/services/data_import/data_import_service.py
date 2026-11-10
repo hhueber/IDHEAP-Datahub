@@ -413,7 +413,7 @@ async def create_import_workspace(
 
     if clean_display_name == "":
         clean_display_name = None
-    
+
     metadata: dict[str, Any] = {
         "import_id": import_id,
         "display_name": clean_display_name,
