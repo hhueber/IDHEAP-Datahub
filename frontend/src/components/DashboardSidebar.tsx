@@ -3,21 +3,31 @@ import React from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-import type { Role } from "@/config/roles";
 import { useTheme } from "@/theme/useTheme";
+import type { PermissionLevel, PermissionScope } from "@/config/roles";
+
+type MenuPermission = {
+    scope: PermissionScope;
+    level: PermissionLevel;
+};
 
 type MenuItem = {
     key: string;
     labelKey?: string; // <- clé i18n
     label?: string;
     to?: string; // route (si absent -> nœud parent)
-    roles?: Role[]; // rôles autorisés
+    permission?: MenuPermission;
     children?: MenuItem[];
 };
 
 // autorisation d’affichage par rôle
-const canSee = (role: Role | undefined, item?: MenuItem) =>
-    !item?.roles || (role ? item.roles.includes(role) : false);
+const canSee = (
+    can: (scope: PermissionScope, level: PermissionLevel) => boolean,
+    item?: MenuItem,
+) => {
+    if (!item?.permission) return true;
+    return can(item.permission.scope, item.permission.level);
+};
 
 // actif si chemin exact ou sous-chemin
 const isPathActive = (path: string, current: string) =>
@@ -59,23 +69,23 @@ function TreeItem({
     isOpen,
     onToggle,
     currentPath,
-    userRole,
+    can,
 }: {
     item: MenuItem;
     depth?: number;
     isOpen: (k: string) => boolean;
     onToggle: (k: string) => void;
     currentPath: string;
-    userRole?: Role;
+    can: (scope: PermissionScope, level: PermissionLevel) => boolean;
 }) {
     const { t } = useTranslation();
-    if (!canSee(userRole, item)) return null;
+    if (!canSee(can, item)) return null;
 
     const { primary, textColor, adaptiveTextColorPrimary, hoverPrimary06 } =
         useTheme();
 
     const label = item.labelKey ? t(item.labelKey) : (item.label ?? "");
-    const hasChildren = !!item.children?.some((c) => canSee(userRole, c));
+    const hasChildren = !!item.children?.some((c) => canSee(can, c));
     const padding = 12 + depth * 12;
     const activeHere = item.to ? isPathActive(item.to, currentPath) : false;
     const activeChild =
@@ -136,7 +146,7 @@ function TreeItem({
             {isOpen(item.key) && hasChildren && (
                 <div className="mt-1 space-y-1">
                     {item
-                        .children!.filter((c) => canSee(userRole, c))
+                        .children!.filter((c) => canSee(can, c))
                         .map((child) => (
                             <TreeItem
                                 key={child.key}
@@ -145,7 +155,7 @@ function TreeItem({
                                 isOpen={isOpen}
                                 onToggle={onToggle}
                                 currentPath={currentPath}
-                                userRole={userRole}
+                                can={can}
                             />
                         ))}
                 </div>
@@ -156,8 +166,7 @@ function TreeItem({
 
 export default function DashboardSidebar() {
     const { t } = useTranslation();
-    const { user, logout } = useAuth();
-    const userRole = (user?.role as Role) || undefined;
+    const { user, logout, can } = useAuth();
     const location = useLocation();
 
     const {
@@ -177,124 +186,124 @@ export default function DashboardSidebar() {
             key: "dashboard",
             labelKey: "dashboardSidebar.sections.dashboard",
             to: "/dashboard",
-            roles: ["ADMIN", "MEMBER"],
+            permission: { scope: "DATASET", level: "READ" },
         },
         {
             key: "survey",
             labelKey: "dashboardSidebar.sections.survey",
-            roles: ["ADMIN", "MEMBER"],
+            permission: { scope: "DATASET", level: "READ" },
             children: [
                 {
                     key: "survey-all",
                     labelKey: "dashboardSidebar.survey.all",
                     to: "/admin/surveys",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                 },
                 {
                     key: "survey-edit",
                     labelKey: "dashboardSidebar.survey.newEdit",
                     to: "/admin/surveys/new",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "WRITE" },
                 },
             ],
         },
         {
             key: "qa",
             labelKey: "dashboardSidebar.sections.qa",
-            roles: ["ADMIN", "MEMBER"],
+            permission: { scope: "DATASET", level: "READ" },
             children: [
                 {
                     key: "qps",
                     labelKey: "dashboardSidebar.qa.qps._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "qps-all",
                             labelKey: "dashboardSidebar.qa.qps.all",
                             to: "/admin/qps",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                         {
                             key: "qps-edit",
                             labelKey: "dashboardSidebar.qa.qps.newEdit",
                             to: "/admin/qps/new",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "WRITE" },
                         },
                     ],
                 },
                 {
                     key: "qglobal",
                     labelKey: "dashboardSidebar.qa.qglobal._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "qglobal-all",
                             labelKey: "dashboardSidebar.qa.qglobal.all",
                             to: "/admin/qglobal",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                         {
                             key: "qglobal-edit",
                             labelKey: "dashboardSidebar.qa.qglobal.newEdit",
                             to: "/admin/qglobal/new",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "WRITE" },
                         },
                     ],
                 },
                 {
                     key: "qcat",
                     labelKey: "dashboardSidebar.qa.qcat._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "qcat-all",
                             labelKey: "dashboardSidebar.qa.qcat.all",
                             to: "/admin/qcat",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                         {
                             key: "qcat-edit",
                             labelKey: "dashboardSidebar.qa.qcat.newEdit",
                             to: "/admin/qcat/new",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "WRITE" },
                         },
                     ],
                 },
                 {
                     key: "answer",
                     labelKey: "dashboardSidebar.qa.answer._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "answer-all",
                             labelKey: "dashboardSidebar.qa.answer.all",
                             to: "/admin/answers",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                         {
                             key: "answer-edit",
                             labelKey: "dashboardSidebar.qa.answer.newEdit",
                             to: "/admin/answers/new",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "WRITE" },
                         },
                     ],
                 },
                 {
                     key: "option",
                     labelKey: "dashboardSidebar.qa.option._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "option-all",
                             labelKey: "dashboardSidebar.qa.option.all",
                             to: "/admin/options",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                         {
                             key: "option-edit",
                             labelKey: "dashboardSidebar.qa.option.newEdit",
                             to: "/admin/options/new",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "WRITE" },
                         },
                     ],
                 },
@@ -303,44 +312,44 @@ export default function DashboardSidebar() {
         {
             key: "places",
             labelKey: "dashboardSidebar.sections.places",
-            roles: ["ADMIN", "MEMBER"],
+            permission: { scope: "DATASET", level: "READ" },
             children: [
                 {
                     key: "commune",
                     labelKey: "dashboardSidebar.places.commune._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "commune-all",
                             labelKey: "dashboardSidebar.places.commune.all",
                             to: "/admin/places/communes",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                     ],
                 },
                 {
                     key: "district",
                     labelKey: "dashboardSidebar.places.district._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "district-all",
                             labelKey: "dashboardSidebar.places.district.all",
                             to: "/admin/places/districts",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                     ],
                 },
                 {
                     key: "canton",
                     labelKey: "dashboardSidebar.places.canton._",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                     children: [
                         {
                             key: "canton-all",
                             labelKey: "dashboardSidebar.places.canton.all",
                             to: "/admin/places/cantons",
-                            roles: ["ADMIN", "MEMBER"],
+                            permission: { scope: "DATASET", level: "READ" },
                         },
                     ],
                 },
@@ -349,53 +358,53 @@ export default function DashboardSidebar() {
         {
             key: "administration",
             labelKey: "dashboardSidebar.sections.administration",
-            roles: ["ADMIN", "MEMBER"],
+            permission: { scope: "DATASET", level: "READ" },
             children: [
                 {
                     key: "admin-password",
                     labelKey: "dashboardSidebar.administration.changePassword",
                     to: "/dashboard/password",
-                    roles: ["ADMIN", "MEMBER"],
+                    permission: { scope: "DATASET", level: "READ" },
                 },
                 {
                     key: "admin-users",
                     labelKey: "dashboardSidebar.administration.users._",
-                    roles: ["ADMIN"],
+                    permission: { scope: "PROJECT", level: "READ" },
                     children: [
                         {
                             key: "admin-users-new",
                             labelKey:
                                 "dashboardSidebar.administration.users.add",
                             to: "/admin/users/new",
-                            roles: ["ADMIN"],
+                            permission: { scope: "PROJECT", level: "WRITE" },
                         },
                         {
-                            key: "admin-users-del",
+                            key: "admin-users-list",
                             labelKey:
-                                "dashboardSidebar.administration.users.delete",
-                            to: "/admin/users/delete",
-                            roles: ["ADMIN"],
+                                "dashboardSidebar.administration.users.list",
+                            to: "/admin/users",
+                            permission: { scope: "PROJECT", level: "READ" },
                         },
                     ],
                 },
                 {
                     key: "admin-config",
                     labelKey: "dashboardSidebar.administration.config._",
-                    roles: ["ADMIN"],
+                    permission: { scope: "PROJECT", level: "READ" },
                     children: [
                         {
                             key: "admin-config-placeOfInterest",
                             labelKey:
                                 "dashboardSidebar.administration.config.placeOfInterest",
                             to: "/admin/config/placeOfInterest",
-                            roles: ["ADMIN"],
+                            permission: { scope: "PROJECT", level: "READ" },
                         },
                         {
                             key: "admin-config-theme",
                             labelKey:
                                 "dashboardSidebar.administration.config.theme",
                             to: "/admin/config/theme",
-                            roles: ["ADMIN"],
+                            permission: { scope: "PROJECT", level: "READ" },
                         },
                     ],
                 },
@@ -448,7 +457,7 @@ export default function DashboardSidebar() {
             <div className="h-[calc(100vh-4rem)] flex flex-col">
                 <nav className="flex-1 min-h-0 px-3 py-4 space-y-1 overflow-y-auto">
                     {menu
-                        .filter((m) => canSee(userRole, m))
+                        .filter((m) => canSee(can, m))
                         .map((m) => (
                             <TreeItem
                                 key={m.key}
@@ -456,7 +465,7 @@ export default function DashboardSidebar() {
                                 isOpen={isOpen}
                                 onToggle={onToggle}
                                 currentPath={location.pathname}
-                                userRole={userRole}
+                                can={can}
                             />
                         ))}
                 </nav>

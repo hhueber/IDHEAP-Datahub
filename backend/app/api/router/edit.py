@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import get_current_user
+from app.api.permissions import require_permission
+from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
 from app.repositories.edit_repo import update_rows
 from app.schemas.edit import EditRequest, EditResponse
-from app.schemas.user import UserPublic
 from app.security.edit_guard import EditAction, assert_edit_allowed
 
 router = APIRouter()
@@ -15,7 +15,9 @@ router = APIRouter()
 async def generic_edit(
     payload: EditRequest,
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.WRITE)
+    ),
 ):
     """
     Endpoint générique /edit

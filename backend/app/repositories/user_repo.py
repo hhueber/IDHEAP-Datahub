@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config.roles import PermissionRole
 from app.core.security import get_password_hash, verify_password
 from app.models.user import User
 
@@ -27,7 +28,7 @@ async def create_user(
     password: str,
     first_name: str,
     last_name: str,
-    role: str = "MEMBER",
+    role: PermissionRole | str = PermissionRole.DATASET_VIEWER,
 ) -> User:
     """creates a user and updates the database."""
     user = User(
@@ -43,9 +44,9 @@ async def create_user(
     return user
 
 
-async def any_admin_exists(db: AsyncSession) -> bool:
-    """Check that there is no admin created."""
-    q = select(User).where(User.role == "ADMIN").limit(1)
+async def any_super_admin_exists(db: AsyncSession) -> bool:
+    """Check whether at least one SUPER_ADMIN already exists."""
+    q = select(User.id).where(User.role == PermissionRole.SUPER_ADMIN.value).limit(1)
     res = await db.execute(q)
     return res.scalars().first() is not None
 
