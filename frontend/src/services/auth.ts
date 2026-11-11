@@ -1,12 +1,13 @@
 // Service d’authentification (client) : login/refresh/logout + cache local
 import { apiFetch } from "@/shared/apiFetch";
+import type { PermissionRole } from "@/config/roles";
 
 export type User = {
     id: string;
     email: string;
     first_name: string;
     last_name: string;
-    role: "ADMIN" | "MEMBER";
+    role: PermissionRole;
 };
 
 const REFRESH_KEY = "next_refresh_at"; // timestamp en ms

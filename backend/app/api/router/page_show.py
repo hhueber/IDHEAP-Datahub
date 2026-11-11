@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import get_current_user
+from app.api.permissions import require_permission
+from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
 from app.repositories.page_show_children_repo import (
     enrich_children_display_names,
@@ -14,7 +15,6 @@ from app.schemas.page_show import (
     ShowInsightsResponse,
     ShowResponse,
 )
-from app.schemas.user import UserPublic
 from app.services.page_show_insight_service import build_insights
 from app.services.page_show_meta import get_meta_for_entity
 from app.services.page_show_relation_display_service import (
@@ -31,7 +31,9 @@ async def show_entity(
     uid: int,
     lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     meta = get_meta_for_entity(entity.value)
     obj = await get_by_uid(db, entity=entity, uid=uid)
@@ -60,7 +62,9 @@ async def show_children(
     per_page: int = Query(10, ge=1, le=100),
     lang: PageAllLangEnum = Query(PageAllLangEnum.fr),
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     meta = get_meta_for_entity(entity.value)
     if not meta or not meta.children:
@@ -121,7 +125,9 @@ async def show_entity_insights(
     entity: EntityEnum,
     uid: int,
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     obj = await get_by_uid(db, entity=entity, uid=uid)
 

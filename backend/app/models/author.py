@@ -6,11 +6,11 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 
 if TYPE_CHECKING:
-    from .project_author_association import ProjectAuthorAssociation
+    from .author_metadata_association import AuthorMetadataAssociation
 
 
-class ProjectAuthor(Base):
-    __tablename__ = "project_author"
+class Author(Base):
+    __tablename__ = "author"
 
     uid: Mapped[int] = mapped_column(primary_key=True)
 
@@ -18,10 +18,8 @@ class ProjectAuthor(Base):
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False)
 
-    project_metadata_association: Mapped[list["ProjectAuthorAssociation"]] = (
-        relationship(
-            "ProjectAuthorAssociation",
-            back_populates="author",
-            cascade="all, delete-orphan",
-        )
+    metadata_association: Mapped[list["AuthorMetadataAssociation"]] = relationship(
+        "AuthorMetadataAssociation",
+        back_populates="author",
+        cascade="all, delete-orphan",
     )

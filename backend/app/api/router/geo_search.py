@@ -3,7 +3,8 @@ from typing import Literal
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.dependencies import get_current_user
+from app.api.permissions import require_permission
+from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
 from app.repositories.geo_search_repo import (
     build_geo_names,
@@ -17,7 +18,6 @@ from app.schemas.place_of_interest import (
     PlaceOfInterestSuggestOut,
     PlaceOfInterestSuggestResponse,
 )
-from app.schemas.user import UserPublic
 
 router = APIRouter()
 
@@ -27,7 +27,9 @@ async def suggest_geo(
     q: str = Query(..., min_length=3, max_length=100),
     limit: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Recherche des suggestions géographiques parmi les communes, districts et cantons.
@@ -45,7 +47,7 @@ async def suggest_geo(
         q: Texte saisi par l'utilisateur.
         limit: Nombre maximum de résultats à retourner.
         db: Session de base de données asynchrone.
-        _user: Utilisateur courant authentifié.
+        _current_user: Utilisateur courant authentifié.
 
     Returns:
         dict: Réponse JSON contenant la liste des suggestions géographiques.
@@ -59,7 +61,9 @@ async def geo_point(
     geo_type: Literal["commune", "district", "canton"],
     uid: int,
     db: AsyncSession = Depends(get_db),
-    _user: UserPublic = Depends(get_current_user),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Récupère un point géographique représentatif pour une commune, un district ou un canton.
@@ -72,7 +76,7 @@ async def geo_point(
         geo_type: Type d'entité géographique (`commune`, `district` ou `canton`).
         uid: Identifiant unique de l'entité géographique.
         db: Session de base de données asynchrone.
-        _user: Utilisateur courant authentifié.
+        _current_user: Utilisateur courant authentifié.
 
     Returns:
         dict: Réponse JSON contenant la latitude et la longitude si disponibles.

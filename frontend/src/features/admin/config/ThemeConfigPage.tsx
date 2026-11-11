@@ -33,6 +33,7 @@ import {
 } from "@/features/admin/components/theme/themeConfigMeta";
 import { saveThemeConfig as saveThemeConfigToStorage } from "@/theme/themeStorage";
 import { useThemeMode } from "@/theme/ThemeContext";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Logo par défaut local (fallback final).
 const DEFAULT_LOGO = "/img/idheap-dh.png";
@@ -44,6 +45,8 @@ type PendingLogoFileInfo = {
 
 export default function ThemeConfigPage() {
     const { t } = useTranslation();
+    const { can } = useAuth();
+    const canWriteProject = can("PROJECT", "WRITE");
     // État principal : config chargée depuis le backend (ou fallback local).
     const [config, setConfig] = useState<ThemeConfigDto | null>(null);
     // États UI : chargement / sauvegarde / erreurs / confirmation.
@@ -295,6 +298,7 @@ export default function ThemeConfigPage() {
 
     // Sauvegarde
     const onSave = async () => {
+        if (!canWriteProject) return;
         if (!config) return;
         setConfirmOpen(false);
         setSaveState("saving");
