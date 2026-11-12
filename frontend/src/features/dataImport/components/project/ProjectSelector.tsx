@@ -4,7 +4,8 @@ import { useState } from "react";
 import { DropdownList } from "@/utils/DropdownList";
 import { useTranslation } from "react-i18next";
 import { NewProjectData, Link, Author } from "../../dataImportTypes";
-import { Project } from "../../dataImportTypes";
+import { Project, GranularityEnum } from "../../dataImportTypes";
+
 //test
 type ProjectSelectorProps = {
     canCreateProjet: boolean;
@@ -33,6 +34,7 @@ export function ProjectSelector({
         licence: "",
         links: [],
         authors: [],
+        granularity: GranularityEnum.COMMUNE,
     });
 
     const [authors, setAuthors] = useState<Author[]>([
@@ -95,6 +97,7 @@ export function ProjectSelector({
                 licence: "",
                 links: [],
                 authors: [],
+                granularity: GranularityEnum.COMMUNE,
             });
             setLinks([]);
             setAuthors([{ first_name: "", last_name: "", email: "" }]);
@@ -270,6 +273,42 @@ export function ProjectSelector({
                                     color: textColor,
                                 }}
                             />
+                        </div>
+
+                        <div>
+                            <label className="mb-1 block text-xs font-medium">
+                                {t(
+                                    "dataImport.upload.project.granularityLabel",
+                                )}
+                            </label>
+                            <select
+                                onChange={(event) =>
+                                    handleChangeProject(
+                                        "granularity",
+                                        event.target.value as GranularityEnum,
+                                    )
+                                }
+                                value={newProject.granularity}
+                                className="w-full h-10 rounded-xl border px-3 text-sm outline-none"
+                                style={{
+                                    backgroundColor: background,
+                                    color: textColor,
+                                    borderColor,
+                                }}
+                                name=""
+                                id=""
+                            >
+                                {Object.values(GranularityEnum).map(
+                                    (granularity) => (
+                                        <option
+                                            key={granularity}
+                                            value={granularity}
+                                        >
+                                            {granularity}
+                                        </option>
+                                    ),
+                                )}
+                            </select>
                         </div>
 
                         <div className="flex items-center justify-between">

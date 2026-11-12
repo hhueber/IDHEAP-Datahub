@@ -1024,6 +1024,7 @@
             "namePlaceholder": "Nom du projet",
             "descriptionLabel": "Description du projet",
             "descriptionPlaceholder": "Description du projet",
+            "granularityLabel": "Granularité du projet",
             "licenceLabel": "Licence",
             "licencePlaceholder": "Licence",
             "projectAuthor": "Auteur·trice du projet",

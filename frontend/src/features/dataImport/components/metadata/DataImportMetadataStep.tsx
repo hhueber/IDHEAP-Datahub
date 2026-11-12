@@ -6,6 +6,7 @@ import {
     Link,
     DataImportProjectMetadataData,
     MetadataDataset,
+    GranularityEnum,
 } from "@/features/dataImport/dataImportTypes";
 import {
     getDatasetMetada,
@@ -34,6 +35,7 @@ export function DataImportMetadataStep({
         licence: "",
         links: [],
         authors: [],
+        granularity: GranularityEnum.COMMUNE,
     });
 
     const addAuthor = () => {
@@ -96,6 +98,7 @@ export function DataImportMetadataStep({
                 licence: json.licence,
                 links: [],
                 authors: [],
+                granularity: json.granularity,
             });
         }
         void load();
@@ -182,6 +185,41 @@ export function DataImportMetadataStep({
                             }}
                         ></textarea>
                     </div>
+
+                    <div>
+                        <label className="mb-1 block text-xs font-medium">
+                            {t("dataImport.upload.project.granularityLabel")}
+                        </label>
+                        <select
+                            onChange={(event) =>
+                                handleChangeMetadata(
+                                    "granularity",
+                                    event.target.value as GranularityEnum,
+                                )
+                            }
+                            value={datasetMetadata.granularity}
+                            className="w-full h-10 rounded-xl border px-3 text-sm outline-none"
+                            style={{
+                                backgroundColor: background,
+                                color: textColor,
+                                borderColor,
+                            }}
+                            name=""
+                            id=""
+                        >
+                            {Object.values(GranularityEnum).map(
+                                (granularity) => (
+                                    <option
+                                        key={granularity}
+                                        value={granularity}
+                                    >
+                                        {granularity}
+                                    </option>
+                                ),
+                            )}
+                        </select>
+                    </div>
+
                     <div>
                         <label className="mb-1 block text-xs font-medium">
                             {t("dataImport.metadata.licenceLabel")}

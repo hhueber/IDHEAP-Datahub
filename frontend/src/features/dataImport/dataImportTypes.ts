@@ -1,5 +1,11 @@
 export type ImportOrientation = "normal" | "transposed" | "unknown";
 
+export enum GranularityEnum {
+    COMMUNE = "COMMUNE",
+    DISTRICT = "DISTRICT",
+    CANTON = "CANTON",
+}
+
 export type ImportSection =
     | "dataset"
     | "questions"
@@ -198,6 +204,7 @@ export type NewProjectData = {
     licence: string;
     links: Link[];
     authors: Author[];
+    granularity: GranularityEnum;
 };
 
 export type NewProjectResponseData = {
@@ -366,6 +373,7 @@ export type DataImportProjectMetadataData = {
     licence: string;
     links: Link[];
     authors: Author[];
+    granularity: GranularityEnum;
 };
 
 export type DataImportProjectMetadataResponse = {
@@ -380,6 +388,7 @@ export type MetadataDataset = {
     licence: string;
     links: Link[];
     authors: Author[];
+    granularity: GranularityEnum;
 };
 
 export type DataImportDatasetMetadataPatchResponse = {

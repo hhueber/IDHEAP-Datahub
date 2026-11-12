@@ -1,6 +1,5 @@
 from app.models.author import Author
 from app.models.author_metadata_association import AuthorMetadataAssociation
-from app.models.granularity import GranularityEnum
 from app.models.metadata import Metadata
 from app.models.project import Project
 from app.models.user import User
@@ -38,7 +37,7 @@ async def create_project(
         description=payload.description,
         licence=payload.licence,
         links=links,
-        granularity=GranularityEnum.COMMUNE,
+        granularity=payload.granularity,
         project=db_project,
     )
 
