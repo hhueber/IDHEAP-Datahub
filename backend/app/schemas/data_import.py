@@ -3,6 +3,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
+from app.models.granularity import GranularityEnum
+
 
 class ImportOrientationEnum(str, Enum):
     normal = "normal"
@@ -391,6 +393,7 @@ class DataImportNewProject(BaseModel):
     licence: str
     links: list[Link]
     authors: list[Author]
+    granularity: GranularityEnum
 
 
 class DataImportNewProjectData(BaseModel):
@@ -425,6 +428,7 @@ class DataImportProjectMetadataData(BaseModel):
     licence: str
     links: list[Link]
     authors: list[Author]
+    granularity: GranularityEnum
 
 
 class DataImportProjectMetadataResponse(BaseModel):

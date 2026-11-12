@@ -74,9 +74,9 @@ async def import_survey_to_db(db: AsyncSession, upload_id: str):
                 result = await db.execute(
                     select(Author).where(author_data["email"] == Author.email)
                 )
-                author = result.scalars().one_or_none()
+                author = result.scalars().all()
                 db_metadata.author_association.append(
-                    AuthorMetadataAssociation(author=author)
+                    AuthorMetadataAssociation(author=author[0])
                 )
 
         db.add(db_metadata)
