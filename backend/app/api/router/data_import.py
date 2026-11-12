@@ -164,7 +164,6 @@ async def create_new_project(
         require_permission(PermissionScope.PROJECT, PermissionLevel.MANAGE)
     ),
 ):
-    print(payload.granularity)
     project = await create_project(db, _current_user, payload)
     return {
         "success": True,
