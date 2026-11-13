@@ -32,6 +32,7 @@ import { ConfirmModal } from "@/utils/ConfirmModal";
 import { DataImportImproveStep } from "@/features/dataImport/components/improve/DataImportImproveStep";
 import { DataImportUploadPanel } from "@/features/dataImport/components/upload/DataImportUploadPanel";
 import { DataImportMetadataStep } from "@/features/dataImport/components/metadata/DataImportMetadataStep";
+import { SearchBar } from "@/utils/SearchBar";
 
 type LoadingStep = "idle" | "upload" | "analyze" | "preview" | "validate";
 
@@ -545,6 +546,25 @@ export default function DataImportPage() {
         }
     };
 
+    const handleColumnRemoveSection = async (columnIndex: number) => {
+        // issues-only or search: rows depend on this column, so refetch
+        if (issuesOnly || previewFilters.search.trim()) {
+            await reloadCurrentPreview();
+            return;
+        }
+
+        setPreview((prev) =>
+            prev
+                ? {
+                      ...prev,
+                      columns: prev.columns.filter(
+                          (column) => column.index !== columnIndex,
+                      ),
+                  }
+                : prev,
+        );
+    };
+
     const reloadCurrentPreview = async () => {
         if (!importId) {
             return;
@@ -694,6 +714,7 @@ export default function DataImportPage() {
                             onPageChange={handlePageChange}
                             onReloadPreview={reloadCurrentPreview}
                             onAnalysisUpdated={setAnalysis}
+                            onColumnRemoveSection={handleColumnRemoveSection}
                         />
                     )}
 
