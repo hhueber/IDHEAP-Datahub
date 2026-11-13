@@ -28,6 +28,7 @@ type DataImportPreviewTableProps = {
     onPageChange: (page: number) => void;
     onReload: () => Promise<void>;
     onAnalysisUpdated: (analysis: DataImportAnalyzeResponse["data"]) => void;
+    onColumnRemoveSection: (columnIndex: number) => Promise<void>;
 };
 
 const TYPE_OPTIONS: DetectedType[] = [
@@ -74,6 +75,7 @@ export function DataImportPreviewTable({
     onPageChange,
     onReload,
     onAnalysisUpdated,
+    onColumnRemoveSection,
 }: DataImportPreviewTableProps) {
     const { t } = useTranslation();
     const { textColor, background, borderColor, hoverPrimary04, primary } =
@@ -129,11 +131,12 @@ export function DataImportPreviewTable({
             section,
         });
 
-        if (json.success) {
-            onAnalysisUpdated(json.data);
+        if (!json.success) {
+            return;
         }
 
-        await onReload();
+        onAnalysisUpdated(json.data);
+        await onColumnRemoveSection(columnIndex);
     };
 
     const handleColumnTransform = async (
