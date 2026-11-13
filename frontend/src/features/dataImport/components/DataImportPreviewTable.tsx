@@ -132,6 +132,7 @@ export function DataImportPreviewTable({
         });
 
         if (!json.success) {
+            return;
         }
 
         onAnalysisUpdated(json.data);

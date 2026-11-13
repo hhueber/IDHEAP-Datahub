@@ -565,7 +565,7 @@ export default function DataImportPage() {
         );
     };
 
-    const reloadCurrentPreview = async () => {
+    const reloadCurrentPreview = React.useCallback(async () => {
         if (!importId) {
             return;
         }
@@ -577,7 +577,14 @@ export default function DataImportPage() {
             issuesOnly,
             previewFilters,
         );
-    };
+    }, [
+        importId,
+        loadPreview,
+        selectedSection,
+        page,
+        issuesOnly,
+        previewFilters,
+    ]);
 
     const resetCurrentImportView = () => {
         setImportId(null);
