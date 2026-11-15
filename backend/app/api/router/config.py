@@ -136,7 +136,7 @@ async def theme_logo_upload_base64(
 @router.get("/theme/map-preview")
 async def theme_map_preview(
     db: AsyncSession = Depends(get_db),
-    current=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)),
+    current=Depends(require_permission(PermissionScope.PROJECT, PermissionLevel.READ)),
 ):
     """
     Retourne les données GeoJSON nécessaires à la preview de la carte

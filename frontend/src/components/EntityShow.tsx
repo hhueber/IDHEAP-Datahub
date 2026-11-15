@@ -235,7 +235,7 @@ export default function EntityShow({
         } finally {
             setLoading(false);
         }
-    }, [entity, id, t]);
+    }, [entity, id, lang, t]);
 
     const loadInsights = React.useCallback(async () => {
         setInsightsLoading(true);
@@ -318,14 +318,14 @@ export default function EntityShow({
         [data],
     );
 
+    // --- EDIT helpers
+    const isProtectedField = (key: string) => key === "uid" || key === "id";
+
     const toggleClearField = (key: string) => {
         setSelectedFieldsToClear((prev) =>
             prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
         );
     };
-
-    // --- EDIT helpers
-    const isProtectedField = (key: string) => key === "uid" || key === "id";
 
     const enterEditMode = () => {
         if (!data) return;
@@ -618,7 +618,6 @@ export default function EntityShow({
                                 </ActionSlot>
                             </div>
                         </div>
-
                         <div className="px-6 py-5">
                             {loading && (
                                 <div

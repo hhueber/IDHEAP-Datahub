@@ -103,7 +103,9 @@ async def create_user(
 async def delete_user(
     payload: UserDeleteIn,
     db: AsyncSession = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user),
+    current_user=Depends(
+        require_permission(PermissionScope.PROJECT, PermissionLevel.WRITE)
+    ),
 ):
     """Deletes a user (operation reserved for administrators).
         - Verifies that the caller is an administrator.
@@ -119,7 +121,6 @@ async def delete_user(
         the UserModel mask guarantees that the information returned is in accordance with the UserModel schema.
 
     """
-
     result = await db.execute(select(UserModel).where(UserModel.email == payload.email))
     target = result.scalar_one_or_none()
     if not target:
@@ -143,6 +144,13 @@ async def delete_user(
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Impossible de supprimer votre propre compte",
+        )
+
+    # vérifie que l'admin a le droit de supprimer un utilisateur avec ce rôle
+    if not role_can_manage_role(current_user.role, target.role):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not allowed to delete a user with this role",
         )
 
     await delete_user_by_instance(db, target)

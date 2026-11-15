@@ -186,7 +186,7 @@ export default function ConfigPlaceOfInterestPage() {
                                         className="px-3 py-2"
                                         style={{ color: textColor }}
                                     >
-                                        {c.name_ro || "—"}
+                                        {c.name_rm || "—"}
                                     </td>
                                     <td
                                         className="px-3 py-2"
