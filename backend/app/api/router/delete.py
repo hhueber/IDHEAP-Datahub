@@ -1,14 +1,14 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.api.dependencies import get_current_user
 from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
 from app.repositories.delete_repo import clear_fields, delete_rows
 from app.schemas.delete import DeleteRequest, DeleteResponse
 from app.schemas.user import UserPublic
-from app.security.delete_guard import assert_delete_allowed, DeleteAction
+from app.security.delete_guard import DeleteAction, assert_delete_allowed
 from app.services.permission_service import role_has_permission
-from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -48,7 +48,9 @@ async def generic_delete(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Not enough permissions to clear fields",
                 )
-            assert_delete_allowed(entity=payload.entity, action=DeleteAction.CLEAR_FIELDS)
+            assert_delete_allowed(
+                entity=payload.entity, action=DeleteAction.CLEAR_FIELDS
+            )
             affected = await clear_fields(
                 db,
                 entity=payload.entity,
@@ -66,7 +68,9 @@ async def generic_delete(
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Not enough permissions to delete rows",
                 )
-            assert_delete_allowed(entity=payload.entity, action=DeleteAction.DELETE_ROWS)
+            assert_delete_allowed(
+                entity=payload.entity, action=DeleteAction.DELETE_ROWS
+            )
             affected = await delete_rows(
                 db,
                 entity=payload.entity,

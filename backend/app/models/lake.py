@@ -1,12 +1,12 @@
-from typing import List, Optional
+from typing import TYPE_CHECKING
 
-
-from geoalchemy2.types import Geometry
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .lake_map import LakeMap
 
 
 class Lake(Base):
@@ -16,7 +16,7 @@ class Lake(Base):
     code: Mapped[str] = mapped_column(String)
     name: Mapped[str] = mapped_column(String)
 
-    lake_map: Mapped[List["LakeMap"]] = relationship(
+    lake_map: Mapped[list["LakeMap"]] = relationship(
         "LakeMap",
         back_populates="lake",
         cascade="all, delete-orphan",

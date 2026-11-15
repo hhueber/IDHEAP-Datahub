@@ -1,11 +1,14 @@
+from typing import TYPE_CHECKING
+
 from geoalchemy2 import Geometry
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 
-
-from . import Canton
 from .base import Base
+
+if TYPE_CHECKING:
+    from .canton import Canton
 
 
 class CantonMap(Base):
@@ -18,5 +21,7 @@ class CantonMap(Base):
 
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 
-    canton: Mapped[Canton] = relationship("Canton", back_populates="canton_map")
-    canton_uid: Mapped[int] = mapped_column(ForeignKey("canton.uid", ondelete="CASCADE"), nullable=False)
+    canton: Mapped["Canton"] = relationship("Canton", back_populates="canton_map")
+    canton_uid: Mapped[int] = mapped_column(
+        ForeignKey("canton.uid", ondelete="CASCADE"), nullable=False
+    )

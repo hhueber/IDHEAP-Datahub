@@ -1,5 +1,6 @@
-from app.core.config import settings
 from fastapi import Response
+
+from app.core.config import settings
 
 
 def set_auth_cookie(response: Response, token: str) -> None:

@@ -1,12 +1,12 @@
-from uuid import uuid4
 import base64
-import re
+import binascii
+from uuid import uuid4
 
-
-from app.core.paths import LOGO_PUBLIC_PREFIX, LOGO_UPLOAD_DIR
 from fastapi import HTTPException, status
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.paths import LOGO_PUBLIC_PREFIX, LOGO_UPLOAD_DIR
 
 
 async def load_effective_config(session: AsyncSession) -> dict[str, str]:
@@ -49,7 +49,7 @@ async def handle_logo_data_url(db: AsyncSession, data_url: str) -> str:
     # Exemple de header: "data:image/png;base64"
     try:
         mime = header.split(";")[0].split(":", 1)[1]  # "image/png"
-    except Exception:
+    except (IndexError, AttributeError):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid data URL header",
@@ -71,7 +71,7 @@ async def handle_logo_data_url(db: AsyncSession, data_url: str) -> str:
 
     try:
         raw = base64.b64decode(b64)
-    except Exception:
+    except binascii.Error:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Could not decode base64 image",

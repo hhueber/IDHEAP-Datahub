@@ -4,9 +4,6 @@ Conventions:
 - Precise types (Optional, List, Dict, etc.)
 """
 
-from typing import Dict, List, Optional
-
-
 from pydantic import BaseModel
 
 
@@ -19,5 +16,5 @@ class HomeInfo(BaseModel):
     """Host payload."""
 
     message: str
-    surveys: List[SurveyLite]
-    stats: Optional[Dict[str, int]] = None
+    surveys: list[SurveyLite]
+    stats: dict[str, int] | None = None

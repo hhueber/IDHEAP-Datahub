@@ -9,4 +9,6 @@ def configure_logging() -> None:
     logging.basicConfig(level=level, format=fmt, datefmt=datefmt, force=True)
 
     # Exemple : réduire le bruit SQLAlchemy (optionnel)
-    logging.getLogger("sqlalchemy.engine").setLevel(os.getenv("SQL_LOG_LEVEL", "WARNING").upper())
+    logging.getLogger("sqlalchemy.engine").setLevel(
+        os.getenv("SQL_LOG_LEVEL", "WARNING").upper()
+    )

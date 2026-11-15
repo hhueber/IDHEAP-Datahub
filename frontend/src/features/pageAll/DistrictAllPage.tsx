@@ -5,53 +5,53 @@ import type { ColumnConfig, ActionsConfig } from "@/features/pageAll/all_types";
 import { useAuth } from "@/contexts/AuthContext";
 
 const PAGE_ACTIONS = {
-  show: true,
-  edit: false,
-  delete: false,
+    show: true,
+    edit: false,
+    delete: false,
 } as const;
 
 export default function DistrictAllPage() {
-  const { t } = useTranslation();
-  const { can } = useAuth();
+    const { t } = useTranslation();
+    const { can } = useAuth();
 
-  const allowShow = PAGE_ACTIONS.show && can("DATASET", "READ");
-  const allowEdit = PAGE_ACTIONS.edit && can("DATASET", "WRITE");
-  const allowDelete = PAGE_ACTIONS.delete && can("DATASET", "MANAGE");
+    const allowShow = PAGE_ACTIONS.show && can("DATASET", "READ");
+    const allowEdit = PAGE_ACTIONS.edit && can("DATASET", "WRITE");
+    const allowDelete = PAGE_ACTIONS.delete && can("DATASET", "MANAGE");
 
-  const columns = React.useMemo<ColumnConfig[]>(
-    () => [
-      {
-        key: "code",
-        labelKey: "dashboardSidebar.pageAll.code",
-        sortKey: "code",
-        editable: false,
-      },
-      {
-        key: "name",
-        labelKey: "dashboardSidebar.pageAll.name",
-        sortKey: "name",
-        truncate: true,
-        maxWidthClassName: "max-w-[320px]",
-        editable: false,
-      },
-    ],
-    []
-  );
+    const columns = React.useMemo<ColumnConfig[]>(
+        () => [
+            {
+                key: "code",
+                labelKey: "dashboardSidebar.pageAll.code",
+                sortKey: "code",
+                editable: false,
+            },
+            {
+                key: "name",
+                labelKey: "dashboardSidebar.pageAll.name",
+                sortKey: "name",
+                truncate: true,
+                maxWidthClassName: "max-w-[320px]",
+                editable: false,
+            },
+        ],
+        [],
+    );
 
-  const actions: ActionsConfig = {
-    show: allowShow,
-    edit: allowEdit,
-    delete: allowDelete,
-  };
+    const actions: ActionsConfig = {
+        show: allowShow,
+        edit: allowEdit,
+        delete: allowDelete,
+    };
 
-  return (
-    <PageAll
-      title={t("dashboardSidebar.places.district._")}
-      entity="district"
-      initialPerPage={15}
-      columns={columns}
-      actions={actions}
-      defaultSortBy="name"
-    />
-  );
+    return (
+        <PageAll
+            title={t("dashboardSidebar.places.district._")}
+            entity="district"
+            initialPerPage={15}
+            columns={columns}
+            actions={actions}
+            defaultSortBy="name"
+        />
+    );
 }

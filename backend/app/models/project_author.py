@@ -1,11 +1,12 @@
-from typing import List
+from typing import TYPE_CHECKING
 
-
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-
 from .base import Base
+
+if TYPE_CHECKING:
+    from .project_author_association import ProjectAuthorAssociation
 
 
 class ProjectAuthor(Base):
@@ -17,6 +18,10 @@ class ProjectAuthor(Base):
     last_name: Mapped[str] = mapped_column(String, nullable=False)
     email: Mapped[str] = mapped_column(String, nullable=False)
 
-    project_metadata_association: Mapped[List["ProjectAuthorAssociation"]] = relationship(
-        "ProjectAuthorAssociation", back_populates="author", cascade="all, delete-orphan"
+    project_metadata_association: Mapped[list["ProjectAuthorAssociation"]] = (
+        relationship(
+            "ProjectAuthorAssociation",
+            back_populates="author",
+            cascade="all, delete-orphan",
+        )
     )

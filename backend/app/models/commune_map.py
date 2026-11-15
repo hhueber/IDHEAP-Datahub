@@ -1,11 +1,14 @@
+from typing import TYPE_CHECKING
+
 from geoalchemy2 import Geometry
 from sqlalchemy import ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.testing.schema import mapped_column
 
-
-from . import Commune
 from .base import Base
+
+if TYPE_CHECKING:
+    from .commune import Commune
 
 
 class CommuneMap(Base):
@@ -19,4 +22,6 @@ class CommuneMap(Base):
     geometry: Mapped[Geometry] = mapped_column(Geometry)
 
     commune: Mapped["Commune"] = relationship("Commune", back_populates="commune_map")
-    commune_uid: Mapped[int] = mapped_column(ForeignKey("commune.uid", ondelete="CASCADE"), nullable=False)
+    commune_uid: Mapped[int] = mapped_column(
+        ForeignKey("commune.uid", ondelete="CASCADE"), nullable=False
+    )

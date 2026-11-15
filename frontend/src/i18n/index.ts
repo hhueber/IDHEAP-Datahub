@@ -8,18 +8,23 @@ import de from "./locales/de/translation.json";
 import it from "./locales/it/translation.json";
 import rm from "./locales/rm/translation.json";
 
-i18n
-  .use(LanguageDetector) // <— ajoute le détecteur
-  .use(initReactI18next)
-  .init({
-    resources: { en: { translation: en }, fr: { translation: fr }, de: { translation: de }, it: { translation: it }, rm: { translation: rm } },
-    fallbackLng: "en",
-    interpolation: { escapeValue: false },
-    detection: {
-      // d’abord localStorage, puis navigateur
-      order: ["localStorage", "navigator"],
-      caches: ["localStorage"], // stocke dans localStorage (clé par défaut: i18nextLng)
-    },
-  });
+i18n.use(LanguageDetector) // <— ajoute le détecteur
+    .use(initReactI18next)
+    .init({
+        resources: {
+            en: { translation: en },
+            fr: { translation: fr },
+            de: { translation: de },
+            it: { translation: it },
+            rm: { translation: rm },
+        },
+        fallbackLng: "en",
+        interpolation: { escapeValue: false },
+        detection: {
+            // d’abord localStorage, puis navigateur
+            order: ["localStorage", "navigator"],
+            caches: ["localStorage"], // stocke dans localStorage (clé par défaut: i18nextLng)
+        },
+    });
 
 export default i18n;

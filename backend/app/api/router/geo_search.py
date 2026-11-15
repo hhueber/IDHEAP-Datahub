@@ -1,19 +1,23 @@
 from typing import Literal
 
+from fastapi import APIRouter, Depends, Query
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.permissions import require_permission
 from app.config.roles import PermissionLevel, PermissionScope
 from app.db import get_db
-from app.repositories.geo_search_repo import build_geo_names, get_geo_point, resolve_geo_name, suggest_geo_locations
-from app.schemas.placeOfInterest import (
+from app.repositories.geo_search_repo import (
+    build_geo_names,
+    get_geo_point,
+    resolve_geo_name,
+    suggest_geo_locations,
+)
+from app.schemas.place_of_interest import (
     GeoPointResponse,
     GeoSuggestionResponse,
     PlaceOfInterestSuggestOut,
     PlaceOfInterestSuggestResponse,
 )
-from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
-
 
 router = APIRouter()
 
@@ -23,7 +27,9 @@ async def suggest_geo(
     q: str = Query(..., min_length=3, max_length=100),
     limit: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Recherche des suggestions géographiques parmi les communes, districts et cantons.
@@ -55,7 +61,9 @@ async def geo_point(
     geo_type: Literal["commune", "district", "canton"],
     uid: int,
     db: AsyncSession = Depends(get_db),
-    _current_user=Depends(require_permission(PermissionScope.DATASET, PermissionLevel.READ)),
+    _current_user=Depends(
+        require_permission(PermissionScope.DATASET, PermissionLevel.READ)
+    ),
 ):
     """
     Récupère un point géographique représentatif pour une commune, un district ou un canton.
