@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.router import (
     auth,
     config,
+    data_import,
     delete,
     edit,
     export,
@@ -36,6 +37,7 @@ app.include_router(page_all.router, prefix="/pageAll", tags=["pageAll"])
 app.include_router(delete.router, prefix="/delete", tags=["delete"])
 app.include_router(page_show.router, prefix="/show", tags=["pageShow"])
 app.include_router(edit.router, prefix="/edit", tags=["edit"])
+app.include_router(data_import.router, prefix="/data-import", tags=["data-import"])
 app.include_router(export.router, prefix="/export", tags=["export"])
 
 

@@ -39,4 +39,17 @@ from_first = true
 ensure_newline_before_comments = true
 
 [tool.ruff.lint.flake8-bugbear]
-extend-immutable-calls = ["fastapi.Depends", "fastapi.Query", "require_permission",]
+extend-immutable-calls = [
+    "fastapi.Depends",
+    "fastapi.Query",
+    "require_permission",
+    "fastapi.Path",
+    "fastapi.Body",
+    "fastapi.Header",
+    "fastapi.Cookie",
+]
+
+[tool.ruff.lint]
+ignore = [
+    "B008",
+]

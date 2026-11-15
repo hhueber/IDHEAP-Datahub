@@ -135,7 +135,7 @@ export default function ConfigPlaceOfInterestPage() {
                                 </th>
                                 <th className="px-3 py-2 text-left">
                                     {t(
-                                        "admin.config.placeOfInterestPage.columns.rm",
+                                        "admin.config.placeOfInterestPage.columns.ro",
                                     )}
                                 </th>
                                 <th className="px-3 py-2 text-left">

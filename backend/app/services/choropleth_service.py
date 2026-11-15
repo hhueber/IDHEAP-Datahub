@@ -985,9 +985,9 @@ async def build_choropleth(
                 _geojson_col(cm_best.c.geometry).label("geojson"),
                 *_agg_cols(commune_agg),
             )
-            .select_from(commune_agg)
-            .join(Commune, Commune.uid == commune_agg.c.gid)
-            .join(cm_best, cm_best.c.unit_uid == Commune.uid)
+            .select_from(cm_best)
+            .join(Commune, Commune.uid == cm_best.c.unit_uid)
+            .outerjoin(commune_agg, commune_agg.c.gid == Commune.uid)
         )
 
         rows = (await db.execute(stmt)).mappings().all()

@@ -28,12 +28,12 @@ type Props = {
     onDelete?: (entity: Entity, id: number) => void;
 };
 
-const LANGS: { key: "de" | "fr" | "en" | "it" | "rm"; label: string }[] = [
+const LANGS: { key: "de" | "fr" | "en" | "it" | "ro"; label: string }[] = [
     { key: "de", label: "Deutsch" },
     { key: "fr", label: "Français" },
     { key: "en", label: "English" },
     { key: "it", label: "Italiano" },
-    { key: "rm", label: "Rumantsch" },
+    { key: "ro", label: "Rumantsch" },
 ];
 
 function renderEmpty(v: any): string {
@@ -675,9 +675,11 @@ export default function EntityShow({
                                                         isProtectedField(f.key);
                                                     const showClearCheckbox =
                                                         deleteMode &&
+                                                        canDelete &&
                                                         !protectedField;
                                                     const showEditInput =
                                                         editMode &&
+                                                        canEdit &&
                                                         !protectedField;
 
                                                     return (
@@ -932,9 +934,11 @@ export default function EntityShow({
                                                         isProtectedField(key);
                                                     const showClearCheckbox =
                                                         deleteMode &&
+                                                        canDelete &&
                                                         !protectedField;
                                                     const showEditInput =
                                                         editMode &&
+                                                        canEdit &&
                                                         !protectedField;
 
                                                     return (
@@ -1175,6 +1179,7 @@ export default function EntityShow({
                 cancelLabel={t("common.cancel")}
                 onCancel={() => setConfirmOpen(false)}
                 onConfirm={async () => {
+                    if (!canDelete) return;
                     const ok = await confirmClear();
                     if (!ok) return;
 
@@ -1206,6 +1211,7 @@ export default function EntityShow({
                 cancelLabel={t("common.cancel")}
                 onCancel={() => setConfirmEditOpen(false)}
                 onConfirm={async () => {
+                    if (!canEdit) return;
                     const updates = getChangedUpdates();
                     if (Object.keys(updates).length === 0) return;
 

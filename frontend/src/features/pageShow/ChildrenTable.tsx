@@ -77,7 +77,7 @@ function formatChildValue(
     const value = relatedDisplayValue ?? row[column.key];
 
     if (value === null || value === undefined) {
-        return "\u2014"; // symbole unicode pour cela "—"
+        return "—";
     }
 
     if (column.kind === "bool") {
@@ -99,7 +99,7 @@ function formatChildValue(
             return t("dashboardSidebar.pageShow.visibility.public");
         }
 
-        return "\u2014"; // symbole unicode pour cela "—"
+        return "—";
     }
 
     if (typeof value === "boolean") {
@@ -109,7 +109,7 @@ function formatChildValue(
     }
 
     if (typeof value === "string" && value.trim() === "") {
-        return "\u2014"; // symbole unicode pour cela "—"
+        return "—";
     }
 
     return String(value);

@@ -379,11 +379,11 @@ export default function DashboardSidebar() {
                             permission: { scope: "PROJECT", level: "WRITE" },
                         },
                         {
-                            key: "admin-users-del",
+                            key: "admin-users-list",
                             labelKey:
-                                "dashboardSidebar.administration.users.delete",
-                            to: "/admin/users/delete",
-                            permission: { scope: "PROJECT", level: "MANAGE" },
+                                "dashboardSidebar.administration.users.list",
+                            to: "/admin/users",
+                            permission: { scope: "PROJECT", level: "READ" },
                         },
                     ],
                 },

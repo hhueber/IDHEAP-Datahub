@@ -198,6 +198,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         armRefreshIn(refresh_in);
     };
 
+    // Relecture du profil (cache + état)
+    const refreshUser = async () => {
+        const me = await authService.me();
+        setUser(me);
+        authService.cacheUser(me);
+    };
+
+    const hasRole = (...roles: Array<User["role"]>) =>
+        !!user && roles.includes(user.role);
+
     // Logout : purge session + timers + redirection
     const logout = async () => {
         try {
@@ -208,13 +218,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
             clearNextRefresh();
             navigate("/login", { replace: true });
         }
-    };
-
-    // Relecture du profil (cache + état)
-    const refreshUser = async () => {
-        const me = await authService.me();
-        setUser(me);
-        authService.cacheUser(me);
     };
 
     const can = (scope: PermissionScope, level: PermissionLevel): boolean => {

@@ -9,7 +9,6 @@ import RequireAuth from "@/components/RequireAuth";
 import PrivateLayout from "@/components/PrivateLayout";
 import PublicLayout from "@/components/PublicLayout";
 import AddMemberPage from "@/features/admin/AddMemberPage";
-import DeleteMemberPage from "@/features/admin/DeleteMemberPage";
 import ChangePasswordPage from "@/features/dashboard/ChangePasswordPage";
 import PlaceOfInterestConfigPage from "@/features/admin/config/PlaceOfInterestConfigPage";
 import CommuneAllPage from "@/features/pageAll/CommuneAllPage";
@@ -24,6 +23,8 @@ import ThemeConfigPage from "@/features/admin/config/ThemeConfigPage";
 import ShowPage from "@/features/pageShow/ShowPage";
 import AnswerAllPage from "@/features/pageAll/AnswerAllPage";
 import RequirePermission from "@/components/RequirePermission";
+import AdminUsersPage from "@/features/admin/users/AdminUsersPage";
+import DataImportPage from "@/features/dataImport/DataImportPage";
 import ExportDataPage from "@/features/export/ExportDataPage";
 
 export default function App() {
@@ -59,6 +60,14 @@ export default function App() {
                         element={
                             <RequirePermission scope="DATASET" level="READ">
                                 <SurveyAllPage />
+                            </RequirePermission>
+                        }
+                    />
+                    <Route
+                        path="/admin/surveys/new"
+                        element={
+                            <RequirePermission scope="DATASET" level="MANAGE">
+                                <DataImportPage />
                             </RequirePermission>
                         }
                     />
@@ -153,10 +162,10 @@ export default function App() {
                         }
                     />
                     <Route
-                        path="/admin/users/delete"
+                        path="/admin/users"
                         element={
-                            <RequirePermission scope="PROJECT" level="WRITE">
-                                <DeleteMemberPage />
+                            <RequirePermission scope="PROJECT" level="READ">
+                                <AdminUsersPage />
                             </RequirePermission>
                         }
                     />

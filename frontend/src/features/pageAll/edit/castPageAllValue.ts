@@ -17,8 +17,6 @@ export function castPageAllValue(
             return Number.isNaN(num) ? null : num;
         }
 
-        // Normalise la saisie afin d'accepter différentes écritures d'un booléen
-        // (ex. "TRUE", " true ", "False") et de garantir une comparaison fiable.
         case "bool": {
             const v = value.toLowerCase().trim();
             if (v === "true" || v === "1") return true;
