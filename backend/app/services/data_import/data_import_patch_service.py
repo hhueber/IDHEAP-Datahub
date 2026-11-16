@@ -11,6 +11,7 @@ from app.schemas.data_import import (
     ImportSectionEnum,
 )
 from app.services.data_import.data_import_column_profile_service import (
+    build_column_profile,
     enrich_columns_with_profiles,
 )
 from app.services.data_import.data_import_detection_service import (
@@ -59,6 +60,7 @@ async def patch_import_cell(
         df=df,
         column_index=payload.column_index,
         redetect_type=False,
+        data_changed=True,
     )
 
 
@@ -93,13 +95,12 @@ async def patch_import_column(
     if payload.role is not None:
         target_column["role"] = payload.role
 
-    write_analysis(import_dir, analysis)
-
     return recalculate_after_column_change(
         import_dir=import_dir,
         df=df,
         column_index=payload.column_index,
         redetect_type=False,
+        data_changed=False,
         analysis=analysis,
     )
 
@@ -126,6 +127,7 @@ async def patch_import_column_transform(
         df=df,
         column_index=payload.column_index,
         redetect_type=True,
+        data_changed=True,
     )
 
 
@@ -135,6 +137,7 @@ def recalculate_after_column_change(
     df: pd.DataFrame,
     column_index: int,
     redetect_type: bool,
+    data_changed: bool,
     analysis: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if analysis is None:
@@ -153,15 +156,8 @@ def recalculate_after_column_change(
         target_column["detected_type"] = detected_type.value
         target_column["confidence"] = confidence
 
-    analysis["columns_summary"] = enrich_columns_with_profiles(
-        df,
-        analysis["columns_summary"],
-    )
-
-    target_column = get_column_summary(
-        analysis["columns_summary"],
-        column_index,
-    )
+    if data_changed:
+        target_column.update(build_column_profile(df.iloc[:, column_index]))
 
     column_issues = detect_single_column_issues_vectorized(
         df=df,
@@ -179,20 +175,11 @@ def recalculate_after_column_change(
         issues_by_column=issues_by_column,
     )
 
-    write_frame(
-        import_dir,
-        df,
-    )
+    if data_changed:
+        write_frame(import_dir, df)
 
-    write_analysis(
-        import_dir,
-        analysis,
-    )
-
-    write_issues(
-        import_dir,
-        issues_by_column,
-    )
+    write_analysis(import_dir, analysis)
+    write_issues(import_dir, issues_by_column)
 
     return analysis
 
