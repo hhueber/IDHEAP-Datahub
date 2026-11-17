@@ -17,6 +17,8 @@ type DataImportMetadataStepProps = {
     importId: string;
 };
 
+type SaveStatus = "idle" | "success" | "error";
+
 export function DataImportMetadataStep({
     importId,
 }: DataImportMetadataStepProps) {
@@ -37,6 +39,10 @@ export function DataImportMetadataStep({
         authors: [],
         granularity: GranularityEnum.COMMUNE,
     });
+
+    const [saving, setSaving] = useState<boolean>(false);
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
+    const [errorStatus, setErrorStatus] = useState<string | null>(null);
 
     const addAuthor = () => {
         setAuthors([...authors, { first_name: "", last_name: "", email: "" }]);
@@ -79,11 +85,29 @@ export function DataImportMetadataStep({
         setDatasetMetada(updated);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (saving) return;
+
+        setSaveStatus("idle");
+        setSaving(true);
+        setErrorStatus(null);
+
         datasetMetadata.links = links;
         datasetMetadata.authors = authors;
-        saveDatasetMetadata(importId, datasetMetadata);
+
+        try {
+            const json = await saveDatasetMetadata(importId, datasetMetadata);
+            if (!json.success) {
+                throw new Error(json.detail);
+            }
+            setSaveStatus("success");
+        } catch (err: any) {
+            setSaveStatus("error");
+            setErrorStatus(err?.message);
+        } finally {
+            setSaving(false);
+        }
     };
 
     useEffect(() => {
@@ -108,6 +132,16 @@ export function DataImportMetadataStep({
     const resetAllFromProject = () => {};
     return (
         <section className="flex flex-col gap-4">
+            {saveStatus === "success" && (
+                <div className="rounded-xl border border-green-500 bg-green-50 p-3 text-sm text-green-700">
+                    {t("dataImport.metadata.saveSuccess")}
+                </div>
+            )}
+            {saveStatus === "error" && (
+                <div className="rounded-2xl border border-red-500 bg-red-50 p-4 text-sm text-red-700">
+                    {errorStatus}
+                </div>
+            )}
             <div
                 className="flex flex-col gap-3 rounded-3xl border p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
                 style={{ backgroundColor: hoverPrimary04, borderColor }}
