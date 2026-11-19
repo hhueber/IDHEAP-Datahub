@@ -163,7 +163,7 @@ export function DataImportMetadataStep({
 
                 <button
                     type="button"
-                    disabled={busy}
+                    disabled={busy || saving}
                     onClick={resetAllFromProject}
                     className="w-fit shrink-0 rounded-xl border px-3 py-2 text-xs font-semibold transition hover:opacity-80 disabled:opacity-40"
                     style={{ borderColor, backgroundColor: background }}
