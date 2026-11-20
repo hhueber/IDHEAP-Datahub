@@ -70,7 +70,7 @@ export type ImportColumnSummary = {
     detected_type: DetectedType;
     confidence: number;
     issue_count: number;
-
+    role: RoleType | null;
     empty_count?: number | null;
     non_empty_count?: number | null;
     unique_count?: number | null;
