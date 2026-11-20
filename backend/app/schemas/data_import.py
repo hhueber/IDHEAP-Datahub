@@ -86,6 +86,7 @@ class ImportColumnSummary(BaseModel):
     normalized_name: str
     section: ImportSectionEnum
     detected_type: DetectedTypeEnum
+    role: ImportRoleEnum | None = None
     confidence: float
     issue_count: int
     empty_count: int = 0
