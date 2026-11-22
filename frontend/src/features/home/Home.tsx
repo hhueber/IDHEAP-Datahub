@@ -6,7 +6,7 @@ import { useBootstrap } from "@/features/home/hooks/useBootstrap";
 import { useTheme } from "@/theme/useTheme";
 import { useChoropleth } from "@/features/geo/hooks/useChoropleth";
 import type { ChoroplethGranularity } from "@/features/geo/geoApi";
-import MapLoadingOverlay from "@/utils/MapLoadingOverlay";
+import LoadingOverlay from "@/utils/LoadingOverlay";
 import { normalizeGeoLanguage } from "@/features/geo/geoLanguage";
 import { createPortal } from "react-dom";
 import GreetingModal from "./components/GreetingModal";
@@ -197,7 +197,7 @@ export default function Home() {
           onSelectArea={setSelectedArea}
         />
         {(choroplethLoading) && (
-          <MapLoadingOverlay label={overlayLabel} type={overlayType} />
+          <LoadingOverlay label={overlayLabel} type={overlayType} zIndex={3200} rounded={false} />
         )}
 
         {/*

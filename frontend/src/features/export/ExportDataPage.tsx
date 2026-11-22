@@ -4,10 +4,11 @@ import { useTheme } from "@/theme/useTheme";
 import { useQuestionCollections } from "@/features/questions/hooks/useQuestionCollections";
 import type { StoredQuestionItem } from "@/features/questions/types/questionCollections";
 import { exportCsv } from "@/features/export/exportApi";
+import { Button, SectionCard } from "@/utils/UI";
 
 export default function ExportDataPage() {
   const { t, i18n } = useTranslation();
-  const { background, borderColor, textColor, primary, hoverPrimary04, hoverPrimary06, hoverText07, adaptiveTextColorPrimary} = useTheme();
+  const { background, borderColor, textColor, hoverPrimary04, hoverPrimary06, hoverText07 } = useTheme();
 
   const { saved } = useQuestionCollections();
 
@@ -76,38 +77,42 @@ export default function ExportDataPage() {
       </div>
 
       {/* Action bar */}
-      <div
-        className="flex flex-wrap gap-3 items-center justify-between rounded-xl border p-3"
-        style={{ backgroundColor: background, borderColor }}
+      <SectionCard
+        as="div"
+        radius="xl"
+        compact
+        shadow={false}
+        className="flex flex-wrap gap-3 items-center justify-between"
       >
         <div className="flex gap-2 flex-wrap">
-          <button
+          <Button
+            variant="secondary"
+            appearance="outline"
+            size="sm"
+            type="button"
             onClick={() => setSelected(saved)}
-            className="px-3 py-1 rounded-lg text-sm border"
-            style={{ borderColor, color: textColor }}
           >
             {t("export.data.selectAll")}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="secondary"
+            appearance="outline"
+            size="sm"
+            type="button"
             onClick={() => setSelected([])}
-            className="px-3 py-1 rounded-lg text-sm border"
-            style={{ borderColor, color: textColor }}
           >
             {t("export.data.clear")}
-          </button>
+          </Button>
         </div>
 
         <div className="text-sm" style={{ color: hoverText07 }}>
           {selected.length} {t("export.data.selected")}
         </div>
-      </div>
+      </SectionCard>
 
       {/* Questions grid */}
-      <div
-        className="rounded-2xl border p-4"
-        style={{ backgroundColor: background, borderColor }}
-      >
+      <SectionCard as="div" shadow={false}>
         {saved.length === 0 ? (
           <div
             className="text-center py-10 rounded-xl border border-dashed"
@@ -172,22 +177,22 @@ export default function ExportDataPage() {
             })}
           </div>
         )}
-      </div>
+      </SectionCard>
 
       {/* Export button */}
       <div className="flex justify-end">
-        <button
+        <Button
+          type="button"
+          radius="xl"
+          className="active:scale-95 duration-150"
           onClick={handleExport}
           disabled={selected.length === 0 || loading}
-          className="px-5 py-2 rounded-xl font-medium transition-all duration-150 hover:opacity-90 active:scale-95"
-          style={{ backgroundColor: primary,
-            color: adaptiveTextColorPrimary,
-           }}
+          loading={loading}
         >
           {loading
             ? t("export.data.loading")
             : t("export.data.download")}
-        </button>
+        </Button>
       </div>
     </div>
   );

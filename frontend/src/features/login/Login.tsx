@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
 import { useTheme } from "@/theme/useTheme";
+import { Button, TextField } from "@/utils/UI";
 
 export default function Login() {
   const { t } = useTranslation();
@@ -19,7 +20,7 @@ export default function Login() {
   const [errKey, setErrKey] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const { background, borderColor, textColor, adaptiveTextColorPrimary, hoverPrimary90 } = useTheme();
+  const { background, borderColor, textColor } = useTheme();
 
   // Déjà connecté (ex: cookie valide) -> redirection immédiate
   useEffect(() => {
@@ -75,26 +76,16 @@ export default function Login() {
       )}
 
       <form className="mt-6 space-y-4" onSubmit={onSubmit}>
-        <div>
-          <label className="block text-sm font-medium mb-1" htmlFor="email" style={{ color: textColor }}>
-            {t("login.emailLabel")}
-          </label>
-          <input
-            id="email"
-            className="mt-1 w-full rounded border px-3 py-2"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            placeholder={t("login.emailPlaceholder")}
-            style={{
-              backgroundColor: background,
-              borderColor,
-              color: textColor,
-            }}
-          />
-        </div>
+        <TextField
+          label={t("login.emailLabel")}
+          id="email"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder={t("login.emailPlaceholder")}
+        />
 
         <PasswordField
           id="password"
@@ -108,28 +99,18 @@ export default function Login() {
           variant="minimal"
         />
 
-        <button
+        <Button
+          type="submit"
           disabled={loading}
-          className={`
-            mt-3 w-full rounded py-2 text-sm font-medium
-            disabled:opacity-60 disabled:cursor-not-allowed
-            hover:[background-color:var(--login-submit-hover-bg)]
-          `}
-          aria-busy={loading}
-          style={
-            {
-              backgroundColor: hoverPrimary90,
-              color: adaptiveTextColorPrimary,
-              "--login-submit-hover-bg": hoverPrimary90,
-            } as React.CSSProperties
-          }
+          loading={loading}
+          className="w-full font-medium disabled:cursor-not-allowed"
         >
           {loading ? (
             <LoadingDots label={t("login.submitting")} />
           ) : (
             t("login.submit")
           )}
-        </button>
+        </Button>
       </form>
     </section>
   );

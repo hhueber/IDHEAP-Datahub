@@ -221,20 +221,14 @@ export default function PlaceOfInterestEditor({
       {/* Position (arrondi visuel à 4 décimales sinon trop long) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.lat")}</label>
-          <input
+          <TextField
+            label={t("admin.config.placeOfInterestEditor.labels.lat")}
             type="number"
             step="0.0001"
             name="lat"
             value={form.pos[0]}
             onChange={onChange}
             onBlur={onBlurRound}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
             required
           />
           <div className="text-xs mt-1" style={{ color: hoverText07 }}>
@@ -242,20 +236,14 @@ export default function PlaceOfInterestEditor({
           </div>
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1">{t("admin.config.placeOfInterestEditor.labels.lon")}</label>
-          <input
+          <TextField
+            label={t("admin.config.placeOfInterestEditor.labels.lon")}
             type="number"
             step="0.0001"
             name="lon"
             value={form.pos[1]}
             onChange={onChange}
             onBlur={onBlurRound}
-            className="w-full rounded-lg border px-3 py-2"
-            style={{
-              backgroundColor: background,
-              borderColor: borderColor,
-              color: textColor,
-            }}
             required
           />
           <div className="text-xs mt-1" style={{ color: hoverText07 }}>

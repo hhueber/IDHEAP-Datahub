@@ -49,7 +49,7 @@ export default function ThemeConfigPage() {
   // Infos du fichier en attente (à afficher uniquement avant save / avant reload).
   const [pendingLogoFileInfo, setPendingLogoFileInfo] = useState<PendingLogoFileInfo | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, logoBackground, hoverText05, hoverPrimary10, hoverPrimary15, cfg } = useTheme();
+  const { primary, textColor, background, borderColor, logoBackground, hoverText05, hoverPrimary10, hoverPrimary15, cfg } = useTheme();
   // Logo actuel en cache (thème local) pour fallback si le backend ne renvoie rien.
   const logoUrlRaw = cfg.logo_url;
   // Permet de rafraîchir le thème après sauvegarde (ex: reload des tokens/couleurs).
@@ -399,12 +399,10 @@ export default function ThemeConfigPage() {
           <SectionCard as="div" shadow={false} className="md:p-5">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[220px_minmax(0,1fr)]">
               {/* Preview panel */}
-              <div
-                className="rounded-2xl border p-4 flex flex-col items-center justify-center min-h-[220px]"
-                style={{
-                  borderColor,
-                  backgroundColor: background,
-                }}
+              <SectionCard
+                as="div"
+                shadow={false}
+                className="flex flex-col items-center justify-center min-h-[220px]"
               >
                 <div className="mb-3 text-sm font-medium opacity-70">
                   {t("admin.config.themeConfigPage.logoPreview")}
@@ -445,7 +443,7 @@ export default function ThemeConfigPage() {
                     {t("admin.config.themeConfigPage.logoFormats", { size: MAX_LOGO_MB })}
                   </div>
                 )}
-              </div>
+              </SectionCard>
 
               {/* Controls */}
               <div className="space-y-4">
@@ -552,7 +550,9 @@ export default function ThemeConfigPage() {
 
                       <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
                         <Button
-                          variant="outlineCompact"
+                          variant="secondary"
+                          appearance="outline"
+                          radius="xl"
                           type="button"
                           style={{ backgroundColor: hoverPrimary10 }}
                           onClick={(e) => {
@@ -565,7 +565,9 @@ export default function ThemeConfigPage() {
 
                         {pendingLogoDataUrl && (
                           <Button
-                            variant="outlineCompact"
+                            variant="secondary"
+                            appearance="outline"
+                            radius="xl"
                             type="button"
                             style={{ backgroundColor: background }}
                             onClick={(e) => {
@@ -707,23 +709,20 @@ export default function ThemeConfigPage() {
 
       {/* Boutons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3">
-        <button
+        <Button
           type="button"
           disabled={saveState === "saving"}
+          loading={saveState === "saving"}
           onClick={() => setConfirmOpen(true)}
-          className="inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium hover:opacity-90 transition"
-          style={{
-            backgroundColor: primary,
-            borderColor: primary,
-            color: adaptiveTextColorPrimary,
-          }}
+          className="inline-flex items-center justify-center font-medium"
+          style={{ borderColor: primary }}
         >
           {saveState === "saving" ? (
             <LoadingDots label={t("admin.config.themeConfigPage.saving")} />
           ) : (
             t("admin.config.themeConfigPage.save")
           )}
-        </button>
+        </Button>
       </div>
 
       {/* Zone fixe pour les messages de statut */}

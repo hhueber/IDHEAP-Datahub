@@ -133,7 +133,9 @@ export function DataImportPreviewTable({
 
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
+            appearance="outline"
+            radius="xl"
             size="sm"
             type="button"
             disabled={page <= 1}
@@ -151,7 +153,9 @@ export function DataImportPreviewTable({
           </div>
 
           <Button
-            variant="outline"
+            variant="secondary"
+            appearance="outline"
+            radius="xl"
             size="sm"
             type="button"
             disabled={page >= totalPages}

@@ -38,16 +38,12 @@ export function ConfirmModal({
       </p>
 
       <div className="flex items-center justify-end gap-2">
-        <Button variant="secondary" type="button" onClick={onCancel}>
+        <Button variant="secondary" size="sm" type="button" onClick={onCancel}>
           {cancelLabel}
         </Button>
-        <button
-          type="button"
-          onClick={onConfirm}
-          className="px-3 py-2 rounded-lg bg-red-600 text-white text-sm hover:opacity-90 transition"
-        >
+        <Button variant="danger" size="sm" type="button" onClick={onConfirm}>
           {confirmLabel}
-        </button>
+        </Button>
       </div>
     </ModalShell>
   );

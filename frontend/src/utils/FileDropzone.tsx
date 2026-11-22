@@ -293,7 +293,9 @@ export function FileDropzone({
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
             <Button
-              variant="outlineCompact"
+              variant="secondary"
+              appearance="outline"
+              radius="xl"
               type="button"
               style={{ backgroundColor: hoverPrimary10 }}
               onClick={(event) => {
@@ -309,7 +311,9 @@ export function FileDropzone({
 
             {hasValue && onClear && (
               <Button
-                variant="outlineCompact"
+                variant="secondary"
+                appearance="outline"
+                radius="xl"
                 type="button"
                 style={{ backgroundColor: background }}
                 onClick={(event) => {

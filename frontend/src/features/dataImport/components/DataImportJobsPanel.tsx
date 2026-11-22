@@ -39,7 +39,9 @@ export function DataImportJobsPanel({
         </div>
 
         <Button
-          variant="outline"
+          variant="secondary"
+          appearance="outline"
+          radius="xl"
           size="md"
           type="button"
           disabled={loading}
@@ -104,7 +106,9 @@ export function DataImportJobsPanel({
 
                 <div className="flex shrink-0 gap-2">
                   <Button
-                    variant="outline"
+                    variant="secondary"
+                    appearance="outline"
+                    radius="xl"
                     size="sm"
                     type="button"
                     disabled={loading}
@@ -113,14 +117,17 @@ export function DataImportJobsPanel({
                     {t("dataImport.jobs.resume")}
                   </Button>
 
-                  <button
+                  <Button
+                    variant="danger"
+                    appearance="outline"
+                    size="sm"
+                    radius="xl"
                     type="button"
                     disabled={loading}
                     onClick={() => void onDelete(job)}
-                    className="rounded-xl border border-red-500 px-3 py-2 text-sm font-medium text-red-600 transition hover:opacity-80 disabled:opacity-40"
                   >
                     {t("dataImport.jobs.delete")}
-                  </button>
+                  </Button>
                 </div>
               </div>
             </article>

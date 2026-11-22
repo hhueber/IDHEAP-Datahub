@@ -318,7 +318,9 @@ export default function ChildrenTable({
                         style={{ borderColor }}
                       >
                         <Button
-                          variant="secondaryCompact"
+                          variant="secondary"
+                          size="xs"
+                          radius="sm"
                           type="button"
                           onClick={() => {
                             if (!row.uid) {

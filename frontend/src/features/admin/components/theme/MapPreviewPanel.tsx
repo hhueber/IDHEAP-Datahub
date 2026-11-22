@@ -8,7 +8,7 @@ import type { ThemeMapPreviewBundle } from "@/features/admin/components/theme/th
 import MiniMapBase from "@/features/maps/miniMap/MiniMapBase";
 import MiniMapGeoJsonLayer from "@/features/maps/miniMap/MiniMapGeoJsonLayer";
 import MiniMapFitBounds from "@/features/admin/components/theme/MiniMapFitBounds";
-import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
+import LoadingOverlay from "@/utils/LoadingOverlay";
 
 type MaybeColor = string | null | undefined;
 
@@ -118,7 +118,7 @@ export default function MapPreviewPanel({
       <div className="mb-2 text-[11px] font-semibold opacity-80">{title}</div>
 
       <div className="relative h-[240px] sm:h-[300px] lg:h-[240px] w-full overflow-hidden rounded-xl border">
-        {loading && <InsightsLoadingOverlay />}
+        {loading && <LoadingOverlay />}
 
         {!loading && error && (
           <div className="flex h-full items-center justify-center px-4 text-center text-sm opacity-70">

@@ -5,7 +5,7 @@ import { useTheme } from "@/theme/useTheme";
 import { analyzeDataImportFile, deleteDataImportJob, fetchDataImportJobs, fetchDataImportPreview, fetchDataImportSummary, uploadDataImportFile } from "@/features/dataImport/dataImportApi";
 import type { DataImportAnalyzeResponse, DataImportJobSummary, DataImportPreviewResponse, ImportSection } from "@/features/dataImport/dataImportTypes";
 import { DataImportDropzone } from "@/features/dataImport/components/DataImportDropzone";
-import { SectionCard } from "@/utils/UI";
+import { Button, SectionCard } from "@/utils/UI";
 import { DataImportPreviewTable } from "@/features/dataImport/components/DataImportPreviewTable";
 import { DataImportJobsPanel } from "@/features/dataImport/components/DataImportJobsPanel";
 import { DataImportAnalysisPanel } from "@/features/dataImport/components/DataImportAnalysisPanel";
@@ -260,26 +260,30 @@ export default function DataImportPage() {
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <button
+            <Button
+              variant="secondary"
+              appearance="outline"
+              radius="xl"
               type="button"
               onClick={() => setShowJobs((value) => !value)}
-              className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80"
-              style={{ borderColor, backgroundColor: hoverPrimary04 }}
+              style={{ backgroundColor: hoverPrimary04 }}
             >
               {showJobs
                 ? t("dataImport.jobs.hide")
                 : t("dataImport.jobs.show")}
-            </button>
+            </Button>
 
             {analysis && (
-              <button
+              <Button
+                variant="secondary"
+                appearance="outline"
+                radius="xl"
                 type="button"
                 onClick={resetCurrentImportView}
-                className="rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80"
-                style={{ borderColor, backgroundColor: hoverPrimary04 }}
+                style={{ backgroundColor: hoverPrimary04 }}
               >
                 {t("dataImport.actions.changeFile")}
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -313,15 +317,12 @@ export default function DataImportPage() {
       </header>
 
       {loading && (
-        <div
-          className="rounded-2xl border p-4"
-          style={{ backgroundColor: background, borderColor }}
-        >
+        <SectionCard as="div" shadow={false}>
           <div className="flex items-center gap-3 text-sm">
             <LoadingDots />
             <span>{t(`dataImport.loading.${loadingStep}`)}</span>
           </div>
-        </div>
+        </SectionCard>
       )}
 
       {error && (

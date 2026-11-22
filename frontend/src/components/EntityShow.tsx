@@ -6,11 +6,11 @@ import type { Entity, ShowResponse, ShowMetaField, ShowInsights, ShowInsightsRes
 import ChildrenTable from "@/features/pageShow/ChildrenTable";
 import { useDelete } from "@/shared/useDelete";
 import { ConfirmModal } from "@/utils/ConfirmModal";
-import { StatusMessage, InlineEditBox } from "@/utils/UI";
+import { Button, StatusMessage, InlineEditBox } from "@/utils/UI";
 import { useEdit } from "@/shared/useEdit";
 import { useTypedUpdates } from "@/features/pageShow/hooks/useTypedUpdates";
 import InsightsPanel from "@/features/pageShow/InsightsPanel";
-import InsightsLoadingOverlay from "@/features/pageShow/InsightsLoadingOverlay";
+import LoadingOverlay from "@/utils/LoadingOverlay";
 import { useNavigate } from "react-router-dom";
 import { getPageAllLang } from "@/features/pageAll/pageAllLang";
 
@@ -371,40 +371,40 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
               <div className="flex items-center gap-2 shrink-0">
                 {/* Confirm clear (delete mode) */}
                 {deleteMode && (
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     type="button"
                     disabled={selectedFieldsToClear.length === 0}
-                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                    style={{
-                      backgroundColor: background,
-                      borderColor,
-                      color: textColor,
-                    }}
+                    className="disabled:opacity-60"
                     onClick={() => {
                       openClearConfirm({ entity, id, clear_fields: selectedFieldsToClear });
                       setConfirmOpen(true);
                     }}
                   >
                     {t("dashboardSidebar.pageShow.confirm")}
-                  </button>
+                  </Button>
                 )}
 
                 {/* Confirm edit (edit mode) */}
                 {editMode && (
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     type="button"
                     disabled={!hasAnyValidChange()}
-                    className="h-9 px-3 rounded-lg border text-sm transition disabled:opacity-60"
-                    style={{ backgroundColor: background, borderColor, color: textColor }}
+                    className="disabled:opacity-60"
                     onClick={() => setConfirmEditOpen(true)}
                   >
                     {t("dashboardSidebar.pageShow.confirm")}
-                  </button>
+                  </Button>
                 )}
 
                 {/* EDIT button -> toggles inline edit mode */}
                 {canEdit && (
-                  <button
+                  <Button
+                    variant="secondary"
+                    size="sm"
                     type="button"
                     onClick={() => {
                       if (editMode) {
@@ -413,18 +413,17 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                         enterEditMode();
                       }
                     }}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{ backgroundColor: background, borderColor, color: textColor }}
-                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = hoverPrimary04; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = background; }}
                   >
                     {editMode ? t("common.cancel") : t("dashboardSidebar.pageShow.edit")}
-                  </button>
+                  </Button>
                 )}
 
                 {/* DELETE button */}
                 {canDelete && (
-                  <button
+                  <Button
+                    variant={deleteMode ? "secondary" : "danger"}
+                    appearance={deleteMode ? "filled" : "outline"}
+                    size="sm"
                     type="button"
                     onClick={() => {
                       if (deleteMode) {
@@ -438,29 +437,9 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
                         exitEditMode();
                       }
                     }}
-                    className="h-9 px-3 rounded-lg border text-sm transition-colors"
-                    style={{
-                      backgroundColor: background,
-                      borderColor: deleteMode
-                        ? borderColor
-                        : "rgba(239,68,68,0.35)", // couleur rouge
-                      color: deleteMode
-                        ? textColor
-                        : "rgb(220,38,38)", // couleur rouge
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!deleteMode) {
-                        e.currentTarget.style.backgroundColor = "rgba(239,68,68,0.08)"; // rouge clair
-                      } else {
-                        e.currentTarget.style.backgroundColor = hoverPrimary04;
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.backgroundColor = background;
-                    }}
                   >
                     {deleteMode ? t("common.cancel") : t("dashboardSidebar.pageShow.delete")}
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>
@@ -713,7 +692,7 @@ export default function EntityShow({ id, entity, onEdit, onDelete }: Props) {
             </div>
 
             <div className="px-6 py-5 relative min-h-[180px]">
-              {insightsLoading && <InsightsLoadingOverlay />}
+              {insightsLoading && <LoadingOverlay />}
 
               {insightsError ? (
                 <div className="text-sm" style={{ color: "rgb(220,38,38)" }}>

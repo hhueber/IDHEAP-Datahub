@@ -442,7 +442,9 @@ export default function PageAll({
                           <div className="flex flex-wrap gap-1">
                             {actions?.show && (
                               <Button
-                                variant="secondaryCompact"
+                                variant="secondary"
+                                size="xs"
+                                radius="sm"
                                 type="button"
                                 onClick={() => {
                                   if (inlineEdit.isEditingRow(row)) {
@@ -457,7 +459,9 @@ export default function PageAll({
                             )}
                             {actions?.edit && (
                               <Button
-                                variant="secondaryCompact"
+                                variant="secondary"
+                                size="xs"
+                                radius="sm"
                                 type="button"
                                 disabled={
                                   inlineEdit.isEditingRow(row) &&
@@ -481,22 +485,12 @@ export default function PageAll({
                               </Button>
                             )}
                             {actions?.delete && (
-                              <button
+                              <Button
+                                variant={inlineEdit.isEditingRow(row) ? "secondary" : "danger"}
+                                appearance={inlineEdit.isEditingRow(row) ? "filled" : "outline"}
+                                size="xs"
+                                radius="sm"
                                 type="button"
-                                className={
-                                  inlineEdit.isEditingRow(row)
-                                    ? "px-2 py-1 text-xs rounded border"
-                                    : "px-2 py-1 text-xs rounded border text-red-600 border-red-300 hover:bg-red-50"
-                                }
-                                style={
-                                  inlineEdit.isEditingRow(row)
-                                    ? {
-                                        backgroundColor: background,
-                                        borderColor,
-                                        color: textColor,
-                                      }
-                                    : undefined
-                                }
                                 onClick={() => {
                                   if (inlineEdit.isEditingRow(row)) {
                                     inlineEdit.cancelEditing();
@@ -509,7 +503,7 @@ export default function PageAll({
                                 {inlineEdit.isEditingRow(row)
                                   ? t("common.cancel")
                                   : t("dashboardSidebar.pageAll.delete")}
-                              </button>
+                              </Button>
                             )}
                           </div>
                         </td>

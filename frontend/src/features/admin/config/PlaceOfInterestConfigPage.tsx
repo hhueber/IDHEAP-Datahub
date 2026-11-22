@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { PlaceOfInterestAPI, PlaceOfInterestDTO } from "@/services/placeOfInterest";
 import PlaceOfInterestEditor from "./PlaceOfInterestEditor";
 import { useConfigResource } from "../hooks/useConfigResource";
@@ -6,6 +6,7 @@ import { ConfirmModal } from "@/utils/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { useTheme } from "@/theme/useTheme";
+import { Button } from "@/utils/UI";
 
 const fmt4 = (x: number) => (Number.isFinite(x) ? x.toFixed(4) : "");
 
@@ -17,7 +18,7 @@ export default function ConfigPlaceOfInterestPage() {
 
   const [placeOfInterestToDelete, setPlaceOfInterestToDelete] = useState<PlaceOfInterestDTO | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverPrimary06, hoverText07, hoverPrimary04 } = useTheme();
+  const { textColor, background, borderColor, hoverText07, hoverPrimary04 } = useTheme();
 
   const askDelete = (placeOfInterest: PlaceOfInterestDTO) => {
     if (!placeOfInterest.code) return;
@@ -41,19 +42,16 @@ export default function ConfigPlaceOfInterestPage() {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-xl font-semibold" style={{ color: textColor }}>{t("admin.config.placeOfInterestPage.title")}</h2>
-        <button
-          className="rounded-lg px-3 py-2 text-sm font-medium transition hover:opacity-90"
-          style={{
-            backgroundColor: primary,
-            color: adaptiveTextColorPrimary,
-          }}
+        <Button
+          type="button"
+          size="sm"
           onClick={() => {
             setCreating(true);
             setEditing(null);
           }}
         >
           + {t("admin.config.placeOfInterestPage.addButton")}
-        </button>
+        </Button>
       </div>
 
       {loading ? (
@@ -95,32 +93,27 @@ export default function ConfigPlaceOfInterestPage() {
                     {fmt4(c.pos[0])}, {fmt4(c.pos[1])}
                   </td>
                   <td className="px-3 py-2 text-right space-x-2">
-                    <button
-                      className={`
-                        px-2 py-1 rounded text-sm border transition
-                        hover:[background-color:var(--poi-edit-hover-bg)]
-                      `}
-                      style={
-                        {
-                          backgroundColor: background,
-                          borderColor: borderColor,
-                          color: textColor,
-                          "--poi-edit-hover-bg": hoverPrimary06,
-                        } as React.CSSProperties
-                      }
+                    <Button
+                      variant="secondary"
+                      size="xs"
+                      radius="sm"
+                      type="button"
                       onClick={() => {
                         setEditing(c);
                         setCreating(false);
                       }}
                     >
                       {t("admin.config.placeOfInterestPage.edit")}
-                    </button>
-                    <button
-                      className="px-2 py-1 rounded bg-red-600 text-white"
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="xs"
+                      radius="sm"
+                      type="button"
                       onClick={() => askDelete(c)}
                     >
                       {t("admin.config.placeOfInterestPage.delete")}
-                    </button>
+                    </Button>
                   </td>
                 </tr>
               ))}

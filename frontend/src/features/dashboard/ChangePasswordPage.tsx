@@ -5,7 +5,7 @@ import { ApiError } from "@/shared/apiFetch";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import PasswordField from "@/utils/PasswordField";
-import { FormMessage } from "@/utils/UI";
+import { Button, FormMessage } from "@/utils/UI";
 import { useTheme } from "@/theme/useTheme";
 
 export default function ChangePasswordPage() {
@@ -16,7 +16,7 @@ export default function ChangePasswordPage() {
   const [msgKey, setMsgKey] = useState<string | null>(null);
   const [errKey, setErrKey] = useState<string | null>(null);
 
-  const { primary, textColor, background, borderColor, adaptiveTextColorPrimary, hoverText07, hoverPrimary06 } = useTheme();
+  const { textColor, background, borderColor, hoverText07 } = useTheme();
 
   // Maj champs + reset messages
   const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,27 +124,14 @@ export default function ChangePasswordPage() {
         )}
 
         {/* Action */}
-        <button
+        <Button
           type="submit"
           disabled={submitting}
-          className="
-            rounded-lg px-4 py-2 text-sm font-medium
-            disabled:opacity-60 disabled:cursor-not-allowed
-            transition
-            [background-color:var(--submit-bg)]
-            hover:[background-color:var(--submit-hover-bg)]
-          "
-          aria-busy={submitting}
-          style={
-            {
-              "--submit-bg": primary,
-              "--submit-hover-bg": hoverPrimary06,
-              color: adaptiveTextColorPrimary,
-            } as React.CSSProperties
-          }
+          loading={submitting}
+          className="font-medium disabled:cursor-not-allowed"
         >
           {submitting ? <LoadingDots label={t("changePassword.submitting")} /> : t("changePassword.submit")}
-        </button>
+        </Button>
       </form>
     </section>
   );

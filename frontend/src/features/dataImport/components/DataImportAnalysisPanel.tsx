@@ -38,7 +38,9 @@ export function DataImportAnalysisPanel({
         </div>
 
         <Button
-          variant="outline"
+          variant="secondary"
+          appearance="outline"
+          radius="xl"
           size="md"
           type="button"
           disabled={loading}

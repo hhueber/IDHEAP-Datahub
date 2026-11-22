@@ -2,7 +2,6 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import LoadingDots from "@/utils/LoadingDots";
 import { Button, ModalShell } from "@/utils/UI";
-import { useTheme } from "@/theme/useTheme";
 
 type ConfigEditorModalProps = {
   title: string;
@@ -27,8 +26,6 @@ export function ConfigEditorModal({
 }: ConfigEditorModalProps) {
   const { t } = useTranslation();
 
-  const { primary, adaptiveTextColorPrimary, hoverPrimary90 } = useTheme();
-
   return (
     <ModalShell
       title={title}
@@ -46,20 +43,15 @@ export function ConfigEditorModal({
         {children}
 
         <div className="flex items-center justify-end gap-2 pt-2">
-          <Button variant="secondary" type="button" onClick={onClose}>
+          <Button variant="secondary" size="sm" type="button" onClick={onClose}>
             {t("admin.config.configEditor.cancel")}
           </Button>
-          <button
+          <Button
             type="submit"
+            size="sm"
             disabled={isSaving}
-            className="px-3 py-2 rounded-lg text-sm font-medium disabled:opacity-60 transition hover:[background-color:var(--config-submit-hover-bg)]"
-            style={
-              {
-                backgroundColor: primary,
-                color: adaptiveTextColorPrimary,
-                "--config-submit-hover-bg": hoverPrimary90,
-              } as React.CSSProperties
-            }
+            loading={isSaving}
+            className="font-medium"
           >
             {isSaving ? (
               <span aria-live="polite">
@@ -68,7 +60,7 @@ export function ConfigEditorModal({
             ) : (
               submitLabel ?? t("admin.config.configEditor.submit")
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </ModalShell>

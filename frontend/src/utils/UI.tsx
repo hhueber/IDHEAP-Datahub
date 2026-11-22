@@ -5,39 +5,46 @@ import { useTheme } from "@/theme/useTheme";
 
 export type Kpi = { label: string; value: string; sub?: string };
 
-export type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "secondaryCompact"
-  | "outline"
-  | "outlineCompact";
-export type ButtonSize = "sm" | "md";
+export type ButtonVariant = "primary" | "secondary" | "danger";
+export type ButtonAppearance = "filled" | "outline";
+export type ButtonSize = "xs" | "sm" | "md";
+export type ButtonRadius = "sm" | "lg" | "xl";
 
 export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+  /** Intention de couleur (défaut "primary") */
   variant?: ButtonVariant;
-  /** Uniquement pour variant="outline" (défaut "md") */
+  /** Traitement visuel : fond plein ou contour transparent (défaut "filled") */
+  appearance?: ButtonAppearance;
+  /** Contrôle hauteur/padding/texte, indépendant de variant et appearance (défaut "md") */
   size?: ButtonSize;
+  /** Contrôle uniquement le rayon des coins (défaut "lg") */
+  radius?: ButtonRadius;
+  /** État de chargement : force disabled et aria-busy, ne modifie pas le contenu (fourni par l'appelant via children) */
+  loading?: boolean;
 };
 
-const BUTTON_CLASSES: Record<Exclude<ButtonVariant, "outline">, string> = {
-  primary: "rounded-lg px-4 py-2 disabled:opacity-60 transition hover:opacity-90",
-  secondary:
-    "px-3 py-2 rounded-lg border text-sm transition hover:[background-color:var(--button-hover-bg)]",
-  secondaryCompact:
-    "px-2 py-1 text-xs rounded border hover:[background-color:var(--button-hover-bg)]",
-  outlineCompact:
-    "inline-flex items-center justify-center rounded-xl border px-4 py-2 text-xs font-medium transition hover:opacity-90",
+/** Rayon des coins uniquement — indépendant de la couleur et de la taille */
+const RADIUS_CLASSES: Record<ButtonRadius, string> = {
+  sm: "rounded",
+  lg: "rounded-lg",
+  xl: "rounded-xl",
 };
 
-const OUTLINE_CLASSES: Record<ButtonSize, string> = {
-  sm: "rounded-xl border px-3 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40",
-  md: "rounded-xl border px-4 py-2 text-sm font-medium transition hover:opacity-80 disabled:opacity-40",
+/** Hauteur/padding/texte uniquement — indépendant de la couleur et du rayon, s'applique à toute variante/apparence */
+const SIZE_CLASSES: Record<ButtonSize, string> = {
+  xs: "px-2 py-1 text-xs",
+  sm: "px-3 py-2 text-sm",
+  md: "px-4 py-2 text-sm",
 };
 
-/** Bouton d'action (primary par défaut : fond thème, hover:opacity-90). Étend les attributs natifs d'un <button>. */
+/** Bouton d'action (primary/filled par défaut : fond thème, hover:opacity-90). Étend les attributs natifs d'un <button>. */
 export function Button({
   variant = "primary",
+  appearance = "filled",
   size = "md",
+  radius = "lg",
+  loading = false,
+  disabled,
   className = "",
   style,
   children,
@@ -53,35 +60,43 @@ export function Button({
     hoverPrimary04,
   } = useTheme();
 
-  const variantClass = variant === "outline" ? OUTLINE_CLASSES[size] : BUTTON_CLASSES[variant];
+  const isOutline = appearance === "outline";
 
-  const variantStyle: React.CSSProperties =
-    variant === "secondary"
+  const appearanceClass = isOutline
+    ? variant === "danger"
+      ? "inline-flex items-center justify-center border border-red-500 text-red-600 font-medium transition hover:opacity-80 disabled:opacity-40"
+      : "inline-flex items-center justify-center border font-medium transition hover:opacity-80 disabled:opacity-40"
+    : variant === "secondary"
+      ? "border transition hover:[background-color:var(--button-hover-bg)]"
+      : variant === "danger"
+        ? "bg-red-600 text-white disabled:opacity-60 transition hover:opacity-90"
+        : "disabled:opacity-60 transition hover:opacity-90";
+
+  const appearanceStyle: React.CSSProperties = isOutline
+    ? variant === "danger"
+      ? {}
+      : { borderColor, color: textColor }
+    : variant === "secondary"
       ? ({
           backgroundColor: background,
           borderColor,
           color: textColor,
-          "--button-hover-bg": hoverPrimary06,
+          "--button-hover-bg": size === "xs" ? hoverPrimary04 : hoverPrimary06,
         } as React.CSSProperties)
-      : variant === "secondaryCompact"
-        ? ({
-            backgroundColor: background,
-            borderColor,
-            color: textColor,
-            "--button-hover-bg": hoverPrimary04,
-          } as React.CSSProperties)
-        : variant === "outline"
-          ? { borderColor }
-          : variant === "outlineCompact"
-            ? { borderColor, color: textColor }
-            : { backgroundColor: primary, color: adaptiveTextColorPrimary };
+      : variant === "danger"
+        ? {}
+        : { backgroundColor: primary, color: adaptiveTextColorPrimary };
 
   return (
     <button
       {...rest}
-      className={[variantClass, className].filter(Boolean).join(" ")}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      className={[RADIUS_CLASSES[radius], SIZE_CLASSES[size], appearanceClass, className]
+        .filter(Boolean)
+        .join(" ")}
       style={{
-        ...variantStyle,
+        ...appearanceStyle,
         ...style,
       }}
     >
@@ -93,6 +108,7 @@ export function Button({
 /** Champ de formulaire texte (label + input, thème). Étend les attributs natifs d'un <input>. */
 export function TextField({
   label,
+  id,
   className = "",
   style,
   ...rest
@@ -101,8 +117,9 @@ export function TextField({
 
   return (
     <div>
-      <label className="block text-sm font-medium mb-1">{label}</label>
+      <label htmlFor={id} className="block text-sm font-medium mb-1">{label}</label>
       <input
+        id={id}
         {...rest}
         className={["w-full rounded-lg border px-3 py-2", className]
           .filter(Boolean)
