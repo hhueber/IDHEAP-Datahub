@@ -1,12 +1,15 @@
 .PHONY: setup clean \
 	schema_db_init schema_db_init_demo schema_db_init_empty \
 	run_backend run_frontend \
-	docker docker_demo docker_empty docker_run docker_clean docker_fclean
+	docker docker_demo docker_empty docker_run docker_clean docker_fclean docker_dump
 
 ## Standard
 VENV_FOLDER		:= .venv
 PYTHON			:= $(VENV_FOLDER)/bin/python
 ENV_FILE		:= .env
+RESTORE_SERVICE		:= db_restore
+DUMP				?= ./dump/datahub.sql
+export DUMP
 
 # Setup
 setup: $(VENV_FOLDER) $(ENV_FILE)
@@ -56,6 +59,15 @@ run_backend:
 run_frontend:
 	@export $$(grep -e '^BACKEND' -e '^FRONTEND' -e '^API_URL' -e '^VITE_API_BASE_URL' $(ENV_FILE) | xargs)
 	@npm --prefix frontend run dev -- --host ${FRONTEND_HOST} --port ${FRONTEND_PORT}
+
+docker_dump:
+	@test -f $(DUMP) || (echo "❌  Dump introuvable : $(DUMP)" && exit 1)
+	$(COMPOSE) up -d $(DB_SERVICE)
+	$(COMPOSE) run --rm $(RESTORE_SERVICE)
+	$(COMPOSE) up -d --build $(API_SERVICE) $(FRONT_SERVICE)
+	@echo "✅  Services started"
+	$(COMPOSE) logs -f $(API_SERVICE) $(FRONT_SERVICE)
+
 
 clean:
 	rm -rf $(VENV_FOLDER)
