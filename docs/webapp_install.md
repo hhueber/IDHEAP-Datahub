@@ -56,3 +56,35 @@ Then, separately, still in the root folder:
 - Frontend: `npm --prefix frontend run dev -- --host $FRONTEND_HOST --port $FRONTEND_PORT`
 
 Use Ctrl+C to kill if needed.
+
+## Database Dump
+
+If you want to dump your existing database or make a fresh start for your instance with a database dump do the following
+
+### Manual
+
+1. Manually dump the database with the command 
+
+```bash
+PGPASSWORD='<mdp>' pg_dump --clean --if-exists --no-owner --no-privileges \
+  -h <db_host> -p <db_port> -U <db_user> -d <db_name> -f dump/<whatever_you_want>.sql
+```
+
+2. Launch the transfert of the database with the following command
+
+```bash
+  PGPASSWORD='<mdp>' psql -v ON_ERROR_STOP=1 \
+  -h <db_host> -p <db_port> -U <db_user> -d <db_name> -f dump/<name_of_the_dump>.sql
+```
+
+### Dockers
+
+If you use docker you need to first get the dump of database with the command
+
+```bash
+docker exec idheap-datahub-db-1 sh -c \
+  'pg_dump --clean --if-exists --no-owner --no-privileges -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  > dump/datahub.sql
+```
+
+Then you can put the `.sql` in the `dump/` folder and use the Makefile with `make docker_dump`, si le sql est situé ailleurs vous pouvez utiliser `make docker_dump DUMP=path/to/sql`
