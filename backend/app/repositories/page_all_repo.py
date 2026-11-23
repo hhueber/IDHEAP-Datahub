@@ -10,6 +10,7 @@ from app.models.base import Base
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
+from app.models.metadata import Metadata
 from app.models.option import Option
 from app.models.question_category import QuestionCategory
 from app.models.question_global import QuestionGlobal
@@ -271,7 +272,7 @@ def _name_expr_for_entity(
         return _localized_text_or_label(ENTITY_CONFIG[entity].model, lang)
 
     if entity == EntityEnum.survey:
-        return Survey.name
+        return Metadata.name
 
     if entity == EntityEnum.answer:
         return Answer.value
@@ -320,6 +321,13 @@ def _build_columns_for_entity(
 def _build_base_stmt(entity: EntityEnum, lang: PageAllLangEnum | str) -> Select[Any]:
     columns = _build_columns_for_entity(entity, lang)
 
+    if entity == EntityEnum.survey:
+        return (
+            select(*columns)
+            .select_from(Survey)
+            .outerjoin(Metadata, Metadata.survey_uid == Survey.uid)
+        )
+
     if entity == EntityEnum.answer:
         return (
             select(*columns)
@@ -334,6 +342,13 @@ def _build_base_stmt(entity: EntityEnum, lang: PageAllLangEnum | str) -> Select[
 def _build_count_stmt(entity: EntityEnum) -> Select[Any]:
     cfg = ENTITY_CONFIG[entity]
     model = cfg.model
+
+    if entity == EntityEnum.survey:
+        return (
+            select(func.count(Survey.uid))
+            .select_from(Survey)
+            .outerjoin(Metadata, Metadata.survey_uid == Survey.uid)
+        )
 
     if entity == EntityEnum.answer:
         return (
@@ -721,6 +736,13 @@ async def get_page_for_uid(
             .join(QuestionPerSurvey, QuestionPerSurvey.uid == Answer.question_uid)
             .join(Commune, Commune.uid == Answer.commune_uid)
         )
+    elif entity == EntityEnum.survey:
+        uid_col = Survey.uid
+        base_query = (
+            select(sort_col, Survey.uid)
+            .select_from(Survey)
+            .outerjoin(Metadata, Metadata.survey_uid == Survey.uid)
+        )
     else:
         uid_col = model.uid
         base_query = select(sort_col, model.uid)
@@ -749,6 +771,13 @@ async def get_page_for_uid(
             .select_from(Answer)
             .join(QuestionPerSurvey, QuestionPerSurvey.uid == Answer.question_uid)
             .join(Commune, Commune.uid == Answer.commune_uid)
+            .where(before_conditions)
+        )
+    elif entity == EntityEnum.survey:
+        count_stmt = (
+            select(func.count(Survey.uid))
+            .select_from(Survey)
+            .outerjoin(Metadata, Metadata.survey_uid == Survey.uid)
             .where(before_conditions)
         )
     else:
