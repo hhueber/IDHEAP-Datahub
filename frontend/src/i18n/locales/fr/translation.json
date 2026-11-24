@@ -1108,7 +1108,7 @@
             "submitting": "Envoi en cours...",
             "submitted": "Demande envoyée",
             "helper": "Aucune donnée ne sera encore écrite dans la base avec cette version.",
-            "endpointReached": "Les données ont bien été écrite dans la base de donnée."
+            "endpointReached": "Les données ont bien été écrites dans la base de données."
          }
       }
    },
