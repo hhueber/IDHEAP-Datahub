@@ -354,3 +354,7 @@ backups/
 *.dump
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,macos,linux,pycharm+all,python,venv
+
+#Dump
+dump/*
+!dump/.gitkeep

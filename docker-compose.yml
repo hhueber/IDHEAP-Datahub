@@ -100,5 +100,21 @@ services:
       - ./backend:/app/backend:z  
     restart: "no"
 
+  db_restore:
+      image: postgis/postgis:16-3.4
+      env_file:
+        - .env
+      environment:
+        PGPASSWORD: ${DB_PASSWORD}
+      depends_on:
+        db:
+          condition: service_healthy
+      volumes:
+        - ${DUMP:-./dump/datahub.sql}:/dump/datahub.sql:ro,z
+      command:
+        ["psql", "-v", "ON_ERROR_STOP=1", "-h", "db", "-p", "${DB_PORT}",
+        "-U", "${DB_USER}", "-d", "${DB_NAME}", "-f", "/dump/datahub.sql"]
+      restart: "no"
+
 volumes:
   pgdata:
