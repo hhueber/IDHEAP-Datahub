@@ -1103,6 +1103,7 @@
          },
          "action": {
             "title": "Envoyer l’import au backend",
+            "missingRoles": "Les colonnes de la section Questions doivent avoir les rôles suivants avant l’envoi : {{roles}}.",
             "description": "Cette action appelle la route finale du backend. Pour le moment, la route accuse uniquement réception et n’écrit aucune donnée en base.",
             "issuesWarning": "Le dataset contient encore {{count}} problème(s). La demande peut tout de même être envoyée afin de tester le workflow.",
             "submit": "Valider et envoyer a la base de données",

@@ -3,6 +3,7 @@ import { useTheme } from "@/theme/useTheme";
 import type {
     DataImportAnalyzeResponse,
     DataImportJobSummary,
+    RoleType,
 } from "@/features/dataImport/dataImportTypes";
 
 type DataImportValidateStepProps = {
@@ -27,12 +28,22 @@ export function DataImportValidateStep({
     const totalIssues = analysis.total_issues;
     const hasIssues = totalIssues > 0;
 
+    const REQUIRED_QUESTIONS_ROLES: RoleType[] = ["code", "label", "year"];
+
     const filesCount =
         analysis.files_count ??
         analysis.resources_count ??
         currentJob?.files_count ??
         currentJob?.resources_count ??
         1;
+
+    const questionsRoles = analysis.columns_summary
+        .filter((column) => column.section === "questions")
+        .map((column) => column.role);
+
+    const missingRoles = REQUIRED_QUESTIONS_ROLES.filter(
+        (role) => !questionsRoles.includes(role),
+    );
 
     return (
         <section
@@ -190,6 +201,14 @@ export function DataImportValidateStep({
                             </div>
                         )}
 
+                        {missingRoles.length > 0 && (
+                            <div className="mt-4 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-red-700">
+                                {t("dataImport.validate.action.missingRoles", {
+                                    roles: missingRoles.join(", "),
+                                })}
+                            </div>
+                        )}
+
                         {submitted && (
                             <div className="mt-4 rounded-xl border border-green-500 bg-green-50 p-3 text-sm text-green-700">
                                 {t(
@@ -202,7 +221,9 @@ export function DataImportValidateStep({
                     <div className="mt-6">
                         <button
                             type="button"
-                            disabled={loading || submitted}
+                            disabled={
+                                loading || submitted || missingRoles.length > 0
+                            }
                             onClick={() => void onSubmit()}
                             className="w-full rounded-xl px-4 py-3 text-sm font-semibold transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
                             style={{
