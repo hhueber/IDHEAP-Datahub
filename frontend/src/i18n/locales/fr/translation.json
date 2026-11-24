@@ -932,8 +932,8 @@
          "descriptionLabel": "Description du jeu de donnée",
          "licenceLabel": "Licence du jeu de donnée",
          "resetAll": "Réinitialiser tous les champs",
-         "submitButton": "Mettre a jour les métadonnées",
-         "saveSuccess": "Metadonnée mises a jour avec succés"
+         "submitButton": "Mettre à jour les métadonnées",
+         "saveSuccess": "Métadonnées mises à jour avec succès"
       },
       "displayName": {
          "edit": "Renommer"
