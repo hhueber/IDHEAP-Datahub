@@ -1103,13 +1103,13 @@
          },
          "action": {
             "title": "Envoyer l’import au backend",
-            "description": "Cette action appelle la route finale du backend. Pour le moment, la route accuse uniquement réception et n’écrit aucune donnée en base.",
-            "issuesWarning": "Le dataset contient encore {{count}} problème(s). La demande peut tout de même être envoyée afin de tester le workflow.",
+            "description": "Cette action écrit les données dans la base de données.",
+            "issuesWarning": "Le jeu de données contient encore {{count}} problème(s).",
             "submit": "Valider et envoyer a la base de données",
             "submitting": "Envoi en cours...",
             "submitted": "Demande envoyée",
             "helper": "Aucune donnée ne sera encore écrite dans la base avec cette version.",
-            "endpointReached": "La demande a bien atteint le backend. L’écriture définitive en base de données sera ajoutée séparément."
+            "endpointReached": "Les données ont bien été écrites dans la base de données."
          }
       }
    },
