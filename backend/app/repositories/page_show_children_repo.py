@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.canton import Canton
 from app.models.commune import Commune
 from app.models.district import District
+from app.models.metadata import Metadata
 from app.models.option import Option
 from app.models.question_category import QuestionCategory
 from app.models.question_category_option_association import (
@@ -17,7 +18,6 @@ from app.models.question_global_option_association import (
 )
 from app.models.question_option_association import QuestionOptionAssociation
 from app.models.question_per_survey import QuestionPerSurvey
-from app.models.survey import Survey
 from app.repositories.page_show_repo import ENTITY_MODEL_MAP
 from app.schemas.page_all import EntityEnum, PageAllLangEnum
 from app.schemas.page_show import ShowMetaChild
@@ -111,57 +111,57 @@ async def enrich_children_display_names(
 
     relation_configs: dict[str, tuple[type[Any], str, Any]] = {
         "commune_uid": (
-            Commune,
+            Commune.uid,
             "commune_name",
             _localized_name(Commune, lang),
         ),
         "district_uid": (
-            District,
+            District.uid,
             "district_name",
             _localized_name(District, lang),
         ),
         "canton_uid": (
-            Canton,
+            Canton.uid,
             "canton_name",
             _localized_name(Canton, lang),
         ),
         "survey_uid": (
-            Survey,
+            Metadata.survey_uid,
             "survey_name",
-            Survey.name,
+            Metadata.name,
         ),
         "question_uid": (
-            QuestionPerSurvey,
+            QuestionPerSurvey.uid,
             "question_name",
             _localized_text_or_label(QuestionPerSurvey, lang),
         ),
         "question_global_uid": (
-            QuestionGlobal,
+            QuestionGlobal.uid,
             "question_global_name",
             _localized_text_or_label(QuestionGlobal, lang),
         ),
         "question_category_uid": (
-            QuestionCategory,
+            QuestionCategory.uid,
             "question_category_name",
             _localized_text_or_label(QuestionCategory, lang),
         ),
         "option_uid": (
-            Option,
+            Option.uid,
             "option_name",
             _localized_text_or_label(Option, lang),
         ),
     }
 
-    for uid_key, (model, display_key, display_expr) in relation_configs.items():
+    for uid_key, (filter_col, display_key, display_expr) in relation_configs.items():
         ids = {row.get(uid_key) for row in rows if row.get(uid_key) is not None}
 
         if not ids:
             continue
 
         stmt = select(
-            model.uid.label("uid"),
+            filter_col.label("uid"),
             display_expr.label("display_name"),
-        ).where(model.uid.in_(ids))
+        ).where(filter_col.in_(ids))
 
         result = await db.execute(stmt)
 
