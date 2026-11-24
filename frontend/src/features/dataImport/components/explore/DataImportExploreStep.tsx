@@ -25,6 +25,7 @@ type DataImportExploreStepProps = {
     onPageChange: (page: number) => Promise<void>;
     onReloadPreview: () => Promise<void>;
     onAnalysisUpdated: (analysis: DataImportAnalyzeResponse["data"]) => void;
+    onColumnRemoveSection: (columnIndex: number) => Promise<void>;
 };
 
 export function DataImportExploreStep({
@@ -44,6 +45,7 @@ export function DataImportExploreStep({
     onPageChange,
     onReloadPreview,
     onAnalysisUpdated,
+    onColumnRemoveSection,
 }: DataImportExploreStepProps) {
     return (
         <>
@@ -76,6 +78,7 @@ export function DataImportExploreStep({
                     onPageChange={onPageChange}
                     onReload={onReloadPreview}
                     onAnalysisUpdated={onAnalysisUpdated}
+                    onColumnRemoveSection={onColumnRemoveSection}
                 />
             )}
         </>
