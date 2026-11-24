@@ -353,7 +353,7 @@ export default function DataImportPage() {
         setAnalysis(null);
         setPreview(null);
         setValidationSubmitted(false);
-        setActiveStep("explore");
+        setActiveStep("metadata");
 
         try {
             const uploadJson = await uploadDataImportFiles(params);
